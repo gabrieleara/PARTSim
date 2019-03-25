@@ -145,7 +145,7 @@ namespace RTSim {
         Task *t = dynamic_cast<Task*>(_sched->getTaskN(0));
         cout << "CPU is " << p->print() << " freq " << p->getFrequency()<< " "<< t->print() << endl;
 
-        cout << "task util " << getUtilization(t, p, p->getCapacity(p->getFrequency()));
+        cout << "task util " << getUtilization(t, p, p->getSpeed());
 
         exit(0);
     }
@@ -357,7 +357,7 @@ namespace RTSim {
                 //cout << c->print() << endl;
                 if (_sched->isAdmissible(c, getTasks(c), t)) {
                     double remainingCycles = t->getMaxExecutionCycles() - t->getExecCycles();
-                    e = remainingCycles / c->getCapacity() * c->getPowerConsumption();
+                    e = remainingCycles / c->getSpeed() * c->getPowerConsumption();
                     energies[e] = c;
                 }
             }
@@ -405,7 +405,7 @@ namespace RTSim {
                         double newCapacity = 0.0;
 
                         c->setOPP(o);
-                        newCapacity = c->getCapacity(newFreq);
+                        newCapacity = c->getSpeed(newFreq);
                         printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
                         // check whether task is admissible with the new frequency and where
@@ -449,7 +449,7 @@ namespace RTSim {
                             // utilization island where CPU c is
                             island = c->getIsland();
                             newUtilizationIsland = getIslandUtilization(newCapacity, island, NULL);
-                            oldUtilizationIsland = getIslandUtilization(c->getCapacity(frequency), island, &nTaskIsland);
+                            oldUtilizationIsland = getIslandUtilization(c->getSpeed(frequency), island, &nTaskIsland);
                             cout << "\t\t\tIn the CPU island of " << c->getName() << ", " << nTaskIsland << " are being scheduled" << endl;
 
                             // additional required power

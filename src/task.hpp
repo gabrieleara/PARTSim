@@ -390,12 +390,14 @@ namespace RTSim {
             instruction in the instruction list, and sums the number
             togheter.  If maxC has been set to a number different from 0,
             then this function returns maxC.
+            This is a worst-case cycles (cpu-speed independent)
         */
         virtual Tick getWCET() const;
 
         /**
            Returns WCET / capacity. WCET can scale up/down if task runs on big-LITTLE
            depending on CPU frequency
+           This is a worst-case exec time at the supplied speed===capacity
          */
         virtual inline double getWCET(double capacity) const {
             double n = double(getWCET()) / capacity;

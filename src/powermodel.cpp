@@ -13,6 +13,7 @@
  ***************************************************************************/
 #include <powermodel.hpp>
 #include <cpu.hpp>
+#include <assert.h>
 
 namespace RTSim
 {
@@ -138,8 +139,8 @@ namespace RTSim
 
     }
 
-    long double CPUModelBP::speedModel(const ComputationalModelBPParams &m,
-                      unsigned long int f) const
+    long double CPUModelBP::slownessModel(const ComputationalModelBPParams &m,
+                      unsigned long int f)
     {
         //cout<<endl<<"\t\t\tm.a b c d " << m.a << " "<< m.b << " " << m.c << " " << m.d << " f " <<f<<endl;
 
@@ -166,10 +167,11 @@ namespace RTSim
     long double CPUModelBP::getSpeed()
     {
         string curr_wl = getCPU()->getWorkload();
-        long double ret = speedModel(_comp_param[curr_wl], _F);
+        assert(_comp_param.find(curr_wl) != _comp_param.end());
+        long double ret = 1.0 / slownessModel(_comp_param[curr_wl], _F);
         DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
 
-        cout<<endl << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
+        cout << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
         return ret;
     }
 

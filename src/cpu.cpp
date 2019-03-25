@@ -54,10 +54,13 @@ namespace RTSim
             powmod->setFrequencyMax(OPPs[OPPs.size()-1].frequency);
         } else {
             powmod = pm;
+            pm->setCPU(this);
         }
 
         /* Use the maximum OPP by default */
         currentOPP = num_OPPs - 1;
+
+        _workload = "idle";
 
         // Setting speeds (basing upon frequencies)
         for (unsigned int opp = 0; opp < OPPs.size(); ++opp)
@@ -179,13 +182,13 @@ namespace RTSim
         return _workload;
     }
     
-    long double CPU::getSpeed()
+    double CPU::getSpeed()
     {
         if (PowerSaving) {
             updateCPUModelOPP();
             return powmod->getSpeed();
         }
-        return 1;
+        return 1.0;
     }
 
     double CPU::getSpeed(unsigned int opp)
@@ -232,43 +235,27 @@ namespace RTSim
         }
     }
 
-    double CPU::getPowerConsumption(double frequency) {
-        //cout << "\t\t\tpowmod->getPower() " << powmod->getPower() << endl;
-        //return powmod->getPower() * frequency / OPPs[OPPs.size() - 1].frequency;
-        // Find what OPP corresponds to provided frequency
+    unsigned int CPU::getOPPByFrequency(double frequency) {
         int opp = -1;
         for (int i = 0; i < OPPs.size(); i++)
             if (OPPs[i].frequency == frequency)
               opp = i;
         assert(opp != -1);
+        return opp;
+    }
+  
+    double CPU::getPowerConsumption(double frequency) {
+        //cout << "\t\t\tpowmod->getPower() " << powmod->getPower() << endl;
+        //return powmod->getPower() * frequency / OPPs[OPPs.size() - 1].frequency;
+        // Find what OPP corresponds to provided frequency
+        unsigned int opp = getOPPByFrequency(frequency);
         updateCPUModelOPP(opp);
         return powmod->getPower();
     }
 
-    double CPU::getCapacity(double freq) {
-        double capacity = 0.0;
-        double speed    = getSpeed();
-        int bckOPP      = getOPP();
-        double bckFreq  = getFrequency();
-        double maxFreqIsland = max_element(OPPs.begin(), OPPs.end(),
-                [](const struct OPP& o1, const struct OPP& o2){return o1.frequency < o2.frequency;}).base()->frequency;
-
-        setOPP(OPPs.size() - 1); // needed by getSpeed()
-        //capacity = getSpeed() * bckFreq / maxFreqIsland;
-        capacity = speed * bckFreq / maxFreqIsland;
-
-        printf("\n\t\t\tcapacity %.17g*%f/%f=%.17g\n", speed, bckFreq, maxFreqIsland, capacity);
-
-        std::ofstream out("capacities.txt", std::fstream::app);
-        std::streambuf *coutbuf = std::cout.rdbuf(); //save old buf
-        std::cout.rdbuf(out.rdbuf()); //redirect std::cout to out.txt!
-        cout << getSpeed() << "\t\t\tfreq " << bckFreq << "\tmaxfreqisland " << maxFreqIsland << "\tcapacity " << capacity << endl;
-        std::cout.rdbuf(coutbuf); //reset to standard output again
-
-        setOPP(bckOPP);
-
-        //return freq / CPU::referenceFrequency;
-        return capacity;
+    double CPU::getSpeed(double freq) {
+        unsigned int opp = getOPPByFrequency(freq);
+        return getSpeed(opp);
     }
 
     std::vector<struct OPP> CPU::getNextOPPs() {

@@ -106,7 +106,7 @@ namespace RTSim
          */
         void setFrequencyMax(unsigned long int f);
 
-        /// debug only
+        /// debug only, returns MHz, coherently with setFrequency()
         virtual unsigned long getFrequency() {
             return _F / 1000;
         }
@@ -208,9 +208,6 @@ namespace RTSim
              */
         double _P_charge;
 
-        long double speedModel(const ComputationalModelBPParams &m,
-                          unsigned long int f) const;
-
     public:
 
         CPUModelBP(double v, unsigned long f, unsigned long f_max,
@@ -226,6 +223,8 @@ namespace RTSim
         virtual long double getSpeed();
 
         virtual void update();
+        static long double slownessModel(const ComputationalModelBPParams &m,
+                          unsigned long int f);
     };
 
 } // namespace RTSim

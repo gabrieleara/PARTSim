@@ -105,6 +105,8 @@ namespace RTSim
 
         ~CPU();
 
+        unsigned int getOPPByFrequency(double frequency);
+
         void setIsIslandBusy(bool busy) {
             DBGPRINT_3(SIMUL.getTime(), " is island busy ", busy);
             isIslandBusy = busy;
@@ -201,9 +203,12 @@ namespace RTSim
         virtual string getWorkload() const;
 
         /// Returns the current CPU speed (between 0 and 1)
-        virtual long double getSpeed();
+        virtual double getSpeed();
 
         virtual double getSpeed(unsigned int OPP);
+
+        /// return capacity at frequency freq
+        virtual double getSpeed(double freq);
 
         virtual unsigned long int getFrequencySwitching();
 
@@ -218,12 +223,6 @@ namespace RTSim
 
         /// get power consumption for current freq
         inline double getPowerConsumption() { return getPowerConsumption(getFrequency()); }
-
-        /// return capacity at frequency freq
-        double getCapacity(double freq);
-
-        /// return capacity at current frequency
-        inline long double getCapacity() { /*return getSpeed();*/ return getCapacity(getFrequency()); }
 
         /// returns the island where the CPU is located
         enum Island getIsland() { return this->island; };

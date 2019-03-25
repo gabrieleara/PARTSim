@@ -61,7 +61,7 @@ namespace RTSim {
 
     bool EDFScheduler::isAdmissible(CPU* c, vector<AbsRTTask*> tasks, AbsRTTask* toBeAdmitted) {
         double utilization = 0.0;
-        double capacity = c->getCapacity();
+        double capacity = c->getSpeed();
 
 #include <cstdio>
         printf("\t\t\tEDFSched::isAdmissible WCET %.17g cap %f speed %f\n", toBeAdmitted->getWCET(capacity), capacity, double(c->getSpeed()));

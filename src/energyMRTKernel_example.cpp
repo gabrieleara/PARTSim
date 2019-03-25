@@ -25,6 +25,21 @@ using namespace RTSim;
 
 /* ./energy [OPP little] [OPP big] [workload] */
 
+void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
+  for (unsigned int f = 200000; f <= 2000000; f += 200000) {
+    std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;
+  }
+}
+
+void dumpAllSpeeds() {
+  std::cout << "LITTLE:" << std::endl;
+  CPUModelBP::ComputationalModelBPParams bzip2_cp = {0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
+  dumpSpeeds(bzip2_cp);
+  std::cout << "BIG:" << std::endl;
+  bzip2_cp = {0.17833, 1.63265e+6, 1.62033, 118803};
+  dumpSpeeds(bzip2_cp);
+}
+
 int main(int argc, char *argv[])
 {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
@@ -32,6 +47,8 @@ int main(int argc, char *argv[])
     string workload = "bzip2";
     std::vector<CPU*> cpus;
 
+    dumpAllSpeeds();
+    
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
         OPP_big = stoi(argv[2]);
@@ -112,7 +129,6 @@ int main(int argc, char *argv[])
 
             cout << "creating cpu" << endl;
             CPU *c = new CPU(cpu_name, V_little, F_little, pm);
-            pm->setCPU(c);
             c->setOPP(OPP_little);
             c->setWorkload("idle");
             c->setIsland(CPU::Island::LITTLE);
@@ -164,7 +180,6 @@ int main(int argc, char *argv[])
             }
 
             CPU *c = new CPU(cpu_name, V_big, F_big, pm);
-            pm->setCPU(c);
             c->setOPP(OPP_big);
             c->setWorkload("idle");
             c->setIsland(CPU::Island::BIG);
