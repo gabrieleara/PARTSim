@@ -107,13 +107,13 @@ namespace RTSim
         void setFrequencyMax(unsigned long int f);
 
         /// debug only, returns MHz, coherently with setFrequency()
-        virtual unsigned long getFrequency() {
+        virtual unsigned long int getFrequency() {
             return _F / 1000;
         }
 
         /// debug only
-        virtual unsigned long getVoltage() {
-            return _V / 1000;
+        virtual double getVoltage() {
+            return _V;
         }
 
 };

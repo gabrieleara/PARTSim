@@ -127,7 +127,6 @@ namespace RTSim
 
     double CPU::getCurrentPowerConsumption()
     {
-        //cout<<endl<<"CPU::getCurPowCoons"<<endl;
         if (PowerSaving) {
             updateCPUModelOPP();
             return (powmod->getPower());
@@ -245,8 +244,6 @@ namespace RTSim
     }
   
     double CPU::getPowerConsumption(double frequency) {
-        //cout << "\t\t\tpowmod->getPower() " << powmod->getPower() << endl;
-        //return powmod->getPower() * frequency / OPPs[OPPs.size() - 1].frequency;
         // Find what OPP corresponds to provided frequency
         unsigned int opp = getOPPByFrequency(frequency);
         updateCPUModelOPP(opp);

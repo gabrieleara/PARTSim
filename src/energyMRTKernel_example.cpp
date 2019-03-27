@@ -26,7 +26,7 @@ using namespace RTSim;
 /* ./energy [OPP little] [OPP big] [workload] */
 
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
-  for (unsigned int f = 200000; f <= 2000000; f += 200000) {
+  for (unsigned int f = 200000; f <= 2000000; f += 100000) {
     std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;
   }
 }
@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 1;
+        int TEST_NO = 5;
 
         if (TEST_NO == 0) {
             cout << "workload "<<workload<<endl;
@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             //t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            t->insertCode("fixed(497.327539573," + workload + ");"); // WCET 500 at max frequency on big cores
+            t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);

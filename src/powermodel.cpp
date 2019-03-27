@@ -51,6 +51,8 @@ namespace RTSim
     long double CPUModel::getSpeed()
     {
         //cout << "CPUModel::getSpeed()"<<endl;
+        // previously it was - but then I had to change it for my tries:
+        // long double res = (double)_F_max / (double)_F;
         long double res = (double)_F / (double)_F_max;
         return res;
     }
@@ -110,6 +112,8 @@ namespace RTSim
 
     void CPUModelBP::update()
     {
+        #include <cstdio>
+      // printf("\t\t\tCPUModelBP::update freq %u volt %f\n",getFrequency(),getVoltage() );
         double K, eta, gamma, disp;
         string _curr_wl = getCPU()->getWorkload();
 
@@ -118,7 +122,7 @@ namespace RTSim
         eta = _wl_param[_curr_wl].e;
         gamma = _wl_param[_curr_wl].g;
 
-        //cout << endl <<"CPUModelBP::update wl=" << _curr_wl << " _F "<<_F<<" _V "<<_V<< " disp " << disp<<" k "<<K<<" eta "<<eta<<" gamma "<<gamma<<endl;
+        //cout << "\t\t\tCPUModelBP::update wl=" << _curr_wl << " _F "<<_F<<" _V "<<_V<< " disp " << disp<<" k "<<K<<" eta "<<eta<<" gamma "<<gamma<<endl;
 
         // Evaluation of the P_charge
         _P_charge = (K) * _F * (_V * _V);
@@ -135,7 +139,7 @@ namespace RTSim
         // Evaluation of the total Power
         _P = _P_leak + _P_dyn + disp;
 
-        //cout << "_P = " << _P << " " << _P_charge<<" "<<_P_short<<" "<<_P_dyn<<" "<<_P_leak<<endl;
+        //cout << "\t\t\t_P = " << _P << " " << _P_charge<<" "<<_P_short<<" "<<_P_dyn<<" "<<_P_leak<<endl;
 
     }
 
