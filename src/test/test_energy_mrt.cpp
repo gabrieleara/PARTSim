@@ -322,6 +322,8 @@ void init_suite() {
 string task_name = "";
 
 void energyTest0() {
+    CU_ASSERT(0);
+
     cout << "workload " << workload << endl;
     task_name = "Task_LITTLE_0";
     cout << "Creating task: " << task_name << endl;
@@ -610,6 +612,10 @@ int main() {
         CU_cleanup_registry();
         return CU_get_error();
     }
+
+    CU_list_tests_to_file();
+    CU_set_output_filename("results");
+    CU_set_error_action(CUEA_FAIL);
 
     /* Run all tests using the CUnit Basic interface */
     init_suite();
