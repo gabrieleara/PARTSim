@@ -1,14 +1,18 @@
 #include <metasim.hpp>
 #include <rttask.hpp>
 #include <mrtkernel.hpp>
+#include <energyMRTKernel.hpp>
 #include <edfsched.hpp>
 #include <cbserver.hpp>
+
+#include "CUnit/Automated.h"
+#include "CUnit/CUnit.h"
 
 using namespace MetaSim;
 using namespace RTSim;
 using namespace std;
 
-void testMulticore()
+/*void testMulticore()
 {
     EDFScheduler sched;
     MRTKernel kern(&sched, 2);
@@ -168,18 +172,18 @@ void test_multicoreWithCbs()
     REQUIRE(serv3.getDeadline() == 36);
 
    SIMUL.endSingleRun();
-}
+}*/
 
-unsigned int OPP_little = 0; // Index of OPP in LITTLE cores                                          |
-unsigned int OPP_big = 0;    // Index of OPP in big cores                                             |
-string workload = "bzip2";                                                                            |
+unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
+unsigned int OPP_big = 0;    // Index of OPP in big cores
+string workload = "bzip2";
 vector<CPU*> cpus;
 
 vector<EDFScheduler *> schedulers;
 vector<RTKernel *> kernels;
-vector<CPU *> cpus;
 
-void initCUnit() {
+
+void init_suite() {
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
             1.25625
@@ -243,8 +247,8 @@ void initCUnit() {
         c->setWorkload("idle");
         c->setIsland(CPU::Island::LITTLE);
         pm->setFrequencyMax(max_frequency);
-        TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
-        ptrace.push_back(power_trace);
+        //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+        //ptrace.push_back(power_trace);
 
         cpus.push_back(c);
 
@@ -264,7 +268,7 @@ void initCUnit() {
 
         CPUModel *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
         {
-            CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
+           CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
             CPUModelBP::ComputationalModelBPParams idle_cp = {1, 0, 0, 0};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("idle", idle_pp, idle_cp);
 
@@ -294,8 +298,8 @@ void initCUnit() {
         c->setWorkload("idle");
         c->setIsland(CPU::Island::BIG);
         pm->setFrequencyMax(max_frequency);
-        TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
-        ptrace.push_back(power_trace);
+        //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+        //ptrace.push_back(power_trace);
 
         cpus.push_back(c);
 
@@ -324,7 +328,7 @@ void energyTest0() {
     PeriodicTask *t0 = new PeriodicTask(500, 500, 0, task_name);
     t0->insertCode("fixed(100," + workload + ");");
     kernels[0]->addTask(*t0, "");
-    ttrace.attachToTask(*t0);
+    //ttrace.attachToTask(*t0);
     //jtrace.attachToTask(*t);
 
     task_name = "Task_LITTLE_1";
@@ -332,7 +336,7 @@ void energyTest0() {
     PeriodicTask *t1 = new PeriodicTask(500, 500, 0, task_name);
     t1->insertCode("fixed(100," + workload + ");");
     kernels[0]->addTask(*t1, "");
-    ttrace.attachToTask(*t1);
+    //ttrace.attachToTask(*t1);
     //jtrace.attachToTask(*t);
 
     task_name = "Task_LITTLE_2";
@@ -340,7 +344,7 @@ void energyTest0() {
     PeriodicTask *t2 = new PeriodicTask(500, 500, 0, task_name);
     t2->insertCode("fixed(100," + workload + ");");
     kernels[0]->addTask(*t2, "");
-    ttrace.attachToTask(*t2);
+    //ttrace.attachToTask(*t2);
     //jtrace.attachToTask(*t);
 
     task_name = "Task_LITTLE_3";
@@ -348,7 +352,7 @@ void energyTest0() {
     PeriodicTask *t3 = new PeriodicTask(500, 500, 0, task_name);
     t3->insertCode("fixed(100," + workload + ");");
     kernels[0]->addTask(*t3, "");
-    ttrace.attachToTask(*t3);
+    //ttrace.attachToTask(*t3);
     //jtrace.attachToTask(*t);
 
     task_name = "Task_big_0";
@@ -356,7 +360,7 @@ void energyTest0() {
     PeriodicTask *t4 = new PeriodicTask(500, 500, 0, task_name);
     t4->insertCode("fixed(100," + workload + ");");
     kernels[0]->addTask(*t4, "");
-    ttrace.attachToTask(*t4);
+    //ttrace.attachToTask(*t4);
 
     SIMUL.run(10);
 
@@ -366,27 +370,27 @@ void energyTest0() {
     CPU *c3 = kernels[0]->getProcessor(t3);
     CPU *c4 = kernels[0]->getProcessor(t4);
 
-    CU_ASSERT(t0.getName() == "Task_LITTLE_0");
+    CU_ASSERT(t0->getName() == "Task_LITTLE_0");
     CU_ASSERT(c0->getFrequency() == 700);
     CU_ASSERT(c0->getName()  == "LITTLE_3");
     CU_ASSERT(int(t0->getWCET())  == 488);
 
-    CU_ASSERT(t1.getName() == "Task_LITTLE_1");
+    CU_ASSERT(t1->getName() == "Task_LITTLE_1");
     CU_ASSERT(c1->getFrequency() == 700);
     CU_ASSERT(c1->getName()  == "LITTLE_1");
     CU_ASSERT(int(t1->getWCET()) == 488);
 
-    CU_ASSERT(t2.getName() == "Task_LITTLE_2");
+    CU_ASSERT(t2->getName() == "Task_LITTLE_2");
     CU_ASSERT(c2->getFrequency() == 700);
     CU_ASSERT(c2->getName()  == "LITTLE_2");
     CU_ASSERT(t2->getWCET() == 488);
 
-    CU_ASSERT(t3.getName() == "Task_LITTLE_3");
+    CU_ASSERT(t3->getName() == "Task_LITTLE_3");
     CU_ASSERT(c3->getFrequency() == 700);
     CU_ASSERT(c2->getName()  == "LITTLE_0");
     CU_ASSERT(int(t3->getWCET()) == 488);
 
-    CU_ASSERT(t4.getName() == "Task_big_0");
+    CU_ASSERT(t4->getName() == "Task_big_0");
     CU_ASSERT(c4->getFrequency() == 700);
     CU_ASSERT(c2->getName()  == "BIG_1");
     CU_ASSERT(int(t4->getWCET()) == 251);
@@ -396,16 +400,15 @@ void energyTest1() {
     task_name = "task1";
     cout << "Creating task: " << task_name << endl;
     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
-    //t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-    t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+    t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
     kernels[0]->addTask(*t0, "");
-    ttrace.attachToTask(*t0);
+    //ttrace.attachToTask(*t0);
 
     SIMUL.run(10);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
 
-    CU_ASSERT(t0.getName() == "task1");
+    CU_ASSERT(t0->getName() == "task1");
     CU_ASSERT(c0->getFrequency() == 2000);
     CU_ASSERT(c0->getName()  == "BIG_1");
     CU_ASSERT(int(t0->getWCET())  == 500);
@@ -416,29 +419,29 @@ void energyTest2() {
     task_name = "task1";
     cout << "Creating task: " << task_name << endl;
     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
-    t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-    kernels[0]->addTask(*t, "");
-    ttrace.attachToTask(*t);
+    t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+    kernels[0]->addTask(*t0, "");
+    //ttrace.attachToTask(*t);
     //jtrace.attachToTask(*t);
 
     task_name = "task2";
     cout << "Creating task: " << task_name << endl;
     PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
-    t->insertCode("fixed(500," + workload + ");");
-    kernels[0]->addTask(*t, "");
-    ttrace.attachToTask(*t);
+    t1->insertCode("fixed(500," + workload + ");");
+    kernels[0]->addTask(*t1, "");
+    //ttrace.attachToTask(*t);
 
     SIMUL.run(10);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
 
-    CU_ASSERT(t0.getName() == "task1");
+    CU_ASSERT(t0->getName() == "task1");
     CU_ASSERT(c0->getFrequency() == 2000);
     CU_ASSERT(c0->getName()  == "BIG_1");
     CU_ASSERT(int(t0->getWCET())  == 497);
 
-    CU_ASSERT(t1.getName() == "task2");
+    CU_ASSERT(t1->getName() == "task2");
     CU_ASSERT(c1->getFrequency() == 2000);
     CU_ASSERT(c1->getName()  == "BIG_2");
     CU_ASSERT(int(t1->getWCET()) == 497);
@@ -450,27 +453,27 @@ void energyTest3() {
     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
     t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
     kernels[0]->addTask(*t0, "");
-    ttrace.attachToTask(*t0);
+    //ttrace.attachToTask(*t0);
     //jtrace.attachToTask(*t);
 
     task_name = "task2";
     cout << "Creating task: " << task_name << endl;
-    PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+    PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
     t1->insertCode("fixed(250," + workload + ");");
     kernels[0]->addTask(*t1, "");
-    ttrace.attachToTask(*t1);
+    //ttrace.attachToTask(*t1);
 
     SIMUL.run(10);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
 
-    CU_ASSERT(t0.getName() == "task1");
+    CU_ASSERT(t0->getName() == "task1");
     CU_ASSERT(c0->getFrequency() == 2000);
     CU_ASSERT(c0->getName()  == "BIG_1");
     CU_ASSERT(int(t0->getWCET())  == 497);
 
-    CU_ASSERT(t1.getName() == "task2");
+    CU_ASSERT(t1->getName() == "task2");
     CU_ASSERT(c1->getFrequency() == 2000);
     CU_ASSERT(c1->getName()  == "BIG_2");
     CU_ASSERT(int(t1->getWCET()) == 248);
@@ -479,16 +482,16 @@ void energyTest3() {
 void energyTest4() {
     task_name = "task1";
     cout << "Creating task: " << task_name << endl;
-    t = new PeriodicTask(500, 500, 0, task_name);
-    t->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
-    kernels[0]->addTask(*t, "");
-    ttrace.attachToTask(*t);
+    PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+    t0->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
+    kernels[0]->addTask(*t0, "");
+    //ttrace.attachToTask(*t);
 
     SIMUL.run(10);
 
-    CPU *c0 = kernels[0]->getProcessor(t);
+    CPU *c0 = kernels[0]->getProcessor(t0);
 
-    CU_ASSERT(t0.getName() == "task1");
+    CU_ASSERT(t0->getName() == "task1");
     CU_ASSERT(c0->getFrequency() == 500);
     CU_ASSERT(c0->getName()  == "LITTLE_1");
     CU_ASSERT(int(t0->getWCET())  == 65);
@@ -506,7 +509,7 @@ void energyTest5() {
         cout << " with abs. WCET " << wcet << endl;
         t->insertCode(instr);
         kernels[0]->addTask(*t, "");
-        ttrace.attachToTask(*t);
+        //ttrace.attachToTask(*t);
 
         task[j] = t;
         // LITTLE_0, _1, _2, _3 freq 1400.
@@ -521,25 +524,25 @@ void energyTest5() {
     CPU *c4 = kernels[0]->getProcessor(task[4]);
 
     PeriodicTask* t = task[0];
-    CU_ASSERT(t.getName() == "task0");
+    CU_ASSERT(t->getName() == "task0");
     CU_ASSERT(c0->getFrequency() == 500);
     CU_ASSERT(c0->getName()  == "LITTLE_3");
     CU_ASSERT(int(t->getWCET())  == 32);
 
-    PeriodicTask* t = task[1];
-    CU_ASSERT(t1.getName() == "task1");
+    t = task[1];
+    CU_ASSERT(t->getName() == "task1");
     CU_ASSERT(c1->getFrequency() == 500);
     CU_ASSERT(c1->getName()  == "LITTLE_2");
     CU_ASSERT(int(t->getWCET()) == 32);
 
-    PeriodicTask* t = task[2];
-    CU_ASSERT(t.getName() == "task2");
+    t = task[2];
+    CU_ASSERT(t->getName() == "task2");
     CU_ASSERT(c2->getFrequency() == 500);
     CU_ASSERT(c2->getName()  == "LITTLE_1");
     CU_ASSERT(int(t->getWCET()) == 32);
 
-    PeriodicTask* t = task[3];
-    CU_ASSERT(t.getName() == "task3");
+    t = task[3];
+    CU_ASSERT(t->getName() == "task3");
     CU_ASSERT(c3->getFrequency() == 500);
     CU_ASSERT(c2->getName()  == "LITTLE_0");
     CU_ASSERT(int(t->getWCET()) == 32);
@@ -561,7 +564,7 @@ int main() {
 
     /* add the tests to the suite */
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy0()", test_minutes))
+            (NULL == CU_add_test(pSuite, "test of test_energy0()", energyTest0))
             )
     {
         CU_cleanup_registry();
@@ -569,7 +572,7 @@ int main() {
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy1()", test_hours))
+            (NULL == CU_add_test(pSuite, "test of test_energy1()", energyTest1))
             )
     {
         CU_cleanup_registry();
@@ -577,7 +580,7 @@ int main() {
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy2()", test_minutes))
+            (NULL == CU_add_test(pSuite, "test of test_energy2()", energyTest2))
             )
     {
         CU_cleanup_registry();
@@ -585,7 +588,7 @@ int main() {
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy3()", test_minutes))
+            (NULL == CU_add_test(pSuite, "test of test_energy3()", energyTest3))
             )
     {
         CU_cleanup_registry();
@@ -593,7 +596,7 @@ int main() {
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy4()", test_hours))
+            (NULL == CU_add_test(pSuite, "test of test_energy4()", energyTest4))
             )
     {
         CU_cleanup_registry();
@@ -601,7 +604,7 @@ int main() {
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy5()", test_minutes))
+            (NULL == CU_add_test(pSuite, "test of test_energy5()", energyTest5))
             )
     {
         CU_cleanup_registry();

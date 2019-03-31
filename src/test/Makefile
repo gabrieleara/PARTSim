@@ -1,15 +1,16 @@
-# DO NOT DELETE
+CXXFLAGS=-Wno-deprecated -Wno-deprecated-declarations --std=c++11 -I. -g
 
-test_energy_mrt.o: ../metasim.hpp ../baseexc.hpp ../basestat.hpp
-test_energy_mrt.o: ../basetype.hpp ../tick.hpp /usr/include/limits.h
-test_energy_mrt.o: ../strtoken.hpp ../debugstream.hpp ../entity.hpp
-test_energy_mrt.o: ../event.hpp ../simul.hpp ../particle.hpp ../plist.hpp
-test_energy_mrt.o: ../trace.hpp ../factory.hpp ../genericvar.hpp
-test_energy_mrt.o: ../randomvar.hpp ../cloneable.hpp ../gevent.hpp
-test_energy_mrt.o: ../history.hpp ../regvar.hpp ../rttask.hpp ../task.hpp
-test_energy_mrt.o: ../abstask.hpp ../kernel.hpp ../abskernel.hpp
-test_energy_mrt.o: ../kernevt.hpp ../cpu.hpp ../timer.hpp ../powermodel.hpp
-test_energy_mrt.o: ../taskevt.hpp ../feedback.hpp ../taskexc.hpp
-test_energy_mrt.o: ../mrtkernel.hpp ../edfsched.hpp ../scheduler.hpp
-test_energy_mrt.o: ../cbserver.hpp ../server.hpp ../resmanager.hpp
-test_energy_mrt.o: ../capacitytimer.hpp
+CPP_FILES=$(wildcard ../*.cpp) $(wildcard *.cpp)
+HPP_FILES=$(wildcard ../*.hpp)
+OBJ_FILES=$(patsubst %.cpp,%.o,$(CPP_FILES))
+
+SOURCES=$(CPP_FILES) $(HPP_FILES)
+
+all: test
+
+test: #$(OBJ_FILES)
+	g++ -Wno-deprecated -Wno-deprecated-declarations --std=c++11 -I.. -I./CUnit/Headers -lcunit -g   -c -o test.o test_energy_mrt.cpp
+	../sporadicserver.o ../tick.o ../grubserver.o ../rrsched.o ../load.o ../regtask.o ../trace.o ../energyMRTKernel_example.o ../debugstream.o ../regvar.o ../resmanager.o ../resource.o ../bwi.o ../fcfsresmanager.o ../pollingserver.o ../reginstr.o ../taskevt.o ../waitinstr.o ../task.o ../edfsched.o ../piresman.o ../entity.o ../regsched.o ../scheduler.o ../fpsched.o ../schedpoints.o ../suspend_instr.o ../server.o ../texttrace.o ../powermodel.o ../strtoken.o ../jtrace.o ../cpu.o ../kernel.o ../event.o ../genericvar.o ../rttask.o ../fifosched.o ../feedback.o ../simul.o ../supercbs.o ../traceevent.o ../exeinstr.o ../feedbacktest.o ../sparepot.o ../mrtkernel.o ../schedrta.o ../basestat.o ../json_trace.o ../tracepower.o ../randomvar.o ../interrupt.o ../instr.o ../AVRTask.o ../cbserver.o ../capacitytimer.o ../timer.o ../energyMRTKernel.o ../schedinstr.o ../kernevt.o ../threinstr.o ../rmsched.o
+
+clean:
+	rm -f test *.o capacities.txt debug.txt *~ *.bak
