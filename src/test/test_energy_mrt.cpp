@@ -178,12 +178,23 @@ unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
 unsigned int OPP_big = 0;    // Index of OPP in big cores
 string workload = "bzip2";
 vector<CPU*> cpus;
+int init_sequence = 0;
 
 vector<EDFScheduler *> schedulers;
 vector<RTKernel *> kernels;
 
+int cleanup_suite() {
+    cout << "cleanup_suite" << endl;
+    cpus.clear();
+    schedulers.clear();
+    kernels.clear();
 
-void init_suite() {
+    cout << "end cleanup_suite" << endl;
+    return 0;
+}
+
+int init_suite() {
+    cout << "init_suite" << endl;
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
             1.25625
@@ -208,7 +219,7 @@ void init_suite() {
     /* ------------------------- Creating CPUs -------------------------*/
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create 4 LITTLE CPUs */
-        string cpu_name = "LITTLE_" + to_string(i);
+        string cpu_name = to_string(init_sequence) + "LITTLE_" + to_string(i);
 
         cout << "Creating CPU: " << cpu_name << endl;
 
@@ -262,7 +273,7 @@ void init_suite() {
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create 4 big CPUs */
 
-        string cpu_name = "BIG_" + to_string(i);
+        string cpu_name = to_string(init_sequence) + "BIG_" + to_string(i);
 
         cout << "Creating CPU: " << cpu_name << endl;
 
@@ -313,10 +324,14 @@ void init_suite() {
     EDFScheduler *edfsched = new EDFScheduler;
     schedulers.push_back(edfsched);
 
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel");
+    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
     kernels.push_back(kern);
 
     CPU::referenceFrequency = 2000; // BIG_3 frequency
+
+    init_sequence++;
+    cout << "end init_suite" << endl;
+    return 0;
 }
 
 string task_name = "";
@@ -373,31 +388,31 @@ void energyTest0() {
 
     CU_ASSERT(t0->getName() == "T0_Task_LITTLE_0");
     CU_ASSERT(c0->getFrequency() == 700);
-    CU_ASSERT(c0->getName()  == "LITTLE_3");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 488);
+    CU_ASSERT(c0->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 489);
 
     CU_ASSERT(t1->getName() == "T0_Task_LITTLE_1");
     CU_ASSERT(c1->getFrequency() == 700);
-    CU_ASSERT(c1->getName()  == "LITTLE_1");
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 488);
+    CU_ASSERT(c1->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 489);
 
     CU_ASSERT(t2->getName() == "T0_Task_LITTLE_2");
     CU_ASSERT(c2->getFrequency() == 700);
-    CU_ASSERT(c2->getName()  == "LITTLE_2");
-    CU_ASSERT(t2->getWCET(c2->getSpeed()) == 488);
+    CU_ASSERT(c2->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(t2->getWCET(c2->getSpeed()) == 489);
 
     CU_ASSERT(t3->getName() == "T0_Task_LITTLE_3");
     CU_ASSERT(c3->getFrequency() == 700);
-    CU_ASSERT(c2->getName()  == "LITTLE_0");
-    CU_ASSERT(int(t3->getWCET(c3->getSpeed())) == 488);
+    CU_ASSERT(c2->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(t3->getWCET(c3->getSpeed())) == 489);
 
     CU_ASSERT(t4->getName() == "T0_Task_big_0");
     CU_ASSERT(c4->getFrequency() == 700);
-    CU_ASSERT(c2->getName()  == "BIG_1");
-    CU_ASSERT(int(t4->getWCET(c4->getSpeed())) == 251);
+    CU_ASSERT(c2->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(t4->getWCET(c4->getSpeed())) == 252);
 
     SIMUL.endSingleRun();
-    kernels[0]->endRun();
+    exit(0);
 }
 
 void energyTest1() {
@@ -419,7 +434,6 @@ void energyTest1() {
     CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 500);
 
     SIMUL.endSingleRun();
-    kernels[0]->endRun();
 }
 
 void energyTest2() {
@@ -479,15 +493,18 @@ void energyTest3() {
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
 
+    for(string s : kernels[0]->getRunningTasks())
+      cout << "running :" << s<<endl;
+
     CU_ASSERT(t0->getName() == "T3_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
     CU_ASSERT(c0->getName()  == "BIG_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 497);
+    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 498);
 
     CU_ASSERT(t1->getName() == "T3_task2");
     CU_ASSERT(c1->getFrequency() == 2000);
     CU_ASSERT(c1->getName()  == "BIG_2");
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 248);
+    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 249);
 
     SIMUL.endSingleRun();
 }
@@ -544,25 +561,25 @@ void energyTest5() {
     CU_ASSERT(t->getName() == "T5_task0");
     CU_ASSERT(c0->getFrequency() == 500);
     CU_ASSERT(c0->getName()  == "LITTLE_3");
-    CU_ASSERT(int(t->getWCET(c0->getSpeed()))  == 32);
+    CU_ASSERT(int(t->getWCET(c0->getSpeed()))  == 33);
 
     t = task[1];
     CU_ASSERT(t->getName() == "T5_task1");
     CU_ASSERT(c1->getFrequency() == 500);
     CU_ASSERT(c1->getName()  == "LITTLE_2");
-    CU_ASSERT(int(t->getWCET(c1->getSpeed())) == 32);
+    CU_ASSERT(int(t->getWCET(c1->getSpeed())) == 33);
 
     t = task[2];
     CU_ASSERT(t->getName() == "T5_task2");
     CU_ASSERT(c2->getFrequency() == 500);
     CU_ASSERT(c2->getName()  == "LITTLE_1");
-    CU_ASSERT(int(t->getWCET(c2->getSpeed())) == 32);
+    CU_ASSERT(int(t->getWCET(c2->getSpeed())) == 33);
 
     t = task[3];
     CU_ASSERT(t->getName() == "T5_task3");
     CU_ASSERT(c3->getFrequency() == 500);
     CU_ASSERT(c3->getName()  == "LITTLE_0");
-    CU_ASSERT(int(t->getWCET(c3->getSpeed())) == 32);
+    CU_ASSERT(int(t->getWCET(c3->getSpeed())) == 33);
 
     SIMUL.endSingleRun();
 }
@@ -570,62 +587,87 @@ void energyTest5() {
 int main()
 {
     // create a suite
-    CU_pSuite pSuite = NULL;
+    CU_pSuite pSuite[6] = {NULL};
     /* initialize the CUnit test registry */
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
-    /* add a suite to the registry */
-    pSuite = CU_add_suite("Suite_1", NULL, NULL);
-    if (NULL == pSuite) {
+    /* add a suite to the registry. A suite per test */
+    pSuite[0] = CU_add_suite("Suite_0", init_suite, cleanup_suite);
+    if (NULL == pSuite[0]) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    pSuite[1] = CU_add_suite("Suite_1", init_suite, cleanup_suite);
+    if (NULL == pSuite[1]) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    pSuite[2] = CU_add_suite("Suite_2", init_suite, cleanup_suite);
+    if (NULL == pSuite[2]) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    pSuite[3] = CU_add_suite("Suite_3", init_suite, cleanup_suite);
+    if (NULL == pSuite[3]) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    pSuite[4] = CU_add_suite("Suite_4", init_suite, cleanup_suite);
+    if (NULL == pSuite[4]) {
+        CU_cleanup_registry();
+        return CU_get_error();
+    }
+    pSuite[5] = CU_add_suite("Suite_5", init_suite, cleanup_suite);
+    if (NULL == pSuite[5]) {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     /* add the tests to the suite */
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy0()", energyTest0))
-            )
+        (NULL == CU_add_test(pSuite[0], "test of test_energy0()", energyTest0))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy1()", energyTest1))
-            )
+        (NULL == CU_add_test(pSuite[1], "test of test_energy1()", energyTest1))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy2()", energyTest2))
-            )
+        (NULL == CU_add_test(pSuite[2], "test of test_energy2()", energyTest2))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy3()", energyTest3))
-            )
+        (NULL == CU_add_test(pSuite[3], "test of test_energy3()", energyTest3))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy4()", energyTest4))
-            )
+        (NULL == CU_add_test(pSuite[4], "test of test_energy4()", energyTest4))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
     }
 
     if (
-            (NULL == CU_add_test(pSuite, "test of test_energy5()", energyTest5))
-            )
+        (NULL == CU_add_test(pSuite[5], "test of test_energy5()", energyTest5))
+        )
     {
         CU_cleanup_registry();
         return CU_get_error();
@@ -636,7 +678,7 @@ int main()
     CU_set_error_action(CUEA_FAIL);
 
     /* Run all tests using the CUnit Basic interface */
-    init_suite();
+    //init_suite();
 
     CU_automated_run_tests();
     CU_cleanup_registry();
