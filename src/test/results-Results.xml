@@ -7,3 +7,164 @@
     <CUNIT_RUN_SUITE> 
       <CUNIT_RUN_SUITE_SUCCESS> 
         <SUITE_NAME> Suite_0 </SUITE_NAME> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 392 </LINE_NUMBER> 
+            <CONDITION> int(t0-&gt;getWCET(c0-&gt;getSpeed())) == 489 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 397 </LINE_NUMBER> 
+            <CONDITION> int(t1-&gt;getWCET(c1-&gt;getSpeed())) == 489 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 402 </LINE_NUMBER> 
+            <CONDITION> t2-&gt;getWCET(c2-&gt;getSpeed()) == 489 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 407 </LINE_NUMBER> 
+            <CONDITION> int(t3-&gt;getWCET(c3-&gt;getSpeed())) == 489 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 411 </LINE_NUMBER> 
+            <CONDITION> c2-&gt;getIsland() == CPU::Island::BIG </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy0() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 412 </LINE_NUMBER> 
+            <CONDITION> int(t4-&gt;getWCET(c4-&gt;getSpeed())) == 252 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+      </CUNIT_RUN_SUITE_SUCCESS> 
+    </CUNIT_RUN_SUITE> 
+    <CUNIT_RUN_SUITE> 
+      <CUNIT_RUN_SUITE_SUCCESS> 
+        <SUITE_NAME> Suite_1 </SUITE_NAME> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy1() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 432 </LINE_NUMBER> 
+            <CONDITION> c0-&gt;getName() == "BIG_1" </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy1() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 433 </LINE_NUMBER> 
+            <CONDITION> int(t0-&gt;getWCET(c0-&gt;getSpeed())) == 500 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+      </CUNIT_RUN_SUITE_SUCCESS> 
+    </CUNIT_RUN_SUITE> 
+    <CUNIT_RUN_SUITE> 
+      <CUNIT_RUN_SUITE_SUCCESS> 
+        <SUITE_NAME> Suite_2 </SUITE_NAME> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy2() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 462 </LINE_NUMBER> 
+            <CONDITION> c0-&gt;getName() == "BIG_1" </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy2() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 463 </LINE_NUMBER> 
+            <CONDITION> int(t0-&gt;getWCET(c0-&gt;getSpeed())) == 498 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy2() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 467 </LINE_NUMBER> 
+            <CONDITION> c1-&gt;getName() == "BIG_2" </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy2() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 468 </LINE_NUMBER> 
+            <CONDITION> int(t1-&gt;getWCET(c1-&gt;getSpeed())) == 498 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+      </CUNIT_RUN_SUITE_SUCCESS> 
+    </CUNIT_RUN_SUITE> 
+    <CUNIT_RUN_SUITE> 
+      <CUNIT_RUN_SUITE_SUCCESS> 
+        <SUITE_NAME> Suite_3 </SUITE_NAME> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy3() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 500 </LINE_NUMBER> 
+            <CONDITION> c0-&gt;getName() == "BIG_1" </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy3() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 501 </LINE_NUMBER> 
+            <CONDITION> int(t0-&gt;getWCET(c0-&gt;getSpeed())) == 498 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy3() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 505 </LINE_NUMBER> 
+            <CONDITION> c1-&gt;getName() == "BIG_2" </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy3() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 506 </LINE_NUMBER> 
+            <CONDITION> int(t1-&gt;getWCET(c1-&gt;getSpeed())) == 249 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+      </CUNIT_RUN_SUITE_SUCCESS> 
+    </CUNIT_RUN_SUITE> 
+    <CUNIT_RUN_SUITE> 
+      <CUNIT_RUN_SUITE_SUCCESS> 
+        <SUITE_NAME> Suite_4 </SUITE_NAME> 
+        <CUNIT_RUN_TEST_RECORD> 
+          <CUNIT_RUN_TEST_FAILURE> 
+            <TEST_NAME> test of test_energy4() </TEST_NAME> 
+            <FILE_NAME> test_energy_mrt.cpp </FILE_NAME> 
+            <LINE_NUMBER> 527 </LINE_NUMBER> 
+            <CONDITION> int(t0-&gt;getWCET(c0-&gt;getSpeed())) == 66 </CONDITION> 
+          </CUNIT_RUN_TEST_FAILURE> 
+        </CUNIT_RUN_TEST_RECORD> 
+      </CUNIT_RUN_SUITE_SUCCESS> 
+    </CUNIT_RUN_SUITE> 
+    <CUNIT_RUN_SUITE> 
+      <CUNIT_RUN_SUITE_SUCCESS> 
+        <SUITE_NAME> Suite_5 </SUITE_NAME> 

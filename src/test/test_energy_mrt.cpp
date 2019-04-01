@@ -412,7 +412,6 @@ void energyTest0() {
     CU_ASSERT(int(t4->getWCET(c4->getSpeed())) == 252);
 
     SIMUL.endSingleRun();
-    exit(0);
 }
 
 void energyTest1() {
@@ -461,12 +460,12 @@ void energyTest2() {
     CU_ASSERT(t0->getName() == "T2_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
     CU_ASSERT(c0->getName()  == "BIG_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 497);
+    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 498);
 
     CU_ASSERT(t1->getName() == "T2_task2");
     CU_ASSERT(c1->getFrequency() == 2000);
     CU_ASSERT(c1->getName()  == "BIG_2");
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 497);
+    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 498);
 
     SIMUL.endSingleRun();
 }
@@ -524,8 +523,8 @@ void energyTest4() {
 
     CU_ASSERT(t0->getName() == "T4_task1");
     CU_ASSERT(c0->getFrequency() == 500);
-    CU_ASSERT(c0->getName()  == "LITTLE_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 65);
+    CU_ASSERT(c0->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 66);
 
     SIMUL.endSingleRun();
 }

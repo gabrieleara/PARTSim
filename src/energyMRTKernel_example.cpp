@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 4;
+        int TEST_NO = 0;
 
         if (TEST_NO == 0) {
             cout << "workload "<<workload<<endl;
