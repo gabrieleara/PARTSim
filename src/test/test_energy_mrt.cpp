@@ -389,27 +389,28 @@ void energyTest0() {
     CU_ASSERT(t0->getName() == "T0_Task_LITTLE_0");
     CU_ASSERT(c0->getFrequency() == 700);
     CU_ASSERT(c0->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 489);
+    CU_ASSERT(int(double(t0->getWCET(c0->getSpeed())))  == 488);
 
+    
     CU_ASSERT(t1->getName() == "T0_Task_LITTLE_1");
     CU_ASSERT(c1->getFrequency() == 700);
     CU_ASSERT(c1->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 489);
+    CU_ASSERT(int(double(t1->getWCET(c1->getSpeed()))) == 488);
 
     CU_ASSERT(t2->getName() == "T0_Task_LITTLE_2");
     CU_ASSERT(c2->getFrequency() == 700);
     CU_ASSERT(c2->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(t2->getWCET(c2->getSpeed()) == 489);
+    CU_ASSERT(int(double(t2->getWCET(c2->getSpeed()))) == 488);
 
     CU_ASSERT(t3->getName() == "T0_Task_LITTLE_3");
     CU_ASSERT(c3->getFrequency() == 700);
-    CU_ASSERT(c2->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(t3->getWCET(c3->getSpeed())) == 489);
+    CU_ASSERT(c3->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t3->getWCET(c3->getSpeed()))) == 488);
 
     CU_ASSERT(t4->getName() == "T0_Task_big_0");
     CU_ASSERT(c4->getFrequency() == 700);
-    CU_ASSERT(c2->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(t4->getWCET(c4->getSpeed())) == 252);
+    CU_ASSERT(c4->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t4->getWCET(c4->getSpeed()))) == 251);
 
     SIMUL.endSingleRun();
 }
@@ -429,8 +430,8 @@ void energyTest1() {
 
     CU_ASSERT(t0->getName() == "T1_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
-    CU_ASSERT(c0->getName()  == "BIG_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 500);
+    CU_ASSERT(c0->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t0->getWCET(c0->getSpeed())))  == 497);
 
     SIMUL.endSingleRun();
 }
@@ -459,13 +460,13 @@ void energyTest2() {
 
     CU_ASSERT(t0->getName() == "T2_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
-    CU_ASSERT(c0->getName()  == "BIG_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 498);
+    CU_ASSERT(c0->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t0->getWCET(c0->getSpeed())))  == 497);
 
     CU_ASSERT(t1->getName() == "T2_task2");
     CU_ASSERT(c1->getFrequency() == 2000);
-    CU_ASSERT(c1->getName()  == "BIG_2");
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 498);
+    CU_ASSERT(c1->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t1->getWCET(c1->getSpeed()))) == 497);
 
     SIMUL.endSingleRun();
 }
@@ -497,13 +498,13 @@ void energyTest3() {
 
     CU_ASSERT(t0->getName() == "T3_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
-    CU_ASSERT(c0->getName()  == "BIG_1");
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 498);
+    CU_ASSERT(c0->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t0->getWCET(c0->getSpeed())))  == 497);
 
     CU_ASSERT(t1->getName() == "T3_task2");
     CU_ASSERT(c1->getFrequency() == 2000);
-    CU_ASSERT(c1->getName()  == "BIG_2");
-    CU_ASSERT(int(t1->getWCET(c1->getSpeed())) == 249);
+    CU_ASSERT(c1->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t1->getWCET(c1->getSpeed()))) == 248);
 
     SIMUL.endSingleRun();
 }
@@ -524,26 +525,26 @@ void energyTest4() {
     CU_ASSERT(t0->getName() == "T4_task1");
     CU_ASSERT(c0->getFrequency() == 500);
     CU_ASSERT(c0->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(t0->getWCET(c0->getSpeed()))  == 66);
+    CU_ASSERT(int(double(t0->getWCET(c0->getSpeed())))  == 65);
 
     SIMUL.endSingleRun();
 }
 
 void energyTest5() {
-    PeriodicTask* task[4];
+    vector<PeriodicTask*> task;
     for (int j = 0; j < 4; j++) {
         int wcet = 5; //* (j+1);
         task_name = "T5_task" + std::to_string(j);
         cout << "Creating task: " << task_name;
         PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
         char instr[60] = "";
-        sprintf(instr, "fixed(%d, %s);", wcet, workload);
+        sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
         cout << " with abs. WCET " << wcet << endl;
         t->insertCode(instr);
         kernels[0]->addTask(*t, "");
         //ttrace.attachToTask(*t);
 
-        task[j] = t;
+        task.push_back(t);
         // LITTLE_0, _1, _2, _3 freq 1400.
     }
 
@@ -554,32 +555,30 @@ void energyTest5() {
     CPU *c1 = kernels[0]->getProcessor(task[1]);
     CPU *c2 = kernels[0]->getProcessor(task[2]);
     CPU *c3 = kernels[0]->getProcessor(task[3]);
-    CPU *c4 = kernels[0]->getProcessor(task[4]);
 
     PeriodicTask* t = task[0];
     CU_ASSERT(t->getName() == "T5_task0");
     CU_ASSERT(c0->getFrequency() == 500);
-    CU_ASSERT(c0->getName()  == "LITTLE_3");
-    CU_ASSERT(int(t->getWCET(c0->getSpeed()))  == 33);
+    CU_ASSERT(c0->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c0->getSpeed())))  == 32);
 
     t = task[1];
     CU_ASSERT(t->getName() == "T5_task1");
     CU_ASSERT(c1->getFrequency() == 500);
-    CU_ASSERT(c1->getName()  == "LITTLE_2");
-    CU_ASSERT(int(t->getWCET(c1->getSpeed())) == 33);
+    CU_ASSERT(c1->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c1->getSpeed()))) == 32);
 
     t = task[2];
     CU_ASSERT(t->getName() == "T5_task2");
     CU_ASSERT(c2->getFrequency() == 500);
-    CU_ASSERT(c2->getName()  == "LITTLE_1");
-    CU_ASSERT(int(t->getWCET(c2->getSpeed())) == 33);
+    CU_ASSERT(c2->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c2->getSpeed()))) == 32);
 
     t = task[3];
     CU_ASSERT(t->getName() == "T5_task3");
     CU_ASSERT(c3->getFrequency() == 500);
-    CU_ASSERT(c3->getName()  == "LITTLE_0");
-    CU_ASSERT(int(t->getWCET(c3->getSpeed())) == 33);
-
+    CU_ASSERT(c3->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c3->getSpeed()))) == 32);
     SIMUL.endSingleRun();
 }
 
