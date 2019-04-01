@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 0;
+        int TEST_NO = 6;
 
         if (TEST_NO == 0) {
             cout << "workload "<<workload<<endl;
@@ -363,6 +363,26 @@ int main(int argc, char *argv[])
             }
 
             // small tasks. They should be scheduled on a single little at some frequency
+        }
+        else if(TEST_NO == 6) {
+            vector<PeriodicTask*> task;
+            vector<CPU*> cpu_task;
+            int i, wcet = 100; //* (j+1);
+            for (int j = 0; j < 5; j++) {
+                if (j == 4)
+                    wcet = 5;
+                task_name = "T6_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
+                cout << " with abs. WCET " << wcet << endl;
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+
+                task.push_back(t);
+            }
         }
 
 

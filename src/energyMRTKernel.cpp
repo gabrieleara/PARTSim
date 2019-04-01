@@ -89,7 +89,7 @@ namespace RTSim {
 
         //cout<<"\t\t\tgetUtilization " << typeid(*task).name()<<endl;
 #include <cstdio>
-        printf("\t\t\tgetUtilization of task %f/%f (capacity=%f)=%f\n",task->getWCET(capacity), double(task->getDeadline()), capacity, util);
+        printf("\t\t\tgetUtilization of considered rask %f/%f (capacity=%f)=%f\n",task->getWCET(capacity), double(task->getDeadline()), capacity, util);
         return util;
     }
 
@@ -344,9 +344,10 @@ namespace RTSim {
 
             for (CPU* c : cpus) {
                 c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
-                cout << "\tTrying to schedule on CPU " << c->print() << " - it has already ntasks=" << getTasks(c).size() << endl;
+                double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
+                cout << "\tTrying to schedule on CPU " << c->print() << " freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
                 for (struct OPP o : c->getNextOPPs()) {
-                    double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
+                  //double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
                     double newFreq = o.frequency;
                     double newCapacity = 0.0;
 
