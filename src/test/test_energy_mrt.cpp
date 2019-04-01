@@ -582,6 +582,85 @@ void energyTest5() {
     SIMUL.endSingleRun();
 }
 
+// test showing that frequency of little island may be raised to let
+// scheduling on big island be last choice 
+void energyTest6() {
+    vector<PeriodicTask*> task;
+    vector<CPU*> cpu_task;
+    int i;
+    for (int j = 0; j < 5; j++) {
+        int wcet = 5; //* (j+1);
+        task_name = "T6_task" + std::to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
+        cout << " with abs. WCET " << wcet << endl;
+        t->insertCode(instr);
+        kernels[0]->addTask(*t, "");
+        //ttrace.attachToTask(*t);
+
+        task.push_back(t);
+        // LITTLE_0, _1, _2, _3 freq 1400.
+    }
+
+    SIMUL.initSingleRun();
+    SIMUL.run_to(10);
+
+    cpu_task.push_back(kernels[0]->getProcessor(task[0]));
+    cpu_task.push_back(kernels[0]->getProcessor(task[1]));
+    cpu_task.push_back(kernels[0]->getProcessor(task[2]));
+    cpu_task.push_back(kernels[0]->getProcessor(task[3]));
+    cpu_task.push_back(kernels[0]->getProcessor(task[4]));
+
+    i = 0;
+    PeriodicTask* t = task[i];
+    CPU* c = cpu_task[i];
+    CU_ASSERT(t->getName() == "T6_task0");
+    CU_ASSERT(c->getFrequency() == 500);
+    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed())))  == 32);
+    printf("aaa %s scheduled on %s freq %d with wcet %d\n", t->getName(), c->print(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+    i = 1;
+    t = task[i];
+    c = cpu_task[i];
+    CU_ASSERT(t->getName() == "T6_task1");
+    CU_ASSERT(c->getFrequency() == 500);
+    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 32);
+    printf("aaa %s scheduled on %s freq %d with wcet %d\n", t->getName(), c->print(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+    i = 2;
+    t = task[i];
+    c = cpu_task[i];
+    CU_ASSERT(t->getName() == "T6_task2");
+    CU_ASSERT(c->getFrequency() == 500);
+    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 32);
+    printf("aaa %s scheduled on %s freq %d with wcet %d\n", t->getName(), c->print(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+    i = 3;
+    t = task[i];
+    c = cpu_task[i];
+    CU_ASSERT(t->getName() == "T6_task3");
+    CU_ASSERT(c->getFrequency() == 500);
+    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 32);
+    printf("aaa %s scheduled on %s freq %d with wcet %d\n", t->getName(), c->print(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+    i = 4;
+    t = task[i];
+    c = cpu_task[i];
+    CU_ASSERT(t->getName() == "T6_task4");
+    CU_ASSERT(c->getFrequency() == 500);
+    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 32);
+    printf("aaa %s scheduled on %s freq %d with wcet %d\n", t->getName(), c->print(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+    SIMUL.endSingleRun();
+}
+
 int main()
 {
     // create a suite
