@@ -247,6 +247,17 @@ namespace RTSim {
         dispatch(chosenCPU, t, chosenOPP);
     }
 
+    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, const struct OPP opp)
+    {
+        // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
+        _m_dispatching[t] = make_pair(p, opp);
+
+        p->setOPP(opp);
+        p->setBusy(true);
+
+        dispatch(p);
+    }
+
     void EnergyMRTKernel::dispatch(CPU *p)
     {
         DBGENTER(_KERNEL_DBG_LEV);
@@ -258,17 +269,31 @@ namespace RTSim {
         _beginEvt[p]->drop();
 
         // on BIG-LITTLE, the whole island has the same frequency/voltage
-        if (existDispatchingTask(p)) {
-            vector<CPU *> cpus = getProcessors();
-            for (CPU *c : cpus) {
-                if (c->getIsland() == p->getIsland()) {
-                    c->setOPP(p->getOPP());
-                    c->setIsIslandBusy(true);
+        map<CPU*, double> oldSpeeds;
+        vector<CPU*> cpus = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
+        for (CPU *c : cpus) {
+            oldSpeeds[c] = c->getSpeed();
+            c->setOPP(p->getOPP());
+            c->setIsIslandBusy(true);
+        }
+
+        // In case scheduler decides to clock up CPU freq while other tasks are already ready/running on the island,
+        // other tasks instructions should be reweighted and beginEvt too
+        for (CPU* c : cpus) {
+            _beginEvt[c]->drop();
+            if (c != p) {
+                cout << "ciao" << endl;
+                //_beginEvt[c]->post(SIMUL.getTime()); // todo bug?
+
+                for (AbsRTTask* t : getTasks(c)) {
+                    // todo it should be done forall instr in queue?
+                    dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->refreshExec(oldSpeeds[c], c->getSpeed());
                 }
             }
         }
-
+ 
         if (_isContextSwitching[p]) {
+            // I've seen it doesn't get here normally
             DBGPRINT("Context switch is disabled!");
             _beginEvt[p]->post(_endEvt[p]->getTime());
             _endEvt[p]->drop();
@@ -277,17 +302,6 @@ namespace RTSim {
         }
         else
             _beginEvt[p]->post(SIMUL.getTime());
-    }
-
-    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, const struct OPP opp)
-    {
-        // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
-        _m_dispatching[t] = make_pair(p, opp);
-
-        p->setOPP(opp);
-        p->setBusy(true);
-
-        dispatch(p);
     }
 
     /* Select a free CPU */
@@ -327,7 +341,7 @@ namespace RTSim {
             cout << "getTaskN"<<i<<endl;
             Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
             if (t == NULL) break;
-            cout << "Dealing with task " << t->print() << endl;
+            cout << "Dealing with task " << t->print() << "." << endl;
 
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem

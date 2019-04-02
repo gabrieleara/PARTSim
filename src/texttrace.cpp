@@ -4,7 +4,7 @@ namespace RTSim {
         using namespace std;
         using namespace MetaSim;
 
-        TextTrace::TextTrace(const string& name)
+    TextTrace::TextTrace(const string& name)
 		{
 			fd.open(name.c_str());
 		}
@@ -26,8 +26,7 @@ namespace RTSim {
 		{
 			Task* tt = e.getTask();
 			fd << "[Time:" << SIMUL.getTime() << "]\t";
-			fd << tt->getName()<<" ended, its arrival was " 
-				<< tt->getArrival() << endl;
+			fd << tt->getName()<<" ended, its arrival was " << tt->getArrival() << endl;
 		}
 
 		void TextTrace::probe(SchedEvt& e)
@@ -43,7 +42,7 @@ namespace RTSim {
 				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getFrequency() << " abs WCET "
 				<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
 		}
-
+  
 		void TextTrace::probe(DeschedEvt& e)
 		{
 			Task* tt = e.getTask();

@@ -64,7 +64,8 @@ namespace RTSim {
 
         std::vector<CPU*> CPUs;
 
-      // list of tasks ready on a CPU with a given frequency
+        // list of tasks ready on a CPU with a given frequency. This
+        // variable is only needed before the scheduling finishes (onEndDispatchMulti()) 
         std::map<const AbsRTTask *, pair<CPU*, struct OPP>> _m_dispatching;
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }
@@ -98,7 +99,7 @@ namespace RTSim {
 
         /**
            This function only calls dispatch(CPU*) and assigns a task to a CPU,
-           which should actually done by dispatch(CPU*) itself or onEndDispatchMulti(),
+           which should be actually done by dispatch(CPU*) itself or onEndDispatchMulti(),
            but the last one is only called after dispatch(), and I need the assignment
            CPU - task to be done before for getTask(CPU*) to work
          */
