@@ -367,10 +367,10 @@ int main(int argc, char *argv[])
         else if(TEST_NO == 6) {
             vector<PeriodicTask*> task;
             vector<CPU*> cpu_task;
-            int i, wcet = 100; //* (j+1);
+            int i, wcet = 300; //* (j+1);
             for (int j = 0; j < 5; j++) {
                 if (j == 4)
-                    wcet = 5;
+                    wcet = 200;
                 task_name = "T6_task" + std::to_string(j);
                 cout << "Creating task: " << task_name;
                 PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);

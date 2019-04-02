@@ -64,6 +64,7 @@ namespace RTSim {
 
         std::vector<CPU*> CPUs;
 
+      // list of tasks ready on a CPU with a given frequency
         std::map<const AbsRTTask *, pair<CPU*, struct OPP>> _m_dispatching;
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }

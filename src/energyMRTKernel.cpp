@@ -89,7 +89,7 @@ namespace RTSim {
 
         //cout<<"\t\t\tgetUtilization " << typeid(*task).name()<<endl;
 #include <cstdio>
-        printf("\t\t\tgetUtilization of considered rask %f/%f (capacity=%f)=%f\n",task->getWCET(capacity), double(task->getDeadline()), capacity, util);
+        printf("\t\t\tgetUtilization of considered task %f/%f (capaity=%f)=%f\n",task->getWCET(capacity), double(task->getDeadline()), capacity, util);
         return util;
     }
 

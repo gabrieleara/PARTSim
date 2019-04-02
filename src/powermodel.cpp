@@ -113,7 +113,7 @@ namespace RTSim
     void CPUModelBP::update()
     {
         #include <cstdio>
-      // printf("\t\t\tCPUModelBP::update freq %u volt %f\n",getFrequency(),getVoltage() );
+     // printf("\t\t\tCPUModelBP::update freq %lu volt %f\n",getFrequency(),getVoltage() );
         double K, eta, gamma, disp;
         string _curr_wl = getCPU()->getWorkload();
 
@@ -175,7 +175,7 @@ namespace RTSim
         long double ret = 1.0 / slownessModel(_comp_param[curr_wl], _F);
         DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
 
-        cout << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
+        //cout << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
         return ret;
     }
 
