@@ -304,6 +304,7 @@ namespace RTSim {
             throw TaskNotActive("OnEnd() on a non-active task");
         }
         if (!isExecuting()) {
+		cout << print() << endl;
             throw TaskNotExecuting("OnEnd() on a non-executing task");
         }
         

@@ -232,9 +232,13 @@ namespace RTSim
 
         virtual std::string print() {
             stringstream ss;
-            ss << "CPU " << getName();
+            ss << "CPU " << getName() << " freq " << getFrequency();
             return ss.str();
         }
+
+      bool operator==(const CPU& c) const {
+        return getName() == c.getName(); 
+      }
 
     };
 

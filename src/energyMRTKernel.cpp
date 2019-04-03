@@ -271,23 +271,31 @@ namespace RTSim {
         // on BIG-LITTLE, the whole island has the same frequency/voltage
         map<CPU*, double> oldSpeeds;
         vector<CPU*> cpus = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
+        cpus.erase(remove(cpus.begin(), cpus.end(), p), cpus.end());
         for (CPU *c : cpus) {
-            oldSpeeds[c] = c->getSpeed();
-            c->setOPP(p->getOPP());
-            c->setIsIslandBusy(true);
+          oldSpeeds[c] = c->getSpeed();
+          cout << c->print() << " oldSpeed " << oldSpeeds[c];
+          c->setOPP(p->getOPP());
+          cout << " to " << p->getSpeed() << endl;
+          c->setIsIslandBusy(true);
         }
 
         // In case scheduler decides to clock up CPU freq while other tasks are already ready/running on the island,
         // other tasks instructions should be reweighted and beginEvt too
+        if (p->isCPUIslandBusy())
         for (CPU* c : cpus) {
+            cout << "beginEvt " << _beginEvt[c]->getTime() << " VS " << SIMUL.getTime() << endl;
             _beginEvt[c]->drop();
             if (c != p) {
-                cout << "ciao" << endl;
+              cout << "ciao" << endl;
                 //_beginEvt[c]->post(SIMUL.getTime()); // todo bug?
 
                 for (AbsRTTask* t : getTasks(c)) {
                     // todo it should be done forall instr in queue?
-                    dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->refreshExec(oldSpeeds[c], c->getSpeed());
+                    cout << "fatto " << t->print() <<  endl;
+                    ExecInstr* instr = dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get());
+                                                       cout << instr->getWCET() << endl;
+                    instr->refreshExec(oldSpeeds[c], c->getSpeed());
                 }
             }
         }

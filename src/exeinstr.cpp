@@ -233,6 +233,7 @@ namespace RTSim {
     }
 
     void ExecInstr::refreshExec(double oldSpeed, double newSpeed){
+        cout << "execinstr refreshExec from " << oldSpeed << " to " << newSpeed << endl;
         Tick t = SIMUL.getTime();
         _endEvt.drop();
         actCycles += ((double)(t - lastTime))*oldSpeed;
