@@ -203,7 +203,7 @@ namespace RTSim {
             if (e->getCPU()->getFrequency() > max->getFrequency()) {
                 double oldSpeed = e->getCPU()->getSpeed();
                 e->getCPU()->setOPP(max->getOPP());
-                reweightInstr(dynamic_cast<Task*>(t), oldSpeed, e->getCPU()->getSpeed());
+                //reweightInstr(dynamic_cast<Task*>(t), oldSpeed, e->getCPU()->getSpeed());
             }
         }
 
@@ -313,7 +313,7 @@ namespace RTSim {
           c->setIsIslandBusy(true);
 
           for (AbsRTTask* task : getTasks(c)) {
-              reweightInstr(dynamic_cast<Task*>(task), oldSpeed, c->getSpeed());
+              //reweightInstr(dynamic_cast<Task*>(task), oldSpeed, c->getSpeed());
           }
         }
  

@@ -163,7 +163,7 @@ namespace RTSim {
         Tick tmp = 0;
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
-        
+        cout <<" ahshdhashdas " << endl;
         _endEvt.post(t + tmp);
 	      
         DBGPRINT("End of ExecInstr::schedule() ");
