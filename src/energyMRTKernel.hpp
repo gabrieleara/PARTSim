@@ -150,6 +150,8 @@ namespace RTSim {
 
         virtual CPU *getProcessor(const AbsRTTask *t) const;
 
+        void reweightInstr(Task *t, double oldSpeed, double newSpeed);
+
         /// to debug internal functions...
         void test();
     };

@@ -18,6 +18,7 @@
 
 #include <kernel.hpp>
 #include <kernevt.hpp>
+#include <task.hpp>
 
 #define _MRTKERNEL_DBG_LEV "MRTKernel"
 

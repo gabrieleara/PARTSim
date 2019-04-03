@@ -64,6 +64,12 @@ namespace RTSim {
                 t.push_back(tt);
             }
 
+        for (const auto& elem : _m_dispatched)
+            if (c == elem.second) {
+                AbsRTTask *tt = const_cast<AbsRTTask *>(elem.first);
+                t.push_back(tt);
+            }
+
         return t;
     }
 
@@ -138,6 +144,15 @@ namespace RTSim {
         return false;
     }
 
+    void EnergyMRTKernel::reweightInstr(Task *t, double oldSpeed, double newSpeed) {
+        auto& instrs = t->getInstrQueue();
+
+        for (int i = 0; i < instrs.size(); i++) {
+            ExecInstr* instr = dynamic_cast<ExecInstr*>(instrs.at(i).get());
+            instr->refreshExec(oldSpeed, newSpeed);
+        }
+    }
+
     void EnergyMRTKernel::test() {
         CPU* p = CPUs[2];
         p->setOPP(0);
@@ -172,12 +187,26 @@ namespace RTSim {
         // when its context switch ends, set the task OPP, as decided in dispatch().
         // This is needed when dispatch() decides to dispatch 2 tasks with equal
         // arrival time on the same processor: the first task ends and clocks down
-        // the speed. The second task uses that one, wrongly
+        // the speed. The second task uses that one, wrongly.
+        // Moreover, take the CPU of t to the one of the island
         AbsRTTask* t = e->getTask();
+        CPU* c = _m_dispatching[t].first;
+
+        vector<CPU*> cpus = CPU::getCPUsInIsland(CPUs, c->getIsland());
+        CPU* max = cpus[0];
+        for (CPU* cc : cpus) if (cc->getFrequency() > max->getFrequency()) max = cc;
+
         if (t != NULL) {
             e->getCPU()->setOPP(_m_dispatching[e->getTask()].second);
             _m_dispatching.erase(t);
+
+            if (e->getCPU()->getFrequency() > max->getFrequency()) {
+                double oldSpeed = e->getCPU()->getSpeed();
+                e->getCPU()->setOPP(max->getOPP());
+                reweightInstr(dynamic_cast<Task*>(t), oldSpeed, e->getCPU()->getSpeed());
+            }
         }
+
     }
 
     void EnergyMRTKernel::onEnd(AbsRTTask* t) {
@@ -200,7 +229,7 @@ namespace RTSim {
         }
 
         // this wouldn't be done on Linux, since it's not convenient to clock down CPUs after task ends.
-        // Here, however, it' needed to make formulas and the framework work
+        // Here, however, it's needed to make formulas and the framework work
         DBGPRINT_2("Is island busy? ", bool(islandBusy) );
         if (!islandBusy) {
             for (CPU* c : cp) {
@@ -268,36 +297,24 @@ namespace RTSim {
         DBGPRINT_2("dispatching on processor ", p);
         _beginEvt[p]->drop();
 
-        // on BIG-LITTLE, the whole island has the same frequency/voltage
-        map<CPU*, double> oldSpeeds;
-        vector<CPU*> cpus = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
-        cpus.erase(remove(cpus.begin(), cpus.end(), p), cpus.end());
-        for (CPU *c : cpus) {
-          oldSpeeds[c] = c->getSpeed();
-          cout << c->print() << " oldSpeed " << oldSpeeds[c];
-          c->setOPP(p->getOPP());
-          cout << " to " << p->getSpeed() << endl;
-          c->setIsIslandBusy(true);
-        }
-
+        // On BIG-LITTLE, the whole island has the same frequency/voltage.
         // In case scheduler decides to clock up CPU freq while other tasks are already ready/running on the island,
-        // other tasks instructions should be reweighted and beginEvt too
-        if (p->isCPUIslandBusy())
-        for (CPU* c : cpus) {
-            cout << "beginEvt " << _beginEvt[c]->getTime() << " VS " << SIMUL.getTime() << endl;
-            _beginEvt[c]->drop();
-            if (c != p) {
-              cout << "ciao" << endl;
-                //_beginEvt[c]->post(SIMUL.getTime()); // todo bug?
+        // other tasks instructions should be reweighted and endEvt too
+        vector<CPU*> cpus = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
+        CPU* maxCPU = cpus[0];
+        double oldSpeed;
+        for (CPU* c : cpus) if (c->getFrequency() > maxCPU->getFrequency()) maxCPU = c;
+        for (CPU *c : cpus) {
+          oldSpeed = c->getSpeed();
+          cout << c->print() << " oldSpeed " << oldSpeed;
+          c->setOPP(maxCPU->getOPP());
+          cout << " to " << maxCPU->getSpeed();
+          cout << " CPU " << c->print() << endl;
+          c->setIsIslandBusy(true);
 
-                for (AbsRTTask* t : getTasks(c)) {
-                    // todo it should be done forall instr in queue?
-                    cout << "fatto " << t->print() <<  endl;
-                    ExecInstr* instr = dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get());
-                                                       cout << instr->getWCET() << endl;
-                    instr->refreshExec(oldSpeeds[c], c->getSpeed());
-                }
-            }
+          for (AbsRTTask* task : getTasks(c)) {
+              reweightInstr(dynamic_cast<Task*>(task), oldSpeed, c->getSpeed());
+          }
         }
  
         if (_isContextSwitching[p]) {
@@ -365,6 +382,7 @@ namespace RTSim {
             vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows;
 
             for (CPU* c : cpus) {
+                int startingOPP = c->getOPP();
                 c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
                 double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
                 cout << "\tTrying to schedule on CPU " << c->print() << " freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
@@ -446,6 +464,8 @@ namespace RTSim {
                     }
 
                 }
+
+                c->setOPP(startingOPP);
             }
 
             if (!iDeltaPows.empty()) {

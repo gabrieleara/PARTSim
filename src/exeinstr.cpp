@@ -240,6 +240,9 @@ namespace RTSim {
         execdTime += (t - lastTime);
         lastTime = t;
    
+	if (isBegOfInstr)
+		currentCost = getDuration();
+
         Tick tmp = 0;
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil ((((double) currentCost) - actCycles)/newSpeed);
