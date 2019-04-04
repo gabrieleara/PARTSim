@@ -216,7 +216,7 @@ void energyTest0() {
     //ttrace.attachToTask(*t4);
 
     SIMUL.initSingleRun();
-    SIMUL.run_to(10);
+    SIMUL.run_to(1);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
@@ -262,7 +262,7 @@ void energyTest1() {
     //ttrace.attachToTask(*t0);
 
     SIMUL.initSingleRun();
-    SIMUL.run_to(10);
+    SIMUL.run_to(1);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
 
@@ -291,7 +291,7 @@ void energyTest2() {
     //ttrace.attachToTask(*t);
 
     SIMUL.initSingleRun();
-    SIMUL.run_to(10);
+    SIMUL.run_to(1);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
@@ -316,7 +316,6 @@ void energyTest3() {
     t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
     kernels[0]->addTask(*t0, "");
     //ttrace.attachToTask(*t0);
-    //jtrace.attachToTask(*t);
 
     task_name = "T3_task2";
     cout << "Creating task: " << task_name << endl;
@@ -326,7 +325,7 @@ void energyTest3() {
     //ttrace.attachToTask(*t1);
 
     SIMUL.initSingleRun();
-    SIMUL.run_to(10);
+    SIMUL.run_to(1);
 
     CPU *c0 = kernels[0]->getProcessor(t0);
     CPU *c1 = kernels[0]->getProcessor(t1);
@@ -387,7 +386,7 @@ void energyTest5() {
     }
 
     SIMUL.initSingleRun();
-    SIMUL.run_to(10);
+    SIMUL.run_to(1);
 
     CPU *c0 = kernels[0]->getProcessor(task[0]);
     CPU *c1 = kernels[0]->getProcessor(task[1]);
@@ -420,8 +419,7 @@ void energyTest5() {
     SIMUL.endSingleRun();
 }
 
-// test showing that frequency of little island may be raised to let
-// scheduling on big island be last choice 
+// test showing that frequency of little/big island may be raised
 void energyTest6() {
     vector<PeriodicTask*> task;
     vector<CPU*> cpu_task;

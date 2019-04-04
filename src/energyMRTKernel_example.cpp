@@ -213,7 +213,8 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 6;
+        int TEST_NO = 7;
+        cout << "Test to perform is " << TEST_NO << endl;
 
         if (TEST_NO == 0) {
             cout << "workload "<<workload<<endl;
@@ -383,6 +384,18 @@ int main(int argc, char *argv[])
 
                 task.push_back(t);
             }
+        }
+        //temp todo
+        else if(TEST_NO == 7) {
+            int wcet = 1;
+            task_name = "T7_task" + std::to_string(0);
+            cout << "Creating task: " << task_name;
+            PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+            char instr[60] = "";
+            sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
+            t->insertCode(instr);
+            kernels[0]->addTask(*t, "");
+            ttrace.attachToTask(*t);
         }
 
 

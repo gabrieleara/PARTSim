@@ -12,10 +12,13 @@ example: $(OBJ_FILES)
 	g++ -o $@ $^
 
 clean:
-	rm -f eaxmple *.o capacities.txt debug.txt *~ *.bak
+	rm -f example *.o capacities.txt debug.txt *~ *.bak
 
 dep:
 	makedepend -- -I. -Y -- *.cpp
+
+run: 
+	./example > t.txt
 
 # DO NOT DELETE
 
@@ -76,11 +79,11 @@ energyMRTKernel_example.o: ./strtoken.hpp ./abskernel.hpp ./abstask.hpp
 energyMRTKernel_example.o: ./kernevt.hpp ./event.hpp ./simul.hpp
 energyMRTKernel_example.o: ./basestat.hpp ./debugstream.hpp ./particle.hpp
 energyMRTKernel_example.o: ./plist.hpp ./trace.hpp ./cpu.hpp ./timer.hpp
-energyMRTKernel_example.o: ./gevent.hpp ./powermodel.hpp ./edfsched.hpp
+energyMRTKernel_example.o: ./gevent.hpp ./powermodel.hpp ./task.hpp
+energyMRTKernel_example.o: ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
+energyMRTKernel_example.o: ./feedback.hpp ./taskexc.hpp ./edfsched.hpp
 energyMRTKernel_example.o: ./scheduler.hpp ./jtrace.hpp ./traceevent.hpp
 energyMRTKernel_example.o: ./texttrace.hpp rttask.hpp ./regvar.hpp
-energyMRTKernel_example.o: ./randomvar.hpp ./cloneable.hpp ./task.hpp
-energyMRTKernel_example.o: ./taskevt.hpp ./feedback.hpp ./taskexc.hpp
 energyMRTKernel_example.o: ./json_trace.hpp ./tracepower.hpp ./instr.hpp
 energyMRTKernel_example.o: energyMRTKernel.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
@@ -192,8 +195,8 @@ mrtkernel.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 mrtkernel.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp ./cpu.hpp
 mrtkernel.o: ./timer.hpp ./gevent.hpp ./powermodel.hpp ./abstask.hpp
 mrtkernel.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp ./kernevt.hpp
-mrtkernel.o: resmanager.hpp ./scheduler.hpp ./task.hpp ./randomvar.hpp
-mrtkernel.o: ./cloneable.hpp ./taskevt.hpp ./feedback.hpp ./taskexc.hpp
+mrtkernel.o: ./task.hpp ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
+mrtkernel.o: ./feedback.hpp ./taskexc.hpp resmanager.hpp ./scheduler.hpp
 piresman.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 piresman.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 piresman.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp
