@@ -456,7 +456,7 @@ void energyTest6() {
     CU_ASSERT(t->getName() == "T6_task0");
     CU_ASSERT(c->getFrequency() == 2000);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed())))  == 299);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed())))  == 298);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->print().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -465,7 +465,7 @@ void energyTest6() {
     CU_ASSERT(t->getName() == "T6_task1");
     CU_ASSERT(c->getFrequency() == 2000);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 299);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 298);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->print().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -474,7 +474,7 @@ void energyTest6() {
     CU_ASSERT(t->getName() == "T6_task2");
     CU_ASSERT(c->getFrequency() == 2000);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 299);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 298);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->print().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 3;
@@ -483,7 +483,7 @@ void energyTest6() {
     CU_ASSERT(t->getName() == "T6_task3");
     CU_ASSERT(c->getFrequency() == 2000);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 299);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 298);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->print().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -492,111 +492,63 @@ void energyTest6() {
     CU_ASSERT(t->getName() == "T6_task4");
     CU_ASSERT(c->getFrequency() == 2000);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 199);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 198);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->print().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
 }
 
+void createSuites(CU_pSuite* pSuites) {
+    char str_name[20];
+    for (int i = 0; i < 7; i++) {
+        sprintf(str_name, "Suite_%d", i);
+        pSuites[i] = CU_add_suite(str_name, init_suite, cleanup_suite);
+        if (NULL == pSuites[i]) {
+            CU_cleanup_registry();
+            perror("Suite creation");
+            exit(CU_get_error());
+        }
+    }
+}
+
+void addTest(int exp_no,  CU_pSuite *pSuites, void (*f)() ) {
+    char exp_name[40] = "";
+    sprintf(exp_name, "test of test_energy%d()", exp_no);
+    if ( (NULL == CU_add_test(pSuites[exp_no], exp_name, f)) )
+    {
+        CU_cleanup_registry();
+        perror("Suite creation");
+        exit(CU_get_error());
+    }
+}
+
 int main()
 {
     // create a suite
-    CU_pSuite pSuite[6] = { NULL };
+    CU_pSuite pSuites[7] = { NULL };
     /* initialize the CUnit test registry */
     if (CUE_SUCCESS != CU_initialize_registry())
         return CU_get_error();
 
     /* add a suite to the registry. A suite per test */
-    pSuite[0] = CU_add_suite("Suite_0", init_suite, cleanup_suite);
-    if (NULL == pSuite[0]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    pSuite[1] = CU_add_suite("Suite_1", init_suite, cleanup_suite);
-    if (NULL == pSuite[1]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    pSuite[2] = CU_add_suite("Suite_2", init_suite, cleanup_suite);
-    if (NULL == pSuite[2]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    pSuite[3] = CU_add_suite("Suite_3", init_suite, cleanup_suite);
-    if (NULL == pSuite[3]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    pSuite[4] = CU_add_suite("Suite_4", init_suite, cleanup_suite);
-    if (NULL == pSuite[4]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-    pSuite[5] = CU_add_suite("Suite_5", init_suite, cleanup_suite);
-    if (NULL == pSuite[5]) {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    createSuites(pSuites);
 
     /* add the tests to the suite */
-    if (
-        (NULL == CU_add_test(pSuite[0], "test of test_energy0()", energyTest0))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (
-        (NULL == CU_add_test(pSuite[1], "test of test_energy1()", energyTest1))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (
-        (NULL == CU_add_test(pSuite[2], "test of test_energy2()", energyTest2))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (
-        (NULL == CU_add_test(pSuite[3], "test of test_energy3()", energyTest3))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (
-        (NULL == CU_add_test(pSuite[4], "test of test_energy4()", energyTest4))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
-
-    if (
-        (NULL == CU_add_test(pSuite[5], "test of test_energy5()", energyTest5))
-        )
-    {
-        CU_cleanup_registry();
-        return CU_get_error();
-    }
+    int exp_no = 0;
+    addTest(exp_no++, pSuites, energyTest0);
+    addTest(exp_no++, pSuites, energyTest1);
+    addTest(exp_no++, pSuites, energyTest2);
+    addTest(exp_no++, pSuites, energyTest3);
+    addTest(exp_no++, pSuites, energyTest4);
+    addTest(exp_no++, pSuites, energyTest5);
+    addTest(exp_no++, pSuites, energyTest6);
 
     CU_list_tests_to_file();
     CU_set_output_filename("results");
     CU_set_error_action(CUEA_FAIL);
 
     /* Run all tests using the CUnit Basic interface */
-    //init_suite();
-
     CU_automated_run_tests();
     CU_cleanup_registry();
     return CU_get_error();
-
-    printf("ciaO");
 }
