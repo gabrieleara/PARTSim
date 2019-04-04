@@ -70,6 +70,12 @@ namespace RTSim {
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }
 
+        /// Reweigh task instructions WCET after island clock up
+        void reweighInstr(Task *t, double oldSpeed, double newSpeed);
+
+        /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
+        void setIslandFrequency(CPU::Island island);
+
     public:
 
         /**
@@ -149,8 +155,6 @@ namespace RTSim {
         virtual std::vector<AbsRTTask*> getTasks(CPU* c) const;
 
         virtual CPU *getProcessor(const AbsRTTask *t) const;
-
-        void reweightInstr(Task *t, double oldSpeed, double newSpeed);
 
         /// to debug internal functions...
         void test();

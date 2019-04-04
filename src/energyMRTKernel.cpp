@@ -144,13 +144,22 @@ namespace RTSim {
         return false;
     }
 
-    void EnergyMRTKernel::reweightInstr(Task *t, double oldSpeed, double newSpeed) {
+    void EnergyMRTKernel::reweighInstr(Task *t, double oldSpeed, double newSpeed) {
         auto& instrs = t->getInstrQueue();
 
         for (int i = 0; i < instrs.size(); i++) {
             ExecInstr* instr = dynamic_cast<ExecInstr*>(instrs.at(i).get());
             instr->refreshExec(oldSpeed, newSpeed);
         }
+    }
+
+    void EnergyMRTKernel::setIslandFrequency(CPU::Island island) {
+        vector<CPU*> cpus = CPU::getCPUsInIsland(CPUs, island);
+        CPU* max = cpus[0];
+        for (CPU* cc : cpus) if (cc->getFrequency() > max->getFrequency()) max = cc;
+        cout << "max opp is " << max->print()<<endl;
+
+        for (CPU* cc : cpus) cc->setOPP(max->getOPP());
     }
 
     void EnergyMRTKernel::test() {
@@ -188,25 +197,20 @@ namespace RTSim {
         // This is needed when dispatch() decides to dispatch 2 tasks with equal
         // arrival time on the same processor: the first task ends and clocks down
         // the speed. The second task uses that one, wrongly.
-        // Moreover, take the CPU of t to the one of the island
         AbsRTTask* t = e->getTask();
         CPU* c = _m_dispatching[t].first;
-
-        vector<CPU*> cpus = CPU::getCPUsInIsland(CPUs, c->getIsland());
-        CPU* max = cpus[0];
-        for (CPU* cc : cpus) if (cc->getFrequency() > max->getFrequency()) max = cc;
 
         if (t != NULL) {
             e->getCPU()->setOPP(_m_dispatching[e->getTask()].second);
             _m_dispatching.erase(t);
 
-            if (e->getCPU()->getFrequency() > max->getFrequency()) {
-                double oldSpeed = e->getCPU()->getSpeed();
-                e->getCPU()->setOPP(max->getOPP());
-                //reweightInstr(dynamic_cast<Task*>(t), oldSpeed, e->getCPU()->getSpeed());
-            }
+            // Maybe a task has arrived and it needs to be scheduled on higher freq than
+            // curr island freq -> on BL all CPUs have the same freq
+            setIslandFrequency(c->getIsland());
         }
 
+        // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
+        // Simulator has already called dispatch() forall arrived tasks (CPUs already chosen)
     }
 
     void EnergyMRTKernel::onEnd(AbsRTTask* t) {
@@ -252,7 +256,6 @@ namespace RTSim {
             cout << elem.cons << " "<< elem.cpu->print() << " " << elem.opp.frequency << endl;
         }
 
-        // TODO: if iDeltaPows[0].cons == iDeltaPows[1].cons == ..., then add logic to choose one of them
         struct ConsumptionTable chosen = iDeltaPows[0];
         CPU* chosenCPU = chosen.cpu;
         struct OPP chosenOPP = chosen.opp;
@@ -296,29 +299,9 @@ namespace RTSim {
 
         DBGPRINT_2("dispatching on processor ", p);
         _beginEvt[p]->drop();
-
-        // On BIG-LITTLE, the whole island has the same frequency/voltage.
-        // In case scheduler decides to clock up CPU freq while other tasks are already ready/running on the island,
-        // other tasks instructions should be reweighted and endEvt too
-        vector<CPU*> cpus = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
-        CPU* maxCPU = cpus[0];
-        double oldSpeed;
-        for (CPU* c : cpus) if (c->getFrequency() > maxCPU->getFrequency()) maxCPU = c;
-        for (CPU *c : cpus) {
-          oldSpeed = c->getSpeed();
-          cout << c->print() << " oldSpeed " << oldSpeed;
-          c->setOPP(maxCPU->getOPP());
-          cout << " to " << maxCPU->getSpeed();
-          cout << " CPU " << c->print() << endl;
-          c->setIsIslandBusy(true);
-
-          for (AbsRTTask* task : getTasks(c)) {
-              //reweightInstr(dynamic_cast<Task*>(task), oldSpeed, c->getSpeed());
-          }
-        }
  
         if (_isContextSwitching[p]) {
-            // I've seen it doesn't get here normally
+            // memo: I've seen it doesn't get here normally
             DBGPRINT("Context switch is disabled!");
             _beginEvt[p]->post(_endEvt[p]->getTime());
             _endEvt[p]->drop();
