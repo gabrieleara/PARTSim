@@ -88,9 +88,9 @@ namespace RTSim
 
     void CPU::setOPP(unsigned int newOPP)
     {
-      std::cout << __func__ << "setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
+        std::cout << __func__ << "setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
         currentOPP = newOPP;
-
+        assert(newOPP < OPPs.size());
         powmod->setFrequency(OPPs[currentOPP].frequency);
     }
 
