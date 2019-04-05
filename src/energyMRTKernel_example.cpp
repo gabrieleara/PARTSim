@@ -23,13 +23,6 @@
 using namespace MetaSim;
 using namespace RTSim;
 
-/* ./energy [OPP little] [OPP big] [workload] */
-
-bool CPU::isLittleIslandBusy = false;
-bool CPU::isBigIslandBusy = false;
-int  CPU::littleIslandCurOPP = 0;
-int  CPU::bigIslandCurOPP = 0;
-
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
   for (unsigned int f = 200000; f <= 2000000; f += 100000) {
     std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;

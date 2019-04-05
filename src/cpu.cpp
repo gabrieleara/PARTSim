@@ -20,6 +20,13 @@ namespace RTSim
 
     unsigned int CPU::referenceFrequency;
 
+    /* ./energy [OPP little] [OPP big] [workload] */
+    bool CPU::isLittleIslandBusy = false;
+    bool CPU::isBigIslandBusy = false;
+    int  CPU::littleIslandCurOPP = 0;
+    int  CPU::bigIslandCurOPP = 0;
+
+
     CPU::CPU(const string &name,
              const vector<double> &V,
              const vector<unsigned int> &F,
