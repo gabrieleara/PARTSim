@@ -261,9 +261,10 @@ namespace RTSim
 
         // big-little, if all CPU in current island are executing tasks, consider only its upper OPPs
         if (isCPUIslandBusy()) {
-            i = currentOPP;
+          i = getIslandCurOPP();
             cout << "\t\t(a CPU in the island of " << getName() << " is busy at freq " << getFrequency() << ", big-little) " << endl;
         }
+        else { cout << "\t\t(CPU island has no tasks yet)" << endl; }
 
         do {
             struct OPP opp;

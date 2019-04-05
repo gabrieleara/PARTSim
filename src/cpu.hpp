@@ -85,7 +85,10 @@ namespace RTSim
         bool isBusy;
 
         /// Is island free of tasks (big-little)? i.e., is there any other CPU in this island holding a task?
-        bool isIslandBusy;
+        static bool isLittleIslandBusy;
+        static bool isBigIslandBusy;
+      static int littleIslandCurOPP;
+      static int bigIslandCurOPP;
 
         /// update CPU power/speed model according to specified opp (or currentOPP, if opp == -1)
         void updateCPUModelOPP(int opp = -1);
@@ -107,20 +110,60 @@ namespace RTSim
 
         unsigned int getOPPByFrequency(double frequency);
 
+      int getIslandCurOPP() {
+        if (getIsland() == Island::LITTLE)
+          return littleIslandCurOPP;
+        else
+          return bigIslandCurOPP;
+      }
+
+      /**
+       * Sets the island current OPP. Function must be called after setOPP(oppNo).
+       */
+      void setIslandCurOPP() {
+        if (getIsland() == Island::LITTLE)
+          littleIslandCurOPP = currentOPP;
+        else
+          bigIslandCurOPP = currentOPP;
+      }
+
+      /// In big-little all CPUs in an island have the same frequency/OPP 
+      void updateIslandCurOPP(vector<CPU*> cpus) {
+        unsigned int opp = littleIslandCurOPP;
+        enum Island i = getIsland();
+        if (i == Island::BIG)
+          opp = bigIslandCurOPP;
+
+        for (CPU* c : cpus)
+          if (c->getIsland() == i)
+            c->setOPP(opp);
+      }
+
         void setIsIslandBusy(bool busy) {
             DBGPRINT_3(SIMUL.getTime(), " is island busy ", busy);
-            isIslandBusy = busy;
+            if (getIsland() == Island::LITTLE)
+              isLittleIslandBusy = busy;
+            else
+              isBigIslandBusy = busy;
 
             if (!busy)
-                setBusy(false);
+              if (getIsland() == Island::LITTLE)
+                isLittleIslandBusy = false;
+              else
+                isBigIslandBusy = false;
         }
 
         bool isCPUIslandBusy() {
-            return isIslandBusy;
+           if (getIsland() == Island::LITTLE)
+             return isLittleIslandBusy;
+           else
+             return isBigIslandBusy;
         }
 
         void setBusy(bool busy) {
             isBusy = busy;
+            if (busy)
+              setIsIslandBusy(true);
         }
 
         bool isCPUBusy() {
@@ -314,7 +357,5 @@ namespace RTSim
     };
 
 } // namespace RTSim
-
-
 
 #endif

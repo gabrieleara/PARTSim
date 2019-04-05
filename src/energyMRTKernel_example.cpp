@@ -25,6 +25,11 @@ using namespace RTSim;
 
 /* ./energy [OPP little] [OPP big] [workload] */
 
+bool CPU::isLittleIslandBusy = false;
+bool CPU::isBigIslandBusy = false;
+int  CPU::littleIslandCurOPP = 0;
+int  CPU::bigIslandCurOPP = 0;
+
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
   for (unsigned int f = 200000; f <= 2000000; f += 100000) {
     std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;
@@ -62,7 +67,7 @@ int main(int argc, char *argv[])
         SIMUL.dbg.enable("All");
         SIMUL.dbg.setStream("debug.txt");
 
-        TextTrace ttrace("trace.txt");
+        //TextTrace ttrace("trace.txt");
         //JSONTrace jtrace("trace.json");
 
         vector<TracePowerConsumption *> ptrace;
@@ -213,7 +218,9 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 7;
+        int TEST_NO = 8;
+        TextTrace ttrace("trace" + to_string(TEST_NO) + ".txt");
+        //JSONTrace jtrace("trace.json");
         cout << "Test to perform is " << TEST_NO << endl;
 
         if (TEST_NO == 0) {
@@ -396,6 +403,19 @@ int main(int argc, char *argv[])
             t->insertCode(instr);
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
+        }
+        else if (TEST_NO == 8) {
+            int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T7_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+            }
         }
 
 

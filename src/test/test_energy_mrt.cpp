@@ -21,6 +21,12 @@ int init_sequence = 0;
 vector<EDFScheduler *> schedulers;
 vector<RTKernel *> kernels;
 
+// static fields of CPU
+bool CPU::isLittleIslandBusy = false;
+bool CPU::isBigIslandBusy = false;
+int  CPU::littleIslandCurOPP = 0;
+int  CPU::bigIslandCurOPP = 0;
+
 int cleanup_suite() {
     cout << "cleanup_suite" << endl;
     cpus.clear();

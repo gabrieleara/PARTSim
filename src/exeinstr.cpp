@@ -126,7 +126,7 @@ namespace RTSim {
     void ExecInstr::schedule() throw (InstrExc)
     {
         DBGENTER(_INSTR_DBG_LEV);
-
+        cout<<_father->getCPU()->print()<<endl;
         Tick t = SIMUL.getTime();
         lastTime = t;
         executing = true;
@@ -163,7 +163,8 @@ namespace RTSim {
         Tick tmp = 0;
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
-        cout <<" ahshdhashdas " << endl;
+        //todo
+        cout <<" schedule() ahs " << _father->print() << " scaled WCET is " << double(tmp) << " " << p->print() << endl;
         _endEvt.post(t + tmp);
 	      
         DBGPRINT("End of ExecInstr::schedule() ");

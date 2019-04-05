@@ -337,7 +337,7 @@ namespace RTSim {
             DBGPRINT("Nothing to schedule, finishing");
         }
 
-        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p);
+        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->print());
         
         if (st) _m_dispatched[st] = p;
         _endEvt[p]->setTask(st);
