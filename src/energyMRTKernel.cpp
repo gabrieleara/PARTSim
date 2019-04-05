@@ -201,16 +201,17 @@ namespace RTSim {
         // arrival time on the same processor: the first task ends and clocks down
         // the speed. The second task uses that one, wrongly.
         AbsRTTask* t = e->getTask();
-        CPU* c = _m_dispatching[t].first;
-
         if (t != NULL) {
-            e->getCPU()->setOPP(_m_dispatching[e->getTask()].second);
+            CPU* cpu = _m_dispatching[t].first;
+            int opp = _m_dispatching[t].second;
+            cout << t->print() << " " << cpu->print() << " setting opp to " << opp << endl;
+            cpu->setOPP(opp);
             _m_dispatching.erase(t);
 
             // Maybe a task has arrived and it needs to be scheduled on higher freq than
             // curr island freq -> on BL all CPUs have the same freq
             // todo useless?
-            setIslandFrequency(c->getIsland());
+            setIslandFrequency(cpu->getIsland());
         }
 
         //todo remove
@@ -219,7 +220,6 @@ namespace RTSim {
         {
           cout << elem.first->print() << " in " << elem.second.first->print() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
         }
-        cout << t->print() << " " << c->print() << " opp " << c->getOPP() << endl;
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
         // ExecInstr::schedule() is called after each task's onEndDispatchMulti()
