@@ -303,12 +303,15 @@ namespace RTSim {
         if (_isContextSwitching[p]) {
             DBGPRINT("Context switch is disabled!");
             _beginEvt[p]->post(_endEvt[p]->getTime());
+            AbsRTTask *task = _endEvt[p]->getTask();
             _endEvt[p]->drop();
-            if (_endEvt[p]->getTask() != NULL) 
-                _m_dispatched[_endEvt[p]->getTask()] = NULL;
-        }
-        else
+            if (task != NULL) {
+                _endEvt[p]->setTask(NULL);
+                _m_dispatched[task] = NULL;
+            }
+        } else {
             _beginEvt[p]->post(SIMUL.getTime());
+        }
     }
 
     void MRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e)
