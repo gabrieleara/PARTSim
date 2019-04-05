@@ -126,13 +126,12 @@ namespace RTSim {
     void ExecInstr::schedule() throw (InstrExc)
     {
         DBGENTER(_INSTR_DBG_LEV);
-        cout<<_father->getCPU()->print()<<endl;
+
         Tick t = SIMUL.getTime();
         lastTime = t;
         executing = true;
 
-        if (isBegOfInstr) {
-  
+        if (isBegOfInstr) {  
             DBGPRINT_3("Initializing ExecInstr ",
                        getName(), 
                        " at first schedule.");
@@ -149,21 +148,24 @@ namespace RTSim {
         }
 
         CPU *p = _father->getCPU();
-        if (!dynamic_cast<CPU *>(p)) 
+        if (!dynamic_cast<CPU *>(p))
             throw InstrExc("No CPU!", "ExeInstr::schedule()");
-
+        cout << " ba " << p->getOPP()<<endl;
         p->setWorkload(workload);
 
         double currentSpeed = p->getSpeed();
+
 
         DBGPRINT_2("father ", _father->print());
         DBGPRINT_4("CPU ", p->getName(), " freq ", p->getFrequency());
         DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles, "Current speed ", currentSpeed);
         DBGPRINT_4(" result ", ((double)currentCost - actCycles)/currentSpeed, " to tick ", ceil( ((double)currentCost - actCycles)/currentSpeed) );
+        cout << "speed " <<currentSpeed<<endl;
         Tick tmp = 0;
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
         //todo
+        cout << "currentCost " << double(currentCost) << " " << currentSpeed<<endl;
         cout <<" schedule() ahs " << _father->print() << " scaled WCET is " << double(tmp) << " " << p->print() << endl;
         _endEvt.post(t + tmp);
 	      

@@ -61,6 +61,8 @@ namespace RTSim
     {
         DBGPRINT_2("CPUModel::setVoltage ", v);
         //cout << endl << "CPUModel::setVoltage" << endl;
+        if (v==0)
+          cout << "asd";
         _V = v;
         update();
     }

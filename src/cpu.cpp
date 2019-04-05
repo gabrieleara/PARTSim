@@ -114,6 +114,7 @@ namespace RTSim
     }
 
     void CPU::updateCPUModelOPP(int opp) {
+      cout << __func__ << " " <<opp<<endl;
       if (opp == -1) {
         powmod->setVoltage(OPPs[currentOPP].voltage);
         powmod->setFrequency(OPPs[currentOPP].frequency);

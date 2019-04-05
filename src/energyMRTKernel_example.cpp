@@ -135,6 +135,7 @@ int main(int argc, char *argv[])
             cout << "creating cpu" << endl;
             CPU *c = new CPU(cpu_name, V_little, F_little, pm);
             c->setOPP(OPP_little);
+            c->setIndex(i);
             c->setWorkload("idle");
             c->setIsland(CPU::Island::LITTLE);
             pm->setFrequencyMax(max_frequency);
@@ -186,6 +187,7 @@ int main(int argc, char *argv[])
 
             CPU *c = new CPU(cpu_name, V_big, F_big, pm);
             c->setOPP(OPP_big);
+            c->setIndex(i+4);
             c->setWorkload("idle");
             c->setIsland(CPU::Island::BIG);
             pm->setFrequencyMax(max_frequency);

@@ -41,8 +41,8 @@ namespace RTSim {
         Task* getTask() const {return _task;}
         void setTask(Task* t) {_task = t;}
 
-        int getCPU() {return _cpu;}
-        void setCPU(int cpu) {_cpu = cpu;}
+      int getCPU() {return _cpu;}
+      void setCPU(int cpu) {_cpu = cpu;}
     };
 
     /// arrival event for a task

@@ -401,7 +401,7 @@ namespace RTSim {
     void Task::onSched(Event *e)
     {
         DBGENTER(_TASK_DBG_LEV);
-        
+cout<<"task::onsched " << getCPU()->print()<<endl;        
         int cpu_index = getCPU()->getIndex();
         
         DBGPRINT("schedEvt for task " << getName()

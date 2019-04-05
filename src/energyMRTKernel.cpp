@@ -219,6 +219,7 @@ namespace RTSim {
         {
             cout << elem.first->print() << " in " << elem.second.first->print() << ", " << elem.second.second.frequency << endl;
         }
+        cout << t->print() << " " << c->print() << " opp " << c->getOPP() << endl;
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
         // ExecInstr::schedule() is called after each task's onEndDispatchMulti()
