@@ -217,7 +217,7 @@ namespace RTSim {
         cout << "ll " << endl;
         for (const auto& elem : _m_dispatching)
         {
-            cout << elem.first->print() << " in " << elem.second.first->print() << ", " << elem.second.second.frequency << endl;
+          cout << elem.first->print() << " in " << elem.second.first->print() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
         }
         cout << t->print() << " " << c->print() << " opp " << c->getOPP() << endl;
 
@@ -266,12 +266,12 @@ namespace RTSim {
 
         // todo delete after debug
         for (auto elem: iDeltaPows) {
-            cout << elem.cons << " "<< elem.cpu->print() << " " << elem.opp.frequency << endl;
+          cout << elem.cons << " "<< elem.cpu->print() << " " << elem.cpu->getStructOPP(elem.opp).frequency << endl;
         }
 
         struct ConsumptionTable chosen = iDeltaPows[0];
         CPU* chosenCPU = chosen.cpu;
-        struct OPP chosenOPP = chosen.opp;
+        int chosenOPP = chosen.opp;
         bool chosenCPUchanged = false;
         bool toBeChanged = chosenCPU->isCPUBusy();
 
@@ -293,11 +293,11 @@ namespace RTSim {
         }
 
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->print() << " in CPU " << chosenCPU->getName() <<
-             " with freq " << chosenOPP.frequency << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
+          " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
         dispatch(chosenCPU, t, chosenOPP);
     }
 
-    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, const struct OPP opp)
+    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp)
     {
         // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
         _m_dispatching[t] = make_pair(p, opp);
@@ -387,12 +387,12 @@ namespace RTSim {
                 c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
                 double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
                 cout << "\tTrying to schedule on CPU " << c->print() << " using freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
-                for (struct OPP o : c->getNextOPPs()) {
+                for (int ooo = 0; ooo < c->getOPPs().size(); ooo++) {
                   //double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
-                    double newFreq = o.frequency;
+                    double newFreq = c->getOPPs()[ooo].frequency;
                     double newCapacity = 0.0;
 
-                    c->setOPP(o);
+                    c->setOPP(ooo);
                     newCapacity = c->getSpeed(newFreq);
                     printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
@@ -455,7 +455,7 @@ namespace RTSim {
 
                         iDeltaPow = iPowWithNewTask - iOldPow;
                         cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow << endl;
-                        struct ConsumptionTable row = { .cons = iDeltaPow, .cpu = c, .opp = o } ;
+                        struct ConsumptionTable row = { .cons = iDeltaPow, .cpu = c, .opp = ooo } ;
                         iDeltaPows.push_back(row);
 
                         // break; (i.e. skip foreach OPP) xk è ovvio che aumentando la freq della stessa CPU, t è ammissibile

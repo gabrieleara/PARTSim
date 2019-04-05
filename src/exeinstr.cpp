@@ -24,6 +24,7 @@
 #include <cpu.hpp>
 #include <exeinstr.hpp>
 #include <task.hpp>
+#include <assert.h>
 
 namespace RTSim {
 
@@ -167,6 +168,7 @@ namespace RTSim {
         //todo
         cout << "currentCost " << double(currentCost) << " " << currentSpeed<<endl;
         cout <<" schedule() ahs " << _father->print() << " scaled WCET is " << double(tmp) << " " << p->print() << endl;
+        assert(tmp >= 0);
         _endEvt.post(t + tmp);
 	      
         DBGPRINT("End of ExecInstr::schedule() ");
@@ -250,6 +252,7 @@ namespace RTSim {
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil ((((double) currentCost) - actCycles)/newSpeed);
 	   
+        assert(tmp >= 0);
         _endEvt.post(t + tmp);
     }
 

@@ -203,11 +203,11 @@ namespace RTSim
         /// return the OPPs bigger than the current one
         std::vector<struct OPP> getNextOPPs();
 
+        /// expose the internal OPPs, read-only
+        std::vector<struct OPP> const & getOPPs() const { return OPPs; };
+
         /// Useful for debug
         virtual void setOPP(unsigned int newOPP);
-
-        /// set the CPU OPP
-        virtual void setOPP(struct OPP);
 
         /// set CPU island (big little)
         void setIsland(enum Island i) {

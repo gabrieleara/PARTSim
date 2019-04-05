@@ -88,21 +88,10 @@ namespace RTSim
 
     void CPU::setOPP(unsigned int newOPP)
     {
+      std::cout << __func__ << "setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
         currentOPP = newOPP;
 
         powmod->setFrequency(OPPs[currentOPP].frequency);
-    }
-
-    void CPU::setOPP(struct OPP o) {
-        //cout<<endl<<"CPU::setOPP o"<<endl;
-        int i = 0;
-        for (struct OPP opp : OPPs) {
-            if (opp.voltage == o.voltage && opp.frequency == o.frequency && opp.speed == o.speed)
-                break;
-            i++;
-        }
-
-        setOPP(i);
     }
 
     unsigned long int CPU::getFrequency() const
@@ -121,7 +110,7 @@ namespace RTSim
     }
 
     void CPU::updateCPUModelOPP(int opp) {
-      cout << __func__ << " " <<opp<<endl;
+      cout << __func__ << " opp=" << opp << ", currentOPP=" << currentOPP << std::endl;
       if (opp == -1) {
         powmod->setVoltage(OPPs[currentOPP].voltage);
         powmod->setFrequency(OPPs[currentOPP].frequency);

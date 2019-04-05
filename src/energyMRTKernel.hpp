@@ -52,7 +52,7 @@ namespace RTSim {
         struct ConsumptionTable {
             double cons;
             CPU* cpu;
-            struct OPP opp;
+            int opp;
         };
 
         /**
@@ -66,7 +66,7 @@ namespace RTSim {
 
         // list of tasks ready on a CPU with a given frequency. This
         // variable is only needed before the scheduling finishes (onEndDispatchMulti()) 
-        std::map<const AbsRTTask *, pair<CPU*, struct OPP>> _m_dispatching;
+        std::map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }
 
@@ -109,7 +109,7 @@ namespace RTSim {
            but the last one is only called after dispatch(), and I need the assignment
            CPU - task to be done before for getTask(CPU*) to work
          */
-        void dispatch(CPU *p, AbsRTTask *t, const struct OPP opp);
+        void dispatch(CPU *p, AbsRTTask *t, int opp);
 
         /**
            Returns island utilization given a capacity to scale up/down tasks WCET.
