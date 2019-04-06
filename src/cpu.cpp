@@ -20,7 +20,6 @@ namespace RTSim
 
     unsigned int CPU::referenceFrequency;
 
-    /* ./energy [OPP little] [OPP big] [workload] */
     bool CPU::isLittleIslandBusy = false;
     bool CPU::isBigIslandBusy = false;
     int  CPU::littleIslandCurOPP = 0;
@@ -88,7 +87,7 @@ namespace RTSim
 
     void CPU::setOPP(unsigned int newOPP)
     {
-        std::cout << __func__ << "setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
+      //std::cout << __func__ << " setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
         currentOPP = newOPP;
         assert(newOPP < OPPs.size());
         powmod->setFrequency(OPPs[currentOPP].frequency);
@@ -110,7 +109,7 @@ namespace RTSim
     }
 
     void CPU::updateCPUModelOPP(int opp) {
-      cout << __func__ << " opp=" << opp << ", currentOPP=" << currentOPP << std::endl;
+      //cout << __func__ << " opp=" << opp << ", currentOPP=" << currentOPP << std::endl;
       if (opp == -1) {
         powmod->setVoltage(OPPs[currentOPP].voltage);
         powmod->setFrequency(OPPs[currentOPP].frequency);

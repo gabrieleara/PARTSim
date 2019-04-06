@@ -64,8 +64,10 @@ namespace RTSim {
 
         std::vector<CPU*> CPUs;
 
-        // list of tasks ready on a CPU with a given frequency. This
-        // variable is only needed before the scheduling finishes (onEndDispatchMulti()) 
+      /**
+       * List of tasks ready on a CPU with a given frequency.
+       * Use this variable only before the scheduling finishes ( onBeginDispatchMulti() ), at which point you can use MRTKernel::_m_dispatched.
+       */
         std::map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }
