@@ -371,7 +371,7 @@ namespace RTSim {
             std::map<double, CPU*> energies;
             Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
             if (t == NULL) break;
-            cout << "Dealing with task " << t->print() << "." << endl;
+            cout << end << "Dealing with task " << t->print() << "." << endl;
 
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
@@ -390,7 +390,7 @@ namespace RTSim {
                 c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
                 double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
                 cout << "\tTrying to schedule on CPU " << c->print() << " using freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
-                for (int ooo = 0; ooo < c->getOPPs().size(); ooo++) {
+                for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
                   //double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
                     double newFreq = c->getOPPs()[ooo].frequency;
                     double newCapacity = 0.0;
@@ -473,7 +473,7 @@ namespace RTSim {
             }
 
             if (!iDeltaPows.empty()) {
-                chooseCPU(t, iDeltaPows);
+              chooseCPU(t, iDeltaPows);
             } else {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->print() << " anywhere" << endl;

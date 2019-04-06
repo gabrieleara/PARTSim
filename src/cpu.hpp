@@ -125,6 +125,8 @@ namespace RTSim
           littleIslandCurOPP = currentOPP;
         else
           bigIslandCurOPP = currentOPP;
+        //TODO
+        cout << __func__ << littleIslandCurOPP<<endl;
       }
 
       /// In big-little all CPUs in an island have the same frequency/OPP 
