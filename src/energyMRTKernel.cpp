@@ -106,7 +106,7 @@ namespace RTSim {
         for (AbsRTTask* th : ths) {
             //utilization += th->getWCET(c->getCapacity(freq)) / double(th->getDeadline());
             utilization += ceil(th->getWCET(capacity)) / double(th->getDeadline());
-            cout << "\t\t\tUtilization task already in CPU, " << th->print() << ", is "
+            cout << "\t\t\tUtilization task already in CPU, " << th->toString() << ", is "
                  << ceil(th->getWCET(capacity)) << "/" << th->getDeadline() << " = "
                  << ceil(th->getWCET(capacity)) / double(th->getDeadline())
                  <<  " - CPU capacity=" << capacity << endl;
@@ -157,7 +157,7 @@ namespace RTSim {
         vector<CPU*> cpus = CPU::getCPUsInIsland(CPUs, island);
         CPU* max = cpus[0];
         for (CPU* cc : cpus) if (cc->getFrequency() > max->getFrequency()) max = cc;
-        cout << "max opp is " << max->print()<<endl;
+        cout << "max opp is " << max->toString()<<endl;
 
         for (CPU* cc : cpus) cc->setOPP(max->getOPP());
     }
@@ -167,7 +167,7 @@ namespace RTSim {
         p->setOPP(0);
         p->setWorkload("bzip2");
         Task *t = dynamic_cast<Task*>(_sched->getTaskN(0));
-        cout << "CPU is " << p->print() << " freq " << p->getFrequency()<< " "<< t->print() << endl;
+        cout << "CPU is " << p->toString() << " freq " << p->getFrequency()<< " "<< t->toString() << endl;
 
         cout << "task util " << getUtilization(t, p, p->getSpeed());
 
@@ -193,7 +193,7 @@ namespace RTSim {
     {
         // If you get here, simulator has already called dispatch() forall arrived tasks (CPUs already chosen).
 
-        cout << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->print()) << endl;
+        cout << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString()) << endl;
         MRTKernel::onEndDispatchMulti(e);
        
         // when its context switch ends, set the task OPP, as decided in dispatch().
@@ -204,7 +204,7 @@ namespace RTSim {
         if (t != NULL) {
             CPU* cpu = _m_dispatching[t].first;
             int opp = _m_dispatching[t].second;
-            cout << t->print() << " " << cpu->print() << " setting opp to " << opp << endl;
+            cout << t->toString() << " " << cpu->toString() << " setting opp to " << opp << endl;
             cpu->setOPP(opp);
             _m_dispatching.erase(t);
 
@@ -218,7 +218,7 @@ namespace RTSim {
         cout << "ll " << endl;
         for (const auto& elem : _m_dispatching)
         {
-          cout << elem.first->print() << " in " << elem.second.first->print() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
+          cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
         }
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
@@ -234,7 +234,7 @@ namespace RTSim {
         CPU* p = getProcessor(t);
         vector<CPU *> cp = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
         p->setBusy(false);
-        DBGPRINT_6(t->print(), " has just finished on ", p->print(), ". Actual time = [", SIMUL.getTime(), "]");
+        DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
 
         // determine if island where task was scheduled is busy
         for (CPU *c : cp) {
@@ -251,7 +251,7 @@ namespace RTSim {
         if (!islandBusy) {
             for (CPU* c : cp) {
                 c->setOPP(0);
-                DBGPRINT_2("Clock down ", c->print());
+                DBGPRINT_2("Clock down ", c->toString());
             }
         }
 
@@ -266,7 +266,7 @@ namespace RTSim {
 
         // todo delete after debug
         for (auto elem: iDeltaPows) {
-          cout << elem.cons << " "<< elem.cpu->print() << " " << elem.cpu->getStructOPP(elem.opp).frequency << endl;
+          cout << elem.cons << " "<< elem.cpu->toString() << " " << elem.cpu->getStructOPP(elem.opp).frequency << endl;
         }
 
         struct ConsumptionTable chosen = iDeltaPows[0];
@@ -279,10 +279,10 @@ namespace RTSim {
         // Note: with this algorithm tasks cannot be assigned to a core in an island
         // different than the originally chosen one
         if (chosenCPU->isCPUBusy()) {
-            cout << chosenCPU->print() << " was chosen but it's busy" << endl;
+            cout << chosenCPU->toString() << " was chosen but it's busy" << endl;
             for (int i = 1; i < iDeltaPows.size(); i++) {
                 cout << iDeltaPows[i].cons << " VS " << iDeltaPows[0].cons << " busy? "
-                     << iDeltaPows[i].cpu->isCPUBusy() << " " << iDeltaPows[i].cpu->print() << endl;
+                     << iDeltaPows[i].cpu->isCPUBusy() << " " << iDeltaPows[i].cpu->toString() << endl;
                 if (iDeltaPows[i].cons == iDeltaPows[0].cons && !iDeltaPows[i].cpu->isCPUBusy()) {
                     chosenCPU = iDeltaPows[i].cpu;
                     chosenOPP = iDeltaPows[i].opp;
@@ -292,7 +292,7 @@ namespace RTSim {
             }
         }
 
-        cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->print() << " in CPU " << chosenCPU->getName() <<
+        cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
           " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
         dispatch(chosenCPU, t, chosenOPP);
     }
@@ -302,10 +302,22 @@ namespace RTSim {
         // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
         _m_dispatching[t] = make_pair(p, opp);
 
+        cout<<t->toString()<<endl;
+        if (t->toString().find("T7_task6") != std::string::npos)
+          cout<<""<< t;
+
         p->setOPP(opp);
         p->setBusy(true);
         p->setIslandCurOPP();
         p->updateIslandCurOPP(CPUs);
+
+        // bug not relevant: if opp > island opp, _m_dispatching be updated where needed
+        if (opp > p->getIslandCurOPP())
+          for (auto &elem : _m_dispatching)
+            if (elem.second.first->getIsland() == p->getIsland()) {
+              cout << "ahah " << elem.second.first->toString() << " VS " << opp << endl;
+              elem.second.first->setOPP(opp);
+            }
 
         dispatch(p);
     }
@@ -371,7 +383,7 @@ namespace RTSim {
             std::map<double, CPU*> energies;
             Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
             if (t == NULL) break;
-            cout << end << "Dealing with task " << t->print() << "." << endl;
+            cout << "Dealing with task " << t->toString() << "." << endl;
 
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
@@ -382,14 +394,14 @@ namespace RTSim {
 
             // otherwise scale up CPUs frequency
             DBGPRINT("Trying to scale up CPUs");
-            cout << "Trying to scale up CPUs" << endl;
+            cout << endl << "Trying to scale up CPUs" << endl;
             vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows;
 
             for (CPU* c : cpus) {
-                int startingOPP = c->getOPP();
-                c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
+              int startingOPP = c->getOPP();
+              c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
                 double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
-                cout << "\tTrying to schedule on CPU " << c->print() << " using freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
+                cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
                 for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
                   //double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
                     double newFreq = c->getOPPs()[ooo].frequency;
@@ -421,10 +433,10 @@ namespace RTSim {
                             cout << "\t\t\tCPU utilization is already >= 100% => skip OPP" << endl;
                             continue;
                         }
-                        else cout << "\t\t\tTotal utilization tasks already in CPU " << c->print() << " = " << utilization << endl;
+                        else cout << "\t\t\tTotal utilization tasks already in CPU " << c->toString() << " = " << utilization << endl;
 
                         utilization_t = getUtilization(task, c, newCapacity);
-                        cout << "\t\t\tUtilization cur task " << t->print() << " would be " << utilization_t
+                        cout << "\t\t\tUtilization cur task " << t->toString() << " would be " << utilization_t
                              << " - CPU capacity=" << newCapacity << endl;
                         cout << "\t\t\t\tScaled task WCET " << t->getWCET(newCapacity) << " DL "
                              << t->getDeadline() << endl;
@@ -476,10 +488,14 @@ namespace RTSim {
               chooseCPU(t, iDeltaPows);
             } else {
                 // TODO possibly move something
-                cout << "Cannot schedule " << t->print() << " anywhere" << endl;
+                cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
                 // todo don't know how to discard a task here. Think you need to work with _beginEvt and _endEvt
             }
             num_newtasks--;
+
+            cout << "Decisions 'til now:" << endl;
+            for (auto const& elem : _m_dispatching)
+              cout << elem.first->toString() << " in " << elem.second.first->toString() << " freq " << elem.second.second << endl;
 
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);

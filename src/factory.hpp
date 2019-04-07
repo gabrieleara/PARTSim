@@ -105,8 +105,8 @@ void genericFactory<manufacturedObj, classIDKey>::regCreateFn(const classIDKey &
 template <class manufacturedObj, typename classIDKey>
 std::unique_ptr<manufacturedObj> genericFactory<manufacturedObj, classIDKey>::create(const classIDKey &className, std::vector<std::string> &parms) const
 {
-  std::unique_ptr<manufacturedObj> ret(nullptr);
-  
+  std::unique_ptr<manufacturedObj> ret(nullptr); 
+
   typename FN_REGISTRY::const_iterator regEntry=registry.find(className);
   if (regEntry != registry.end()) {
     return (*regEntry).second(parms);

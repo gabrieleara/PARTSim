@@ -213,7 +213,7 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 8;
+        int TEST_NO = 9;
         TextTrace ttrace("trace" + to_string(TEST_NO) + ".txt");
         //JSONTrace jtrace("trace.json");
         cout << "Test to perform is " << TEST_NO << endl;
@@ -259,37 +259,11 @@ int main(int argc, char *argv[])
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
-
-            // In Balsini's code, this is the content of trace.txt (cut at time=1000)
-            /*
-            [Time:0]	Task_LITTLE_0 arrived at 0
-            [Time:0]	Task_big_0 arrived at 0
-            [Time:0]	Task_LITTLE_0 scheduled on CPU LITTLE_0 200 abs WCET 100its arrival was 0
-            [Time:0]	Task_big_0 scheduled on CPU BIG_0 200 abs WCET 100its arrival was 0
-            [Time:7]	Task_LITTLE_0 ended, its arrival was 0
-            [Time:12]	Task_big_0 ended, its arrival was 0
-            [Time:500]	Task_LITTLE_0 arrived at 500
-            [Time:500]	Task_big_0 arrived at 500
-            [Time:500]	Task_LITTLE_0 scheduled on CPU LITTLE_0 200 abs WCET 100its arrival was 500
-            [Time:500]	Task_big_0 scheduled on CPU BIG_0 200 abs WCET 100its arrival was 500
-            [Time:507]	Task_LITTLE_0 ended, its arrival was 500
-            [Time:512]	Task_big_0 ended, its arrival was 500
-            [Time:1000]	Task_LITTLE_0 arrived at 1000
-            [Time:1000]	Task_big_0 arrived at 1000
-            [Time:1000]	Task_LITTLE_0 scheduled on CPU LITTLE_0 200 abs WCET 100its arrival was 1000
-            [Time:1000]	Task_big_0 scheduled on CPU BIG_0 200 abs WCET 100its arrival was 1000
-
-             As you can see , if Task_LITTLE_0 (bzip) is scheduled on little freq 200, its workload gets 7.
-             Just as me.
-             Task_big_0 is instead scheduled on CPU_LITTLE_3 after finishing the others since on LITTLE cores
-             it would have the least consumption (and it cannot escape the chosen island in chooseCPU() )
-             */
         }
         else if (TEST_NO == 1) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
-            //t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
@@ -331,7 +305,7 @@ int main(int argc, char *argv[])
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
 
-            // task1 (500,500) => BIG_3 max freq, task2 (250,500) => LITTLE_3 max freq (WCET gets 358 = 250*2000/1400)
+            // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
         else if (TEST_NO == 4) {
             task_name = "task1";
@@ -342,12 +316,7 @@ int main(int argc, char *argv[])
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
 
-            // task1 (10,500) => LITTLE_3 freq 1400
-            // if you only have a small task, in the formula for ideltapow the factors of the multiplication
-            // compensate each other, so that even if one grows and the other sinks, the result remains the same.
-            // Since I use a map to store <energy delta, <cpu, freq>>, the smaller energies are substituted.
-            // Maybe I should tell that when the energy delta is already in the map associated with a smaller
-            // freq of the same CPU island, then don't replace it?
+            // little freq 500
         }
         else if(TEST_NO == 5) {
             for (int j = 0; j < 4; j++) {
@@ -362,12 +331,13 @@ int main(int argc, char *argv[])
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
 
-                // LITTLE_0, _1, _2, _3 freq 1400.
             }
 
-            // small tasks. They should be scheduled on a single little at some frequency
+            // small tasks. They should be scheduled on a single little at frequency with min voltage = 500
         }
         else if(TEST_NO == 6) {
+          /* This experiment shows that other CPUs frequencies are increased for the
+             entire island after a decision for other tasks has already been made*/
             vector<PeriodicTask*> task;
             vector<CPU*> cpu_task;
             int i, wcet = 300; //* (j+1);
@@ -387,22 +357,28 @@ int main(int argc, char *argv[])
                 task.push_back(t);
             }
         }
-        //temp todo
         else if(TEST_NO == 7) {
-            int wcet = 1;
-            task_name = "T7_task" + std::to_string(0);
+          int wcets[] = { 63, 63, 63, 63, 30 };
+          for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+            task_name = "T7_task" + std::to_string(j);
             cout << "Creating task: " << task_name;
             PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
             char instr[60] = "";
-            sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
+            sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
             t->insertCode(instr);
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
+          }
+
+          /* Towards random workloads, but this time alg. first decides to
+             schedule all tasks on littles, and then, instead of schedule the
+             next one in bigs, it shall increase littles frequency so to make
+             space to it too and save energy */
         }
         else if (TEST_NO == 8) {
             int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-                task_name = "T7_task" + std::to_string(j);
+                task_name = "T8_task" + std::to_string(j);
                 cout << "Creating task: " << task_name;
                 PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
                 char instr[60] = "";
@@ -411,6 +387,24 @@ int main(int argc, char *argv[])
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
             }
+            // towards random workloads...
+        }
+        else if (TEST_NO == 9) {
+            // random variables
+            int taskNO = 3;
+            int task_period = 500;
+
+            for (int j = 0; j < taskNO; j++) {
+                task_name = "T9_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
+                char instr[60] = "fixed(4);"; //"delay(delta(250.0));";
+                sprintf(instr, "delay(unif(1, %d));", task_period);
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+            }
+            // random workloads...delay(unif,PDF)
         }
 
 

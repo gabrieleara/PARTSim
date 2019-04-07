@@ -304,7 +304,7 @@ namespace RTSim {
             throw TaskNotActive("OnEnd() on a non-active task");
         }
         if (!isExecuting()) {
-		cout << print() << endl;
+		cout << toString() << endl;
             throw TaskNotExecuting("OnEnd() on a non-executing task");
         }
         
@@ -401,7 +401,7 @@ namespace RTSim {
     void Task::onSched(Event *e)
     {
         DBGENTER(_TASK_DBG_LEV);
-cout<<"task::onsched " << getCPU()->print()<<endl;        
+cout<<"task::onsched " << getCPU()->toString()<<endl;        
         int cpu_index = getCPU()->getIndex();
         
         DBGPRINT("schedEvt for task " << getName()
@@ -543,6 +543,7 @@ cout<<"task::onsched " << getCPU()->print()<<endl;
             if (!curr) throw ParseExc("insertCode", token);
             
             DBGPRINT("Instr " << curr->getName() << "  created.");
+            // todo
             cout << "Task::insertCode. instr created: "<<curr->getName()<<endl;
             
             addInstr(std::move(curr));
@@ -559,8 +560,8 @@ cout<<"task::onsched " << getCPU()->print()<<endl;
         cout<<"Task " << getName() << ": instruction list"<<endl;
         DBGPRINT("Task " << getName() << ": instruction list");
         for (i=0; i<instrQueue.size(); ++i) {
-            cout << i << ") " << instrQueue[i]->getName()<<endl;
-            DBGPRINT(i << ") " << instrQueue[i]->getName());
+          cout << i << ") " << instrQueue[i]->toString() << endl;
+          DBGPRINT(i << ") " << instrQueue[i]->toString());
         }
     }
     
@@ -627,10 +628,16 @@ cout<<"task::onsched " << getCPU()->print()<<endl;
         deadEvt.setKill(kill);
     }
 
-    std::string Task::print() const {
-        std::stringstream ss;
+    string Task::toString() const {
+        stringstream ss;
         ss << getName() << " arr " << getArrival() << " DL " << getDeadline() << " WCET " + getWCET();
         return ss.str();
+    }
+
+    /// to string operator
+  ostream& operator<<(ostream &strm, Task &a) {
+	strm << a.toString();
+	return strm;
     }
     
 }

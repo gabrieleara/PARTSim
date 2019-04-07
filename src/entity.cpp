@@ -113,4 +113,9 @@ namespace MetaSim {
         return res;
     }
 
+  ostream& operator<<(ostream& out, Entity& e) {
+    return out << e.toString();
+  }
+
 } // end namespace MetaSim
+

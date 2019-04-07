@@ -115,11 +115,17 @@ namespace MetaSim {
 
     double UniformVar::get()
     {
+      cout << "uniformvar::get " << generatedValue << "---";
+      if (generatedValue == 0.0) {
+        cout << "zero" <<endl;
         double tmp;
         tmp = _gen->sample();
+        cout << " tmp"<<tmp<< " gen get module "<<double(_gen->getModule());
         tmp = tmp * (_max - _min) / _gen->getModule() + _min;
-  
-        return tmp;
+
+        generatedValue = tmp;
+      }
+      return generatedValue;
     };
 
     unique_ptr<UniformVar> UniformVar::createInstance(vector<string> &par) 

@@ -35,7 +35,7 @@ namespace RTSim {
     /**
        Object to string. you should override this function in derived classes
      */
-    std::string PeriodicTask::print() const {
+    std::string PeriodicTask::toString() const {
         std::stringstream ss;
         // abs WCET = WCET without considering whether task CPU is clocked down/up
         ss << "PeriodicTask " << getName() << " DL = T " << getPeriod() << " WCET(abs) " << getWCET();

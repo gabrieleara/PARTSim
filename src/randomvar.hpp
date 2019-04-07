@@ -210,7 +210,7 @@ namespace MetaSim {
         This class implements an uniform distribution, between min
         and max. */
     class UniformVar : public RandomVar {
-        double _min, _max;
+      double _min, _max, generatedValue = 0.0;
     public:
         UniformVar(double min, double max) 
             : RandomVar(), _min(min), _max(max) {}
@@ -220,7 +220,7 @@ namespace MetaSim {
         static std::unique_ptr<UniformVar> createInstance(std::vector<std::string> &par);
         
         virtual double get();
-                virtual double getMaximum() throw(MaxException) {return _max;}
+        virtual double getMaximum() throw(MaxException) {return _max;}
         virtual double getMinimum() throw(MaxException) {return _min;}
     };
 
@@ -327,7 +327,7 @@ namespace MetaSim {
         virtual double get();
 
         virtual double getMaximum() throw(MaxException)
-            {throw MaxException("PoissonVar");}
+      {throw MaxException("PoissonVar");}
         virtual double getMinimum() throw(MaxException)
             {throw MaxException("PoissonVar");}
     };

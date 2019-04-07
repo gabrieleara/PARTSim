@@ -108,6 +108,14 @@ namespace RTSim
 
         ~CPU();
 
+	      friend ostream& operator<<(ostream &strm, CPU &a);
+
+        virtual string toString() const {
+            stringstream ss;
+            ss << "CPU " << getName() << " freq " << getFrequency();
+            return ss.str();
+        }
+
         unsigned int getOPPByFrequency(double frequency);
 
       int getIslandCurOPP() {
@@ -273,19 +281,16 @@ namespace RTSim
         enum Island getIsland() { return this->island; };
 
         /// filter out CPUs based on their island
-        static std::vector<CPU*> getCPUsInIsland(std::vector<CPU*> cpus, CPU::Island island);
+        static vector<CPU*> getCPUsInIsland(std::vector<CPU*> cpus, CPU::Island island);
 
-        virtual std::string print() {
-            stringstream ss;
-            ss << "CPU " << getName() << " freq " << getFrequency();
-            return ss.str();
+        bool operator==(const CPU& c) const {
+          return getName().compare(c.getName()) == 0; 
         }
 
-      bool operator==(const CPU& c) const {
-        return getName() == c.getName(); 
-      }
-
     };
+
+    /// to string operator
+    ostream& operator<<(ostream &strm, CPU &a);
 
     /**
      * The abstract CPU factory. Is the base class for every CPU factory which

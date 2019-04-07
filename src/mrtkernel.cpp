@@ -340,9 +340,11 @@ namespace RTSim {
             DBGPRINT("Nothing to schedule, finishing");
         }
 
-        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->print());
-        
-        if (st) _m_dispatched[st] = p;
+        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
+        // todo
+        cout << __func__ << "Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
+
+         if (st) _m_dispatched[st] = p;
         _endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
         Tick overhead (_contextSwitchDelay);
@@ -361,7 +363,7 @@ namespace RTSim {
 
         _m_currExe[p] = st;
 
-        DBGPRINT_2("CPU: ", p->print());
+        DBGPRINT_2("CPU: ", p->toString());
         DBGPRINT_2("Task: ", taskname(st));
         printState();
 

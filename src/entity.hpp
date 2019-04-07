@@ -35,6 +35,8 @@
 #include <baseexc.hpp>
 #include <basetype.hpp>
 
+using namespace std;
+
 namespace MetaSim {
 
 #define _ENTITY_DBG_LEV "Entity"
@@ -55,6 +57,12 @@ namespace MetaSim {
         \ingroup metasim_ee   
     */
     class Entity {
+    public:
+      // will allow cout << e;
+      friend ostream& operator<<(ostream& out, Entity& instance);
+
+      virtual string toString() const { return "Default Entity::toString()";  };
+
     private:
         /** Hide the assignment operator. Entities are not
             copyable. 
@@ -180,6 +188,7 @@ namespace MetaSim {
             create/destroy new entity objects. */
         virtual void endRun() = 0;
     };
-}
 
+  ostream& operator<<(ostream& out, Entity& e);
+}
 #endif

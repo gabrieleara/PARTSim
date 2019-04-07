@@ -38,6 +38,7 @@
 
 //From RTLIB
 #include <instr.hpp>
+#include <sstream>
 
 namespace RTSim {
 
@@ -91,7 +92,13 @@ namespace RTSim {
 
         CLONEABLE(Instr, ExecInstr)
         
-        virtual ~ExecInstr(); 
+        virtual ~ExecInstr();
+
+      virtual string toString() const {
+        stringstream ss;
+        ss << "ExecInstr wl: " << workload << " wcet: " << getWCET() << endl;
+        return ss.str();
+      }
 
         //Virtual methods from Instr
         virtual void schedule() throw (InstrExc);

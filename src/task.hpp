@@ -134,7 +134,7 @@ namespace RTSim {
         /**
            Object to string. you should override this function in derived classes
          */
-        virtual std::string print() const;
+        virtual string toString() const;
 
     protected:
         friend class ArrEvt;
@@ -263,6 +263,8 @@ namespace RTSim {
            @todo should it destroy the instructions? probably the answer is YES.
         */
         virtual ~Task();
+
+	friend ostream& operator<<(ostream &strm, Task &a);
 
         /**
            For the abstract factory
@@ -546,6 +548,9 @@ namespace RTSim {
     /// returns the task name, or "(nil)" if the pointer does not point 
     /// to a task entity
     std::string taskname(const AbsRTTask *t);
+
+    /// to string operator
+    ostream& operator<<(ostream &strm, Task &a);
 
 } // namespace RTSim
 

@@ -47,6 +47,7 @@ namespace RTSim {
         _endEvt(this) 
     {
         DBGTAG(_INSTR_DBG_LEV,"ExecInstr constructor");
+        cout << "wl: " << wl<<endl;
     }
 
     
@@ -87,7 +88,7 @@ namespace RTSim {
             unique_ptr<RandomVar> var(FACT(RandomVar).create(token,parms));
     
             if (var.get() == 0) throw ParseExc("ExecInstr", par[0]);
-
+            
             temp = new ExecInstr(task, std::move(var));
         }
         return temp;
@@ -119,8 +120,15 @@ namespace RTSim {
     }
 
     Tick ExecInstr::getWCET() const throw(RandomVar::MaxException)
-    { 
-        return (Tick) cost->getMaximum();
+    {
+      Tick wcet;
+      // todo code not flexible and only applies to Uniform distrib
+      if (dynamic_cast<UniformVar*>(cost.get()) != NULL)
+        wcet = (Tick) cost->get();
+      else
+        wcet = (Tick) cost->getMaximum();
+      cout << "uuu " << double(wcet) << endl;
+        return wcet;
     }
 
     // Attention: here you decide when the WCET ends!
@@ -157,7 +165,7 @@ namespace RTSim {
         double currentSpeed = p->getSpeed();
 
 
-        DBGPRINT_2("father ", _father->print());
+        DBGPRINT_2("father ", _father->toString());
         DBGPRINT_4("CPU ", p->getName(), " freq ", p->getFrequency());
         DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles, "Current speed ", currentSpeed);
         DBGPRINT_4(" result ", ((double)currentCost - actCycles)/currentSpeed, " to tick ", ceil( ((double)currentCost - actCycles)/currentSpeed) );
@@ -167,7 +175,7 @@ namespace RTSim {
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
         //todo
         cout << "currentCost " << double(currentCost) << " " << currentSpeed<<endl;
-        cout <<" schedule() ahs " << _father->print() << " scaled WCET is " << double(tmp) << " " << p->print() << endl;
+        cout <<" schedule() ahs " << _father->toString() << " scaled WCET is " << double(tmp) << " " << p->toString() << endl;
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 	      

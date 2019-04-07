@@ -90,7 +90,7 @@ namespace RTSim {
   /**
      Object to string. you should override this function in derived classes
    */
-  virtual std::string print() const { return "AbsTask::show()"; }
+  virtual string toString() const { return "Default AbsTask::show()"; }
 
     };
 

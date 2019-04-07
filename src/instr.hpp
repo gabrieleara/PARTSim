@@ -84,7 +84,11 @@ namespace RTSim {
         Instr(Task *f, const std::string &n = "") : Entity(n), _father(f) {}
         virtual ~Instr() {}
 
-        /**
+	virtual string toString() const  {
+		return "Instr::toString()"; 
+	}
+	        
+	/**
            For copying polymorphic instructions
          */
         BASE_CLONEABLE(Instr)

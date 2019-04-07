@@ -322,4 +322,9 @@ namespace RTSim
         return c;
     }
 
+    /// to string operator
+    ostream& operator<<(ostream &strm, CPU &a) {
+      return strm << a.toString();
+    }
+
 }
