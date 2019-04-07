@@ -19,6 +19,7 @@
 #include <instr.hpp>
 #include <powermodel.hpp>
 #include <energyMRTKernel.hpp>
+#include "rrsched.hpp"
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    std::vector<CPU*> cpus;
+    vector<CPU*> cpus;
 
     dumpAllSpeeds();
     
@@ -64,7 +65,8 @@ int main(int argc, char *argv[])
         //JSONTrace jtrace("trace.json");
 
         vector<TracePowerConsumption *> ptrace;
-        vector<EDFScheduler *> schedulers;
+        //vector<EDFScheduler *> schedulers;
+        vector<Scheduler *> schedulers;
         vector<RTKernel *> kernels;
         vector<CPU *> cpus;
 
@@ -199,8 +201,14 @@ int main(int argc, char *argv[])
         EDFScheduler *edfsched = new EDFScheduler;
         schedulers.push_back(edfsched);
 
+        RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
+        schedulers.push_back(rrsched);
+
         EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel");
         kernels.push_back(kern);
+
+        MRTKernel *kernMRT = new MRTKernel(rrsched, cpus, "You've got a fellow, RR");
+        kernels.push_back(kernMRT);
 
         CPU::referenceFrequency = 2000; // BIG_3 frequency
 
@@ -393,18 +401,35 @@ int main(int argc, char *argv[])
             // random variables
             int taskNO = 3;
             int task_period = 500;
+            int mode = 0;
 
             for (int j = 0; j < taskNO; j++) {
                 task_name = "T9_task" + std::to_string(j);
                 cout << "Creating task: " << task_name;
                 PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
-                char instr[60] = "fixed(4);"; //"delay(delta(250.0));";
-                sprintf(instr, "delay(unif(1, %d));", task_period);
+                char instr[60] = "";
+                srand(time(0));
+                switch (mode) {
+                case 0:
+                  sprintf(instr, "delay(unif(1, %d));", task_period);
+                  break;
+                case 1:
+                  sprintf(instr, "delay(delta(%d));", rand() % task_period + 1);
+                  break;
+                case 2:
+                  sprintf(instr, "fixed(%d);", rand() % task_period + 1);
+                  break;
+                default: break;
+                }
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
+                kernels[0]->addTask(*t, "");
+
+                kernels[1]->addTask(*t, "");
             }
-            // random workloads...delay(unif,PDF)
+            // random workloads...delay(unif,PDF).
+            // todo domanda: round robin e' gia' implementato. pero' e' uno scheduler, le decisioni di piazzamento a CPU
+            // le faccio sempre io con energyMRTKernel? Non sarebbe quello che succede in Linux pero' -> userei MRTKernel. Giusto?
         }
 
 
