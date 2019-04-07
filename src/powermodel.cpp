@@ -118,6 +118,8 @@ namespace RTSim
      // printf("\t\t\tCPUModelBP::update freq %lu volt %f\n",getFrequency(),getVoltage() );
         double K, eta, gamma, disp;
         string _curr_wl = getCPU()->getWorkload();
+        //todo assert(_curr_wl != "");
+        if (_curr_wl == "") _curr_wl = "bzip2";
 
         disp = _wl_param[_curr_wl].d;
         K = _wl_param[_curr_wl].k;

@@ -127,7 +127,6 @@ namespace RTSim {
         wcet = (Tick) cost->get();
       else
         wcet = (Tick) cost->getMaximum();
-      cout << "uuu " << double(wcet) << endl;
         return wcet;
     }
 
