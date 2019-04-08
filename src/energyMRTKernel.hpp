@@ -117,13 +117,15 @@ namespace RTSim {
            Returns island utilization given a capacity to scale up/down tasks WCET.
            It also returns the number of tasks being scheduled in the island
         */
-        double getIslandUtilization(double capacity, enum CPU::Island island, int *nTaskIsland);
+        double getIslandUtilization(double capacity, CPU::Island island, int *nTaskIsland);
 
         /// Returns utilization of task t on CPU c. todo They should be defined for tasks, but this way I can make this implementation private
         double getUtilization(AbsRTTask* t, CPU* c, double capacity) const;
 
         /// Returns utilization of tasks on CPU c, supposing it runs with given freq and capacity. todo They should be defined for tasks, but this way I can make this implementation private
         double getUtilization(CPU* c, double freq, double capacity) const;
+
+      	virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
 
         /**
          *  First a task is dispatched, but not executed yet, in the

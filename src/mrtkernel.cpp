@@ -273,7 +273,8 @@ namespace RTSim {
             }
             else { // no more free processors
                 // now we deschedule tasks
-                for(;;) {
+              // NON-SENSE: this is putting all new tasks on WHAT CPU ?!?
+              for(;;) {
                     AbsRTTask *t = _sched->getTaskN(i++);
                     if (t == NULL) 
                         throw RTKernelExc("Can't find enough tasks to deschedule!");

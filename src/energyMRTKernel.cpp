@@ -73,7 +73,7 @@ namespace RTSim {
         return t;
     }
 
-    double EnergyMRTKernel::getIslandUtilization(double capacity, enum CPU::Island island, int *nTasksIsland) {
+    double EnergyMRTKernel::getIslandUtilization(double capacity, CPU::Island island, int *nTasksIsland) {
         double utilizationIsland = 0.0;
 
         for (CPU* c1 : CPU::getCPUsInIsland(getProcessors(), island)) {
@@ -185,6 +185,10 @@ namespace RTSim {
         }
 
         return res;
+    }
+
+    void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
+        // TBD: use _m_dispatching[]
     }
 
     // called after dispatch(), i.e. after choosing a CPU forall tasks.
@@ -423,7 +427,7 @@ namespace RTSim {
                         double iOldPow = 0.0;
                         double iDeltaPow = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
                         int    nTaskIsland = 0;
-                        enum   CPU::Island island;
+                        CPU::Island island;
                         Task   *task = t;
 
                         // utilization on CPU c with the new frequency

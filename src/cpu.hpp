@@ -52,7 +52,9 @@ namespace RTSim
      * speed accordingly to the system load, and returns the new CPU speed.
      */
     class CPU : public Entity {
-
+    public:
+      typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
+    private:
         double _max_power_consumption;
 
         /**
@@ -85,7 +87,10 @@ namespace RTSim
         bool isBusy;
 
         /// Is island free of tasks (big-little)? i.e., is there any other CPU in this island holding a task?
-        static bool isLittleIslandBusy;
+        static bool isIslandBusy[NUM_ISLANDS];
+        static int islandCurOPP[NUM_ISLANDS];
+
+      static bool isLittleIslandBusy;
         static bool isBigIslandBusy;
       static int littleIslandCurOPP;
       static int bigIslandCurOPP;
@@ -95,7 +100,7 @@ namespace RTSim
 
     public:
         /// Identifier of the island
-        enum Island { BIG, LITTLE } island;
+        Island island;
 
         /// Reference CPUs frequency to compute CPU capacity. It is a global field to all CPUs
         static unsigned int referenceFrequency;
@@ -140,7 +145,7 @@ namespace RTSim
       /// In big-little all CPUs in an island have the same frequency/OPP 
       void updateIslandCurOPP(vector<CPU*> cpus) {
         unsigned int opp = littleIslandCurOPP;
-        enum Island i = getIsland();
+        Island i = getIsland();
         if (i == Island::BIG)
           opp = bigIslandCurOPP;
 
@@ -220,7 +225,7 @@ namespace RTSim
         virtual void setOPP(unsigned int newOPP);
 
         /// set CPU island (big little)
-        void setIsland(enum Island i) {
+        void setIsland(Island i) {
             island = i;
         }
 
@@ -278,7 +283,7 @@ namespace RTSim
         inline double getPowerConsumption() { return getPowerConsumption(getFrequency()); }
 
         /// returns the island where the CPU is located
-        enum Island getIsland() { return this->island; };
+        Island getIsland() { return this->island; };
 
         /// filter out CPUs based on their island
         static vector<CPU*> getCPUsInIsland(std::vector<CPU*> cpus, CPU::Island island);
