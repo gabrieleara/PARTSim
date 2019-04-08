@@ -397,7 +397,9 @@ int main(int argc, char *argv[])
             int taskNO = 3;
             int task_period = 500;
             int mode = 0;
+            int seed = 98;
             vector<PeriodicTask*> tasks;
+            srand(seed); // random nums are expected to be the same in all simulations
 
             for (int j = 0; j < taskNO; j++) {
                 task_name = "T9_task" + std::to_string(j);
@@ -405,17 +407,15 @@ int main(int argc, char *argv[])
                 PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
                 char instr[60] = "";
                 // srand(time(NULL)) or srand(seed)
-                srand(time(0));
                 switch (mode) {
                 case 0:
                   sprintf(instr, "delay(unif(1, %d));", task_period);
                   break;
                 case 1:
-                  // task_period * rand() / (RAND_MAX + 1)
-                  sprintf(instr, "delay(delta(%d));", rand() % task_period + 1);
+                  sprintf(instr, "delay(delta(%d));", task_period * rand() / (RAND_MAX + 1));
                   break;
                 case 2:
-                  sprintf(instr, "fixed(%d);", rand() % task_period + 1);
+                  sprintf(instr, "fixed(%d);", task_period * rand() / (RAND_MAX + 1));
                   break;
                 default: break;
                 }
@@ -428,7 +428,7 @@ int main(int argc, char *argv[])
             SIMUL.initSingleRun();
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
-            
+
             cpus.clear();
             schedulers.clear();
             kernels.clear();
