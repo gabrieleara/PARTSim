@@ -207,6 +207,7 @@ namespace RTSim {
             _m_currExe[p] = NULL;
             _m_oldExe[task] = p;
             _m_dispatched[task] = NULL;
+            dispatch(p);
         }
     }
 

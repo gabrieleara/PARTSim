@@ -54,7 +54,6 @@ namespace RTSim {
         // }
         // else {
         k->suspend(_father);
-        k->dispatch();
         //}
         resumeEvt.post(SIMUL.getTime() + delay);
     }
