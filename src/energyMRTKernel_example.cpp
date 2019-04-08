@@ -408,12 +408,14 @@ int main(int argc, char *argv[])
                 cout << "Creating task: " << task_name;
                 PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
                 char instr[60] = "";
+                // srand(time(NULL)) or srand(seed)
                 srand(time(0));
                 switch (mode) {
                 case 0:
                   sprintf(instr, "delay(unif(1, %d));", task_period);
                   break;
                 case 1:
+                  // task_period * rand() / (RAND_MAX + 1)
                   sprintf(instr, "delay(delta(%d));", rand() % task_period + 1);
                   break;
                 case 2:
