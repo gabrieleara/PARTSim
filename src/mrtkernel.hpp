@@ -142,6 +142,11 @@ namespace RTSim {
         bool isDispatched(CPU *p); 
 
         typedef map<CPU *, AbsRTTask *>::iterator ITCPU;
+
+        /**
+         * a CPU is considered free to use if it has no _m_currExe[] task mapped, and
+         * there are no _m_dispatched[] tasks on that CPU
+         */
         ITCPU getNextFreeProc(ITCPU s, ITCPU e);
 
     public:
