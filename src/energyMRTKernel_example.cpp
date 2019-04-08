@@ -20,6 +20,7 @@
 #include <powermodel.hpp>
 #include <energyMRTKernel.hpp>
 #include "rrsched.hpp"
+#include "rttask.hpp"
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -201,14 +202,8 @@ int main(int argc, char *argv[])
         EDFScheduler *edfsched = new EDFScheduler;
         schedulers.push_back(edfsched);
 
-        RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
-        schedulers.push_back(rrsched);
-
         EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel");
         kernels.push_back(kern);
-
-        MRTKernel *kernMRT = new MRTKernel(rrsched, cpus, "You've got a fellow, RR");
-        kernels.push_back(kernMRT);
 
         CPU::referenceFrequency = 2000; // BIG_3 frequency
 
@@ -402,6 +397,7 @@ int main(int argc, char *argv[])
             int taskNO = 3;
             int task_period = 500;
             int mode = 0;
+            vector<PeriodicTask*> tasks;
 
             for (int j = 0; j < taskNO; j++) {
                 task_name = "T9_task" + std::to_string(j);
@@ -424,12 +420,33 @@ int main(int argc, char *argv[])
                 default: break;
                 }
                 t->insertCode(instr);
+                tasks.push_back(t);
                 ttrace.attachToTask(*t);
                 kernels[0]->addTask(*t, "");
-
-                kernels[1]->addTask(*t, "");
             }
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            
+            cpus.clear();
+            schedulers.clear();
+            kernels.clear();
+
+            RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
+            EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, cpus, "Round Robin");
+            kernels.push_back(kern);
+            for (PeriodicTask* t : tasks)
+                kernels[0]->addTask(*t, "");
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            return 0;
+
             // random workloads...delay(unif,PDF).
+            // todo above code not tested
+
             // todo domanda: round robin e' gia' implementato. pero' e' uno scheduler, le decisioni di piazzamento a CPU
             // le faccio sempre io con energyMRTKernel? Non sarebbe quello che succede in Linux pero' -> userei MRTKernel. Giusto?
         }
