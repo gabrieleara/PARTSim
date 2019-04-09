@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         OPP_big = stoi(argv[2]);
         workload = argv[3];
     }
-   else if (argc == 2) { TEST_NO = stoi(argv[2]);  }
+   else if (argc == 2) { TEST_NO = stoi(argv[1]);  }
 
     cout << "current OPPs indices: [" << OPP_little << ", " << OPP_big << "]" << endl;
     cout << "Workload: [" << workload << "]" << endl;

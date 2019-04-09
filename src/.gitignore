@@ -5,4 +5,5 @@ cmake-build-debug/
 *.txt
 t.txt.save
 *#*
-energy
+example
+test/test

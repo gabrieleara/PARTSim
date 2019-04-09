@@ -6,7 +6,7 @@ OBJ_FILES=$(patsubst %.cpp,%.o,$(CPP_FILES))
 
 SOURCES=$(CPP_FILES) $(HPP_FILES)
 
-PHONY: all build test clean execute
+.PHONY: all build test clean execute open
 
 all: test
 

@@ -141,6 +141,17 @@ namespace RTSim {
         exit(0);
     }
 
+    // for gdb
+    void EnergyMRTKernel::printMap() {
+        for (const auto& elem:_m_dispatching) {
+            if (elem.first != NULL)
+               cout << elem.first->toString();
+            if (elem.second.first != NULL)
+                cout << " in " << elem.second.first->toString() << " freq " << elem.second.second;
+            cout << endl;
+        }
+    }
+
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
@@ -357,7 +368,7 @@ namespace RTSim {
             AbsRTTask *t = _sched->getTaskN(i);
             if (t == NULL) break;
             else if (getProcessor(t) == NULL &&
-                     _m_dispatching[t].first == NULL) num_newtasks++;
+                     _m_dispatching.find(t) == _m_dispatching.end()) num_newtasks++;
         }
 
         _sched->print();
@@ -377,7 +388,7 @@ namespace RTSim {
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
-                cout << "Task has already been dispatching, but dispatching is not complete => skip" << endl;
+                cout << "Task has already been dispatched, but dispatching is not complete => skip" << endl;
                 continue;
             }
 

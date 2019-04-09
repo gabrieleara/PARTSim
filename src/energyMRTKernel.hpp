@@ -84,8 +84,8 @@ namespace RTSim {
 
         virtual void addTask(AbsRTTask &t, const string &param) {
           MRTKernel::addTask(t, param);
-          _m_dispatching[&t].first = NULL;
-            _m_dispatching[&t].second = -1;
+          //_m_dispatching[&t].first = NULL;
+          //_m_dispatching[&t].second = -1;
         }
 
         /**
@@ -171,6 +171,8 @@ namespace RTSim {
 
         /// to debug internal functions...
         void test();
+
+        void printMap();
     };
 }
 
