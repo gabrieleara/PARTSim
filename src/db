@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# this worked: gdbgui ./example --gdb-args=" -ex 'break energyMRTKernel.cpp:117' "
+gdbgui --gdb-args=" -ex 'break "$1"' -ex 'r' ./example "
