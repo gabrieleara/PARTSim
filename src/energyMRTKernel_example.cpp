@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
     vector<CPU*> cpus;
+    int TEST_NO = 1;
 
     dumpAllSpeeds();
     
@@ -54,6 +55,7 @@ int main(int argc, char *argv[])
         OPP_big = stoi(argv[2]);
         workload = argv[3];
     }
+   else if (argc == 2) { TEST_NO = stoi(argv[2]);  }
 
     cout << "current OPPs indices: [" << OPP_little << ", " << OPP_big << "]" << endl;
     cout << "Workload: [" << workload << "]" << endl;
@@ -216,7 +218,6 @@ int main(int argc, char *argv[])
         /* LITTLE */
 
         string task_name;
-        int TEST_NO = 9;
         TextTrace ttrace("trace" + to_string(TEST_NO) + ".txt");
         //JSONTrace jtrace("trace.json");
         cout << "Test to perform is " << TEST_NO << endl;
@@ -412,10 +413,10 @@ int main(int argc, char *argv[])
                   sprintf(instr, "delay(unif(1, %d));", task_period);
                   break;
                 case 1:
-                  sprintf(instr, "delay(delta(%d));", task_period * rand() / (RAND_MAX + 1));
+                  sprintf(instr, "delay(delta(%d));", task_period * rand() / (RAND_MAX + 1u));
                   break;
                 case 2:
-                  sprintf(instr, "fixed(%d);", task_period * rand() / (RAND_MAX + 1));
+                  sprintf(instr, "fixed(%d);", task_period * rand() / (RAND_MAX + 1u));
                   break;
                 default: break;
                 }
