@@ -37,35 +37,16 @@ namespace RTSim {
         _sched->setKernel(this);
     }
 
-    // todo do I need getTask or getTask?
-    AbsRTTask* EnergyMRTKernel::getTask(CPU* c)
-    {
-        AbsRTTask* t = _m_currExe[c];
-
-        if (t == NULL)
-            for (const auto& elem : _m_dispatching) {
-                if (c == elem.second.first) {
-                    AbsRTTask *tt = const_cast<AbsRTTask *>(elem.first);
-                    t = tt;
-                    break;
-                }
-            }
-
+    AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
+        AbsRTTask* t = MRTKernel::getTask(c);
         return t;
     }
 
-    std::vector<AbsRTTask*> EnergyMRTKernel::getTasks(CPU* c) const
-    {
+    std::vector<AbsRTTask*> EnergyMRTKernel::getTasks(CPU* c) const {
         std::vector<AbsRTTask*> t;
 
         for (const auto& elem : _m_dispatching)
             if (c == elem.second.first) {
-                AbsRTTask *tt = const_cast<AbsRTTask *>(elem.first);
-                t.push_back(tt);
-            }
-
-        for (const auto& elem : _m_dispatched)
-            if (c == elem.second) {
                 AbsRTTask *tt = const_cast<AbsRTTask *>(elem.first);
                 t.push_back(tt);
             }
@@ -78,7 +59,7 @@ namespace RTSim {
 
         for (CPU* c1 : CPU::getCPUsInIsland(getProcessors(), island)) {
             for (AbsRTTask* th : getTasks(c1)) {
-                if (getProcessor(th)->getIsland() == c1->getIsland()) {
+              if (getProcessorForDispatching(th)->getIsland() == c1->getIsland() || getProcessor(th)->getIsland() == c1->getIsland()) {
                     utilizationIsland += ceil(th->getWCET(capacity)) / double(th->getDeadline());
                     if (nTasksIsland != NULL)
                         *nTasksIsland = *nTasksIsland + 1;
@@ -90,10 +71,8 @@ namespace RTSim {
     }
 
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, CPU* c, double capacity) const {
-        // todo implementation of getwcet is wrong since it should handle cases with many instructions (sum of their wcet)
         double util = ceil(task->getWCET(capacity)) / double(task->getDeadline());
 
-        //cout<<"\t\t\tgetUtilization " << typeid(*task).name()<<endl;
 #include <cstdio>
         printf("\t\t\tgetUtilization of considered task %f/%f (capaity=%f)=%f\n",task->getWCET(capacity), double(task->getDeadline()), capacity, util);
         return util;
@@ -104,7 +83,6 @@ namespace RTSim {
         vector<AbsRTTask*> ths = getTasks(c);
 
         for (AbsRTTask* th : ths) {
-            //utilization += th->getWCET(c->getCapacity(freq)) / double(th->getDeadline());
             utilization += ceil(th->getWCET(capacity)) / double(th->getDeadline());
             cout << "\t\t\tUtilization task already in CPU, " << th->toString() << ", is "
                  << ceil(th->getWCET(capacity)) << "/" << th->getDeadline() << " = "
@@ -117,18 +95,16 @@ namespace RTSim {
         return utilization;
     }
 
-    CPU *EnergyMRTKernel::getProcessor(const AbsRTTask *t) const
+    CPU *EnergyMRTKernel::getProcessorForDispatching(const AbsRTTask *t) const
     {
-        CPU* ret = MRTKernel::getProcessor(t);
-
         // process may be in the limbo between onBegin and onEndMultiDispatch,
         // thus it might not be caught by MRTKernel
-        if (ret == NULL) {
-            for (auto &elem : _m_dispatching)
-                if (elem.first == t) {
-                    ret = elem.second.first;
-                    break;
-                }
+        CPU* ret = NULL;
+       
+        for (auto &elem : _m_dispatching)
+            if (elem.first == t) {
+                ret = elem.second.first;
+            break;
         }
 
         return ret;
@@ -142,15 +118,6 @@ namespace RTSim {
         if(it != _m_dispatching.end())
             return true;
         return false;
-    }
-
-    void EnergyMRTKernel::reweighInstr(Task *t, double oldSpeed, double newSpeed) {
-        auto& instrs = t->getInstrQueue();
-
-        for (int i = 0; i < instrs.size(); i++) {
-            ExecInstr* instr = dynamic_cast<ExecInstr*>(instrs.at(i).get());
-            instr->refreshExec(oldSpeed, newSpeed);
-        }
     }
 
     void EnergyMRTKernel::setIslandFrequency(CPU::Island island) {
@@ -174,29 +141,51 @@ namespace RTSim {
         exit(0);
     }
 
-    bool EnergyMRTKernel::existDispatchingTask(CPU* p) {
-        bool res = false;
+    void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
+        DBGENTER(_KERNEL_DBG_LEV);
 
-        for (auto elem : _m_dispatching) {
-            if (elem.second.first == p) {
-                res = true;
-                break;
-            }
+        // if necessary, deschedule the task.
+        CPU * p = e->getCPU();
+        AbsRTTask *dt  = _m_currExe[p];
+        AbsRTTask *st  = NULL;
+
+        if ( dt != NULL ) {
+            _m_oldExe[dt] = p;
+            _m_currExe[p] = NULL;
+            _m_dispatching[dt].first = NULL;
+            _m_dispatching[dt].second = -1;
+            dt->deschedule();
         }
 
-        return res;
-    }
+        // select the first non dispatching task in the queue
+        int i = 0;
+        while ((st = _sched->getTaskN(i)) != NULL) 
+            if (_m_dispatching[st].first == NULL) break;
+            else i++;
 
-    void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
-        // TBD: use _m_dispatching[]
+        if (st == NULL) {
+            DBGPRINT("Nothing to schedule, finishing");
+        }
+
+        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
+        // todo
+        cout << __func__ << "Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
+
+         if (st) _m_dispatching[st].first = p;
+        _endEvt[p]->setTask(st);
+        _isContextSwitching[p] = true;
+        // if you exit(0) here, dispatch() has already chosen a CPU forall tasks
+        // exit(0);
+        Tick overhead (_contextSwitchDelay);
+        if (st != NULL && _m_oldExe[st] != p && _m_oldExe[st] != NULL) 
+            overhead += _migrationDelay;
+        _endEvt[p]->post(SIMUL.getTime() + overhead);
     }
 
     // called after dispatch(), i.e. after choosing a CPU forall tasks.
     // also called when a periodic task ends its WCET
     void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e)
     {
-        // If you get here, simulator has already called dispatch() forall arrived tasks (CPUs already chosen).
-
         cout << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString()) << endl;
         MRTKernel::onEndDispatchMulti(e);
        
@@ -310,15 +299,16 @@ namespace RTSim {
         if (t->toString().find("T7_task6") != std::string::npos)
           cout<<""<< t;
 
+        // this is meant to be a virtual assignment of CPU OPP
         p->setOPP(opp);
         p->setBusy(true);
         p->setIslandCurOPP();
         p->updateIslandCurOPP(CPUs);
 
-        // bug not relevant: if opp > island opp, _m_dispatching be updated where needed
         if (opp > p->getIslandCurOPP())
           for (auto &elem : _m_dispatching)
             if (elem.second.first->getIsland() == p->getIsland()) {
+              //todo
               cout << "ahah " << elem.second.first->toString() << " VS " << opp << endl;
               elem.second.first->setOPP(opp);
             }
@@ -344,7 +334,7 @@ namespace RTSim {
             _endEvt[p]->drop();
             if (task != NULL) {
                 _endEvt[p]->setTask(NULL);
-                _m_dispatched[task] = NULL;
+                _m_dispatching[task].first = NULL;
             }
         } else {
             _beginEvt[p]->post(SIMUL.getTime());
@@ -367,7 +357,7 @@ namespace RTSim {
             AbsRTTask *t = _sched->getTaskN(i);
             if (t == NULL) break;
             else if (getProcessor(t) == NULL &&
-                     _m_dispatched[t] == NULL) num_newtasks++;
+                     _m_dispatching[t].first == NULL) num_newtasks++;
         }
 
         _sched->print();
@@ -377,22 +367,17 @@ namespace RTSim {
         cout << "I must schedule #task=" << num_newtasks << endl;
 
         i = 0;
-        ITCPU start = _m_currExe.begin();
-        ITCPU stop = _m_currExe.end();
-        ITCPU f = start;
         std::vector<CPU*> cpus = getProcessors();
         do {
             cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
-            double e = 0.0;
-            std::map<double, CPU*> energies;
             Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
             if (t == NULL) break;
             cout << "Dealing with task " << t->toString() << "." << endl;
 
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
-                // not to be dispatched (i.e., assigned to a processor)
-                cout << "Task has already been dispatched, but dispatching is not complete => skip" << endl;
+                // not to be dispatching (i.e., assigned to a processor)
+                cout << "Task has already been dispatching, but dispatching is not complete => skip" << endl;
                 continue;
             }
 
@@ -494,6 +479,7 @@ namespace RTSim {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
                 // todo don't know how to discard a task here. Think you need to work with _beginEvt and _endEvt
+                _sched->extract(t);
             }
             num_newtasks--;
 

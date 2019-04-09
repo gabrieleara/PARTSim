@@ -48,32 +48,29 @@ namespace RTSim {
 
     class EnergyMRTKernel : public MRTKernel {
 
-    private:
+    protected:
         struct ConsumptionTable {
             double cons;
             CPU* cpu;
             int opp;
         };
-
         /**
          * CPU choice from the table of consumptions (not sorted).
          * It tries to spread tasks on CPUs if they have the same energy consumption
          */
         void chooseCPU(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
-    protected:
 
         std::vector<CPU*> CPUs;
 
       /**
        * List of tasks ready on a CPU with a given frequency.
-       * Use this variable only before the scheduling finishes ( onBeginDispatchMulti() ), at which point you can use MRTKernel::_m_dispatched.
+       * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU OPP.
+       * In fact, the dispatch() could choose to schedule a task on a big CPU with freq 200 and
+       * another on another big with freq 1900. But in Big Little all CPUs have same freq/OPP.
        */
         std::map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
 
         inline std::vector<CPU*> getProcessors() const { return CPUs; }
-
-        /// Reweigh task instructions WCET after island clock up
-        void reweighInstr(Task *t, double oldSpeed, double newSpeed);
 
         /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
         void setIslandFrequency(CPU::Island island);
@@ -84,6 +81,12 @@ namespace RTSim {
           * Kernel with scheduler s and CPUs cpus
           */
         EnergyMRTKernel(Scheduler *s, std::vector<CPU*> cpus , const std::string &name = "");
+
+        virtual void addTask(AbsRTTask &t, const string &param) {
+          MRTKernel::addTask(t, param);
+          _m_dispatching[&t].first = NULL;
+            _m_dispatching[&t].second = -1;
+        }
 
         /**
            This function is called by the onArrival and by the
@@ -105,6 +108,10 @@ namespace RTSim {
          */
         virtual void dispatch(CPU* c);
 
+      /// Tells where a task has been dispatched (when it's in the limbo
+      /// between onBeginDispatchMulti and onEndDispatchMulti)
+       CPU* getProcessorForDispatching(const AbsRTTask* t) const;
+
         /**
            This function only calls dispatch(CPU*) and assigns a task to a CPU,
            which should be actually done by dispatch(CPU*) itself or onEndDispatchMulti(),
@@ -119,10 +126,10 @@ namespace RTSim {
         */
         double getIslandUtilization(double capacity, CPU::Island island, int *nTaskIsland);
 
-        /// Returns utilization of task t on CPU c. todo They should be defined for tasks, but this way I can make this implementation private
+        /// Returns utilization of task t on CPU c. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(AbsRTTask* t, CPU* c, double capacity) const;
 
-        /// Returns utilization of tasks on CPU c, supposing it runs with given freq and capacity. todo They should be defined for tasks, but this way I can make this implementation private
+        /// Returns utilization of tasks on CPU c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(CPU* c, double freq, double capacity) const;
 
       	virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
@@ -139,11 +146,6 @@ namespace RTSim {
          */
         virtual void onEnd(AbsRTTask* t);
 
-        /**
-         * Tells whether there exists a task to be scheduled on CPU p
-         */
-        bool existDispatchingTask(CPU* p);
-
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);
 
@@ -151,14 +153,21 @@ namespace RTSim {
          *  Returns a pointer to the task which is executing on given
          *  CPU (NULL if given CPU is idle)
          */
-        virtual AbsRTTask* getTask(CPU* c);
+        virtual AbsRTTask* getTaskRunning(CPU* c);
 
         /**
-         *  Returns the set of tasks in the runqueu of CPU c
+         *  Returns the set of tasks in the runqueue of CPU c
          */
         virtual std::vector<AbsRTTask*> getTasks(CPU* c) const;
 
-        virtual CPU *getProcessor(const AbsRTTask *t) const;
+        virtual void newRun() {
+          MRTKernel::newRun();
+
+          for (auto& elem : _m_dispatching) {
+            elem.second.first = NULL;
+            elem.second.second = -1;
+          }
+        }
 
         /// to debug internal functions...
         void test();
