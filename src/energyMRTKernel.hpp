@@ -108,9 +108,13 @@ namespace RTSim {
          */
         virtual void dispatch(CPU* c);
 
-      /// Tells where a task has been dispatched (when it's in the limbo
-      /// between onBeginDispatchMulti and onEndDispatchMulti)
-       CPU* getProcessorForDispatching(const AbsRTTask* t) const;
+        /// Tells where a task has been dispatched (when it's in the limbo
+        /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
+        CPU* getDispatchingProcessor(const AbsRTTask* t) const;
+
+        /// Tells what task has been dispatched to a CPU (when it's in the limbo
+        /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
+        AbsRTTask* getDispatchingTask(const CPU* cpu) const;
 
         /**
            This function only calls dispatch(CPU*) and assigns a task to a CPU,
@@ -173,6 +177,8 @@ namespace RTSim {
         void test();
 
         void printMap();
+
+        void printBool(bool b);
     };
 }
 

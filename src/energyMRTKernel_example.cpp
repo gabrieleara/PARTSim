@@ -223,48 +223,6 @@ int main(int argc, char *argv[])
         cout << "Test to perform is " << TEST_NO << endl;
 
         if (TEST_NO == 0) {
-            cout << "workload "<<workload<<endl;
-            task_name = "Task_LITTLE_0";
-            cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(100," + workload + ");");
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-
-            task_name = "Task_LITTLE_1";
-            cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(100," + workload + ");");
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-
-            task_name = "Task_LITTLE_2";
-            cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(100," + workload + ");");
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-
-            task_name = "Task_LITTLE_3";
-            cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(100," + workload + ");");
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-
-            task_name = "Task_big_0";
-            cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(100," + workload + ");");
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-        }
-        else if (TEST_NO == 1) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -275,7 +233,7 @@ int main(int argc, char *argv[])
 
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
         }
-        else if (TEST_NO == 2) {
+        else if (TEST_NO == 1) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -293,7 +251,7 @@ int main(int argc, char *argv[])
 
             // task1 (500,500) => BIG_3 max freq, task2 (500,500) => BIG_2 max freq
         }
-        else if (TEST_NO == 3) {
+        else if (TEST_NO == 2) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -311,7 +269,7 @@ int main(int argc, char *argv[])
 
             // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
-        else if (TEST_NO == 4) {
+        else if (TEST_NO == 3) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -321,6 +279,17 @@ int main(int argc, char *argv[])
             //jtrace.attachToTask(*t);
 
             // little freq 500
+        }
+        else if (TEST_NO == 4) {
+            for (int j = 0; j < 4; j++) {
+                task_name = "T4_task_LITTLE_" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(100, %s);", workload.c_str());
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+            }
         }
         else if(TEST_NO == 5) {
             for (int j = 0; j < 4; j++) {

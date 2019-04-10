@@ -22,7 +22,7 @@ int init_sequence = 0;
 vector<CPU*> cpus;
 vector<CPU*> cpu_task; // to be cleared after each test
 vector<PeriodicTask*> task; // to be cleared after each test
-vector<RTKernel *> kernels;
+vector<EnergyMRTKernel *> kernels;
 
 int cleanup_suite();
 int init_suite();
@@ -38,7 +38,7 @@ void energyTest0() {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kernels[0]->getProcessor(t0);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(t0);
 
     CU_ASSERT(t0->getName() == "T0_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
@@ -64,8 +64,8 @@ void energyTest1() {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kernels[0]->getProcessor(t0);
-    CPU *c1 = kernels[0]->getProcessor(t1);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(t0);
+    CPU *c1 = kernels[0]->getDispatchingProcessor(t1);
 
     CU_ASSERT(t0->getName() == "T1_task1");
     CU_ASSERT(c0->getFrequency() == 2000);
@@ -96,8 +96,8 @@ void energyTest2() {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kernels[0]->getProcessor(t0);
-    CPU *c1 = kernels[0]->getProcessor(t1);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(t0);
+    CPU *c1 = kernels[0]->getDispatchingProcessor(t1);
 
     for(string s : kernels[0]->getRunningTasks())
       cout << "running :" << s<<endl;
@@ -125,7 +125,7 @@ void energyTest3() {
     SIMUL.initSingleRun();
     SIMUL.run_to(10);
 
-    CPU *c0 = kernels[0]->getProcessor(t0);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(t0);
 
     CU_ASSERT(t0->getName() == "T3_task1");
     CU_ASSERT(c0->getFrequency() == 500);
@@ -152,11 +152,10 @@ void energyTest4() {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kernels[0]->getProcessor(task[0]);
-    CPU *c1 = kernels[0]->getProcessor(task[1]);
-    CPU *c2 = kernels[0]->getProcessor(task[2]);
-    CPU *c3 = kernels[0]->getProcessor(task[3]);
-    CPU *c4 = kernels[0]->getProcessor(task[4]);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(task[0]);
+    CPU *c1 = kernels[0]->getDispatchingProcessor(task[1]);
+    CPU *c2 = kernels[0]->getDispatchingProcessor(task[2]);
+    CPU *c3 = kernels[0]->getDispatchingProcessor(task[3]);
 
     CU_ASSERT(task[0]->getName() == "T4_Task_LITTLE_0");
     CU_ASSERT(c0->getFrequency() == 700);
@@ -175,13 +174,8 @@ void energyTest4() {
 
     CU_ASSERT(task[3]->getName() == "T4_Task_LITTLE_3");
     CU_ASSERT(c3->getFrequency() == 700);
-    CU_ASSERT(c3->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(double(task[3]->getWCET(c3->getSpeed()))) == 488);
-
-    CU_ASSERT(task[4]->getName() == "T4_Task_LITTLE_4");
-    CU_ASSERT(c4->getFrequency() == 700);
-    CU_ASSERT(c4->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(task[4]->getWCET(c4->getSpeed()))) == 251);
+    CU_ASSERT(c3->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(task[3]->getWCET(c3->getSpeed()))) == 251);
 
     SIMUL.endSingleRun();
 }
@@ -205,10 +199,10 @@ void energyTest5() {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kernels[0]->getProcessor(task[0]);
-    CPU *c1 = kernels[0]->getProcessor(task[1]);
-    CPU *c2 = kernels[0]->getProcessor(task[2]);
-    CPU *c3 = kernels[0]->getProcessor(task[3]);
+    CPU *c0 = kernels[0]->getDispatchingProcessor(task[0]);
+    CPU *c1 = kernels[0]->getDispatchingProcessor(task[1]);
+    CPU *c2 = kernels[0]->getDispatchingProcessor(task[2]);
+    CPU *c3 = kernels[0]->getDispatchingProcessor(task[3]);
 
     PeriodicTask* t = task[0];
     CU_ASSERT(t->getName() == "T5_task0");
@@ -258,7 +252,7 @@ void energyTest6() {
     SIMUL.run_to(1);
 
     for (int j = 0; j < 5; j++) {
-        cpu_task.push_back(kernels[0]->getProcessor(task[j]));
+        cpu_task.push_back(kernels[0]->getDispatchingProcessor(task[j]));
     }
 
     i = 0;
@@ -333,7 +327,7 @@ void energyTest7() {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task.push_back(kernels[0]->getProcessor(task[j]));
+        cpu_task.push_back(kernels[0]->getDispatchingProcessor(task[j]));
     }
 
     i = 0;
@@ -376,9 +370,9 @@ void energyTest7() {
     t = task[i];
     c = cpu_task[i];
     CU_ASSERT(t->getName() == "T7_task4");
-    CU_ASSERT(c->getFrequency() == 500);
-    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 28);
+    CU_ASSERT(c->getFrequency() == 700);
+    CU_ASSERT(c->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 75);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
@@ -404,7 +398,7 @@ void energyTest8() {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task.push_back(kernels[0]->getProcessor(task[j]));
+        cpu_task.push_back(kernels[0]->getDispatchingProcessor(task[j]));
     }
 
     i = 0;
@@ -413,7 +407,7 @@ void energyTest8() {
     CU_ASSERT(t->getName() == "T8_task" + i);
     CU_ASSERT(c->getFrequency() == 1400);
     CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed())))  == 181);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed())))  == 499);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -422,7 +416,7 @@ void energyTest8() {
     CU_ASSERT(t->getName() == "T8_task" + i);
     CU_ASSERT(c->getFrequency() == 1700);
     CU_ASSERT(c->getIsland() == CPU::Island::BIG);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 419);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 477);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -438,9 +432,9 @@ void energyTest8() {
     t = task[i];
     c = cpu_task[i];
     CU_ASSERT(t->getName() == "T8_task"+i);
-    CU_ASSERT(c->getFrequency() == 1400);
-    CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 163);
+    CU_ASSERT(c->getFrequency() == 1700);
+    CU_ASSERT(c->getIsland() == CPU::Island::BIG);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 297);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -449,7 +443,7 @@ void energyTest8() {
     CU_ASSERT(t->getName() == "T8_task"+i);
     CU_ASSERT(c->getFrequency() == 1400);
     CU_ASSERT(c->getIsland() == CPU::Island::LITTLE);
-    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 65);
+    CU_ASSERT(int(double(t->getWCET(c->getSpeed()))) == 162);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 5;
@@ -535,6 +529,8 @@ int main()
     addTest(exp_no++, pSuites, energyTest4);
     addTest(exp_no++, pSuites, energyTest5);
     addTest(exp_no++, pSuites, energyTest6);
+    addTest(exp_no++, pSuites, energyTest7);
+    addTest(exp_no++, pSuites, energyTest8);
 
     CU_list_tests_to_file();
     CU_set_output_filename("results");
