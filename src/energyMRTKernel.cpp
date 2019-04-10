@@ -176,7 +176,7 @@ namespace RTSim {
 
     // Note MRTKernel version differs: dispatch() tasks a free CUP and calls onBDM(), which in turns
     // assigns a task. EnergyMRTKernel, instead, needs to make assignment decisions: dispatch() chooses
-    // a CPU for all tasks, and onBDM() makes the context switch (split into onBDM() and onEBM(), as in MRTKernel)
+    // a CPU for all tasks, and on*DM() makes the context switch (split into onBDM() and onEBM(), as in MRTKernel)
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
@@ -184,6 +184,7 @@ namespace RTSim {
         CPU * p = e->getCPU();
         AbsRTTask *dt  = _m_currExe[p];
         AbsRTTask *st  = getDispatchingTask(p);
+        assert(st != NULL);
 
         if ( st != NULL && dt == st ) {
             stringstream ss;
@@ -200,10 +201,6 @@ namespace RTSim {
             dt->deschedule();
         }
 
-        if (st == NULL) {
-            DBGPRINT("Nothing to schedule, finishing");
-        }
-
         DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
         // todo
         cout << __func__ << " Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
@@ -213,7 +210,8 @@ namespace RTSim {
         // if you exit(0) here, dispatch() has already chosen a CPU forall tasks
         // exit(0);
         Tick overhead (_contextSwitchDelay);
-        if (getOldProcessor(st) != p && getOldProcessor(st) != NULL)
+        CPU* oldProcessor = getOldProcessor(st);
+        if (oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
         _endEvt[p]->post(SIMUL.getTime() + overhead);
     }
@@ -273,7 +271,7 @@ namespace RTSim {
             c->setIsIslandBusy(islandBusy);
         }
 
-        // this wouldn't be done on Linux, since it's not convenient to clock down CPUs after task ends.
+        // This wouldn't be done on Linux, since it's not convenient to clock down CPUs after task ends.
         // Here, however, it's needed to make formulas and the framework work
         DBGPRINT_2("Is island busy? ", bool(islandBusy) );
         if (!islandBusy) {
@@ -283,7 +281,13 @@ namespace RTSim {
             }
         }
 
-        MRTKernel::onEnd(t);
+        _sched->extract(t);
+        _m_oldExe[t] = p;
+        _m_currExe[p] = NULL;
+        _m_dispatched[t] = NULL;
+
+        // maybe some other not-yet-dispatched tasks are schedulable
+        // dispatch()
     }
 
     void EnergyMRTKernel::chooseCPU(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows) {
@@ -360,7 +364,7 @@ namespace RTSim {
 
         DBGPRINT_2("dispatching on processor ", p);
         _beginEvt[p]->drop();
- 
+
         if (_isContextSwitching[p]) {
             // memo: I've seen it doesn't get here normally
             DBGPRINT("Context switch is disabled!");
@@ -392,7 +396,7 @@ namespace RTSim {
             AbsRTTask *t = _sched->getTaskN(i);
             if (t == NULL) break;
             else if (getProcessor(t) == NULL &&
-                     _m_dispatching.find(t) == _m_dispatching.end()) num_newtasks++;
+                     !isDispatching(t)) num_newtasks++;
         }
 
         _sched->print();
