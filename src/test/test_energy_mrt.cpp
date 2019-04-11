@@ -22,6 +22,7 @@ int init_sequence = 0;
 int cleanup_suite();
 int init_suite(vector<CPU*> *cpus);
 
+/*	
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
 
@@ -49,6 +50,7 @@ TEST_CASE("exp0") {
     REQUIRE(int(t0->getWCET(c0->getSpeed()))  == 497);
 
     SIMUL.endSingleRun();
+    delete t0;
     for (CPU* c:cpus) delete c;
 }
 
@@ -59,6 +61,7 @@ TEST_CASE("exp1") {
     vector<PeriodicTask*> task; // to be cleared after each test
     init_suite(&cpus);
 cout << "size "<<cpus.size()<<endl;
+for (CPU* c:cpus) cout << c->toString()<<endl;
 
     EDFScheduler *edfsched = new EDFScheduler;
     EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
@@ -265,38 +268,43 @@ TEST_CASE("exp5") {
     REQUIRE(c0->getFrequency() == 500);
     REQUIRE(c0->getIsland() == CPU::Island::LITTLE);
     REQUIRE(int(t->getWCET(c0->getSpeed()))  == 32);
+    cout << t->toString() << " on "<< c0->toString()<<endl;
 
     t = task[1];
     REQUIRE(t->getName() == "T5_task1");
     REQUIRE(c1->getFrequency() == 500);
     REQUIRE(c1->getIsland() == CPU::Island::LITTLE);
     REQUIRE(int(t->getWCET(c1->getSpeed())) == 32);
+    cout << t->toString() << " on "<< c1->toString()<<endl;
 
     t = task[2];
     REQUIRE(t->getName() == "T5_task2");
     REQUIRE(c2->getFrequency() == 500);
     REQUIRE(c2->getIsland() == CPU::Island::LITTLE);
     REQUIRE(int(t->getWCET(c2->getSpeed())) == 32);
+    cout << t->toString() << " on "<< c2->toString()<<endl;
 
     t = task[3];
     REQUIRE(t->getName() == "T5_task3");
     REQUIRE(c3->getFrequency() == 500);
     REQUIRE(c3->getIsland() == CPU::Island::LITTLE);
     REQUIRE(int(t->getWCET(c3->getSpeed())) == 32);
+    cout << t->toString() << " on "<< c3->toString()<<endl;
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task)
-        delete t;
+    for (PeriodicTask* t : task) delete t;
     for (CPU* c:cpus) delete c;
+    delete edfsched;
+	delete kern;
 }
-
+*/
 // test showing that frequency of little/big island may be raised
 TEST_CASE("exp6") {
     cout << "Begin of experiment " << init_sequence << endl;
 
     vector<CPU*> cpus;
-    vector<CPU*> cpu_task; // to be cleared after each test
-    vector<PeriodicTask*> task; // to be cleared after each test
+    CPU* cpu_task[5]; // to be cleared after each test
+    PeriodicTask* task[5]; // to be cleared after each test
     init_suite(&cpus);
     
     EDFScheduler *edfsched = new EDFScheduler;
@@ -315,14 +323,16 @@ TEST_CASE("exp6") {
         t->insertCode(instr);
         kern->addTask(*t, "");
 
-        task.push_back(t);
+        task[j] = t;
     }
 
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
+cout << "sono arrivato qua"<<endl;
     for (int j = 0; j < 5; j++) {
-        cpu_task.push_back(kern->getProcessor(task[j]));
+        cpu_task[j] = kern->getProcessor(task[j]);
+        cout << task[j]->toString() << " on " << cpu_task[j]->toString() <<endl;
     }
 
     i = 0;
@@ -611,7 +621,7 @@ int init_suite(vector<CPU*> *cpus) {
     /* ------------------------- Creating CPUs -------------------------*/
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create 4 LITTLE CPUs */
-        string cpu_name = to_string(init_sequence) + "LITTLE_" + to_string(i);
+        string cpu_name = "LITTLE_" + to_string(i);
 
         cout << "Creating CPU: " << cpu_name << endl;
 
@@ -659,7 +669,7 @@ int init_suite(vector<CPU*> *cpus) {
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create 4 big CPUs */
 
-        string cpu_name = to_string(init_sequence) + "BIG_" + to_string(i);
+        string cpu_name = "BIG_" + to_string(i);
 
         cout << "Creating CPU: " << cpu_name << endl;
 
