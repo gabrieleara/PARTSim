@@ -62,6 +62,8 @@ namespace RTSim {
 
         std::vector<CPU*> CPUs;
 
+        double totalPowerCosumption;
+
       /**
        * List of tasks ready on a CPU with a given frequency.
        * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU OPP.
@@ -135,6 +137,9 @@ namespace RTSim {
 
         /// Returns utilization of tasks on CPU c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(CPU* c, double freq, double capacity) const;
+
+        /// Returns power consumption after SIMUL.getTime() == 1
+        double getTotalPowerConsumption();
 
       	virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
 

@@ -125,6 +125,10 @@ namespace RTSim {
         return ret;
     }
 
+    double EnergyMRTKernel::getTotalPowerConsumption() {
+        return totalPowerCosumption;
+    }
+
     bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
         if (t == NULL || _m_dispatching.empty())
             return false;
@@ -239,6 +243,9 @@ namespace RTSim {
         // curr island freq -> on BL all CPUs have the same freq
         // todo useless?
         setIslandFrequency(cpu->getIsland());
+
+        if (SIMUL.getTime() == _migrationDelay) // only for the first dispatch() of tasks
+            totalPowerCosumption += cpu->getPowerConsumption(cpu->getFrequency());
 
         //todo remove
         cout << "ll " << endl;
