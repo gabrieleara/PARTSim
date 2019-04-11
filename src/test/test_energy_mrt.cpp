@@ -22,7 +22,7 @@ int init_sequence = 0;
 int cleanup_suite();
 int init_suite(vector<CPU*> *cpus);
 
-/*	
+/*
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
 
@@ -178,7 +178,7 @@ TEST_CASE("exp4") {
     cout << "Begin of experiment " << init_sequence << endl;
 
     vector<CPU*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
+    PeriodicTask* task[5]; // to be cleared after each test
     init_suite(&cpus);
 
     EDFScheduler *edfsched = new EDFScheduler;
@@ -193,7 +193,7 @@ TEST_CASE("exp4") {
         t->insertCode(instr);
         kern->addTask(*t, "");
 
-        task.push_back(t);
+        task[j] = t;
     }
 
     SIMUL.initSingleRun();
@@ -225,16 +225,16 @@ TEST_CASE("exp4") {
     REQUIRE(int(task[3]->getWCET(c3->getSpeed())) == 488);
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task)
-        delete t;
+    for (int j = 0; j < 4; j++)
+        delete task[j];
     for (CPU* c:cpus) delete c;
 }
-
+*/
 TEST_CASE("exp5") {
     cout << "Begin of experiment " << init_sequence << endl;
 
     vector<CPU*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
+    PeriodicTask* task[5]; // to be cleared after each test
     init_suite(&cpus);
 
     EDFScheduler *edfsched = new EDFScheduler;
@@ -251,7 +251,7 @@ TEST_CASE("exp5") {
         t->insertCode(instr);
         kern->addTask(*t, "");
 
-        task.push_back(t);
+        task[j] = t;
         // LITTLE_0, _1, _2, _3 freq 1400.
     }
 
@@ -292,12 +292,13 @@ TEST_CASE("exp5") {
     cout << t->toString() << " on "<< c3->toString()<<endl;
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task) delete t;
+    for (int j = 0; j < 4; j++)
+        delete task[j];
     for (CPU* c:cpus) delete c;
     delete edfsched;
 	delete kern;
 }
-*/
+
 // test showing that frequency of little/big island may be raised
 TEST_CASE("exp6") {
     cout << "Begin of experiment " << init_sequence << endl;
@@ -329,10 +330,11 @@ TEST_CASE("exp6") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-cout << "sono arrivato qua"<<endl;
     for (int j = 0; j < 5; j++) {
+    	cout << j << endl;
         cpu_task[j] = kern->getProcessor(task[j]);
-        cout << task[j]->toString() << " on " << cpu_task[j]->toString() <<endl;
+    	if (j == 4)
+    		cpu_task[j] = kern->getDispatchingProcessor(task[j]);
     }
 
     i = 0;
@@ -381,8 +383,8 @@ cout << "sono arrivato qua"<<endl;
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task)
-        delete t;
+    for (int j = 0; j < 4; j++)
+        delete task[j];
     for (CPU* c:cpus) delete c;
 }
 
@@ -390,8 +392,8 @@ TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
 
     vector<CPU*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
-    vector<CPU*> cpu_task; // to be cleared after each test
+    PeriodicTask* task[5]; // to be cleared after each test
+    CPU* cpu_task[5]; // to be cleared after each test
     init_suite(&cpus);
 
     EDFScheduler *edfsched = new EDFScheduler;
@@ -407,7 +409,8 @@ TEST_CASE("exp7") {
         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
         t->insertCode(instr);
         kern->addTask(*t, "");
-        task.push_back(t);
+
+        task[j] = t;
     }
 
     /* Towards random workloads, but this time alg. first decides to
@@ -419,7 +422,7 @@ TEST_CASE("exp7") {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task.push_back(kern->getProcessor(task[j]));
+        cpu_task[j] = kern->getProcessor(task[j]);
     }
 
     i = 0;
@@ -468,8 +471,8 @@ TEST_CASE("exp7") {
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task)
-        delete t;
+    for (int j = 0; j < 4; j++)
+        delete task[j];
     for (CPU* c:cpus) delete c;
 }
 
@@ -477,8 +480,8 @@ TEST_CASE("exp8") {
     cout << "Begin of experiment " << init_sequence << endl;
 
     vector<CPU*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
-    vector<CPU*> cpu_task; // to be cleared after each test
+    PeriodicTask* task[5]; // to be cleared after each test
+    CPU* cpu_task[5]; // to be cleared after each test
     init_suite(&cpus);
 
     EDFScheduler *edfsched = new EDFScheduler;
@@ -494,7 +497,7 @@ TEST_CASE("exp8") {
         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
         t->insertCode(instr);
         kern->addTask(*t, "");
-        task.push_back(t);
+        task[j] = t;
     }
     // towards random workloads...
 
@@ -502,7 +505,7 @@ TEST_CASE("exp8") {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task.push_back(kern->getProcessor(task[j]));
+        cpu_task[j] = kern->getProcessor(task[j]);
     }
 
     i = 0;
@@ -587,8 +590,8 @@ TEST_CASE("exp8") {
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
-    for (PeriodicTask* t : task)
-        delete t;
+    for (int j = 0; j < 4; j++)
+        delete task[j];
     for (CPU* c:cpus) delete c;
 }
 
