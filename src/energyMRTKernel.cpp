@@ -297,6 +297,43 @@ namespace RTSim {
         // dispatch()
     }
 
+    void EnergyMRTKernel::leaveLittle3(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows, CPU* chosenCPU) {
+        /**
+         * Policy of leaving a little core free for big-WCET tasks, which otherwise would be scheduled on
+         * big cores, thus increasing power consumption.
+         * Mechanism: if you want to put a task on little 3, but it also fits in another little core,
+         * put it in the other little. Otherwise (if it only fits on little 3 and in bigs, choose little 3).
+         */
+
+        cout << __func__ << endl;
+        if (chosenCPU->getName() != "CPU LITTLE_3" || chosenCPU->getIsland() == CPU::Island::BIG)
+            return;
+
+        bool fitsInOtherCore = true; // if it only fits on little 3 and in bigs
+
+        for (int i = 0; i < iDeltaPows.size(); i++) {
+            cout << iDeltaPows[i].cons << " " << iDeltaPows[i].cpu->toString() << endl;
+            if (iDeltaPows[i].cpu->getIsland() == CPU::Island::LITTLE && iDeltaPows[i].cpu->getName() != "CPU LITTLE_3") {
+                chosenCPU = iDeltaPows[i].cpu;
+                chosenCPU->setOPP(iDeltaPows[i].opp);
+                cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
+                fitsInOtherCore = false;
+            }
+        }
+
+        if (fitsInOtherCore) {
+            cout << "Task only fits on little 3 and in bigs" << endl;
+            for (int i = 0; i < iDeltaPows.size(); i++) {
+                if (iDeltaPows[i].cpu->getName() == "CPU LITTLE_3") {
+                    chosenCPU = iDeltaPows[i].cpu;
+                    chosenCPU->setOPP(iDeltaPows[i].opp);
+                    cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
+                    break;
+                }
+            }
+        }
+    }
+
     void EnergyMRTKernel::chooseCPU(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows) {
         // TODO: switch from nlogn to n for min()
         // sort table of consumption
@@ -330,6 +367,8 @@ namespace RTSim {
                 }
             }
         }
+
+        leaveLittle3(t, iDeltaPows, chosenCPU);
 
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
           " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;

@@ -13,8 +13,6 @@ using namespace MetaSim;
 using namespace RTSim;
 using namespace std;
 
-unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
-unsigned int OPP_big = 0;    // Index of OPP in big cores
 string workload = "bzip2";
 string task_name = "";
 int init_sequence = 0;
@@ -22,7 +20,7 @@ int init_sequence = 0;
 int cleanup_suite();
 int init_suite(vector<CPU*> *cpus);
 
-/*
+
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
 
@@ -52,6 +50,9 @@ TEST_CASE("exp0") {
     SIMUL.endSingleRun();
     delete t0;
     for (CPU* c:cpus) delete c;
+    cpus.clear();
+    delete edfsched;
+    delete kern;
 }
 
 TEST_CASE("exp1") {
@@ -60,8 +61,6 @@ TEST_CASE("exp1") {
     vector<CPU*> cpus;
     vector<PeriodicTask*> task; // to be cleared after each test
     init_suite(&cpus);
-cout << "size "<<cpus.size()<<endl;
-for (CPU* c:cpus) cout << c->toString()<<endl;
 
     EDFScheduler *edfsched = new EDFScheduler;
     EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
@@ -97,6 +96,9 @@ for (CPU* c:cpus) cout << c->toString()<<endl;
     SIMUL.endSingleRun();
     delete t1; delete t0;
     for (CPU* c:cpus) delete c;
+    cpus.clear();
+    delete edfsched;
+    delete kern;
 }
 
 TEST_CASE("exp2") {
@@ -142,6 +144,9 @@ TEST_CASE("exp2") {
     SIMUL.endSingleRun();
     delete t0; delete t1;
     for (CPU* c:cpus) delete c;
+    cpus.clear();
+    delete edfsched;
+    delete kern;
 }
 
 TEST_CASE("exp3") {
@@ -172,6 +177,9 @@ TEST_CASE("exp3") {
     SIMUL.endSingleRun();
     delete t0;
     for (CPU* c:cpus) delete c;
+    cpus.clear();
+    delete edfsched;
+    delete kern;
 }
 
 TEST_CASE("exp4") {
@@ -228,8 +236,11 @@ TEST_CASE("exp4") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     for (CPU* c:cpus) delete c;
+    cpus.clear();
+    delete edfsched;
+    delete kern;
 }
-*/
+
 TEST_CASE("exp5") {
     cout << "Begin of experiment " << init_sequence << endl;
 
@@ -262,6 +273,11 @@ TEST_CASE("exp5") {
     CPU *c1 = kern->getProcessor(task[1]);
     CPU *c2 = kern->getProcessor(task[2]);
     CPU *c3 = kern->getProcessor(task[3]);
+cout << c0->toString() << endl;
+cout << c1->toString() << endl;
+cout << c2->toString() << endl;
+cout << c3->toString() << endl;
+    abort();
 
     PeriodicTask* t = task[0];
     REQUIRE(t->getName() == "T5_task0");
@@ -295,6 +311,7 @@ TEST_CASE("exp5") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     for (CPU* c:cpus) delete c;
+    cpus.clear();
     delete edfsched;
 	delete kern;
 }
@@ -383,11 +400,11 @@ TEST_CASE("exp6") {
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
-    for (int j = 0; j < 4; j++)
+    for (int j = 0; j < 5; j++)
         delete task[j];
     for (CPU* c:cpus) delete c;
 }
-
+/*
 TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
 
@@ -600,6 +617,9 @@ TEST_CASE("exp8") {
 int init_suite(vector<CPU*> *cpus) {
     cout << "init_suite" << endl;
 
+    unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
+    unsigned int OPP_big = 0;    // Index of OPP in big cores
+
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
             1.25625
@@ -663,6 +683,7 @@ int init_suite(vector<CPU*> *cpus) {
         c->setWorkload("idle");
         c->setIsland(CPU::Island::LITTLE);
         pm->setFrequencyMax(max_frequency);
+        c->setIslandCurOPP();
         //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
         //ptrace.push_back(power_trace);
 
@@ -708,6 +729,7 @@ int init_suite(vector<CPU*> *cpus) {
         c->setWorkload("idle");
         c->setIsland(CPU::Island::BIG);
         pm->setFrequencyMax(max_frequency);
+        c->setIslandCurOPP();
         //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
         //ptrace.push_back(power_trace);
 

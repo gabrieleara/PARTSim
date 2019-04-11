@@ -6,11 +6,11 @@ OBJ_FILES=$(patsubst %.cpp,%.o,$(CPP_FILES))
 
 SOURCES=$(CPP_FILES) $(HPP_FILES)
 
-.PHONY: all build test clean execute open build_cache
+.PHONY: all build test clean execute build_cache
 
 all: test
 
-test: clean build execute open
+test: clean build execute
 
 build:
 	g++ -Wno-deprecated -I.. -c test_energy_mrt.cpp -o test_energy_mrt.o
@@ -19,13 +19,9 @@ build:
 execute:
 	./test &> t.txt
 
-open:
-	nano results-Results.xml
-
 clean:
 	rm -f test *.o *~ *.bak *.txt *.xml
 
 build_cache:
 	g++ -c TestMain.cpp -o catch.o
 	ar rvs catch.a catch.o
-

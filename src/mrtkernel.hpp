@@ -222,13 +222,13 @@ namespace RTSim {
 
 
         /**
-         * Returns a pointer to the CPU on whitch t is running (NULL if
+         * Returns a pointer to the CPU on which t is running (NULL if
          * t is not running on any CPU)
          */
         virtual CPU *getProcessor(const AbsRTTask *) const;
 
         /**
-         * Returns a pointer to the CPU on whitch t was running (NULL if
+         * Returns a pointer to the CPU on which t was running (NULL if
          * t was not running on any CPU)
          */
         virtual CPU *getOldProcessor(const AbsRTTask *) const;

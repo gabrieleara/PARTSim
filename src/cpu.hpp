@@ -90,10 +90,10 @@ namespace RTSim
         static bool isIslandBusy[NUM_ISLANDS];
         static int islandCurOPP[NUM_ISLANDS];
 
-      static bool isLittleIslandBusy;
+        static bool isLittleIslandBusy;
         static bool isBigIslandBusy;
-      static int littleIslandCurOPP;
-      static int bigIslandCurOPP;
+        static int littleIslandCurOPP;
+        static int bigIslandCurOPP;
 
         /// update CPU power/speed model according to specified opp (or currentOPP, if opp == -1)
         void updateCPUModelOPP(int opp = -1);
@@ -203,6 +203,10 @@ namespace RTSim
         struct OPP getMinOPP() const {
             return getStructOPP(0);
         }
+
+	virtual string getName() const {
+	   return Entity::getName();
+	}
 
         struct OPP getStructOPP(int i) const {
             return OPPs[i];
