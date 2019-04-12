@@ -445,14 +445,13 @@ namespace RTSim {
         DBGPRINT_2("New tasks: ", num_newtasks);
         print();
         if (num_newtasks == 0) return; // nothing to do
-        cout << "I must schedule #task=" << num_newtasks << endl;
 
         i = 0;
         std::vector<CPU*> cpus = getProcessors();
         do {
-            cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
             Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
             if (t == NULL) break;
+            cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
             cout << "Dealing with task " << t->toString() << "." << endl;
 
             if (isDispatching(t)) {
@@ -465,91 +464,13 @@ namespace RTSim {
             // otherwise scale up CPUs frequency
             DBGPRINT("Trying to scale up CPUs");
             cout << endl << "Trying to scale up CPUs" << endl;
-            vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows;
+            vector<struct ConsumptionTable> iDeltaPows;
 
             for (CPU* c : cpus) {
-              int startingOPP = c->getOPP();
-              c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
-                double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
-                cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency << " - it has already ntasks=" << getTasks(c).size() << endl;
-                for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
-                  //double frequency = !c->isCPUIslandBusy() ? c->getMinOPP().frequency : c->getFrequency();
-                    double newFreq = c->getOPPs()[ooo].frequency;
-                    double newCapacity = 0.0;
+                int startingOPP = c->getOPP();
 
-                    c->setOPP(ooo);
-                    newCapacity = c->getSpeed(newFreq);
-                    printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
-
-                    // check whether task is admissible with the new frequency and where
-                    if (_sched->isAdmissible(c, getTasks(c), t)) {
-                        cout << "\t\t\tHere task would be admissible" << endl;
-
-                        double utilization = 0.0; // utilization on the CPU c (without new task)
-                        double utilization_t = 0.0; // utilization of the considered new task
-                        double newUtilizationIsland = 0.0; // utilization of tasks in the island with new freq - cores share frequency
-                        double oldUtilizationIsland = 0.0;
-                        double iPowWithNewTask = 0.0;
-                        double iOldPow = 0.0;
-                        double iDeltaPow = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
-                        int    nTaskIsland = 0;
-                        CPU::Island island;
-                        Task   *task = t;
-
-                        // utilization on CPU c with the new frequency
-                        utilization = getUtilization(c, newFreq, newCapacity);
-
-                        if (utilization > 1.0) {
-                            cout << "\t\t\tCPU utilization is already >= 100% => skip OPP" << endl;
-                            continue;
-                        }
-                        else cout << "\t\t\tTotal utilization tasks already in CPU " << c->toString() << " = " << utilization << endl;
-
-                        utilization_t = getUtilization(task, c, newCapacity);
-                        cout << "\t\t\tUtilization cur task " << t->toString() << " would be " << utilization_t
-                             << " - CPU capacity=" << newCapacity << endl;
-                        cout << "\t\t\t\tScaled task WCET " << t->getWCET(newCapacity) << " DL "
-                             << t->getDeadline() << endl;
-
-                        if (utilization + utilization_t > 1.0) {
-                            cout << "\t\t\tTotal utilization + cur task utilization would be " << utilization << "+" <<
-                                utilization_t << "=" << utilization + utilization_t << " >= 100% => skip OPP" << endl;
-                            continue;
-                        }
-
-                        // Ok, task can be placed on CPU c, compute power delta
-
-                        // utilization island where CPU c is
-                        island = c->getIsland();
-                        newUtilizationIsland = getIslandUtilization(newCapacity, island, NULL);
-                        oldUtilizationIsland = getIslandUtilization(c->getSpeed(frequency), island, &nTaskIsland);
-                        cout << "\t\t\tIn the CPU island of " << c->getName() << ", " << nTaskIsland << " are being scheduled" << endl;
-
-                        // additional required power
-                        // ipowWithNewTask = (c->getIslandUtilization(c->getCapacity(newFreq)) + utilization_t) * c->getPowerConsumption(newFreq);
-                        iPowWithNewTask = (newUtilizationIsland + utilization_t) * c->getPowerConsumption(newFreq);
-                        // ioldPow = c->getIslandUtilization(c->getCapacity(frequency)) * c->getPowerConsumption(frequency);
-                        iOldPow = oldUtilizationIsland * c->getPowerConsumption(frequency);
-
-                        // todo remove after debug
-                        #include <cstdio>
-                        printf("\t\t\tnew = (%f + %f)*%.17g=%f, old %f*%.17g=%f\n", newUtilizationIsland,
-                                utilization_t, c->getPowerConsumption(newFreq),
-                                iPowWithNewTask, oldUtilizationIsland,
-                                c->getPowerConsumption(frequency), iOldPow);
-
-                        iDeltaPow = iPowWithNewTask - iOldPow;
-                        cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow << endl;
-                        struct ConsumptionTable row = { .cons = iDeltaPow, .cpu = c, .opp = ooo } ;
-                        iDeltaPows.push_back(row);
-
-                        // break; (i.e. skip foreach OPP) xk è ovvio che aumentando la freq della stessa CPU, t è ammissibile
-                    }
-                    else {
-                        cout << "\t\t\tHere task wouldn't be admissible (U + U_newTask > 1)" << endl;
-                    }
-
-                }
+                c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
+                tryTaskOnCPU(t, c, iDeltaPows);
 
                 c->setOPP(startingOPP);
             }
@@ -571,6 +492,88 @@ namespace RTSim {
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);
 
+    }
+
+    void EnergyMRTKernel::tryTaskOnCPU(Task* t, CPU* c, vector<struct ConsumptionTable>& iDeltaPows) {
+        double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
+        cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
+             << " - it has already ntasks=" << getTasks(c).size() << endl;
+
+        for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
+            double newFreq      = c->getOPPs()[ooo].frequency;
+            double newCapacity  = 0.0;
+
+            c->setOPP(ooo);
+            newCapacity = c->getSpeed(newFreq);
+            printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
+
+            // check whether task is admissible with the new frequency and where
+            if (_sched->isAdmissible(c, getTasks(c), t)) {
+                cout << "\t\t\tHere task would be admissible" << endl;
+
+                double utilization          = 0.0; // utilization on the CPU c (without new task)
+                double utilization_t        = 0.0; // utilization of the considered new task
+                double newUtilizationIsland = 0.0; // utilization of tasks in the island with new freq - cores share frequency
+                double oldUtilizationIsland = 0.0;
+                double iPowWithNewTask      = 0.0;
+                double iOldPow              = 0.0;
+                double iDeltaPow            = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
+                int nTaskIsland             = 0;
+                CPU::Island island;
+                Task *task = t;
+
+                // utilization on CPU c with the new frequency
+                utilization = getUtilization(c, newFreq, newCapacity);
+
+                if (utilization > 1.0) {
+                    cout << "\t\t\tCPU utilization is already >= 100% => skip OPP" << endl;
+                    continue;
+                } else
+                    cout << "\t\t\tTotal utilization tasks already in CPU " << c->toString() << " = " << utilization
+                         << endl;
+
+                utilization_t = getUtilization(task, c, newCapacity);
+                cout << "\t\t\tUtilization cur task " << t->toString() << " would be " << utilization_t
+                     << " - CPU capacity=" << newCapacity << endl;
+                cout << "\t\t\t\tScaled task WCET " << t->getWCET(newCapacity) << " DL "
+                     << t->getDeadline() << endl;
+
+                if (utilization + utilization_t > 1.0) {
+                    cout << "\t\t\tTotal utilization + cur task utilization would be " << utilization << "+" <<
+                         utilization_t << "=" << utilization + utilization_t << " >= 100% => skip OPP" << endl;
+                    continue;
+                }
+
+                // Ok, task can be placed on CPU c, compute power delta
+
+                // utilization island where CPU c is
+                island = c->getIsland();
+                newUtilizationIsland = getIslandUtilization(newCapacity, island, NULL);
+                oldUtilizationIsland = getIslandUtilization(c->getSpeed(frequency), island, &nTaskIsland);
+                cout << "\t\t\tIn the CPU island of " << c->getName() << ", " << nTaskIsland << " are being scheduled" << endl;
+
+                iPowWithNewTask = (newUtilizationIsland + utilization_t) * c->getPowerConsumption(newFreq);
+                iOldPow = oldUtilizationIsland * c->getPowerConsumption(frequency);
+
+                // todo remove after debug
+#include <cstdio>
+
+                printf("\t\t\tnew = (%f + %f)*%.17g=%f, old %f*%.17g=%f\n", newUtilizationIsland,
+                       utilization_t, c->getPowerConsumption(newFreq),
+                       iPowWithNewTask, oldUtilizationIsland,
+                       c->getPowerConsumption(frequency), iOldPow);
+
+                iDeltaPow = iPowWithNewTask - iOldPow;
+                cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow << endl;
+                struct ConsumptionTable row = {.cons = iDeltaPow, .cpu = c, .opp = ooo};
+                iDeltaPows.push_back(row);
+
+                // break; (i.e. skip foreach OPP) xk è ovvio che aumentando la freq della stessa CPU, t è ammissibile
+            } else {
+                cout << "\t\t\tHere task wouldn't be admissible (U + U_newTask > 1)" << endl;
+            }
+
+        }
     }
 
 }
