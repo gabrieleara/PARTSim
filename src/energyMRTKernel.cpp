@@ -190,6 +190,7 @@ namespace RTSim {
         AbsRTTask *st  = getDispatchingTask(p);
         assert(st != NULL);
 
+
         if ( st != NULL && dt == st ) {
             stringstream ss;
             ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
@@ -197,7 +198,6 @@ namespace RTSim {
             cout << ss.str() << endl;
             return;
         }
-
         if ( dt != NULL ) {
             _m_oldExe[dt] = p;
             _m_currExe[p] = NULL;
@@ -297,7 +297,7 @@ namespace RTSim {
         // dispatch()
     }
 
-    void EnergyMRTKernel::leaveLittle3(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows, CPU* chosenCPU) {
+    void EnergyMRTKernel::leaveLittle3(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows, CPU*& chosenCPU) {
         /**
          * Policy of leaving a little core free for big-WCET tasks, which otherwise would be scheduled on
          * big cores, thus increasing power consumption.
@@ -305,32 +305,27 @@ namespace RTSim {
          * put it in the other little. Otherwise (if it only fits on little 3 and in bigs, choose little 3).
          */
 
-        cout << __func__ << endl;
-        if (chosenCPU->getName() != "CPU LITTLE_3" || chosenCPU->getIsland() == CPU::Island::BIG)
+        cout << __func__ << "():" << endl;
+        if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIsland() == CPU::Island::BIG) {
+            cout << "chosenCPU in big island or is not little_3 => skip" << endl;
             return;
+        }
 
         bool fitsInOtherCore = true; // if it only fits on little 3 and in bigs
 
         for (int i = 0; i < iDeltaPows.size(); i++) {
             cout << iDeltaPows[i].cons << " " << iDeltaPows[i].cpu->toString() << endl;
-            if (iDeltaPows[i].cpu->getIsland() == CPU::Island::LITTLE && iDeltaPows[i].cpu->getName() != "CPU LITTLE_3") {
+            if (iDeltaPows[i].cpu->getIsland() == CPU::Island::LITTLE && iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
                 chosenCPU = iDeltaPows[i].cpu;
                 chosenCPU->setOPP(iDeltaPows[i].opp);
                 cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
                 fitsInOtherCore = false;
+                break;
             }
         }
 
         if (fitsInOtherCore) {
-            cout << "Task only fits on little 3 and in bigs" << endl;
-            for (int i = 0; i < iDeltaPows.size(); i++) {
-                if (iDeltaPows[i].cpu->getName() == "CPU LITTLE_3") {
-                    chosenCPU = iDeltaPows[i].cpu;
-                    chosenCPU->setOPP(iDeltaPows[i].opp);
-                    cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
-                    break;
-                }
-            }
+            cout << "Task only fits on little 3 and in bigs => stay in LITTLE_3, CPU not changed" << endl;
         }
     }
 
@@ -368,6 +363,7 @@ namespace RTSim {
             }
         }
 
+        cout << "Temporarily chosenCPU: " << chosenCPU->toString() << " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << endl;
         leaveLittle3(t, iDeltaPows, chosenCPU);
 
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<

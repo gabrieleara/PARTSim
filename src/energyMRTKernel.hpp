@@ -77,7 +77,7 @@ namespace RTSim {
          * Implements the policy of leaving little 3 free, just in case a task with high WCET arrives,
          * risking to be forced to schedule it on big cores, increasing power consumption.
          */
-        void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU* chosenCPU);
+        void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU*& chosenCPU);
 
         inline vector<CPU*> getProcessors() const { return CPUs; }
 
