@@ -19,6 +19,7 @@
 #include <instr.hpp>
 #include <powermodel.hpp>
 #include <energyMRTKernel.hpp>
+#include <assert.h>
 #include "rrsched.hpp"
 #include "rttask.hpp"
 
@@ -419,6 +420,55 @@ int main(int argc, char *argv[])
 
             // todo domanda: round robin e' gia' implementato. pero' e' uno scheduler, le decisioni di piazzamento a CPU
             // le faccio sempre io con energyMRTKernel? Non sarebbe quello che succede in Linux pero' -> userei MRTKernel. Giusto?
+        }
+        else if (TEST_NO == 10) {
+            // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
+            // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
+            int wcets[] = { 101,101,101,100, 200,500,500,500,    }; // 9 tasks
+            vector<PeriodicTask*> tasks;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
+            k->dispatch(cpus[0],tasks[0],5);
+            k->dispatch(cpus[1],tasks[1],5);
+            k->dispatch(cpus[2],tasks[2],5);
+            k->dispatch(cpus[3],tasks[3],5);
+
+            k->dispatch(cpus[4],tasks[4],18);
+            k->dispatch(cpus[5],tasks[5],18);
+            k->dispatch(cpus[6],tasks[6],18);
+            k->dispatch(cpus[7],tasks[7],18);
+
+            //k->dispatch(cpus[4],tasks[8],18);
+
+            for (PeriodicTask* pt : tasks)
+                k->addTask(*pt, "");
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1);
+
+            assert(k->getProcessor(tasks[0])->getName() == cpus[0]->getName());
+            assert(k->getProcessor(tasks[1])->getName() == cpus[1]->getName());
+            assert(k->getProcessor(tasks[2])->getName() == cpus[2]->getName());
+            assert(k->getProcessor(tasks[3])->getName() == cpus[3]->getName());
+
+            assert(k->getProcessor(tasks[4])->getName() == cpus[4]->getName());
+            assert(k->getProcessor(tasks[5])->getName() == cpus[5]->getName());
+            assert(k->getProcessor(tasks[6])->getName() == cpus[6]->getName());
+            assert(k->getProcessor(tasks[7])->getName() == cpus[7]->getName());
+
+            //assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
+
+            SIMUL.endSingleRun();
+            return 0;
         }
 
 

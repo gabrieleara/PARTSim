@@ -3,6 +3,19 @@
 if [ "$1" = "h" ] ;then
 	echo "Example: ./db energyMRTKernel.cpp 51"
 else 
-	# this worked: gdbgui ./example --gdb-args=" -ex 'break energyMRTKernel.cpp:117' "
-	gdbgui --gdb-args=" -ex 'break "$1":"$2"' -ex 'r' ./example "
+	lastArg = ""
+	for var in "$@"
+	do
+		lastArg = var
+	done
+
+	
+	re='^[0-9]+$'
+	if ! [[ $lastArg =~ $re ]] ; then # if is digit
+		gdbgui --gdb-args=" -ex ./example "$lastArg" "
+	else
+		# this worked: gdbgui ./example --gdb-args=" -ex 'break energyMRTKernel.cpp:117' "
+		gdbgui --gdb-args=" -ex 'break "$1":"$2"' -ex 'r' ./example "
+	fi
+
 fi

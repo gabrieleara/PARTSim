@@ -1,0 +1,8 @@
+Creare CPUBigLittle
+Si puo' fare in modo che le frequenze vengano scalate virtualmente in energyMRTKernel.cpp?
+Togliere codice inutile
+Test cases da sistemare. Ora non funzionano di fila, ma solo singolarmente
+PlotSched
+RT VS Energy??
+Delay non supporta workload types
+fare schema funzionamento RTSIM

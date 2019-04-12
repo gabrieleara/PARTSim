@@ -110,14 +110,14 @@ namespace RTSim {
         std::map<CPU *, AbsRTTask *> _m_currExe;
 
         /// Where the task was executing before being suspended
-        std::map<const AbsRTTask *, CPU*> _m_oldExe; 
+        std::map<const AbsRTTask *, CPU*> _m_oldExe;
 
         /// This denotes where the task has been dispatched.  The set
         /// of dispatched tasks includes the set of executing tasks:
         /// first a task is dispatched, (but not executing yet) in the
         /// onBeginDispatchMulti. Then, in the onEndDispatchMulti, its
         /// execution starts on the processor.
-        std::map<const AbsRTTask *, CPU*> _m_dispatched; 
+        std::map<const AbsRTTask *, CPU*> _m_dispatched;
 
         /// true is the CPU is on a context switch
         std::map<CPU*, bool> _isContextSwitching;
@@ -127,10 +127,10 @@ namespace RTSim {
 
         /// The EndDispatchMultiEvt for every CPU
         std::map<CPU*, EndDispatchMultiEvt *> _endEvt;
-    
+
         /// the amount of delay due to migration (will become a
         /// RandomVar eventually).
-	    Tick  _migrationDelay;
+        Tick  _migrationDelay;
 
         void internalConstructor(int n);
 
@@ -139,7 +139,7 @@ namespace RTSim {
          */
         CPU *getFreeProcessor();
 
-        bool isDispatched(CPU *p); 
+        bool isDispatched(CPU *p);
 
         typedef map<CPU *, AbsRTTask *>::iterator ITCPU;
 
@@ -150,39 +150,39 @@ namespace RTSim {
         ITCPU getNextFreeProc(ITCPU s, ITCPU e);
 
     public:
-  
+
         /**
          * Constructor: needs to know which scheduler and CPU factory
          * the kernel want to use, and how many processor the system
          * is composed of.
          */
-        MRTKernel(Scheduler*, absCPUFactory*, int n=1, 
+        MRTKernel(Scheduler*, absCPUFactory*, int n=1,
                   const std::string &name = "");
-  
+
         /**
          * Constructor: needs to know which scheduler the kernel want
          * to use, and from how many processor the system is composed.
          */
-        MRTKernel(Scheduler*, int n=1, const std::string &name = ""); 
+        MRTKernel(Scheduler*, int n=1, const std::string &name = "");
 
         /**
          * Constructor: needs to know which scheduler the kernel want
          * to use and the processors
          */
-        MRTKernel(Scheduler*, std::vector<CPU*>, const std::string &name = ""); 
+        MRTKernel(Scheduler*, std::vector<CPU*>, const std::string &name = "");
 
         /**
            Needs to know scheduler and name
          */
-        MRTKernel(Scheduler*, const std::string &name); 
-  
+        MRTKernel(Scheduler*, const std::string &name);
+
         ~MRTKernel();
 
         /**
          * Adds a CPU to the set of CPUs handled by the kernel.
          */
         void addCPU(CPU*);
-  
+
         /**
            Add a task to the kernel
            
@@ -195,7 +195,7 @@ namespace RTSim {
         virtual void suspend(AbsRTTask *);
         // virtual void activate(AbsRTTask *); //same as RTKernel
         virtual void onEnd(AbsRTTask *);
- 
+
         /** 
             Dispatching on a given CPU. 
 
@@ -217,8 +217,8 @@ namespace RTSim {
          */
         virtual void dispatch();
 
-	virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
-	virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
+        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
+        virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
 
 
         /**
@@ -239,7 +239,7 @@ namespace RTSim {
            Deprecated, will be removed soon
          */
         std::vector<CPU*> getProcessors() const;
-        
+
         /**
            Set the migration delay. This is the overhead to be added
            to the ContextSwitchDelay when the task is migrated from

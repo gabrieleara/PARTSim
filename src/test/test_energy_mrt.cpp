@@ -404,7 +404,7 @@ TEST_CASE("exp6") {
         delete task[j];
     for (CPU* c:cpus) delete c;
 }
-/*
+
 TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
 

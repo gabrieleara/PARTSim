@@ -53,7 +53,7 @@ namespace RTSim
      */
     class CPU : public Entity {
     public:
-      typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
+        typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
     private:
         double _max_power_consumption;
 
@@ -83,17 +83,12 @@ namespace RTSim
         /// this is the CPU index in a multiprocessor environment
         int index;
 
-        /// Is CPU holding a task?
+        /// Is CPU holding a task, either running and ready (= dispatching)?
         bool isBusy;
 
         /// Is island free of tasks (big-little)? i.e., is there any other CPU in this island holding a task?
         static bool isIslandBusy[NUM_ISLANDS];
         static int islandCurOPP[NUM_ISLANDS];
-
-        static bool isLittleIslandBusy;
-        static bool isBigIslandBusy;
-        static int littleIslandCurOPP;
-        static int bigIslandCurOPP;
 
         /// update CPU power/speed model according to specified opp (or currentOPP, if opp == -1)
         void updateCPUModelOPP(int opp = -1);
@@ -113,7 +108,7 @@ namespace RTSim
 
         ~CPU();
 
-	      friend ostream& operator<<(ostream &strm, CPU &a);
+        friend ostream& operator<<(ostream &strm, CPU &a);
 
         virtual string toString() const {
             stringstream ss;
@@ -123,62 +118,58 @@ namespace RTSim
 
         unsigned int getOPPByFrequency(double frequency);
 
-      int getIslandCurOPP() {
-        if (getIsland() == Island::LITTLE)
-          return littleIslandCurOPP;
-        else
-          return bigIslandCurOPP;
-      }
+        int getIslandCurOPP() {
+            islandCurOPP[getIsland()];
+        }
 
-      /**
-       * Sets the island current OPP. Function must be called after setOPP(oppNo).
-       */
-      void setIslandCurOPP() {
-        if (getIsland() == Island::LITTLE)
-          littleIslandCurOPP = currentOPP;
-        else
-          bigIslandCurOPP = currentOPP;
-        //TODO
-        cout << __func__ << littleIslandCurOPP<<endl;
-      }
+        /**
+        * Sets the island current OPP. Function must be called after setOPP(oppNo).
+        */
+        void setIslandCurOPP() {
+            islandCurOPP[getIsland()] = currentOPP;
+        }
 
-      /// In big-little all CPUs in an island have the same frequency/OPP 
-      void updateIslandCurOPP(vector<CPU*> cpus) {
-        unsigned int opp = littleIslandCurOPP;
-        Island i = getIsland();
-        if (i == Island::BIG)
-          opp = bigIslandCurOPP;
+        /// In big-little all CPUs in an island have the same frequency/OPP
+        void updateIslandCurOPP(vector<CPU*> cpus) {
+            unsigned int opp = islandCurOPP[getIsland()];
 
-        for (CPU* c : cpus)
-          if (c->getIsland() == i)
-            c->setOPP(opp);
-      }
+            for (CPU* c : cpus)
+                if (c->getIsland() == getIsland())
+                    c->setOPP(opp);
+        }
+
+        /// update island CPUs OPP to opp
+        // todo I don't like all these similar functions
+        static void updateIslandCurOPP(vector<CPU*> cpus, Island island, int opp) {
+            vector<CPU*> cc = getCPUsInIsland(cpus, island);
+            for (CPU* c : cc)
+                c->setOPP(opp);
+            islandCurOPP[island] = opp;
+        }
 
         void setIsIslandBusy(bool busy) {
             DBGPRINT_3(SIMUL.getTime(), " is island busy ", busy);
-            if (getIsland() == Island::LITTLE)
-              isLittleIslandBusy = busy;
-            else
-              isBigIslandBusy = busy;
+            isIslandBusy[getIsland()] = busy;
 
             if (!busy)
-              if (getIsland() == Island::LITTLE)
-                isLittleIslandBusy = false;
-              else
-                isBigIslandBusy = false;
+                isIslandBusy[getIsland()] = false;
         }
 
         bool isCPUIslandBusy() {
-           if (getIsland() == Island::LITTLE)
-             return isLittleIslandBusy;
-           else
-             return isBigIslandBusy;
+            return isIslandBusy[getIsland()];
+        }
+
+        static bool isCPUIslandBusy(vector<CPU*> cpus, Island island) {
+            for (CPU* c : cpus)
+                if (c->getIsland() == island && c->isCPUBusy())
+                    return true;
+            return false;
         }
 
         void setBusy(bool busy) {
             isBusy = busy;
             if (busy)
-              setIsIslandBusy(true);
+                setIsIslandBusy(true);
         }
 
         bool isCPUBusy() {
@@ -204,9 +195,9 @@ namespace RTSim
             return getStructOPP(0);
         }
 
-	virtual string getName() const {
-	   return Entity::getName();
-	}
+        virtual string getName() const {
+            return Entity::getName();
+        }
 
         struct OPP getStructOPP(int i) const {
             return OPPs[i];
@@ -290,10 +281,10 @@ namespace RTSim
         Island getIsland() { return this->island; };
 
         /// filter out CPUs based on their island
-        static vector<CPU*> getCPUsInIsland(std::vector<CPU*> cpus, CPU::Island island);
+        static vector<CPU*> getCPUsInIsland(vector<CPU*> cpus, CPU::Island island);
 
         bool operator==(const CPU& c) const {
-          return getName().compare(c.getName()) == 0; 
+            return getName().compare(c.getName()) == 0;
         }
 
     };

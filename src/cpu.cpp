@@ -20,10 +20,8 @@ namespace RTSim
 
     unsigned int CPU::referenceFrequency;
 
-    bool CPU::isLittleIslandBusy = false;
-    bool CPU::isBigIslandBusy = false;
-    int  CPU::littleIslandCurOPP = 0;
-    int  CPU::bigIslandCurOPP = 0;
+    bool CPU::isIslandBusy[NUM_ISLANDS] = {false};
+    int  CPU::islandCurOPP[NUM_ISLANDS] = {0};
 
 
     CPU::CPU(const string &name,

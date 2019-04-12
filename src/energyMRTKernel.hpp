@@ -7,6 +7,7 @@
 
 #include "mrtkernel.hpp"
 #include "cpu.hpp"
+#include "task.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 
@@ -55,9 +56,15 @@ namespace RTSim {
             CPU* cpu;
             int opp;
         };
-        std::vector<CPU*> CPUs;
+
+        vector<CPU*> CPUs;
 
         double totalPowerCosumption;
+
+        /**
+         * Needed by migration mechanism. What OPP do running tasks need to finish on time on their core?
+         */
+        map<AbsRTTask*, int> _m_currExe_OPP;
 
         /**
          * List of tasks ready on a CPU with a given frequency.
@@ -65,7 +72,7 @@ namespace RTSim {
          * In fact, the dispatch() could choose to schedule a task on a big CPU with freq 200 and
          * another on another big with freq 1900. But in Big Little all CPUs have same freq/OPP.
          */
-        std::map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
+        map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
 
         /**
         * CPU choice from the table of consumptions (not sorted).
@@ -79,10 +86,16 @@ namespace RTSim {
          */
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU*& chosenCPU);
 
+        /// Implements migration mechanism on task end
+        void migrate(CPU* endingCPU);
+
         inline vector<CPU*> getProcessors() const { return CPUs; }
 
         /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
         void setIslandFrequency(CPU::Island island);
+
+        /// Tries to schedule a task on a CPU, for all valid OPPs, remembering power consumption
+        void tryTaskOnCPU(RTSim::Task *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
 
     public:
 
@@ -149,7 +162,7 @@ namespace RTSim {
          * Begins the dispatch process (context switch). The task is dispatched, but not
          * executed yet. Its execution on its CPU starts with onEndDispatchMulti()
          */
-      	virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
+        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
 
         /**
          *  First a task is dispatched, but not executed yet, in the
@@ -178,12 +191,12 @@ namespace RTSim {
         virtual std::vector<AbsRTTask*> getTasks(CPU* c) const;
 
         virtual void newRun() {
-          MRTKernel::newRun();
+            MRTKernel::newRun();
 
-          for (auto& elem : _m_dispatching) {
-            elem.second.first = NULL;
-            elem.second.second = -1;
-          }
+            for (auto& elem : _m_dispatching) {
+                elem.second.first = NULL;
+                elem.second.second = -1;
+            }
         }
 
         /// to debug internal functions...
