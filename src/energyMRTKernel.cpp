@@ -14,7 +14,7 @@
 
 #include "energyMRTKernel.hpp"
 #include "task.hpp"
-#include <scheduler.hpp>
+#include "scheduler.hpp"
 #include <assert.h>
 #include "rttask.hpp"
 #include "exeinstr.hpp"
@@ -59,7 +59,14 @@ namespace RTSim {
         double utilizationIsland = 0.0;
 
         for (CPU* c1 : CPU::getCPUsInIsland(getProcessors(), island)) {
-            for (AbsRTTask* th : getTasks(c1)) {
+            vector<AbsRTTask*> tasks = getTasks(c1);
+            AbsRTTask* runningTask = getTaskRunning(c1);
+            if (runningTask != NULL) {
+                utilizationIsland += ceil(runningTask->getWCET(capacity)) / double(runningTask->getDeadline());
+                if (nTasksIsland != NULL)
+                    *nTasksIsland = *nTasksIsland + 1;
+            }
+            for (AbsRTTask* th : tasks) {
                 if (getDispatchingProcessor(th)->getIsland() == c1->getIsland() || getProcessor(th)->getIsland() == c1->getIsland()) {
                     utilizationIsland += ceil(th->getWCET(capacity)) / double(th->getDeadline());
                     if (nTasksIsland != NULL)
@@ -82,6 +89,9 @@ namespace RTSim {
     double EnergyMRTKernel::getUtilization(CPU* c, double freq, double capacity) const {
         double utilization = 0.0;
         vector<AbsRTTask*> ths = getTasks(c);
+        AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getTaskRunning(c);
+        if (runningTask != NULL)
+            ths.push_back(runningTask);
 
         for (AbsRTTask* th : ths) {
             utilization += ceil(th->getWCET(capacity)) / double(th->getDeadline());
@@ -182,6 +192,21 @@ namespace RTSim {
         cout << b << endl;
     }
 
+    void EnergyMRTKernel::addForcedDispatch(PeriodicTask* t, CPU* c, int opp) {
+        _m_forcedDispatch[t] = make_pair(c, opp);
+    }
+
+    // for gdb
+    bool EnergyMRTKernel::manageForcedDispatch(Task* t) {
+        if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end()) {
+            cout << __func__ << endl;
+            dispatch(_m_forcedDispatch[t].first, t, _m_forcedDispatch[t].second);
+            _m_forcedDispatch.erase(t);
+            return true;
+        }
+        return false;
+    }
+
     // --------------------------------------------------------------- context switch
 
     // Note MRTKernel version differs: dispatch() tasks a free CUP and calls onBDM(), which in turns
@@ -255,7 +280,6 @@ namespace RTSim {
             totalPowerCosumption += cpu->getPowerConsumption(cpu->getFrequency());
 
         //todo remove
-        cout << "ll " << endl;
         for (const auto& elem : _m_dispatching)
         {
             cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
@@ -277,25 +301,26 @@ namespace RTSim {
         CPU* p = getProcessor(t);
         p->setBusy(false);
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
+        cout << ".............................." << endl;
         cout << t->toString() << " has just finished on " << p->toString() << ". Actual time = [" << SIMUL.getTime() << "]" << endl;
 
         vector<CPU *> cp = CPU::getCPUsInIsland(getProcessors(), p->getIsland());
         bool islandBusy = CPU::isCPUIslandBusy(CPUs, p->getIsland());
-        for (CPU *c : cp)
-            c->setIsIslandBusy(islandBusy);
+        cp[0]->setIsIslandBusy(islandBusy);
 
         _sched->extract(t);
         _m_oldExe[t] = p;
-        _m_currExe[p] = NULL;
-        _m_dispatched[t] = NULL;
+        _m_currExe.erase(p);
+        _m_dispatched.erase(t);
 
-        migrate(p);
-
-        if (CPU::isCPUIslandBusy(CPUs, CPU::Island::LITTLE))
+        if (!CPU::isCPUIslandBusy(CPUs, CPU::Island::LITTLE))
             CPU::updateIslandCurOPP(CPUs, CPU::Island::LITTLE, 0);
-        if (CPU::isCPUIslandBusy(CPUs, CPU::Island::BIG))
+        if (!CPU::isCPUIslandBusy(CPUs, CPU::Island::BIG))
             CPU::updateIslandCurOPP(CPUs, CPU::Island::BIG, 0);
 
+        printState();
+
+        migrate(p);
 
         // migrate ( and its dispatch() ) needs to know the required OPP of t on its core
         _m_currExe_OPP.erase(t);
@@ -305,7 +330,7 @@ namespace RTSim {
         /**
            Migration mechanism: a task finishes on CPU c.
            Find again a feasible assignment of tasks to cores (dispatch), only considering tasks in
-           dispatching[] and starting from OPP given by running tasks.
+           dispatching[] originally scheduled on big and starting from OPP given by running tasks.
            If c is little and has no ready and running tasks => min freq.
            If c is big, same.
 
@@ -314,12 +339,36 @@ namespace RTSim {
          if (_m_dispatching.empty())
              return;
 
-         // here you should update _m_dispatching[] tasks WCETs, but that's tricky if you have
-         // tasks with many instructions (& types). You should remove the executed WCET 'til now
-         // to already executed one, thus deleting instructions in case of chains of het. instructions.
+         cout << __func__ << " time=" << SIMUL.getTime() << endl;
 
-         _m_dispatching.clear();
-         dispatch();
+         // update WCET of tasks
+         for (auto& elem : _m_currExe) {
+             if (elem.second == NULL) continue; // happens 'cause of _m_currExe[p] = NULL instead of erasing...
+             CPU* c = elem.first;
+             double cap = c->getSpeed(double(c->getFrequency()));
+             cout << cap << " " << c->getFrequency() << " " << c->toString() << endl;
+             cout << elem.second->toString() << " needed WCET=" << elem.second->getWCET(cap) << endl;
+             elem.second->refreshExec(cap, cap);
+             cout << " and now still needs WCET = " << elem.second->getWCET(cap) << endl;
+         }
+
+         for (auto& t : _m_dispatching)
+             if (t.second.first->getIsland() == CPU::Island::BIG || t.second.first->getName() == "LITTLE_3") {
+                 vector<struct ConsumptionTable> iDeltaPows;
+                 Task* tt = dynamic_cast<Task*>(const_cast<AbsRTTask*>(t.first));
+
+                 cout << "Dealing with task " << tt->toString() << "." << endl;
+                 tryTaskOnCPU(tt, CPUs[0], iDeltaPows);
+                 tryTaskOnCPU(tt, CPUs[1], iDeltaPows);
+                 tryTaskOnCPU(tt, CPUs[2], iDeltaPows);
+                 tryTaskOnCPU(tt, CPUs[3], iDeltaPows);
+
+                 if (!iDeltaPows.empty()) {
+                     _m_dispatching.erase(tt);
+                     chooseCPU(tt, iDeltaPows);
+                 }
+             }
+
     }
 
 
@@ -405,23 +454,11 @@ namespace RTSim {
         // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
         _m_dispatching[t] = make_pair(p, opp);
 
-        cout<<t->toString()<<endl;
-        if (t->toString().find("T7_task6") != std::string::npos)
-            cout<<""<< t;
-
         // this is meant to be a virtual assignment of CPU OPP
         p->setOPP(opp);
         p->setBusy(true);
-        p->setIslandCurOPP();
-        p->updateIslandCurOPP(CPUs);
-
-        if (opp > p->getIslandCurOPP())
-            for (auto &elem : _m_dispatching)
-                if (elem.second.first->getIsland() == p->getIsland()) {
-                    //todo
-                    cout << "ahah " << elem.second.first->toString() << " VS " << opp << endl;
-                    elem.second.first->setOPP(opp);
-                }
+        unsigned int maxOPP = CPU::findMaxOPP(&CPUs, p->getIsland());
+        CPU::updateIslandCurOPP(CPUs, p->getIsland(), maxOPP);
 
         dispatch(p);
     }
@@ -455,7 +492,6 @@ namespace RTSim {
     void EnergyMRTKernel::dispatch()
     {
         // test();
-
         DBGENTER(_KERNEL_DBG_LEV);
 
         int ncpu            = _m_currExe.size();
@@ -483,10 +519,21 @@ namespace RTSim {
             cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
             cout << "Dealing with task " << t->toString() << "." << endl;
 
+            // for testing
+            if (manageForcedDispatch(t)) {
+                num_newtasks--;
+                continue;
+            }
+
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
                 cout << "Task has already been dispatched, but dispatching is not complete => skip" << endl;
+                continue;
+            }
+
+            if (getProcessor(t) != NULL) { // e.g., task ends => migrate() => dispatch()
+                cout << "Task is running on a CPU already => skip" << endl;
                 continue;
             }
 

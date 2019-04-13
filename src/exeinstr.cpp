@@ -158,7 +158,6 @@ namespace RTSim {
         CPU *p = _father->getCPU();
         if (!dynamic_cast<CPU *>(p))
             throw InstrExc("No CPU!", "ExeInstr::schedule()");
-        cout << " ba " << p->getOPP()<<endl;
         p->setWorkload(workload);
 
         double currentSpeed = p->getSpeed();
@@ -168,13 +167,9 @@ namespace RTSim {
         DBGPRINT_4("CPU ", p->getName(), " freq ", p->getFrequency());
         DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles, "Current speed ", currentSpeed);
         DBGPRINT_4(" result ", ((double)currentCost - actCycles)/currentSpeed, " to tick ", ceil( ((double)currentCost - actCycles)/currentSpeed) );
-        cout << "speed " <<currentSpeed<<endl;
         Tick tmp = 0;
         if (((double)currentCost) > actCycles)
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
-        //todo
-        cout << "currentCost " << double(currentCost) << " " << currentSpeed<<endl;
-        cout <<" schedule() ahs " << _father->toString() << " scaled WCET is " << double(tmp) << " " << p->toString() << endl;
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 	      
@@ -256,8 +251,12 @@ namespace RTSim {
 		currentCost = getDuration();
 
         Tick tmp = 0;
-        if (((double)currentCost) > actCycles)
+        if (((double)currentCost) > actCycles) {
             tmp = (Tick) ceil ((((double) currentCost) - actCycles)/newSpeed);
+            assert(tmp >= 0);
+            cout << double(currentCost) << " " << execdTime << endl;
+            cost->setMaximum(double(currentCost - execdTime));
+        }
 	   
         assert(tmp >= 0);
         _endEvt.post(t + tmp);

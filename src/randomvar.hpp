@@ -175,6 +175,8 @@ namespace MetaSim {
         virtual double getMaximum() throw(MaxException) = 0;
         virtual double getMinimum() throw(MaxException) = 0;
 
+        virtual void setMaximum(double v) throw(MaxException) {};
+
 
         /** Parses a random variable from a string. String is in the
             form "varname(par1, par2, ...)", where 
@@ -204,6 +206,7 @@ namespace MetaSim {
         virtual double get() { return _var; } 
         virtual double getMaximum() throw(MaxException) {return _var;}
         virtual double getMinimum() throw(MaxException) {return _var;}
+        virtual void   setMaximum(double v) throw(MaxException) { _var = v;}
     };
 
     /** 

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
     vector<CPU*> cpus;
-    int TEST_NO = 1;
+    int TEST_NO = 10;
 
     dumpAllSpeeds();
     
@@ -424,7 +424,7 @@ int main(int argc, char *argv[])
         else if (TEST_NO == 10) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
             // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
-            int wcets[] = { 101,101,101,100, 200,500,500,500,    }; // 9 tasks
+            int wcets[] = { 101,101,101,8, 200,500,500,500,  101  }; // 9 tasks
             vector<PeriodicTask*> tasks;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
@@ -433,24 +433,22 @@ int main(int argc, char *argv[])
                 char instr[60] = "";
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
-            k->dispatch(cpus[0],tasks[0],5);
-            k->dispatch(cpus[1],tasks[1],5);
-            k->dispatch(cpus[2],tasks[2],5);
-            k->dispatch(cpus[3],tasks[3],5);
+            k->addForcedDispatch(tasks[0], cpus[0], 5);
+            k->addForcedDispatch(tasks[1],cpus[1],5);
+            k->addForcedDispatch(tasks[2],cpus[2],5);
+            k->addForcedDispatch(tasks[3],cpus[3],5);
 
-            k->dispatch(cpus[4],tasks[4],18);
-            k->dispatch(cpus[5],tasks[5],18);
-            k->dispatch(cpus[6],tasks[6],18);
-            k->dispatch(cpus[7],tasks[7],18);
+            k->addForcedDispatch(tasks[4],cpus[4],18);
+            k->addForcedDispatch(tasks[5],cpus[5],18);
+            k->addForcedDispatch(tasks[6],cpus[6],18);
+            k->addForcedDispatch(tasks[7],cpus[7],18);
 
-            //k->dispatch(cpus[4],tasks[8],18);
-
-            for (PeriodicTask* pt : tasks)
-                k->addTask(*pt, "");
+            k->addForcedDispatch(tasks[8],cpus[4],18);
 
             SIMUL.initSingleRun();
             SIMUL.run_to(1);
@@ -465,7 +463,9 @@ int main(int argc, char *argv[])
             assert(k->getProcessor(tasks[6])->getName() == cpus[6]->getName());
             assert(k->getProcessor(tasks[7])->getName() == cpus[7]->getName());
 
-            //assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
+            assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
+
+            SIMUL.run_to(100);
 
             SIMUL.endSingleRun();
             return 0;
@@ -476,7 +476,7 @@ int main(int argc, char *argv[])
          * Output execution time estimation for each workload on each OPP of
          * big and LITTLE cpus.
          */
-
+        /*
         cout << "Dumping tasks' execution times" << endl;
 
         map<string, double> min_C;
@@ -486,7 +486,7 @@ int main(int argc, char *argv[])
         min_C["encrypt"] = 0.746811798;
         min_C["decrypt"] = 0.754088207;
 
-        /*for (string cpu_type : {"big", "LITTLE"}) {
+        for (string cpu_type : {"big", "LITTLE"}) {
             unsigned int cpu = cpu_type == "big" ? 5 : 1;
             unsigned int old_opp;
             auto opp_size = cpu_type == "big" ? F_big.size() : F_little.size();

@@ -8,6 +8,7 @@
 #include "mrtkernel.hpp"
 #include "cpu.hpp"
 #include "task.hpp"
+#include "rttask.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 
@@ -94,8 +95,9 @@ namespace RTSim {
         /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
         void setIslandFrequency(CPU::Island island);
 
-        /// Tries to schedule a task on a CPU, for all valid OPPs, remembering power consumption
-        void tryTaskOnCPU(RTSim::Task *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
+        /// Tries to schedule a task on a CPU, for all valid OPPs,
+        /// remembering power consumption
+        void tryTaskOnCPU(Task *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
 
     public:
 
@@ -206,6 +208,11 @@ namespace RTSim {
 
         void printBool(bool b);
 
+        bool manageForcedDispatch(Task*);
+
+        void addForcedDispatch(RTSim::PeriodicTask *t, CPU *c, int opp);
+
+        map<Task*, pair<CPU*, int>> _m_forcedDispatch;
     };
 }
 
