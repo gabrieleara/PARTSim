@@ -25,6 +25,7 @@
 #include <exeinstr.hpp>
 #include <task.hpp>
 #include <assert.h>
+#include "exeinstr.hpp"
 
 namespace RTSim {
 
@@ -240,26 +241,26 @@ namespace RTSim {
     }
 
     void ExecInstr::refreshExec(double oldSpeed, double newSpeed){
-        cout << "execinstr refreshExec from " << oldSpeed << " to " << newSpeed << endl;
         Tick t = SIMUL.getTime();
         _endEvt.drop();
         actCycles += ((double)(t - lastTime))*oldSpeed;
         execdTime += (t - lastTime);
         lastTime = t;
-   
-	if (isBegOfInstr)
-		currentCost = getDuration();
+
+        //if (isBegOfInstr)
+        //    currentCost = getDuration();
 
         Tick tmp = 0;
-        if (((double)currentCost) > actCycles) {
-            tmp = (Tick) ceil ((((double) currentCost) - actCycles)/newSpeed);
-            assert(tmp >= 0);
-            cout << double(currentCost) << " " << execdTime << endl;
-            cost->setMaximum(double(currentCost - execdTime));
-        }
-	   
+        if (((double)currentCost) > actCycles)
+            tmp = (Tick) ceil ((double(currentCost) - actCycles) / newSpeed);
+            //tmp = (Tick) ceil (double(currentCost - execdTime) / newSpeed);
+            // cost->setMaximum(double(currentCost - execdTime));
+
         assert(tmp >= 0);
-        _endEvt.post(t + tmp);
+#include <cstdio>
+        printf("endEvt at %f + [%f-%f]/%f=%f\n", double(t), (double)currentCost, (double)actCycles, newSpeed, (double)tmp);
+        //_endEvt.post(t + tmp);
+        _endEvt.post(Tick(double(currentCost) / newSpeed));
     }
 
     /*---------------------------- */

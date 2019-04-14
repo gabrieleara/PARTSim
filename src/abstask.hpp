@@ -15,6 +15,7 @@
 #define __ABSTASK_HPP__
 
 #include <basetype.hpp>
+#include <cpu.hpp>
 
 namespace RTSim {
 
@@ -66,7 +67,7 @@ namespace RTSim {
 
 	/// get current arrival time of the job
 	virtual Tick getArrival(void) const = 0;
-    
+
 	/// get arrival time of the last executed job
 	virtual Tick getLastArrival(void) const = 0;
 
@@ -87,10 +88,10 @@ namespace RTSim {
 	 */
 	virtual double getMaxExecutionCycles() const { return 0; }
 
-  /**
-     Object to string. you should override this function in derived classes
-   */
-  virtual string toString() const { return "Default AbsTask::show()"; }
+	/**
+    	 Object to string. you should override this function in derived classes
+   	*/
+  	virtual string toString() const { return "Default AbsTask::show()"; }
 
     };
 
@@ -119,6 +120,9 @@ namespace RTSim {
 
     /// get WCET scaled with capacity
     virtual double getWCET(double capacity) const = 0;
+
+   /// get remaining WCET scaled with capacity
+   virtual double getRemainingWCET(double capacity = 1.0) const = 0;
 
   };
 

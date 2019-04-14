@@ -112,7 +112,7 @@ namespace RTSim {
         FakeArrEvt fakeArrEvt;
         KillEvt killEvt;
         DeadEvt deadEvt;
-        
+
         /**
            Returns a constant reference to the instruction queue
            (instrQueue)
@@ -264,7 +264,7 @@ namespace RTSim {
         */
         virtual ~Task();
 
-	friend ostream& operator<<(ostream &strm, Task &a);
+	    friend ostream& operator<<(ostream &strm, Task &a);
 
         /**
            For the abstract factory
@@ -378,8 +378,8 @@ namespace RTSim {
         /** Returns the executed clock cycles (executed WCET) of the last (or current) instance */
         double getExecCycles() const;
 
-        /** Returns the WCET taking care of CPU capacity */
-        virtual double getMaxExecutionCycles(double capacity = 1.0) const { return getWCET(capacity); }
+        /** Returns the WCET in cycles, independently of CPU speed */
+        virtual double getMaxExecutionCycles(double capacity = 1.0) const { return _maxC; }
 
         Tick getMinIAT() const { return Tick(int_time->getMinimum());}
 
@@ -406,6 +406,8 @@ namespace RTSim {
             //cout << endl << "\t\t\ttask::getwcet " << double(getWCET()) <<"/"<< capacity<<"="<<n<<endl;
             return n;
         }
+
+        virtual double getRemainingWCET(double capacity = 1.0) const;
 
         Tick getDeadline() const {return _dl;}
         Tick getRelDline() const {return _rdl;}

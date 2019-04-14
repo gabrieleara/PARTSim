@@ -628,6 +628,14 @@ cout<<"task::onsched " << getCPU()->toString()<<endl;
         deadEvt.setKill(kill);
     }
 
+    double Task::getRemainingWCET(double capacity) const {
+        // todo keep track of task migrations and do as in ExecInstr::refreshExec(
+        Tick alreadyExecdCycles = getExecTime() ;
+        //cout << endl<<"already execd " << alreadyExecdCycles << endl;
+        double n = double(getWCET() - alreadyExecdCycles) / capacity;
+        return n;
+    }
+
     string Task::toString() const {
         stringstream ss;
         ss << getName() << " arr " << getArrival() << " DL " << getDeadline() << " WCET " + getWCET();

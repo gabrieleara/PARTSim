@@ -54,6 +54,7 @@ namespace RTSim
     class CPU : public Entity {
     public:
         typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
+        static string IslandName[NUM_ISLANDS];
 
         /// Identifier of the island
         Island island;
@@ -75,7 +76,7 @@ namespace RTSim
         int index;
 
         /// Is CPU holding a task, either running and ready (= dispatching)?
-        bool isBusy;
+        bool isBusy = false;
 
         // --------------------------------------------------- Big-Little
 
@@ -117,7 +118,7 @@ namespace RTSim
 
         virtual string toString() const {
             stringstream ss;
-            ss << "CPU " << getName() << " freq " << getFrequency();
+            ss << "(CPU) " << getName() << " cur freq " << getFrequency();
             return ss.str();
         }
 
@@ -143,11 +144,13 @@ namespace RTSim
 
         // todo don't like to have functions with same name. Use classes Island and Big-Little instead
         static bool isCPUIslandBusy(vector<CPU*> cpus, Island island) {
+            cout << __func__ << " for " << IslandName[island] << endl;
             for (CPU* c : cpus)
                 if (c->getIsland() == island && c->isCPUBusy()){
                     cout << c->toString() << " is busy"<<endl;
                     return true;
                 }
+            cout << "island is free"<<endl;
             return false;
         }
 
@@ -165,7 +168,7 @@ namespace RTSim
             for (CPU* c : cc)
                 c->setOPP(opp);
             islandCurOPP[island] = opp;
-            cout << __func__ << " "<<islandCurOPP[island] << endl;
+            cout << __func__ << " " << IslandName[island] << " " << islandCurOPP[island] << endl;
         }
 
         void setBusy(bool busy) {

@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
     vector<CPU*> cpus;
-    int TEST_NO = 10;
+    int TEST_NO = 0;
 
     dumpAllSpeeds();
     
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 
             assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
 
-            SIMUL.run_to(100);
+            SIMUL.run_to(1000);
 
             SIMUL.endSingleRun();
             return 0;

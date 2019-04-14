@@ -75,6 +75,10 @@ namespace RTSim {
          */
         map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
 
+        /// list of tasks that you are trying to migrate (i.e., they already had a core assigned but you are
+        /// trying to move it to a better one). Migration happens when a task ends
+        vector<AbsRTTask*> _m_migrating;
+
         /**
         * CPU choice from the table of consumptions (not sorted).
         * It tries to spread tasks on CPUs if they have the same energy consumption
@@ -87,6 +91,11 @@ namespace RTSim {
          */
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU*& chosenCPU);
 
+        /// t is not migrating anymore
+        void cancelMigration(AbsRTTask *t);
+
+        bool isMigrating(AbsRTTask *t);
+
         /// Implements migration mechanism on task end
         void migrate(CPU* endingCPU);
 
@@ -97,7 +106,7 @@ namespace RTSim {
 
         /// Tries to schedule a task on a CPU, for all valid OPPs,
         /// remembering power consumption
-        void tryTaskOnCPU(Task *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
+        void tryTaskOnCPU(AbsRTTask *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
 
     public:
 
@@ -180,6 +189,9 @@ namespace RTSim {
 
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);
+
+        /// is any task dispatched on CPU p?
+        bool isDispatching(CPU* p);
 
         /**
          *  Returns a pointer to the task which is executing on given

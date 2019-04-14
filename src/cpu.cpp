@@ -22,6 +22,7 @@ namespace RTSim
 
     bool CPU::isIslandBusy[NUM_ISLANDS] = {false};
     int  CPU::islandCurOPP[NUM_ISLANDS] = {0};
+    string CPU::IslandName[NUM_ISLANDS] = {"BIG","LITTLE"};
 
 
     CPU::CPU(const string &name,
