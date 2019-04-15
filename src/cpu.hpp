@@ -95,8 +95,8 @@ namespace RTSim
         string _workload;
         static int islandCurOPP[NUM_ISLANDS];
 
-        /// update CPU power/speed model according to specified opp (or currentOPP, if opp == -1)
-        void updateCPUModelOPP(int opp = -1);
+        /// update CPU power/speed model according to currentOPP
+        void updateCPUModel();
 
     public:
 
@@ -273,7 +273,7 @@ namespace RTSim
         double getPowerConsumption(double frequency);
 
         /// get power consumption for current freq
-        inline double getPowerConsumption() { return getPowerConsumption(getFrequency()); }
+        inline double getPowerConsumption();
 
         /// returns the island where the CPU is located
         Island getIsland() { return this->island; };

@@ -264,15 +264,12 @@ namespace RTSim {
         CPU* cpu = _m_dispatching[t].first;
         int opp = _m_dispatching[t].second;
         cout << t->toString() << " " << cpu->toString() << " setting opp to " << opp << endl;
+        int old_opp = cpu->getOPP();
         cpu->setOPP(opp);
-        if (opp > cpu->getOPP())
+        if (opp > old_opp)
             CPU::updateIslandCurOPP(CPUs, cpu->getIsland(), opp);
         _m_oldExe[t] = cpu;
         _m_dispatching.erase(t);
-
-
-        if (SIMUL.getTime() == _migrationDelay) // only for the first dispatch() of tasks
-            totalPowerCosumption += cpu->getPowerConsumption(cpu->getFrequency());
 
         //todo remove
         for (const auto& elem : _m_dispatching)

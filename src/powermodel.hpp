@@ -56,6 +56,11 @@ namespace RTSim
              */
         unsigned long int _F_max;
 
+        /*!
+             * Update the power consumption
+             */
+        virtual void updatePower() = 0;
+
     public:
         /**
              * Default Constructor
@@ -75,14 +80,9 @@ namespace RTSim
         /*!
              * Get the instantaneous power consumption
              */
-        virtual double getPower() const;
+        virtual double getPower();
 
         virtual long double getSpeed();
-
-        /*!
-             * Update the power consumption
-             */
-        virtual void update() = 0;
 
         // ----------------------
         // Inputs
@@ -119,9 +119,7 @@ namespace RTSim
 };
 
     class CPUModelMinimal : public CPUModel {
-    public:
-        CPUModelMinimal(double v, unsigned long int f);
-
+    protected:
         // ----------------------
         // Power
         // ----------------------
@@ -129,8 +127,10 @@ namespace RTSim
         /*!
              * Update the power consumption
              */
-        virtual void update();
+        virtual void updatePower();
 
+    public:
+        CPUModelMinimal(double v, unsigned long int f);
     };
 
     class CPUModelBP : public CPUModel {
@@ -208,6 +208,9 @@ namespace RTSim
              */
         double _P_charge;
 
+        // update power consumption only, needs workload type correctly set in CPU
+        virtual void updatePower();
+
     public:
 
         CPUModelBP(double v, unsigned long f, unsigned long f_max,
@@ -220,9 +223,9 @@ namespace RTSim
                                const PowerModelBPParams &power_params,
                                const ComputationalModelBPParams &computing_params);
 
+        // only correct if setFrequency() called before this
         virtual long double getSpeed();
 
-        virtual void update();
         static long double slownessModel(const ComputationalModelBPParams &m,
                           unsigned long int f);
     };

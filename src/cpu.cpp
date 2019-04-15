@@ -87,9 +87,9 @@ namespace RTSim
     void CPU::setOPP(unsigned int newOPP)
     {
       //std::cout << __func__ << " setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
-        currentOPP = newOPP;
         assert(newOPP < OPPs.size());
-        powmod->setFrequency(OPPs[currentOPP].frequency);
+        currentOPP = newOPP;
+        updateCPUModel();
     }
 
     unsigned long int CPU::getFrequency() const
@@ -107,23 +107,15 @@ namespace RTSim
         _max_power_consumption = max_p;
     }
 
-    void CPU::updateCPUModelOPP(int opp) {
-      //cout << __func__ << " opp=" << opp << ", currentOPP=" << currentOPP << std::endl;
-      if (opp == -1) {
-        powmod->setVoltage(OPPs[currentOPP].voltage);
-        powmod->setFrequency(OPPs[currentOPP].frequency);
-        powmod->update();
-      } else {
-        powmod->setVoltage(OPPs[opp].voltage);
-        powmod->setFrequency(OPPs[opp].frequency);
-        powmod->update();
-      }
+    void CPU::updateCPUModel() {
+      powmod->setVoltage(OPPs[currentOPP].voltage);
+      powmod->setFrequency(OPPs[currentOPP].frequency);
     }
 
     double CPU::getCurrentPowerConsumption()
     {
         if (PowerSaving) {
-            updateCPUModelOPP();
+            updateCPUModel();
             return (powmod->getPower());
         }
         return 0;
@@ -179,7 +171,7 @@ namespace RTSim
     double CPU::getSpeed()
     {
         if (PowerSaving) {
-            updateCPUModelOPP();
+            updateCPUModel();
             return powmod->getSpeed();
         }
         return 1.0;
@@ -192,9 +184,9 @@ namespace RTSim
         assert(opp < OPPs.size());
         int old_curr_opp = currentOPP;
         cout << endl << __func__<< opp<<endl;
-        updateCPUModelOPP(opp);
-        double s = powmod->getSpeed();
-        updateCPUModelOPP(old_curr_opp);
+        setOPP(opp);
+        double s = getSpeed();
+        setOPP(old_curr_opp);
         return s;
     }
 
@@ -238,12 +230,23 @@ namespace RTSim
         assert(opp != -1);
         return opp;
     }
-  
+
+    double CPU::getPowerConsumption() {
+        if (PowerSaving) {
+            updateCPUModel();
+            return powmod->getPower();
+        }
+        return 0.0;
+    }
+
     double CPU::getPowerConsumption(double frequency) {
         // Find what OPP corresponds to provided frequency
+        unsigned int old_opp = currentOPP;
         unsigned int opp = getOPPByFrequency(frequency);
-        updateCPUModelOPP(opp);
-        return powmod->getPower();
+        setOPP(opp);
+        double pow = getPowerConsumption();
+        setOPP(old_opp);
+        return pow;
     }
 
     double CPU::getSpeed(double freq) {

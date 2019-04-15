@@ -43,8 +43,9 @@ namespace RTSim
         _cpu = c;
     }
 
-    double CPUModel::getPower() const
+    double CPUModel::getPower()
     {
+        updatePower();
         return _P;
     }
 
@@ -64,14 +65,14 @@ namespace RTSim
         if (v==0)
           cout << "asd";
         _V = v;
-        update();
+        updatePower();
     }
 
     void CPUModel::setFrequency(unsigned long int f)
     {
         //cout << endl << "CPUModel::setFrequency " <<f << endl;
         _F = 1000 * f;
-        update();
+        updatePower();
     }
 
     void CPUModel::setFrequencyMax(unsigned long int f)
@@ -87,7 +88,7 @@ namespace RTSim
     }
 
     // deprecated, it might introduce bugs if you forget to update after setVoltage/setFrequency()
-    void CPUModelMinimal::update()
+    void CPUModelMinimal::updatePower()
     {
         //cout << endl << "CPUModelMinimal::update " << _V << " " << _F << endl;
         _P = (_V * _V) * _F;
@@ -112,7 +113,7 @@ namespace RTSim
         _wl_param["idle"] = mp;
     }
 
-    void CPUModelBP::update()
+    void CPUModelBP::updatePower()
     {
         #include <cstdio>
      // printf("\t\t\tCPUModelBP::update freq %lu volt %f\n",getFrequency(),getVoltage() );
