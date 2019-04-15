@@ -191,6 +191,7 @@ namespace RTSim
             return 1;
         assert(opp < OPPs.size());
         int old_curr_opp = currentOPP;
+        cout << endl << __func__<< opp<<endl;
         updateCPUModelOPP(opp);
         double s = powmod->getSpeed();
         updateCPUModelOPP(old_curr_opp);
@@ -247,6 +248,7 @@ namespace RTSim
 
     double CPU::getSpeed(double freq) {
         unsigned int opp = getOPPByFrequency(freq);
+        cout << endl << "speed by freq " << opp << endl;
         return getSpeed(opp);
     }
 

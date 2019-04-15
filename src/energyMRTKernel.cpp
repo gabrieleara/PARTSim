@@ -82,7 +82,7 @@ namespace RTSim {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getDeadline());
 
 #include <cstdio>
-        printf("\t\t\tgetUtilization of considered task %f/%f (capaity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getDeadline()), capacity, util);
+        printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getDeadline()), capacity, util);
         return util;
     }
 
@@ -265,11 +265,11 @@ namespace RTSim {
         int opp = _m_dispatching[t].second;
         cout << t->toString() << " " << cpu->toString() << " setting opp to " << opp << endl;
         cpu->setOPP(opp);
+        if (opp > cpu->getOPP())
+            CPU::updateIslandCurOPP(CPUs, cpu->getIsland(), opp);
         _m_oldExe[t] = cpu;
         _m_dispatching.erase(t);
 
-        // Island only has tasks that don't need the current frequency
-        //setIslandFrequency(cpu->getIsland());
 
         if (SIMUL.getTime() == _migrationDelay) // only for the first dispatch() of tasks
             totalPowerCosumption += cpu->getPowerConsumption(cpu->getFrequency());
@@ -450,7 +450,8 @@ namespace RTSim {
         leaveLittle3(t, iDeltaPows, chosenCPU);
 
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
-             " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << " speed=" << chosenCPU->getSpeed(chosenOPP) << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
+             " with freq " << chosenCPU->getStructOPP(chosenOPP).frequency << " speed=" << chosenCPU->getSpeed(chosenOPP) <<
+             " chosenOPP " << chosenOPP << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
         dispatch(chosenCPU, t, chosenOPP);
     }
 
@@ -604,7 +605,7 @@ namespace RTSim {
                 double iPowWithNewTask      = 0.0;
                 double iOldPow              = 0.0;
                 double iDeltaPow            = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
-                int nTaskIsland             = 0;
+                int    nTaskIsland          = 0;
                 CPU::Island island;
 
                 // utilization on CPU c with the new frequency
