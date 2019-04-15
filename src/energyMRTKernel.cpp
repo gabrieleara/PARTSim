@@ -19,6 +19,7 @@
 #include "rttask.hpp"
 #include "exeinstr.hpp"
 
+#define LEAVE_LITTLE3_ENABLED 1
 
 namespace RTSim {
     using namespace MetaSim;
@@ -334,19 +335,8 @@ namespace RTSim {
 
          cout << __func__ << " time=" << SIMUL.getTime() << endl;
 
-         // update WCET of tasks
-         /*for (auto& elem : _m_currExe) {
-             if (elem.second == NULL) continue; // NULL happens 'cause of _m_currExe[p] = NULL instead of erasing...
-             CPU* c = elem.first;
-             double cap = c->getSpeed(double(c->getFrequency()));
-             //cout << cap << " " << c->getFrequency() << " " << c->toString() << endl;
-             cout << elem.second->toString() << " needed WCET=" << elem.second->getRemainingWCET(cap) << endl;
-             elem.second->refreshExec(cap, cap);
-             cout << " and now still needs WCET = " << elem.second->getRemainingWCET(cap) << endl;
-         }*/
-
          for (auto& t : _m_dispatching)
-             if (t.second.first->getIsland() == CPU::Island::BIG || t.second.first->getName() == "LITTLE_3") {
+             if (t.second.first->getIsland() == CPU::Island::BIG || (!LEAVE_LITTLE3_ENABLED ? false : t.second.first->getName() == "LITTLE_3") ) {
                  vector<struct ConsumptionTable> iDeltaPows;
                  AbsRTTask* tt = const_cast<AbsRTTask*>(t.first);
                  CPU* curCPU = t.second.first;
@@ -386,6 +376,7 @@ namespace RTSim {
          */
 
         cout << __func__ << "():" << endl;
+        if (!LEAVE_LITTLE3_ENABLED) return;
         if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIsland() == CPU::Island::BIG) {
             cout << "chosenCPU in big island or is not little_3 => skip" << endl;
             return;
