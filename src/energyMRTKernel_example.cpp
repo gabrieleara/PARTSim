@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
     vector<CPU*> cpus;
-    int TEST_NO = 0;
+    int TEST_NO = 10;
 
     dumpAllSpeeds();
     

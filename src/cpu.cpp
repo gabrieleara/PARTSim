@@ -86,8 +86,8 @@ namespace RTSim
 
     void CPU::setOPP(unsigned int newOPP)
     {
-      //std::cout << __func__ << " setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
-        assert(newOPP < OPPs.size());
+        //std::cout << __func__ << " setting currentOPP from " << currentOPP << " to " << newOPP << ", OPPs.size()=" << OPPs.size() << std::endl;
+        assert(newOPP < OPPs.size() && newOPP >= 0);
         currentOPP = newOPP;
         updateCPUModel();
     }
@@ -181,9 +181,8 @@ namespace RTSim
     {
         if (!PowerSaving)
             return 1;
-        assert(opp < OPPs.size());
+        assert(opp < OPPs.size() && opp >= 0);
         int old_curr_opp = currentOPP;
-        cout << endl << __func__<< opp<<endl;
         setOPP(opp);
         double s = getSpeed();
         setOPP(old_curr_opp);
@@ -251,7 +250,6 @@ namespace RTSim
 
     double CPU::getSpeed(double freq) {
         unsigned int opp = getOPPByFrequency(freq);
-        cout << endl << "speed by freq " << opp << endl;
         return getSpeed(opp);
     }
 

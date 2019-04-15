@@ -240,7 +240,7 @@ namespace RTSim {
         DBGPRINT("internal data reset...");
     }
 
-    void ExecInstr::refreshExec(double oldSpeed, double newSpeed){
+    void ExecInstr::refreshExec(double oldSpeed, double newSpeed) {
         Tick t = SIMUL.getTime();
         _endEvt.drop();
         actCycles += ((double)(t - lastTime))*oldSpeed;

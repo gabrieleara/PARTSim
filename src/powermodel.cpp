@@ -51,10 +51,7 @@ namespace RTSim
 
     long double CPUModel::getSpeed()
     {
-        //cout << "CPUModel::getSpeed()"<<endl;
-        // previously it was - but then I had to change it for my tries:
-        // long double res = (double)_F_max / (double)_F;
-        long double res = (double)_F / (double)_F_max;
+        long double res = (double)_F_max / (double)_F;
         return res;
     }
 

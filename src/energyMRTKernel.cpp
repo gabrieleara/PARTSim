@@ -336,30 +336,37 @@ namespace RTSim {
          cout << __func__ << " time=" << SIMUL.getTime() << endl;
 
          for (auto& t : _m_dispatching)
-             if (t.second.first->getIsland() == CPU::Island::BIG || (!LEAVE_LITTLE3_ENABLED ? false : t.second.first->getName() == "LITTLE_3") ) {
+             if ( t.second.first->getIsland() == CPU::Island::BIG || (!LEAVE_LITTLE3_ENABLED ? false : t.second.first->getName() == "LITTLE_3") ) {
                  vector<struct ConsumptionTable> iDeltaPows;
                  AbsRTTask* tt = const_cast<AbsRTTask*>(t.first);
                  CPU* curCPU = t.second.first;
-                 //_m_dispatching.erase(tt); if commented brings bugs in getutilization todo
+                 //_m_dispatching.erase(tt); if commented brings bugs in getUtilization todo
 
                  cout << "Dealing with task " << tt->toString() << "." << endl;
                  for (CPU* cc : CPU::getCPUsInIsland(CPUs, CPU::Island::LITTLE))
                     tryTaskOnCPU(tt, cc, iDeltaPows);
                  tryTaskOnCPU(tt, curCPU, iDeltaPows);
 
-                 if (!iDeltaPows.empty()) {
-                     double oldSpeed[CPU::NUM_ISLANDS] = {CPUs[6]->getSpeed(), CPUs[0]->getSpeed()};
+                 assert(!iDeltaPows.empty()); // there is at least the curCPU
 
-                     chooseCPU(tt, iDeltaPows);
-                     // Update WCET (time, endEvt) of tasks on the chosen island
-                     CPU* chosenCPU = _m_dispatching[tt].first;
-                     for (auto& rt : _m_currExe)
-                         if (rt.second != NULL && chosenCPU->getIsland() == rt.first->getIsland()) {
-                             cout << rt.second->toString() << " had WCET " << rt.second->getWCET(oldSpeed[chosenCPU->getIsland()]) << endl;
-                             rt.second->refreshExec(oldSpeed[chosenCPU->getIsland()], chosenCPU->getSpeed());
-                             cout << " now has WCET " << rt.second->getWCET(chosenCPU->getSpeed()) << endl;
-                         }
-                 }
+
+                 chooseCPU(tt, iDeltaPows);
+
+                 // Update WCET (time, endEvt) of tasks on the chosen island
+                 CPU* chosenCPU = _m_dispatching[tt].first;
+                 chosenCPU->setOPP(_m_dispatching[tt].second);
+                 CPU::updateIslandCurOPP(CPUs, chosenCPU->getIsland(), chosenCPU->getOPP());
+                 chosenCPU->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
+                 double oldSpeed[CPU::NUM_ISLANDS] = {CPUs[6]->getSpeed(), CPUs[0]->getSpeed()};
+                 for (auto& rt : _m_currExe)
+                      if (rt.second != NULL && chosenCPU->getIsland() == rt.first->getIsland()) {
+
+                          cout << rt.second->toString() << " had WCET " << rt.second->getWCET(oldSpeed[chosenCPU->getIsland()]) << endl;
+                          rt.second->refreshExec(oldSpeed[chosenCPU->getIsland()], chosenCPU->getSpeed());
+                          cout << " now has WCET " << rt.second->getWCET(chosenCPU->getSpeed()) << endl;
+
+                  }
+
              }
 
     }
