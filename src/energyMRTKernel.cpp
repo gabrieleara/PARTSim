@@ -272,7 +272,9 @@ namespace RTSim {
         _m_oldExe[t] = cpu;
         _m_dispatching.erase(t);
 
+
         //todo remove
+        cout << "Context switch finished for " << t->toString() << ". It'll be descheduled at " << _endEvt[cpu]->getTime() << endl;
         for (const auto& elem : _m_dispatching)
         {
             cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;

@@ -51,49 +51,35 @@ namespace RTSim
      * upon the step frequencies.  The function setSpeed(load) adjusts the CPU
      * speed accordingly to the system load, and returns the new CPU speed.
      */
-    class CPU : public Entity {
-    public:
-        typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
-        static string IslandName[NUM_ISLANDS];
-
-        /// Identifier of the island
-        Island island;
-
-        /// Reference CPUs frequency to compute CPU capacity. It is a global field to all CPUs
-        static unsigned int referenceFrequency;
+    class CPU : public Entity {        
     private:
         double _max_power_consumption;
 
+        /**
+             *  Energy model of the CPU
+             */
+        CPUModel *powmod;
+
+        /**
+             * Delta workload
+             */
+        string _workload;
+
+        vector<OPP> OPPs;
+
         /// Name of the CPU
         string cpuName;
+
+        /// currentOPP is a value between 0 and OPPs.size() - 1
+        unsigned int currentOPP;
 
         bool PowerSaving;
 
         /// Number of speed changes
         unsigned long int frequencySwitching;
 
-        /// this is the CPU index in a multiprocessor environment
+        // this is the CPU index in a multiprocessor environment
         int index;
-
-        /// Is CPU holding a task, either running and ready (= dispatching)?
-        bool isBusy = false;
-
-        // --------------------------------------------------- Big-Little
-
-        /// currentOPP is a value between 0 and OPPs.size() - 1
-        unsigned int currentOPP;
-
-        /// Is island free of tasks (big-little)? i.e., is there any other CPU in this island holding a task?
-        static bool isIslandBusy[NUM_ISLANDS];
-
-        vector<OPP> OPPs;
-
-        /// Energy model of the CPU
-        CPUModel *powmod;
-
-        /// Delta workload
-        string _workload;
-        static int islandCurOPP[NUM_ISLANDS];
 
         /// update CPU power/speed model according to currentOPP
         void updateCPUModel();
@@ -122,65 +108,6 @@ namespace RTSim
             return ss.str();
         }
 
-        // -------------------------------------------------------- Big-Little
-
-        unsigned int getOPPByFrequency(double frequency);
-
-        int getIslandCurOPP() {
-            return islandCurOPP[getIsland()];
-        }
-
-        void setIsIslandBusy(bool busy) {
-            DBGPRINT_3(SIMUL.getTime(), " is island busy ", busy);
-            isIslandBusy[getIsland()] = busy;
-
-            if (!busy)
-                isIslandBusy[getIsland()] = false;
-        }
-
-        bool isCPUIslandBusy() {
-            return isIslandBusy[getIsland()];
-        }
-
-        // todo don't like to have functions with same name. Use classes Island and Big-Little instead
-        static bool isCPUIslandBusy(vector<CPU*> cpus, Island island) {
-            cout << __func__ << " for " << IslandName[island] << endl;
-            for (CPU* c : cpus)
-                if (c->getIsland() == island && c->isCPUBusy()){
-                    cout << c->toString() << " is busy"<<endl;
-                    return true;
-                }
-            cout << "island is free"<<endl;
-            return false;
-        }
-
-        static unsigned int findMaxOPP(vector<CPU*> *cpus, Island island) {
-            unsigned int opp = 0;
-            for (CPU* c : *cpus)
-                if (island == c->getIsland() && c->getOPP() > opp)
-                    opp = c->getOPP();
-            return opp;
-        }
-
-        /// update island CPUs OPP to opp. Doesn't use findMaxOPP() because you may want to decrease OPP
-        static void updateIslandCurOPP(vector<CPU*> cpus, Island island, unsigned int opp) {
-            vector<CPU*> cc = getCPUsInIsland(cpus, island);
-            for (CPU* c : cc)
-                c->setOPP(opp);
-            islandCurOPP[island] = opp;
-            cout << __func__ << " " << IslandName[island] << " " << islandCurOPP[island] << endl;
-        }
-
-        void setBusy(bool busy) {
-            isBusy = busy;
-            if (busy)
-                setIsIslandBusy(true);
-        }
-
-        bool isCPUBusy() {
-            return isBusy;
-        }
-
         /// set the processor index
         void setIndex(int i)
         {
@@ -196,31 +123,14 @@ namespace RTSim
         /// Useful for debug
         virtual int getOPP();
 
-        struct OPP getMinOPP() const {
-            return getStructOPP(0);
-        }
-
-        struct OPP getStructOPP(int i) const {
-            return OPPs[i];
-        }
-
-        struct OPP getStructOPP() const {
-            return getStructOPP(currentOPP);
-        }
-
         /// return the OPPs bigger than the current one
-        std::vector<struct OPP> getNextOPPs();
+        virtual vector<struct OPP> getNextOPPs();
 
         /// expose the internal OPPs, read-only
         std::vector<struct OPP> const & getOPPs() const { return OPPs; };
 
         /// Useful for debug
         virtual void setOPP(unsigned int newOPP);
-
-        /// set CPU island (big little)
-        void setIsland(Island i) {
-            island = i;
-        }
 
         unsigned long int getFrequency() const;
 
@@ -235,8 +145,10 @@ namespace RTSim
         /// Returns the current power consumption of the CPU If you
         /// need a normalized value between 0 and 1, you should divide
         /// this value using the getMaxPowerConsumption() function.
-
         virtual double getCurrentPowerConsumption();
+
+        /// get power consumption for a given frequency
+        double getPowerConsumption(double frequency);
 
         /// Returns the current power saving of the CPU
         virtual double getCurrentPowerSaving();
@@ -268,18 +180,6 @@ namespace RTSim
 
         ///Useful for debug
         virtual void check();
-
-        /// get power consumption for a given frequency
-        double getPowerConsumption(double frequency);
-
-        /// get power consumption for current freq
-        inline double getPowerConsumption();
-
-        /// returns the island where the CPU is located
-        Island getIsland() { return this->island; };
-
-        /// filter out CPUs based on their island
-        static vector<CPU*> getCPUsInIsland(vector<CPU*> cpus, CPU::Island island);
 
         bool operator==(const CPU& c) const {
             return getName().compare(c.getName()) == 0;
@@ -361,6 +261,135 @@ namespace RTSim
         }
     };
 
+  // ------------------------------------------------------------ Big-Little. Classes not meant to be extended
+  // Design: I had a class "CPU", which already seemed ok for managing Big-littles. However, this brough bugs,
+  // for example when updating an OPP, since it didn't update automatically the OPP of the island.
+  // With CPU_BL, a core belongs to an island and changing OPP means changing island OPP. Moreover, classes were
+  // build while realizing EnergyMRTKernel, which is a kinda self-adaptive kernel and thus needs to try different
+  // OPPs. Thus, thouse 2 concepts are tigh. One aim was not to break the existing code written by others.
+
+  class CPU_BL : public CPU {
+  private:
+    Island_BL* _island;
+
+    /// Is CPU holding a task, either running and ready (= dispatching)?
+    bool isBusy = false;
+
+  public:
+    /// Reference CPUs frequency to compute CPU capacity. It is a global field to all CPUs
+    static unsigned int referenceFrequency;
+
+    CPU_BL(const string &name="",
+        const vector<double> &V= {},
+        const vector<unsigned int> &F= {},
+        CPUModel *pm = nullptr, Island_BL* island) : CPU(name, V, F, pm) {
+        _island = island;
+    };
+
+    ~CPU_BL();
+
+    virtual unsigned int getOPP() const {
+      return island->getOPP();
+    }
+
+    virtual void setOPP(unsigned int opp) {
+        island->setOPP(opp);
+    }
+
+    virtual vector<struct OPP*> getNextOPPs() {
+        return island->getNextOPPs();
+    }
+
+    void setBusy(bool busy) {
+        isBusy = busy;
+        island->updateBusy();
+    }
+
+    bool isBusy() {
+        return island->isBusy();
+    }
+
+    bool isCPUBusy() {
+        return isBusy;
+    }
+
+    Island_BL* getIsland() { 
+        return _island;
+    }
+
+
+  }
+
+  class Island_BL : public Entity {
+  public:
+    typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
+    static string IslandName[NUM_ISLANDS];
+
+  private:
+    Island _island;
+
+    vector<CPU*> _cpus;
+
+    vector<struct OPP> _opps;
+
+  public:
+
+    unsigned int getOPP() { return findMaxOPP(); }
+
+    unsigned int findMaxOPP() {
+        unsigned int opp = 0;
+        for (CPU* c : *cpus)
+            if (c->getOPP() > opp)
+                opp = c->getOPP();
+        return opp;
+    }
+
+    vector<struct OPP> getNextOPPs() {
+        int maxOPP = findMaxOPP();
+        vector<struct OPP> opps;
+        for (int i = maxOPP; i < _opps.size; i++) {
+            opps.push_back(_opps.at(i));
+        }
+        return opps;
+    }
+
+    bool isBusy() {
+        cout << __func__ << " for " << IslandName[_island] << endl;
+        for (CPU* c : _cpus)
+            if (c->isBusy()){
+                cout << c->toString() << " is busy"<<endl;
+                return true;
+            }
+        cout << "island is free"<<endl;
+        return false;
+    }
+
+    unsigned int getOPPByFrequency(double frequency) {
+        assert(frequency > 0.0);
+        for (int i = 0; i < _opps.size(); i++)
+            if (_opps.at(i).frequency == frequency)
+                return i;
+        // exception...
+        abort();
+        return -1;
+    }
+
+    struct OPP getMinOPP() const {
+        return getStructOPP(0);
+    }
+
+    struct OPP getStructOPP(int i) const {
+        return _opps.at(i);
+    }
+
+    struct OPP getStructOPP() const {
+        return getStructOPP(getOPP());
+    }
+
+}
+
+
+  
 } // namespace RTSim
 
 #endif

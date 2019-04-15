@@ -470,6 +470,23 @@ int main(int argc, char *argv[])
             SIMUL.endSingleRun();
             return 0;
         }
+        else if (TEST_NO==11) { // todo temp use case
+            int wcets[] = { 101,101,101,8, 200,500,500,500  };
+            vector<PeriodicTask*> tasks;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            SIMUL.run(500);
+            return 0;
+        }
 
 
         /*
