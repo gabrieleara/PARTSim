@@ -173,7 +173,7 @@ namespace RTSim {
             tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
-	      
+
         DBGPRINT("End of ExecInstr::schedule() ");
         
     }
@@ -260,7 +260,7 @@ namespace RTSim {
 #include <cstdio>
         printf("endEvt at %f + [%f-%f]/%f=%f\n", double(t), (double)currentCost, (double)actCycles, newSpeed, (double)tmp);
         //_endEvt.post(t + tmp);
-        _endEvt.post(Tick(double(currentCost) / newSpeed));
+        _endEvt.post(t + Tick(double(currentCost) / newSpeed));
     }
 
     /*---------------------------- */

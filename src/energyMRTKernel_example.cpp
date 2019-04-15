@@ -438,10 +438,10 @@ int main(int argc, char *argv[])
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
-            k->addForcedDispatch(tasks[0], cpus[0], 6);
-            k->addForcedDispatch(tasks[1],cpus[1],6);
-            k->addForcedDispatch(tasks[2],cpus[2],6);
-            k->addForcedDispatch(tasks[3],cpus[3],6);
+            k->addForcedDispatch(tasks[0], cpus[0], 5);
+            k->addForcedDispatch(tasks[1],cpus[1],5);
+            k->addForcedDispatch(tasks[2],cpus[2],5);
+            k->addForcedDispatch(tasks[3],cpus[3],5);
 
             k->addForcedDispatch(tasks[4],cpus[4],18);
             k->addForcedDispatch(tasks[5],cpus[5],18);
@@ -465,7 +465,7 @@ int main(int argc, char *argv[])
 
             assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
 
-            SIMUL.run_to(1000);
+            SIMUL.run_to(500);
 
             SIMUL.endSingleRun();
             return 0;

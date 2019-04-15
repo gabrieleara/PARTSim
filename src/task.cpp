@@ -631,8 +631,9 @@ cout<<"task::onsched " << getCPU()->toString()<<endl;
     double Task::getRemainingWCET(double capacity) const {
         // todo keep track of task migrations and do as in ExecInstr::refreshExec(
         Tick alreadyExecdCycles = Tick(double(getExecTime()) * capacity);
-        //going to schedule taskcout << endl<<"already execd " << alreadyExecdCycles << endl;
         double n = double(getWCET() - alreadyExecdCycles) / capacity;
+#include <cstdio>
+        //printf("%s (%f-%f)/%f=%f\n", __func__, double(getWCET()), double(alreadyExecdCycles), capacity, n);
         return n;
     }
 

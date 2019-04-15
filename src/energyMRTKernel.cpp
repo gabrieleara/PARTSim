@@ -552,7 +552,6 @@ namespace RTSim {
             vector<struct ConsumptionTable> iDeltaPows;
 
             for (CPU* c : cpus) {
-                c->setWorkload(dynamic_cast<ExecInstr*>(t->getInstrQueue().at(0).get())->getWorkload());
                 tryTaskOnCPU(t, c, iDeltaPows);
             }
 
@@ -577,6 +576,8 @@ namespace RTSim {
 
     void EnergyMRTKernel::tryTaskOnCPU(AbsRTTask* t, CPU* c, vector<struct ConsumptionTable>& iDeltaPows) {
         int startingOPP = c->getOPP();
+        string startingWL = c->getWorkload();
+        c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = !c->isCPUIslandBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
              << " - it has already ntasks=" << getTasks(c).size() << endl;
@@ -657,6 +658,7 @@ namespace RTSim {
         }
 
         c->setOPP(startingOPP);
+        c->setWorkload(startingWL);
     } // end of tryTaskOnCPU()
 
 }
