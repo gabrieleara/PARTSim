@@ -119,6 +119,7 @@ namespace RTSim
      // printf("\t\t\tCPUModelBP::update freq %lu volt %f\n",getFrequency(),getVoltage() );
         double K, eta, gamma, disp;
         string _curr_wl = getCPU()->getWorkload();
+        assert(_F == 1000 * getCPU()->getFrequency());
         //todo assert(_curr_wl != "");
         if (_curr_wl == "") _curr_wl = "bzip2";
 
@@ -176,6 +177,7 @@ namespace RTSim
         //todo extend delay instruction, which I think is the only one accepting rand distrib (unif, PDF), to accept wl
         if (curr_wl.length() == 0) curr_wl = "bzip2";
         assert(_comp_param.find(curr_wl) != _comp_param.end());
+        assert(_F == 1000 * getCPU()->getFrequency());
         long double ret = 1.0 / slownessModel(_comp_param[curr_wl], _F);
         DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
 
