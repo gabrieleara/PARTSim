@@ -254,7 +254,20 @@ namespace RTSim
       return strm << a.toString();
     }
 
+    void CPU::updateCPUModel() {
+        powmod->setVoltage(getVoltage());
+        powmod->setFrequency(getFrequency());
+    }
+
     // ------------------------------------------------------------- big little
+
+    unsigned long int CPU_BL::getFrequency() const {
+        return _island->getFrequency();
+    }
+
+    double CPU_BL::getVoltage() const {
+        return _island->getVoltage();
+    }
 
     unsigned int CPU_BL::getOPP() const {
         return _island->getOPP();
@@ -287,14 +300,24 @@ namespace RTSim
         return pow;
     }
 
-    void CPU_BL::updateCPUModel() {
-        powmod->setVoltage(OPPs[currentOPP].voltage);
-        powmod->setFrequency(OPPs[currentOPP].frequency);
+    double CPU_BL::getCurrentPowerConsumption()
+    {
+        return _island->getCurrentPowerConsumption();
     }
 
     double CPU_BL::getSpeed(double freq) {
         unsigned int opp = _island->getOPPByFrequency(freq);
         return getSpeed(opp);
     }
+
+    double CPU_BL::getSpeed(unsigned int opp)
+    {
+        return _island->getSpeed(opp);
+    }
+
+    void CPU_BL::updateCPUModel() {
+        _island->updateCPUModel();
+    }
+
 
 }

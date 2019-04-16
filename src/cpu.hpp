@@ -52,7 +52,7 @@ namespace RTSim
      * upon the step frequencies.  The function setSpeed(load) adjusts the CPU
      * speed accordingly to the system load, and returns the new CPU speed.
      */
-    class CPU : public Entity {        
+    class CPU : public Entity {
     private:
         double _max_power_consumption;
 
@@ -83,7 +83,7 @@ namespace RTSim
         int index;
 
         /// update CPU power/speed model according to currentOPP
-        void updateCPUModel();
+        virtual void updateCPUModel();
 
     public:
 
@@ -133,7 +133,9 @@ namespace RTSim
         /// Useful for debug
         virtual void setOPP(unsigned int newOPP);
 
-        unsigned long int getFrequency() const;
+        virtual unsigned long int getFrequency() const;
+
+        virtual double getVoltage() const;
 
         /// Returns the maximum power consumption obtainable with this
         /// CPU
@@ -166,7 +168,7 @@ namespace RTSim
         /// Returns the current CPU speed (between 0 and 1)
         virtual double getSpeed();
 
-        double getSpeed(unsigned int opp);
+        virtual double getSpeed(unsigned int opp);
 
         virtual unsigned long int getFrequencySwitching();
 
@@ -266,11 +268,14 @@ namespace RTSim
   class Island_BL;
 
   class CPU_BL : public CPU {
+      friend class Island_BL; // otherwise I would have infinite recursion
   private:
     Island_BL* _island;
 
     /// Is CPU holding a task, either running and ready (= dispatching)?
     bool _isBusy;
+
+    virtual void updateCPUModel();
 
   public:
     /// Reference CPUs frequency to compute CPU capacity. It is a global field to all CPUs
@@ -282,6 +287,7 @@ namespace RTSim
         CPUModel *pm = nullptr, Island_BL* island = nullptr) : CPU(name, V, F, pm) {
         _island = island;
         _isBusy = false;
+        assert(pm == nullptr); // the powermodel is common for all CPUs in the island
     };
 
     ~CPU_BL();
@@ -304,11 +310,13 @@ namespace RTSim
         return _island;
     }
 
+    double getCurrentPowerConsumption();
+
     double getPowerConsumption(double frequency);
 
-    void updateCPUModel();
-
     double getSpeed(double freq);
+
+    virtual double getSpeed(unsigned int opp);
 
     virtual unsigned long int getFrequency() const;
 
@@ -328,23 +336,60 @@ namespace RTSim
 
     vector<struct OPP> _opps;
 
+    unsigned int _currentOPP;
+
+    CPUModel* _pm;
+
   public:
-    Island_BL(const string &name, const Island island, const vector<CPU_BL *> cpus, const vector<struct OPP> opps)
+    Island_BL(const string &name, const Island island, const vector<CPU_BL *> cpus,
+            const vector<struct OPP> opps, CPUModel *pm)
             : Entity(name) {
-        _island = island;
-        _cpus   = cpus;
-        _opps   = opps;
+        _island     = island;
+        _cpus       = cpus;
+        _opps       = opps;
+        _currentOPP = 0;
+        _pm         = pm;
     };
 
     ~Island_BL();
 
     Island getIslandType() { return _island; }
 
-    unsigned int getOPP() const { return findMaxOPP(); }
+    double getVoltage() const {
+        return getStructOPP(getOPP()).voltage;
+    }
+
+    unsigned long int getFrequency() const {
+        return getStructOPP(getOPP()).frequency;
+    }
+
+    double getSpeed(unsigned int opp)
+    {
+      int old_curr_opp = getOPP();
+      setOPP(opp);
+      double s = getSpeed();
+      setOPP(old_curr_opp);
+      return s;
+    }
+
+    double getSpeed() {
+        assert(getOPP() < _opps.size() && getOPP() >= 0);
+        updateCPUModel();
+        return _pm->getSpeed();
+    }
+
+    unsigned int getOPP() const {
+        return _currentOPP;
+    }
 
     void setOPP(unsigned int opp) {
-        for (CPU_BL* c : _cpus)
-            c->setOPP(opp);
+        _currentOPP = opp;
+        updateCPUModel();
+    }
+
+    void updateCPUModel() {
+        _pm->setVoltage(getVoltage());
+        _pm->setFrequency(getFrequency());
     }
 
     void updateBusy() {
@@ -353,24 +398,22 @@ namespace RTSim
             if (c->isBusy())
                 b = true;
         for(CPU_BL* c : _cpus)
-            c->setBusy(b);
-    }
-
-    unsigned int findMaxOPP() const {
-        unsigned int opp = 0;
-        for (CPU* c : _cpus)
-            if (c->getOPP() > opp)
-                opp = c->getOPP();
-        return opp;
+            c->_isBusy = b;
     }
 
     vector<struct OPP> getHigherOPPs() {
-        int maxOPP = findMaxOPP();
+        int maxOPP = _currentOPP;
         vector<struct OPP> opps;
         for (int i = maxOPP; i < _opps.size(); i++) {
             opps.push_back(_opps.at(i));
         }
         return opps;
+    }
+
+    double getCurrentPowerConsumption()
+    {
+        updateCPUModel();
+        return (_pm->getPower());
     }
 
     bool isBusy() {
