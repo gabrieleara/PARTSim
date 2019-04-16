@@ -22,6 +22,7 @@
 #include <assert.h>
 #include "rrsched.hpp"
 #include "rttask.hpp"
+#include "cpu.hpp"
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
             }
 
             cout << "creating cpu" << endl;
-            CPU *c = new CPU(cpu_name, V_little, F_little, pm);
+            CPU_BL *c = new CPU_BL(cpu_name, V_little, F_little, pm, Island_BL::LITTLE);
             c->setOPP(OPP_little);
             c->setIndex(i);
             c->setWorkload("idle");

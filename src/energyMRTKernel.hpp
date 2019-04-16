@@ -99,7 +99,9 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU* endingCPU);
 
-        inline vector<CPU*> getProcessors() const { return CPUs; }
+        inline vector<CPU*> getProcessors() const { 
+            return CPUs;
+        }
 
         /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
         void setIslandFrequency(CPU::Island island);

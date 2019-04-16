@@ -18,11 +18,9 @@ email                : lipari@sssup.it
 namespace RTSim
 {
 
-    unsigned int CPU::referenceFrequency;
+    unsigned int CPU_BL::referenceFrequency;
 
-    bool CPU::isIslandBusy[NUM_ISLANDS] = {false};
-    int  CPU::islandCurOPP[NUM_ISLANDS] = {0};
-    string CPU::IslandName[NUM_ISLANDS] = {"BIG","LITTLE"};
+    string Island_BL::IslandName[NUM_ISLANDS] = {"BIG","LITTLE"};
 
 
     CPU::CPU(const string &name,
@@ -105,11 +103,6 @@ namespace RTSim
     void CPU::setMaxPowerConsumption(double max_p)
     {
         _max_power_consumption = max_p;
-    }
-
-    void CPU::updateCPUModel() {
-      powmod->setVoltage(OPPs[currentOPP].voltage);
-      powmod->setFrequency(OPPs[currentOPP].frequency);
     }
 
     double CPU::getCurrentPowerConsumption()
@@ -221,66 +214,6 @@ namespace RTSim
         }
     }
 
-    unsigned int CPU::getOPPByFrequency(double frequency) {
-        int opp = -1;
-        for (int i = 0; i < OPPs.size(); i++)
-            if (OPPs[i].frequency == frequency)
-              opp = i;
-        assert(opp != -1);
-        return opp;
-    }
-
-    double CPU::getPowerConsumption(double frequency) {
-        // Find what OPP corresponds to provided frequency
-        unsigned int old_opp = currentOPP;
-        unsigned int opp = getOPPByFrequency(frequency);
-        setOPP(opp);
-        double pow = getCurrentPowerConsumption();
-        setOPP(old_opp);
-        return pow;
-    }
-
-    double CPU::getSpeed(double freq) {
-        unsigned int opp = getOPPByFrequency(freq);
-        return getSpeed(opp);
-    }
-
-    std::vector<struct OPP> CPU::getNextOPPs() {
-        std::vector<struct OPP> o = std::vector<struct OPP>();
-        int i = 0;
-
-        // big-little, if all CPU in current island are executing tasks, consider only its upper OPPs
-        if (isCPUIslandBusy()) {
-          i = getIslandCurOPP();
-            cout << "\t\t(a CPU in the island of " << getName() << " is busy at freq " << getFrequency() << ", big-little) " << endl;
-        }
-        else { cout << "\t\t(CPU island has no tasks yet)" << endl; }
-
-        do {
-            struct OPP opp;
-            opp.speed = OPPs[i].speed;
-            opp.frequency = OPPs[i].frequency;
-            opp.voltage = OPPs[i].voltage;
-
-            o.push_back(opp);
-            i++;
-        } while(i < OPPs.size());
-
-        return o;
-    }
-
-    std::vector<CPU*> CPU::getCPUsInIsland(std::vector<CPU*> cpus, CPU::Island island) {
-        std::vector<CPU*> output;
-
-        for (CPU* c : cpus)
-            if (c->getIsland() == island)
-                output.push_back(c);
-
-        return output;
-    }
-
-
-
     uniformCPUFactory::uniformCPUFactory()
     {
         _curr=0;
@@ -319,6 +252,49 @@ namespace RTSim
     /// to string operator
     ostream& operator<<(ostream &strm, CPU &a) {
       return strm << a.toString();
+    }
+
+    // ------------------------------------------------------------- big little
+
+    unsigned int CPU_BL::getOPP() const {
+        return _island->getOPP();
+    }
+
+    void CPU_BL::setOPP(unsigned int opp) {
+        _island->setOPP(opp);
+    }
+
+    vector<struct OPP> CPU_BL::getHigherOPPs() {
+        return _island->getHigherOPPs();
+    }
+
+    void CPU_BL::setBusy(bool busy) {
+        _isBusy = busy;
+        _island->updateBusy();
+    }
+
+    bool CPU_BL::isIslandBusy() {
+        return _island->isBusy();
+    }
+
+    double CPU_BL::getPowerConsumption(double frequency) {
+        // Find what OPP corresponds to provided frequency
+        unsigned int old_opp = getOPP();
+        unsigned int opp = _island->getOPPByFrequency(frequency);
+        setOPP(opp);
+        double pow = getCurrentPowerConsumption();
+        setOPP(old_opp);
+        return pow;
+    }
+
+    void CPU_BL::updateCPUModel() {
+        powmod->setVoltage(OPPs[currentOPP].voltage);
+        powmod->setFrequency(OPPs[currentOPP].frequency);
+    }
+
+    double CPU_BL::getSpeed(double freq) {
+        unsigned int opp = _island->getOPPByFrequency(freq);
+        return getSpeed(opp);
     }
 
 }
