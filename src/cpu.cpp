@@ -14,6 +14,7 @@ email                : lipari@sssup.it
 
 #include <cpu.hpp>
 #include <assert.h>
+#include <energyMRTKernel.hpp>
 
 namespace RTSim
 {
@@ -93,6 +94,10 @@ namespace RTSim
     unsigned long int CPU::getFrequency() const
     {
         return OPPs[currentOPP].frequency;
+    }
+
+    double CPU::getVoltage() const {
+        return OPPs[currentOPP].voltage;
     }
 
     double CPU::getMaxPowerConsumption()
@@ -260,7 +265,6 @@ namespace RTSim
     }
 
     // ------------------------------------------------------------- big little
-
     unsigned long int CPU_BL::getFrequency() const {
         return _island->getFrequency();
     }
@@ -290,11 +294,11 @@ namespace RTSim
         return _island->isBusy();
     }
 
-    Island getIslandType() {
+    Island CPU_BL::getIslandType() {
         return _island->getIslandType();
     }
 
-    unsigned long int getFrequency(unsigned int opp) const {
+    unsigned long int CPU_BL::getFrequency(unsigned int opp) const {
         return _island->getFrequency(opp);
     }
 
@@ -308,23 +312,37 @@ namespace RTSim
         return pow;
     }
 
-    double CPU_BL::getCurrentPowerConsumption()
-    {
-        return _island->getCurrentPowerConsumption();
-    }
-
     double CPU_BL::getSpeed(double freq) {
         unsigned int opp = _island->getOPPByFrequency(freq);
         return getSpeed(opp);
     }
 
-    double CPU_BL::getSpeed(unsigned int opp)
-    {
-        return _island->getSpeed(opp);
+    double CPU_BL::getSpeed(unsigned int opp) {
+        int old_curr_opp = getOPP();
+        setOPP(opp);
+        double s = getSpeed();
+        setOPP(old_curr_opp);
+        return s;
+    }
+
+    double CPU_BL::getSpeed() {
+        assert(getOPP() < _island->getOPPsize() && getOPP() >= 0);
+        updateCPUModel();
+        return _pm->getSpeed();
     }
 
     void CPU_BL::updateCPUModel() {
-        _island->updateCPUModel();
+        _pm->setVoltage(getVoltage());
+        _pm->setFrequency(getFrequency());
+    }
+
+
+    void Island_BL::setOPP(unsigned int opp) {
+        assert(opp >= 0 && opp < _opps.size());
+        _currentOPP = opp;
+        for (CPU_BL* c : getProcessors())
+            c->updateCPUModel();
+        _kernel->onOppChanged(_currentOPP);
     }
 
 

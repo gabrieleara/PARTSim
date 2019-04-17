@@ -124,9 +124,6 @@ namespace RTSim
         /// Useful for debug
         virtual int getOPP();
 
-        /// return the OPPs bigger than the current one
-        virtual vector<struct OPP> getNextOPPs();
-
         /// expose the internal OPPs, read-only
         std::vector<struct OPP> const & getOPPs() const { return OPPs; };
 
@@ -266,7 +263,7 @@ namespace RTSim
   // OPPs. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others.
 
   class Island_BL;
-  typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
+  typedef enum { LITTLE=0, BIG, NUM_ISLANDS } Island;
 
   class CPU_BL : public CPU {
       friend class Island_BL; // otherwise I would have infinite recursion
@@ -276,6 +273,9 @@ namespace RTSim
     /// Is CPU holding a task, either running and ready (= dispatching)?
     bool _isBusy;
 
+    // pm belongs to CPU_BL and not to Island_BL because CPUs may execute different workloads
+    CPUModel* _pm;
+
     virtual void updateCPUModel();
 
   public:
@@ -283,13 +283,12 @@ namespace RTSim
     static unsigned int referenceFrequency;
 
     CPU_BL(const string &name="",
-        const string &wl = "idle") : CPU(name, {}, {}, NULL) {
+        const string &wl = "idle", CPUModel* powermodel = nullptr) : CPU(name, {}, {}, NULL) {
         _isBusy = false;
         setWorkload(wl);
-        // the powermodel is common for all CPUs in the island
+        _pm = powermodel;
+        assert(_pm != nullptr);
     };
-
-    ~CPU_BL();
 
     virtual unsigned int getOPP() const;
 
@@ -311,9 +310,15 @@ namespace RTSim
 
     Island getIslandType();
 
-    double getCurrentPowerConsumption();
+    double getCurrentPowerConsumption()
+    {
+        updateCPUModel();
+        return (_pm->getPower());
+    }
 
     double getPowerConsumption(double frequency);
+
+    virtual double getSpeed();
 
     double getSpeed(double freq);
 
@@ -323,9 +328,11 @@ namespace RTSim
 
     virtual unsigned long int getFrequency() const;
 
-    double getVoltage() const;
+    virtual double getVoltage() const;
 
   };
+
+  class EnergyMRTKernel;
 
   class Island_BL : public Entity {
   public:
@@ -340,22 +347,32 @@ namespace RTSim
 
     unsigned int _currentOPP;
 
-    CPUModel* _pm;
+    EnergyMRTKernel* _kernel;
 
   public:
     Island_BL(const string &name, const Island island, const vector<CPU_BL *> cpus,
-            const vector<struct OPP> opps, CPUModel *pm)
+            const vector<struct OPP> opps)
             : Entity(name) {
         _island     = island;
         _cpus       = cpus;
         _opps       = opps;
         _currentOPP = 0;
-        _pm         = pm;
-        assert(pm != nullptr && !opps.empty() && !cpus.empty());
+
+        for (CPU_BL* c : _cpus)
+            c->_island = this;
+
+        assert(!opps.empty() && !cpus.empty());
         assert(_island == Island::BIG || _island == Island::LITTLE);
     };
 
-    ~Island_BL();
+    ~Island_BL() {
+        _opps.clear();
+        _cpus.clear();
+    }
+
+    void setKernel(EnergyMRTKernel* e) { _kernel = e; }
+
+    unsigned int getOPPsize() const { return _opps.size(); }
 
     Island getIslandType() { return _island; }
 
@@ -373,35 +390,11 @@ namespace RTSim
         return getStructOPP(getOPP()).frequency;
     }
 
-    double getSpeed(unsigned int opp)
-    {
-      int old_curr_opp = getOPP();
-      setOPP(opp);
-      double s = getSpeed();
-      setOPP(old_curr_opp);
-      return s;
-    }
-
-    double getSpeed() {
-        assert(getOPP() < _opps.size() && getOPP() >= 0);
-        updateCPUModel();
-        return _pm->getSpeed();
-    }
-
     unsigned int getOPP() const {
         return _currentOPP;
     }
 
-    void setOPP(unsigned int opp) {
-        assert(opp >= 0 && opp < _opps.size());
-        _currentOPP = opp;
-        updateCPUModel();
-    }
-
-    void updateCPUModel() {
-        _pm->setVoltage(getVoltage());
-        _pm->setFrequency(getFrequency());
-    }
+    void setOPP(unsigned int opp);
 
     void updateBusy() {
         bool b = false;
@@ -420,12 +413,6 @@ namespace RTSim
             opps.push_back(_opps.at(i));
         }
         return opps;
-    }
-
-    double getCurrentPowerConsumption()
-    {
-        updateCPUModel();
-        return (_pm->getPower());
     }
 
     bool isBusy() {

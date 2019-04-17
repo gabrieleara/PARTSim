@@ -20,7 +20,7 @@
 #include "exeinstr.hpp"
 #include "cpu.hpp"
 
-#define LEAVE_LITTLE3_ENABLED 1
+#define LEAVE_LITTLE3_ENABLED 0
 
 namespace RTSim {
     using namespace MetaSim;
@@ -38,6 +38,7 @@ namespace RTSim {
         }
 
         _sched->setKernel(this);
+        setTryingTaskOnCPU_BL(false);
     }
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
@@ -60,7 +61,7 @@ namespace RTSim {
     double EnergyMRTKernel::getIslandUtilization(double capacity, Island island, int *nTasksIsland) {
         double utilizationIsland = 0.0;
 
-        for (CPU_BL* c1 : _islands[island]->getProcessors()) {
+        for (CPU_BL* c1 : getProcessors(island)) {
             vector<AbsRTTask*> tasks = getTasks(c1);
             AbsRTTask* runningTask = getTaskRunning(c1);
             if (runningTask != NULL) {
@@ -159,6 +160,14 @@ namespace RTSim {
         return false;
     }
 
+    void EnergyMRTKernel::onOppChanged(unsigned int curropp) {
+        if (isTryngTaskOnCPU_BL())
+            return;
+
+        // scale wcets of tasks on the island, update their beginevt and endevt
+
+    }
+
 
     // ----------------------------------------------------------- testing
 
@@ -218,7 +227,7 @@ namespace RTSim {
         // if necessary, deschedule the task.
         CPU * p         = e->getCPU();
         AbsRTTask *dt   = _m_currExe[p];
-        AbsRTTask *st   = getDispatchingTask(p);
+        AbsRTTask *st   = getDispatchingTask(dynamic_cast<CPU_BL*>(p));
         assert(st != NULL);
 
 
@@ -234,6 +243,7 @@ namespace RTSim {
             _m_currExe[p] = NULL;
             _m_dispatching.erase(dt);
             dt->deschedule();
+            cout << dt->toString() << " descheduled for " << taskname(st) <<endl;
         }
 
         DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
@@ -249,36 +259,38 @@ namespace RTSim {
         if (oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
         _endEvt[p]->post(SIMUL.getTime() + overhead);
+
+        cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << endl;
+
     }
 
     // Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
     // Also called when a periodic task ends its WCET
     void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e)
     {
-        cout << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString()) << endl;
+        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString()) << endl;
         MRTKernel::onEndDispatchMulti(e);
         AbsRTTask* t = e->getTask();
         _m_currExe_OPP[t] = _m_dispatching[t].second;
 
-        // when its context switch ends, set the task OPP, as decided in dispatch().
-        // This is needed when dispatch() decides to dispatch 2 tasks with equal
-        // arrival time on the same processor: the first task ends and clocks down
-        // the speed; the second task uses that one, wrongly.
+        // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
+        // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
+        // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
         CPU_BL* cpu = _m_dispatching[t].first;
         int opp = _m_dispatching[t].second;
-        cout << t->toString() << " " << cpu->toString() << " setting opp to " << opp << endl;
-        int old_opp = cpu->getOPP();
-        cpu->setOPP(opp);
+        if (opp > cpu->getOPP()) {
+            cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
+            cpu->setOPP(opp);
+        }
 
         _m_oldExe[t] = cpu;
         _m_dispatching.erase(t);
 
 
         //todo remove
-        cout << "Context switch finished for " << t->toString() << ". It'll be descheduled at " << _endEvt[cpu]->getTime() << endl;
         for (const auto& elem : _m_dispatching)
         {
-            cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getStructOPP(elem.second.second).frequency << endl;
+            cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getFrequency(elem.second.second) << endl;
         }
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
@@ -294,30 +306,28 @@ namespace RTSim {
         DBGENTER(_KERNEL_DBG_LEV);
 
         // only on big-little: update the state of the CPUs island
-        CPU_BL* p = getProcessor(t);
-        if (!isDispatching(p))
+        CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
+        if (!isDispatching(p) && getTaskRunning(p) == NULL)
             p->setBusy(false);
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
         cout << ".............................." << endl;
         cout << t->toString() << " has just finished on " << p->toString() << ". Actual time = [" << SIMUL.getTime() << "]" << endl;
 
-        vector<CPU *> cp = CPU::getCPUsInIsland(getProcessors(), p->getIslandType());
-        bool islandBusy = CPU::isCPUIslandBusy(CPUs, p->getIslandType());
-        cp[0]->setIsIslandBusy(islandBusy);
+        vector<CPU_BL*> cp = getProcessors(p->getIslandType());
 
         _sched->extract(t);
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
 
-        if (!CPU::isCPUIslandBusy(CPUs, CPU::Island::LITTLE))
-            CPU::updateIslandCurOPP(CPUs, CPU::Island::LITTLE, 0);
-        if (!CPU::isCPUIslandBusy(CPUs, CPU::Island::BIG))
-            CPU::updateIslandCurOPP(CPUs, CPU::Island::BIG, 0);
+        if (!getIsland(Island::LITTLE)->isBusy())
+            getIsland(Island::LITTLE)->setOPP(0);
+        if (!getIsland(Island::BIG)->isBusy())
+            getIsland(Island::BIG)->setOPP(0);
 
         printState();
 
-        migrate(p);
+        //migrate(p);
 
         // migrate ( and its dispatch() ) needs to know the required OPP of t on its core
         _m_currExe_OPP.erase(t);
@@ -346,7 +356,7 @@ namespace RTSim {
                  //_m_dispatching.erase(tt); if commented brings bugs in getUtilization todo
 
                  cout << "Dealing with task " << tt->toString() << "." << endl;
-                 for (CPU_BL* cc : getIsland(Island::LITTLE))
+                 for (CPU_BL* cc : getProcessors(Island::LITTLE))
                     tryTaskOnCPU_BL(tt, cc, iDeltaPows);
                  tryTaskOnCPU_BL(tt, curCPU, iDeltaPows);
 
@@ -359,9 +369,9 @@ namespace RTSim {
                  CPU_BL* chosenCPU = _m_dispatching[tt].first;
                  chosenCPU->setOPP(_m_dispatching[tt].second);
                  chosenCPU->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
-                 double oldSpeed[CPU::NUM_ISLANDS] = {CPUs[6]->getSpeed(), CPUs[0]->getSpeed()};
+                 double oldSpeed[NUM_ISLANDS] = {getBigs()[0]->getSpeed(), getLittles()[0]->getSpeed()};
                  for (auto& rt : _m_currExe)
-                      if (rt.second != NULL && chosenCPU->getIslandType() == rt.first->getIslandType()) {
+                      if (rt.second != NULL && chosenCPU->getIslandType() == dynamic_cast<CPU_BL*>(rt.first)->getIslandType()) {
 
                           cout << rt.second->toString() << " had WCET " << rt.second->getWCET(oldSpeed[chosenCPU->getIslandType()]) << endl;
                           rt.second->refreshExec(oldSpeed[chosenCPU->getIslandType()], chosenCPU->getSpeed());
@@ -385,8 +395,8 @@ namespace RTSim {
          */
 
         cout << __func__ << "():" << endl;
-        if (!LEAVE_LITTLE3_ENABLED) return;
-        if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIslandType() == CPU::Island::BIG) {
+        if (!LEAVE_LITTLE3_ENABLED) { cout << "\tPolicy deactivated. Skip"<<endl; return; }
+        if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIslandType() == Island::BIG) {
             cout << "chosenCPU in big island or is not little_3 => skip" << endl;
             return;
         }
@@ -395,7 +405,7 @@ namespace RTSim {
 
         for (int i = 0; i < iDeltaPows.size(); i++) {
             cout << iDeltaPows[i].cons << " " << iDeltaPows[i].cpu->toString() << endl;
-            if (iDeltaPows[i].cpu->getIslandType() == CPU::Island::LITTLE && iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
+            if (iDeltaPows[i].cpu->getIslandType() == Island::LITTLE && iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
                 chosenCPU = iDeltaPows[i].cpu;
                 chosenCPU->setOPP(iDeltaPows[i].opp);
                 cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
@@ -409,7 +419,7 @@ namespace RTSim {
         }
     }
 
-    void EnergyMRTKernel::chooseCPU(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows) {
+    void EnergyMRTKernel::chooseCPU_BL(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows) {
         // TODO: switch from nlogn to n for min()
         // sort table of consumption
         sort(iDeltaPows.begin(), iDeltaPows.end(),
@@ -417,7 +427,7 @@ namespace RTSim {
 
         // todo delete after debug
         for (auto elem: iDeltaPows) {
-            cout << elem.cons << " "<< elem.cpu->toString() << " " << elem.cpu->getFrequency() << endl;
+            cout << elem.cons << " "<< elem.cpu->toString() << " " << elem.cpu->getFrequency(elem.opp) << endl;
         }
 
         struct ConsumptionTable chosen = iDeltaPows[0];
@@ -462,6 +472,7 @@ namespace RTSim {
         pp->setOPP(opp);
         pp->setBusy(true);
 
+        cout << "Dispatching " << t->toString() << endl;
         dispatch(p);
     }
 
@@ -469,6 +480,7 @@ namespace RTSim {
     {
         DBGENTER(_KERNEL_DBG_LEV);
         cout << "EnergyMRTKernel::dispatch()" << endl;
+        Tick ctx;
 
         if (p == NULL) throw RTKernelExc("Dispatch with NULL parameter");
 
@@ -487,15 +499,21 @@ namespace RTSim {
             }
         } else {
             AbsRTTask* runningTask = getTaskRunning(p);
-            if (runningTask != NULL) { // migration: try not to affect running tasks
-                Tick endOfRunningTask = (Tick) ceil(runningTask->getWCET(p->getSpeed()));
-                cout << "Migration detected. Migrated task will be scheduled after " <<
-                    runningTask->toString() << " at " <<double(endOfRunningTask) << endl;
-                _beginEvt[p]->post(endOfRunningTask);
+            if (runningTask != NULL || isDispatching(dynamic_cast<CPU_BL*>(p))) { // migration: try not to affect running tasks
+                vector<Tick> wcets;
+
+                wcets.push_back( (Tick) ceil(runningTask->getWCET(p->getSpeed())) ); // wcet of running task
+                _beginEvt[p]->post(ctx);
+                cout << "Trying to schedule task while other ones are in queue. Beg of ctx switch at " << ctx << endl;
             }
-            else
+            else {
                 _beginEvt[p]->post(SIMUL.getTime());
+                ctx = SIMUL.getTime();
+                cout << "beginEvt set to t=" << ctx << endl;
+            }
         }
+
+
     }
 
     /* Decide a CPU for each ready task */
@@ -568,7 +586,7 @@ namespace RTSim {
 
             cout << "Decisions 'til now:" << endl;
             for (auto const& elem : _m_dispatching)
-                cout << elem.first->toString() << " in " << elem.second.first->toString() << " freq " << elem.second.second << endl;
+                cout << elem.first->toString() << " in " << elem.second.first->toString() /* << " freq " << elem.second.second */ << endl;
 
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);
@@ -578,6 +596,7 @@ namespace RTSim {
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
         int startingOPP = c->getOPP();
         string startingWL = c->getWorkload();
+        setTryingTaskOnCPU_BL(true);
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
@@ -606,6 +625,10 @@ namespace RTSim {
                 double iDeltaPow            = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
                 int    nTaskIsland          = 0;
                 Island island;
+
+
+                if (t->toString().find("T4_task_LITTLE_1") != string::npos && c->toString().find("LITTLE_1") != string::npos)
+                    cout << "adsa";
 
                 // utilization on CPU c with the new frequency
                 utilization = getUtilization(c, newFreq, newCapacity);
@@ -662,6 +685,7 @@ namespace RTSim {
 
         c->setOPP(startingOPP);
         c->setWorkload(startingWL);
+        setTryingTaskOnCPU_BL(false);
     } // end of tryTaskOnCPU_BL()
 
 }

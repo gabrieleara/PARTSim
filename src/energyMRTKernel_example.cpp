@@ -47,8 +47,8 @@ int main(int argc, char *argv[])
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    vector<CPU*> cpus;
-    int TEST_NO = 10;
+    vector<CPU_BL*> cpus;
+    int TEST_NO = 6;
 
     dumpAllSpeeds();
     
@@ -73,9 +73,7 @@ int main(int argc, char *argv[])
         //vector<EDFScheduler *> schedulers;
         vector<Scheduler *> schedulers;
         vector<RTKernel *> kernels;
-        vector<CPU *> cpus_little, cpus_big;
-
-        CPUModel* pm_little, *pm_big;
+        vector<CPU_BL *> cpus_little, cpus_big;
 
         vector<double> V_little = {
                 0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -135,12 +133,12 @@ int main(int argc, char *argv[])
             }
 
             cout << "creating cpu" << endl;
-            CPU_BL *c = new CPU_BL(cpu_name, "idle");
+            CPU_BL *c = new CPU_BL(cpu_name, "idle", pm);
             c->setIndex(i);
+            pm->setCPU(c);
             pm->setFrequencyMax(max_frequency);
             TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
-            pm_little = pm;
 
             cpus_little.push_back(c);
         }
@@ -179,20 +177,20 @@ int main(int argc, char *argv[])
                 dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
             }
 
-            CPU_BL *c = new CPU_BL(cpu_name, "idle");
+            CPU_BL *c = new CPU_BL(cpu_name, "idle", pm);
             c->setIndex(i);
+            pm->setCPU(c);
             pm->setFrequencyMax(max_frequency);
             TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
-            pm_big = pm;
 
             cpus_big.push_back(c);
         }
 
         vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
         vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-        Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little, pm_little);
-        Island_BL *island_bl_big = new Island_BL("island_big",Island::BIG, cpus_big,opps_big,pm_big);
+        Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little);
+        Island_BL *island_bl_big = new Island_BL("island_big", Island::BIG, cpus_big, opps_big);
 
         EDFScheduler *edfsched = new EDFScheduler;
         schedulers.push_back(edfsched);
@@ -200,6 +198,8 @@ int main(int argc, char *argv[])
         EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);
 
+        island_bl_big->setKernel(kern);
+        island_bl_little->setKernel(kern);
         CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
         /*
@@ -282,6 +282,7 @@ int main(int argc, char *argv[])
                 sprintf(instr, "fixed(100, %s);", workload.c_str());
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
             }
         }
         else if(TEST_NO == 5) {
@@ -306,7 +307,7 @@ int main(int argc, char *argv[])
              entire island after a decision for other tasks has already been made*/
             vector<PeriodicTask*> task;
             vector<CPU*> cpu_task;
-            int i, wcet = 300; //* (j+1);
+            int i, wcet = 300;
             for (int j = 0; j < 5; j++) {
                 if (j == 4)
                     wcet = 200;
@@ -397,7 +398,7 @@ int main(int argc, char *argv[])
             kernels.clear();
 
             RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
-            EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, cpus, "Round Robin");
+            EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
             for (PeriodicTask* t : tasks)
                 kernels[0]->addTask(*t, "");

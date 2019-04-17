@@ -6,7 +6,6 @@
 #define RTLIB2_0_ENERGYMRTKERNEL_H
 
 #include "mrtkernel.hpp"
-#include "CPU_BL.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
 
@@ -58,9 +57,12 @@ namespace RTSim {
             int opp;
         };
 
+        // little, big (order matters for speed)
         Island_BL* _islands[2];
 
         double totalPowerCosumption;
+
+        bool _tryingTaskOnCPU_BL;
 
         /**
          * Needed by migration mechanism. What OPP do running tasks need to finish on time on their core?
@@ -74,6 +76,9 @@ namespace RTSim {
          * another on another big with freq 1900. But in Big Little all CPU_BLs have same freq/OPP.
          */
         map<const AbsRTTask *, pair<CPU_BL*, int>> _m_dispatching;
+
+        /// for debug, if you want to force a certain choice of cores and frequencies
+        map<Task*, pair<CPU_BL*, int>> _m_forcedDispatch;
 
         /// list of tasks that you are trying to migrate (i.e., they already had a core assigned but you are
         /// trying to move it to a better one). Migration happens when a task ends
@@ -91,30 +96,32 @@ namespace RTSim {
          */
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
-        /// t is not migrating anymore
-        void cancelMigration(AbsRTTask *t);
-
-        bool isMigrating(AbsRTTask *t);
-
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
+
+        Island_BL* getIsland(Island island) const { return _islands[island]; }
 
         vector<CPU_BL*> getProcessors() const { 
             static vector<CPU_BL*> CPU_BLs;
             if (CPU_BLs.size() == 0) {
-                CPU_BLs.reserve( getIslandLittle()->getProcessors().size() + getIslandBig()->getProcessors().size() ); // preallocate memory
-                CPU_BLs.insert( CPU_BLs.end(), getIslandLittle()->getProcessors().begin(), getIslandLittle()->getProcessors().end() );
-                CPU_BLs.insert( CPU_BLs.end(), getIslandBig()->getProcessors().begin(), getIslandBig()->getProcessors().end() );
+                for (CPU_BL* c : getIslandLittle()->getProcessors())
+                    CPU_BLs.push_back(c);
+                for (CPU_BL* c : getIslandBig()->getProcessors())
+                    CPU_BLs.push_back(c);
             }
             return CPU_BLs;
         }
 
-        /// in big-little all CPU_BLs in a island have the same freq. Set it to max CPU_BL freq
-        void setIslandFrequency(Island_BL island);
+        vector<CPU_BL*> getProcessors(Island island) const {
+            return getIsland(island)->getProcessors();
+        }
 
         /// Tries to schedule a task on a CPU_BL, for all valid OPPs,
         /// remembering power consumption
         void tryTaskOnCPU_BL(AbsRTTask *t, CPU_BL *c, vector<struct ConsumptionTable> &iDeltaPows);
+
+        void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
+        bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
 
     public:
 
@@ -123,11 +130,13 @@ namespace RTSim {
           */
         EnergyMRTKernel(Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
-        Island_BL* getIsland(Island island) const { return _islands[island]; }
+
         Island_BL* getIslandLittle() const { return _islands[0]; }
         Island_BL* getIslandBig() const { return _islands[1]; }
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
+        vector<CPU_BL*> getLittles() const { getIslandLittle()->getProcessors(); }
+        vector<CPU_BL*> getBigs() const { getIslandBig()->getProcessors(); }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
@@ -196,6 +205,9 @@ namespace RTSim {
          */
         virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
 
+        /// called when OPP changes
+        void onOppChanged(unsigned int curropp);
+
         /**
          * Invoked when a task ends
          */
@@ -211,7 +223,7 @@ namespace RTSim {
          *  Returns a pointer to the task which is executing on given
          *  CPU_BL (NULL if given CPU_BL is idle)
          */
-        virtual AbsRTTask* getTaskRunning(CPU_BL* c);
+        virtual AbsRTTask* getTaskRunning(CPU* c);
 
         /**
          *  Returns the set of tasks in the runqueue of CPU_BL c
@@ -237,8 +249,6 @@ namespace RTSim {
         bool manageForcedDispatch(Task*);
 
         void addForcedDispatch(RTSim::PeriodicTask *t, CPU_BL *c, int opp);
-
-        map<Task*, pair<CPU_BL*, int>> _m_forcedDispatch;
     };
 }
 

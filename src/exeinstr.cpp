@@ -174,6 +174,7 @@ namespace RTSim {
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 
+        cout << "Setting " << _father->toString() << " endEvt at t=" << t+tmp << endl;
         DBGPRINT("End of ExecInstr::schedule() ");
         
     }
