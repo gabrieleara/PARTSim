@@ -266,6 +266,7 @@ namespace RTSim
   // OPPs. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others.
 
   class Island_BL;
+  typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
 
   class CPU_BL : public CPU {
       friend class Island_BL; // otherwise I would have infinite recursion
@@ -282,12 +283,10 @@ namespace RTSim
     static unsigned int referenceFrequency;
 
     CPU_BL(const string &name="",
-        const vector<double> &V= {},
-        const vector<unsigned int> &F= {},
-        CPUModel *pm = nullptr, Island_BL* island = nullptr) : CPU(name, V, F, pm) {
-        _island = island;
+        const string &wl = "idle") : CPU(name, {}, {}, NULL) {
         _isBusy = false;
-        assert(pm == nullptr); // the powermodel is common for all CPUs in the island
+        setWorkload(wl);
+        // the powermodel is common for all CPUs in the island
     };
 
     ~CPU_BL();
@@ -310,6 +309,8 @@ namespace RTSim
         return _island;
     }
 
+    Island getIslandType();
+
     double getCurrentPowerConsumption();
 
     double getPowerConsumption(double frequency);
@@ -317,6 +318,8 @@ namespace RTSim
     double getSpeed(double freq);
 
     virtual double getSpeed(unsigned int opp);
+
+    unsigned long int getFrequency(unsigned int opp) const;
 
     virtual unsigned long int getFrequency() const;
 
@@ -326,7 +329,6 @@ namespace RTSim
 
   class Island_BL : public Entity {
   public:
-    typedef enum { BIG=0, LITTLE, NUM_ISLANDS } Island;
     static string IslandName[NUM_ISLANDS];
 
   private:
@@ -349,14 +351,22 @@ namespace RTSim
         _opps       = opps;
         _currentOPP = 0;
         _pm         = pm;
+        assert(pm != nullptr && !opps.empty() && !cpus.empty());
+        assert(_island == Island::BIG || _island == Island::LITTLE);
     };
 
     ~Island_BL();
 
     Island getIslandType() { return _island; }
 
+    vector<CPU_BL*> getProcessors() { return _cpus; }
+
     double getVoltage() const {
         return getStructOPP(getOPP()).voltage;
+    }
+
+    unsigned long int getFrequency(unsigned int opp) const {
+        return getStructOPP(opp).frequency;
     }
 
     unsigned long int getFrequency() const {
@@ -383,6 +393,7 @@ namespace RTSim
     }
 
     void setOPP(unsigned int opp) {
+        assert(opp >= 0 && opp < _opps.size());
         _currentOPP = opp;
         updateCPUModel();
     }
@@ -403,6 +414,7 @@ namespace RTSim
 
     vector<struct OPP> getHigherOPPs() {
         int maxOPP = _currentOPP;
+        assert(_currentOPP >= 0 && _currentOPP < _opps.size());
         vector<struct OPP> opps;
         for (int i = maxOPP; i < _opps.size(); i++) {
             opps.push_back(_opps.at(i));
@@ -427,7 +439,7 @@ namespace RTSim
         return false;
     }
 
-    unsigned int getOPPByFrequency(double frequency) {
+    unsigned int getOPPByFrequency(double frequency) const {
         assert(frequency > 0.0);
         for (int i = 0; i < _opps.size(); i++)
             if (_opps.at(i).frequency == frequency)
@@ -442,12 +454,35 @@ namespace RTSim
     }
 
     struct OPP getStructOPP(int i) const {
+        assert(i >= 0 && i < _opps.size());
         return _opps.at(i);
     }
 
     struct OPP getStructOPP() const {
         return getStructOPP(getOPP());
     }
+
+    unsigned int getOPPindex(struct OPP opp) const {
+        return getOPPByFrequency(opp.frequency);
+    }
+
+    // static to oblige you to call this method first
+    static vector<struct OPP> buildOPPs(const vector<double> &V= {},
+                                        const vector<unsigned int> &F= {}) {
+        assert(V.size() > 0 && V.size() == F.size());
+        vector<struct OPP> OPPs;
+        for (int i = 0; i < V.size(); i ++)
+        {
+            struct OPP opp;
+            opp.voltage = V[i];
+            opp.frequency = F[i];
+            OPPs.push_back(opp);
+        }
+        return OPPs;
+    }
+
+    virtual void newRun() {}
+    virtual void endRun() {}
 
 };
 

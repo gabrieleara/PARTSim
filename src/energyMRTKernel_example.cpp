@@ -73,7 +73,9 @@ int main(int argc, char *argv[])
         //vector<EDFScheduler *> schedulers;
         vector<Scheduler *> schedulers;
         vector<RTKernel *> kernels;
-        vector<CPU *> cpus;
+        vector<CPU *> cpus_little, cpus_big;
+
+        CPUModel* pm_little, *pm_big;
 
         vector<double> V_little = {
                 0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -133,22 +135,14 @@ int main(int argc, char *argv[])
             }
 
             cout << "creating cpu" << endl;
-            CPU_BL *c = new CPU_BL(cpu_name, V_little, F_little, pm, Island_BL::LITTLE);
-            c->setOPP(OPP_little);
+            CPU_BL *c = new CPU_BL(cpu_name, "idle");
             c->setIndex(i);
-            c->setWorkload("idle");
-            c->setIsland(CPU::Island::LITTLE);
             pm->setFrequencyMax(max_frequency);
             TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
+            pm_little = pm;
 
-            cpus.push_back(c);
-
-            /*EDFScheduler *edfsched = new EDFScheduler;
-            schedulers.push_back(edfsched);
-
-            RTKernel *kern = new RTKernel(edfsched, "", c);
-            kernels.push_back(kern);*/
+            cpus_little.push_back(c);
         }
 
         for (unsigned int i = 0; i < 4; ++i) {
@@ -185,31 +179,28 @@ int main(int argc, char *argv[])
                 dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
             }
 
-            CPU *c = new CPU(cpu_name, V_big, F_big, pm);
-            c->setOPP(OPP_big);
-            c->setIndex(i+4);
-            c->setWorkload("idle");
-            c->setIsland(CPU::Island::BIG);
+            CPU_BL *c = new CPU_BL(cpu_name, "idle");
+            c->setIndex(i);
             pm->setFrequencyMax(max_frequency);
             TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
+            pm_big = pm;
 
-            cpus.push_back(c);
-
-            /*EDFScheduler *edfsched = new EDFScheduler;
-            schedulers.push_back(edfsched);
-
-            RTKernel *kern = new RTKernel(edfsched, "", c);
-            kernels.push_back(kern);*/
+            cpus_big.push_back(c);
         }
+
+        vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
+        vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
+        Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little, pm_little);
+        Island_BL *island_bl_big = new Island_BL("island_big",Island::BIG, cpus_big,opps_big,pm_big);
 
         EDFScheduler *edfsched = new EDFScheduler;
         schedulers.push_back(edfsched);
 
-        EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel");
+        EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);
 
-        CPU::referenceFrequency = 2000; // BIG_3 frequency
+        CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
         /*
          * Creating tasks

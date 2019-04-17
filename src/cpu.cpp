@@ -290,6 +290,14 @@ namespace RTSim
         return _island->isBusy();
     }
 
+    Island getIslandType() {
+        return _island->getIslandType();
+    }
+
+    unsigned long int getFrequency(unsigned int opp) const {
+        return _island->getFrequency(opp);
+    }
+
     double CPU_BL::getPowerConsumption(double frequency) {
         // Find what OPP corresponds to provided frequency
         unsigned int old_opp = getOPP();

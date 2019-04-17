@@ -6,7 +6,7 @@
 #define RTLIB2_0_ENERGYMRTKERNEL_H
 
 #include "mrtkernel.hpp"
-#include "cpu.hpp"
+#include "CPU_BL.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
 
@@ -17,10 +17,10 @@ namespace RTSim {
         \ingroup kernel
 
         An implementation of a real-time multi processor kernel with
-        global scheduling and a policy to smartly select CPUs on big-LITTLE
+        global scheduling and a policy to smartly select CPU_BLs on big-LITTLE
         architectures. It contains:
 
-        - a pointer to a list of CPUs managed by the kernel;
+        - a pointer to a list of CPU_BLs managed by the kernel;
 
         - a pointer to a Scheduler, which implements the scheduling
           policy;
@@ -29,8 +29,8 @@ namespace RTSim {
           resource access related operations and thus implements a
           resource allocation policy;
 
-        - a map of pointers to CPU and task, which keeps the
-          information about current task assignment to CPUs;
+        - a map of pointers to CPU_BL and task, which keeps the
+          information about current task assignment to CPU_BLs;
 
         - the set of tasks handled by this kernel.
 
@@ -38,27 +38,27 @@ namespace RTSim {
         class the freedom to adopt any scheduler derived form
         Scheduler and a resource manager derived from ResManager or no
         resource manager at all.  The kernel for a multiprocessor
-        system with different CPUs can be also be simulated. It is up
+        system with different CPU_BLs can be also be simulated. It is up
         to the instruction class to implement the correct duration of
         its execution by asking the kernel of its task the speed of
         the processor on whitch it's scheduled.
 
         We will probably have to derive from this class to implement
-        static partition and mixed task allocation to CPU.
+        static partition and mixed task allocation to CPU_BL.
 
-        @see absCPUFactory, Scheduler, ResManager, AbsRTTask
+        @see absCPU_BLFactory, Scheduler, ResManager, AbsRTTask
     */
 
     class EnergyMRTKernel : public MRTKernel {
 
-    protected:
+    private:
         struct ConsumptionTable {
             double cons;
-            CPU* cpu;
+            CPU_BL* cpu;
             int opp;
         };
 
-        vector<CPU*> CPUs;
+        Island_BL* _islands[2];
 
         double totalPowerCosumption;
 
@@ -68,28 +68,28 @@ namespace RTSim {
         map<AbsRTTask*, int> _m_currExe_OPP;
 
         /**
-         * List of tasks ready on a CPU with a given frequency.
-         * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU OPP.
-         * In fact, the dispatch() could choose to schedule a task on a big CPU with freq 200 and
-         * another on another big with freq 1900. But in Big Little all CPUs have same freq/OPP.
+         * List of tasks ready on a CPU_BL with a given frequency.
+         * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU_BL OPP.
+         * In fact, the dispatch() could choose to schedule a task on a big CPU_BL with freq 200 and
+         * another on another big with freq 1900. But in Big Little all CPU_BLs have same freq/OPP.
          */
-        map<const AbsRTTask *, pair<CPU*, int>> _m_dispatching;
+        map<const AbsRTTask *, pair<CPU_BL*, int>> _m_dispatching;
 
         /// list of tasks that you are trying to migrate (i.e., they already had a core assigned but you are
         /// trying to move it to a better one). Migration happens when a task ends
         vector<AbsRTTask*> _m_migrating;
 
         /**
-        * CPU choice from the table of consumptions (not sorted).
-        * It tries to spread tasks on CPUs if they have the same energy consumption
+        * CPU_BL choice from the table of consumptions (not sorted).
+        * It tries to spread tasks on CPU_BLs if they have the same energy consumption
         */
-        void chooseCPU(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
+        void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
         /**
          * Implements the policy of leaving little 3 free, just in case a task with high WCET arrives,
          * risking to be forced to schedule it on big cores, increasing power consumption.
          */
-        void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU*& chosenCPU);
+        void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
         /// t is not migrating anymore
         void cancelMigration(AbsRTTask *t);
@@ -97,29 +97,41 @@ namespace RTSim {
         bool isMigrating(AbsRTTask *t);
 
         /// Implements migration mechanism on task end
-        void migrate(CPU* endingCPU);
+        void migrate(CPU_BL* endingCPU_BL);
 
-        inline vector<CPU*> getProcessors() const { 
-            return CPUs;
+        vector<CPU_BL*> getProcessors() const { 
+            static vector<CPU_BL*> CPU_BLs;
+            if (CPU_BLs.size() == 0) {
+                CPU_BLs.reserve( getIslandLittle()->getProcessors().size() + getIslandBig()->getProcessors().size() ); // preallocate memory
+                CPU_BLs.insert( CPU_BLs.end(), getIslandLittle()->getProcessors().begin(), getIslandLittle()->getProcessors().end() );
+                CPU_BLs.insert( CPU_BLs.end(), getIslandBig()->getProcessors().begin(), getIslandBig()->getProcessors().end() );
+            }
+            return CPU_BLs;
         }
 
-        /// in big-little all CPUs in a island have the same freq. Set it to max CPU freq
-        void setIslandFrequency(CPU::Island island);
+        /// in big-little all CPU_BLs in a island have the same freq. Set it to max CPU_BL freq
+        void setIslandFrequency(Island_BL island);
 
-        /// Tries to schedule a task on a CPU, for all valid OPPs,
+        /// Tries to schedule a task on a CPU_BL, for all valid OPPs,
         /// remembering power consumption
-        void tryTaskOnCPU(AbsRTTask *t, CPU *c, vector <ConsumptionTable> &iDeltaPows);
+        void tryTaskOnCPU_BL(AbsRTTask *t, CPU_BL *c, vector<struct ConsumptionTable> &iDeltaPows);
 
     public:
 
         /**
-          * Kernel with scheduler s and CPUs cpus
+          * Kernel with scheduler s and CPU_BLs CPU_BLs
           */
-        EnergyMRTKernel(Scheduler *s, std::vector<CPU*> cpus , const std::string &name = "");
+        EnergyMRTKernel(Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
+
+        Island_BL* getIsland(Island island) const { return _islands[island]; }
+        Island_BL* getIslandLittle() const { return _islands[0]; }
+        Island_BL* getIslandBig() const { return _islands[1]; }
+        void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
+        void       setIslandBig(Island_BL* island) { _islands[1] = island; }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
-           processor for arrived tasks. See also @chooseCPU() and @dispatch(CPU*)
+           processor for arrived tasks. See also @chooseCPU_BL() and @dispatch(CPU_BL*)
 
            This function is called by the onArrival and by the
             activate function. When we call this, we first select a
@@ -129,18 +141,18 @@ namespace RTSim {
         virtual void dispatch();
 
         /**
-           This function only calls dispatch(CPU*) and assigns a task to a CPU,
-           which should be actually done by dispatch(CPU*) itself or onEndDispatchMulti(),
+           This function only calls dispatch(CPU_BL*) and assigns a task to a CPU_BL,
+           which should be actually done by dispatch(CPU_BL*) itself or onEndDispatchMulti(),
            but the last one is only called after dispatch(), and I need the assignment
-           CPU - task to be done before for getTask(CPU*) to work
+           CPU_BL - task to be done before for getTask(CPU_BL*) to work
          */
         void dispatch(CPU *p, AbsRTTask *t, int opp);
 
         /**
-            Dispatching a task on a given CPU.
+            Dispatching a task on a given CPU_BL.
 
             This is different from the version we have on RTKernel,
-            since we may need to specify on which CPU we have to
+            since we may need to specify on which CPU_BL we have to
             select a new task (for example, in the onEnd() and
             suspend() functions). In the onArrival() function,
             instead, we still do not know which processor is
@@ -150,30 +162,30 @@ namespace RTSim {
 
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
-        CPU* getDispatchingProcessor(const AbsRTTask* t) const;
+        CPU_BL* getDispatchingProcessor(const AbsRTTask* t) const;
 
-        /// Tells what task has been dispatched to a CPU (when it's in the limbo
+        /// Tells what task has been dispatched to a CPU_BL (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
-        AbsRTTask* getDispatchingTask(const CPU* cpu) const;
+        AbsRTTask* getDispatchingTask(const CPU_BL* CPU_BL) const;
 
         /**
            Returns island utilization given a capacity to scale up/down tasks WCET.
            It also returns the number of tasks being scheduled in the island
         */
-        double getIslandUtilization(double capacity, CPU::Island island, int *nTaskIsland);
+        double getIslandUtilization(double capacity, Island island, int *nTaskIsland);
 
-        /// Returns utilization of task t on CPU c. This method could be defined for tasks, but this way I can make this implementation private
-        double getUtilization(AbsRTTask* t, CPU* c, double capacity) const;
+        /// Returns utilization of task t on CPU_BL c. This method could be defined for tasks, but this way I can make this implementation private
+        double getUtilization(AbsRTTask* t, CPU_BL* c, double capacity) const;
 
-        /// Returns utilization of tasks on CPU c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
-        double getUtilization(CPU* c, double freq, double capacity) const;
+        /// Returns utilization of tasks on CPU_BL c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
+        double getUtilization(CPU_BL* c, double freq, double capacity) const;
 
         /// Returns power consumption after SIMUL.getTime() == 1
         double getTotalPowerConsumption();
 
         /**
          * Begins the dispatch process (context switch). The task is dispatched, but not
-         * executed yet. Its execution on its CPU starts with onEndDispatchMulti()
+         * executed yet. Its execution on its CPU_BL starts with onEndDispatchMulti()
          */
         virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
 
@@ -192,19 +204,19 @@ namespace RTSim {
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);
 
-        /// is any task dispatched on CPU p?
-        bool isDispatching(CPU* p);
+        /// is any task dispatched on CPU_BL p?
+        bool isDispatching(CPU_BL* p);
 
         /**
          *  Returns a pointer to the task which is executing on given
-         *  CPU (NULL if given CPU is idle)
+         *  CPU_BL (NULL if given CPU_BL is idle)
          */
-        virtual AbsRTTask* getTaskRunning(CPU* c);
+        virtual AbsRTTask* getTaskRunning(CPU_BL* c);
 
         /**
-         *  Returns the set of tasks in the runqueue of CPU c
+         *  Returns the set of tasks in the runqueue of CPU_BL c
          */
-        virtual std::vector<AbsRTTask*> getTasks(CPU* c) const;
+        virtual std::vector<AbsRTTask*> getTasks(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();
@@ -224,9 +236,9 @@ namespace RTSim {
 
         bool manageForcedDispatch(Task*);
 
-        void addForcedDispatch(RTSim::PeriodicTask *t, CPU *c, int opp);
+        void addForcedDispatch(RTSim::PeriodicTask *t, CPU_BL *c, int opp);
 
-        map<Task*, pair<CPU*, int>> _m_forcedDispatch;
+        map<Task*, pair<CPU_BL*, int>> _m_forcedDispatch;
     };
 }
 
