@@ -421,8 +421,7 @@ namespace RTSim
             if (c->isBusy()){
                 cout << c->toString() << " is busy"<<endl;
                 return true;
-            }
-        cout << "island is free"<<endl;
+            };
         return false;
     }
 

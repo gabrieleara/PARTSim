@@ -12,6 +12,32 @@
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 
 namespace RTSim {
+
+  class EnergyMRTKernel;
+
+  /** 
+        This class models an event of "start of context switch". It
+        serves to implement a context switch on a certain processor.
+        Different from the BeginDispatchEvt for single processor
+        kernels (RTKernel), since it needs to store a pointer to the
+        CPU and the amount of overhead for the context switch (which
+        may also depend on the migration status of the task).
+        Also, it extends BeginDispatchMultiEvt in MRTKernel because
+        a core has now a list of tasks to be served.
+    */
+    class BeginDispatchMultiTaskEvt : public Event {
+        AbsRTTask* _task;
+    public:
+        BeginDispatchMultiEvtList(EnergyMRTKernel &k, CPU &c, AbsRTTask* t) : BeginDispatchMultiEvt(k,c) {
+          _task = t;
+        };
+
+        AbsRTTask* getNextTask() {
+          return _task;
+        }
+    };
+
+
     /**
         \ingroup kernel
 
@@ -120,8 +146,12 @@ namespace RTSim {
         /// remembering power consumption
         void tryTaskOnCPU_BL(AbsRTTask *t, CPU_BL *c, vector<struct ConsumptionTable> &iDeltaPows);
 
+        /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
+
+        /// decides when to make context switch (i.e. call onBeginDispatchMulti)
+        Tick decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t);
 
     public:
 
@@ -166,8 +196,17 @@ namespace RTSim {
             suspend() functions). In the onArrival() function,
             instead, we still do not know which processor is
             free!
+
+            This is not used at all here because MRTkernel decides here
+            to be task context switch in the current simulation or after a while.
+            But that's because dispatch() just selects a free CPU and puts the
+            new task there. EnergyMRTKernel, instead, allows CPUs to have a queue
+            of tasks. Info about task is needed
          */
-        virtual void dispatch(CPU* c);
+        virtual void dispatch(CPU* c) {}
+
+        /// decides when task context switch begins on the CPU
+        void dispatch(CPU* c, AbsRTTask* t);
 
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()

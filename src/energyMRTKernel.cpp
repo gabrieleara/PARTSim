@@ -160,6 +160,44 @@ namespace RTSim {
         return false;
     }
 
+    Tick EnergyMRTKernel::decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t) {
+        Tick ctx = SIMUL.getTime(); // suppose myself is the only task for core
+        Tick wcet_t = (Tick) ceil(t->getRemainingWCET(p->getSpeed()));
+        struct dl_wcet {Tick dl; Tick wcet;} temp;
+        vector<struct dl_wcet> dl_wcets;
+
+        // there is a running
+        AbsRTTask* runningTask = getTaskRunning(p);
+        if (runningTask != NULL){
+            temp.wcet = (Tick) ceil(runningTask->getRemainingWCET(p->getSpeed()));
+            temp.dl=runningTask->getDeadline();
+            dl_wcets.push_back( temp ); // wcet of running task
+        }
+
+        // there are myself and other dispatching
+        for ( const AbsRTTask* elem : getTasks(p) )
+            if (elem != t) {
+                temp.wcet = (Tick) ceil(elem->getRemainingWCET(p->getSpeed()));
+                temp.dl = elem->getDeadline();
+                dl_wcets.push_back( temp );
+            }
+
+        // there is only myself
+        // nop...
+
+
+        sort(dl_wcets.begin(), dl_wcets.end(), [] (struct dl_wcet const& e1, struct dl_wcet const& e2) { return e1.dl > e2.dl; });
+    
+        for ( struct dl_wcet w : dl_wcets )
+          if (wcet_t < w.dl) {
+            ctx += w.wcet;
+            break;
+          }
+
+        assert( double(ctx) >= double(SIMUL.getTime()) );
+        return ctx;
+    }
+
     void EnergyMRTKernel::onOppChanged(unsigned int curropp) {
         if (isTryngTaskOnCPU_BL())
             return;
@@ -320,10 +358,14 @@ namespace RTSim {
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
 
-        if (!getIsland(Island::LITTLE)->isBusy())
+        if (!getIsland(Island::LITTLE)->isBusy()) {
+            cout << "little's free => clock down to min speed" << endl;
             getIsland(Island::LITTLE)->setOPP(0);
-        if (!getIsland(Island::BIG)->isBusy())
+        }
+        if (!getIsland(Island::BIG)->isBusy()) {
+            cout << "big's free => clock down to min speed" << endl;
             getIsland(Island::BIG)->setOPP(0);
+        }
 
         printState();
 
@@ -473,13 +515,12 @@ namespace RTSim {
         pp->setBusy(true);
 
         cout << "Dispatching " << t->toString() << endl;
-        dispatch(p);
+        dispatch(p, t);
     }
 
-    void EnergyMRTKernel::dispatch(CPU *p)
-    {
+  void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
         DBGENTER(_KERNEL_DBG_LEV);
-        cout << "EnergyMRTKernel::dispatch()" << endl;
+        cout << "EnergyMRTKernel::dispatch(p,t)" << endl;
         Tick ctx;
 
         if (p == NULL) throw RTKernelExc("Dispatch with NULL parameter");
@@ -498,19 +539,10 @@ namespace RTSim {
                 _m_dispatching[task].first = NULL;
             }
         } else {
-            AbsRTTask* runningTask = getTaskRunning(p);
-            if (runningTask != NULL || isDispatching(dynamic_cast<CPU_BL*>(p))) { // migration: try not to affect running tasks
-                vector<Tick> wcets;
-
-                wcets.push_back( (Tick) ceil(runningTask->getWCET(p->getSpeed())) ); // wcet of running task
-                _beginEvt[p]->post(ctx);
-                cout << "Trying to schedule task while other ones are in queue. Beg of ctx switch at " << ctx << endl;
-            }
-            else {
-                _beginEvt[p]->post(SIMUL.getTime());
-                ctx = SIMUL.getTime();
-                cout << "beginEvt set to t=" << ctx << endl;
-            }
+            ctx = decideBeginCtxSwitch(dynamic_cast<CPU_BL*>(p),t);
+            if (_beginEvt.find(p) == _beginEvt.end())
+            _beginEvt[p]->post(ctx); 
+            cout << "beginEvt " << taskname(t) << " set to t=" << ctx << endl;
         }
 
 
