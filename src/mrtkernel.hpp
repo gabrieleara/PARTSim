@@ -60,8 +60,8 @@ namespace RTSim {
     public:
         EndDispatchMultiEvt(MRTKernel &k, CPU &c);
         CPU * getCPU() { return &_cpu; }
-        void setTask(AbsRTTask *t) {_task = t; }
-        AbsRTTask *getTask() { return _task; }
+        virtual void setTask(AbsRTTask *t) {_task = t; }
+        virtual AbsRTTask *getTask() { return _task; }
         virtual void doit();
     };
 

@@ -25,15 +25,59 @@ namespace RTSim {
         Also, it extends BeginDispatchMultiEvt in MRTKernel because
         a core has now a list of tasks to be served.
     */
-    class BeginDispatchMultiTaskEvt : public Event {
-        AbsRTTask* _task;
-    public:
-        BeginDispatchMultiEvtList(EnergyMRTKernel &k, CPU &c, AbsRTTask* t) : BeginDispatchMultiEvt(k,c) {
-          _task = t;
-        };
+    class BeginDispatchMultiListEvt : public Event {
+        EnergyMRTKernel &_kernel;
+        CPU &_cpu;
+        vector<AbsRTTask*> _tasks;
 
-        AbsRTTask* getNextTask() {
-          return _task;
+    private:
+        void eraseFirstTask() { _tasks.erase(_tasks.begin()); }
+    
+    public:
+        BeginDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c);
+
+        CPU * getCPU() { return &_cpu; }
+        BeginDispatchMultiListEvt* addTask(AbsRTTask* t) {
+          _tasks.push_back(t);
+          return this;
+        }
+        virtual AbsRTTask* getTask() {
+          return _tasks.at(0);
+        }
+        virtual void doit();
+        virtual void drop() {
+          eraseFirstTask();
+          if (_tasks.empty())
+            Event::drop();
+        }
+
+    };
+
+    /** 
+        This class models and event of "start of context switch". It
+        serves to implement a context switch on a certain processor.
+        Different from the EndDispatchEvt for single processor
+        kernels (RTKernel), since it needs to store a pointer to the
+        CPU on which the contxt switch may happen.
+        Also here, managing a list of tasks for core is needed.
+    */
+    class EndDispatchMultiListEvt : public Event {
+        EnergyMRTKernel &_kernel;
+        CPU &_cpu;
+        vector<AbsRTTask*> _tasks;
+
+    private:
+        void eraseFirstTask() { _tasks.erase(_tasks.begin()); }
+    public:
+        EndDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c);
+        EndDispatchMultiListEvt* addTask(AbsRTTask *t) { _tasks.push_back(t); return this; }
+        virtual AbsRTTask *getTask() { return _tasks.at(0); }
+        CPU * getCPU() { return &_cpu; }
+        virtual void doit();
+        virtual void drop() {
+          eraseFirstTask();
+          if (_tasks.empty())
+            Event::drop();
         }
     };
 
@@ -89,6 +133,12 @@ namespace RTSim {
         double totalPowerCosumption;
 
         bool _tryingTaskOnCPU_BL;
+
+        /// The BeginDispatchMultiEvt for every CPU
+        std::map<CPU*, BeginDispatchMultiListEvt *> _beginEvt;
+
+        /// The EndDispatchMultiEvt for every CPU
+        std::map<CPU*, EndDispatchMultiListEvt *> _endEvt;
 
         /**
          * Needed by migration mechanism. What OPP do running tasks need to finish on time on their core?
@@ -235,14 +285,14 @@ namespace RTSim {
          * Begins the dispatch process (context switch). The task is dispatched, but not
          * executed yet. Its execution on its CPU_BL starts with onEndDispatchMulti()
          */
-        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
+        virtual void onBeginDispatchMultiList(BeginDispatchMultiListEvt* e);
 
         /**
          *  First a task is dispatched, but not executed yet, in the
          *  onBeginDispatchMulti. Then, in the onEndDispatchMulti, its execution starts
          *  on the processor.
          */
-        virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
+        virtual void onEndDispatchMultiList(EndDispatchMultiListEvt* e);
 
         /// called when OPP changes
         void onOppChanged(unsigned int curropp);

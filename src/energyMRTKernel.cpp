@@ -33,12 +33,37 @@ namespace RTSim {
         for(CPU_BL* c : getProcessors())  {
             _m_currExe[c] = NULL;
             _isContextSwitching[c] = false;
-            _beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
-            _endEvt[c] = new EndDispatchMultiEvt(*this, *c);
+            _beginEvt[c] = new BeginDispatchMultiListEvt(*this, *c);
+            _endEvt[c] = new EndDispatchMultiListEvt(*this, *c);
         }
 
         _sched->setKernel(this);
         setTryingTaskOnCPU_BL(false);
+    }
+
+    BeginDispatchMultiListEvt::BeginDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c)
+        : Event(Event::_DEFAULT_PRIORITY + 10), 
+          _kernel(k),
+          _cpu(c)
+    {
+    }
+
+    EndDispatchMultiListEvt::EndDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c)
+        : Event(Event::_DEFAULT_PRIORITY + 10), 
+          _kernel(k),
+          _cpu(c)
+    {
+    }
+
+    void BeginDispatchMultiListEvt::doit() {
+        _kernel.onBeginDispatchMultiList(this);
+        eraseFirstTask();
+    }
+
+    void EndDispatchMultiListEvt::doit()
+    {
+        _kernel.onEndDispatchMultiList(this);
+        eraseFirstTask();
     }
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
@@ -259,13 +284,13 @@ namespace RTSim {
     // Note MRTKernel version differs: dispatch() tasks a free CUP and calls onBDM(), which in turns
     // assigns a task. EnergyMRTKernel, instead, needs to make assignment decisions: dispatch() chooses
     // a CPU for all tasks, and on*DM() makes the context switch (split into onBDM() and onEBM(), as in MRTKernel)
-    void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
+    void EnergyMRTKernel::onBeginDispatchMultiList(BeginDispatchMultiListEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
         // if necessary, deschedule the task.
         CPU * p         = e->getCPU();
         AbsRTTask *dt   = _m_currExe[p];
-        AbsRTTask *st   = getDispatchingTask(dynamic_cast<CPU_BL*>(p));
+        AbsRTTask *st   = e->getTask();//getDispatchingTask(dynamic_cast<CPU_BL*>(p));
         assert(st != NULL);
 
 
@@ -288,7 +313,7 @@ namespace RTSim {
         // todo
         cout << __func__ << " Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
 
-        _endEvt[p]->setTask(st);
+        //_endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
         // if you exit(0) here, dispatch() has already chosen a CPU forall tasks
         // exit(0);
@@ -296,7 +321,7 @@ namespace RTSim {
         CPU_BL* oldProcessor = dynamic_cast<CPU_BL*>(getOldProcessor(st));
         if (oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
-        _endEvt[p]->post(SIMUL.getTime() + overhead);
+        _endEvt[p]->addTask(st)->post(SIMUL.getTime() + overhead);
 
         cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << endl;
 
@@ -304,11 +329,19 @@ namespace RTSim {
 
     // Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
     // Also called when a periodic task ends its WCET
-    void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e)
+    void EnergyMRTKernel::onEndDispatchMultiList(EndDispatchMultiListEvt* e)
     {
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString()) << endl;
-        MRTKernel::onEndDispatchMulti(e);
+        //MRTKernel::onEndDispatchMulti(e);
         AbsRTTask* t = e->getTask();
+        CPU *p = e->getCPU();
+
+        _m_currExe[p] = t;
+        // t could be null (because of an idling processor)
+        if (t) t->schedule();
+        _isContextSwitching[p] = false;
+        _sched->notify(t);
+
         _m_currExe_OPP[t] = _m_dispatching[t].second;
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
@@ -518,7 +551,7 @@ namespace RTSim {
         dispatch(p, t);
     }
 
-  void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
+    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
         DBGENTER(_KERNEL_DBG_LEV);
         cout << "EnergyMRTKernel::dispatch(p,t)" << endl;
         Tick ctx;
@@ -526,22 +559,21 @@ namespace RTSim {
         if (p == NULL) throw RTKernelExc("Dispatch with NULL parameter");
 
         DBGPRINT_2("dispatching on processor ", p);
-        _beginEvt[p]->drop();
+        //_beginEvt[p]->drop();
 
         if (_isContextSwitching[p]) {
             // memo: I've seen it doesn't get here normally
             DBGPRINT("Context switch is disabled!");
-            _beginEvt[p]->post(_endEvt[p]->getTime());
+            _beginEvt[p]->addTask(t)->post(_endEvt[p]->getTime());
             AbsRTTask *task = _endEvt[p]->getTask();
             _endEvt[p]->drop();
             if (task != NULL) {
-                _endEvt[p]->setTask(NULL);
+                //_endEvt[p]->setTask(NULL);
                 _m_dispatching[task].first = NULL;
             }
         } else {
             ctx = decideBeginCtxSwitch(dynamic_cast<CPU_BL*>(p),t);
-            if (_beginEvt.find(p) == _beginEvt.end())
-            _beginEvt[p]->post(ctx); 
+            _beginEvt[p]->addTask(t)->post(ctx); 
             cout << "beginEvt " << taskname(t) << " set to t=" << ctx << endl;
         }
 

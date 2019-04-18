@@ -212,7 +212,7 @@ namespace MetaSim {
             simply extracted from the queue, and hence will
             not be processed, but it is not destroyed.
         */
-        void drop();
+        virtual void drop();
 
         /** 
             Returns the first event in the event queue.  This
