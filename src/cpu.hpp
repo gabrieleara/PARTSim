@@ -397,12 +397,14 @@ namespace RTSim
     void setOPP(unsigned int opp);
 
     void updateBusy() {
-        bool b = false;
+        /*bool b = true;
         for (CPU_BL* c : _cpus)
-            if (c->isBusy())
-                b = true;
+            if (!c->isBusy()) {
+                b = false;
+                break;
+            }
         for(CPU_BL* c : _cpus)
-            c->_isBusy = b;
+            c->_isBusy = b;*/
     }
 
     vector<struct OPP> getHigherOPPs() {

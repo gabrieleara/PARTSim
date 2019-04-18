@@ -89,6 +89,9 @@ namespace RTSim {
         /// trying to move it to a better one). Migration happens when a task ends
         vector<AbsRTTask*> _m_migrating;
 
+        /// island cores load balancing policy: if possible, make all island cores work
+        void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
+
         /**
         * CPU_BL choice from the table of consumptions (not sorted).
         * It tries to spread tasks on CPU_BLs if they have the same energy consumption
@@ -137,6 +140,9 @@ namespace RTSim {
 
         /// drop event of context switch to t on c, whenever in future
         void dropEvt(CPU_BL* c, AbsRTTask* t);
+
+        /// Update when the context switches of tasks of c will happen
+        void updateDispatchingOrder(CPU_BL* c);
 
     public:
 
@@ -249,10 +255,8 @@ namespace RTSim {
          */
         virtual AbsRTTask* getTaskRunning(CPU* c);
 
-        /**
-         *  Returns the set of tasks in the runqueue of CPU_BL c
-         */
-        virtual std::vector<AbsRTTask*> getTasks(CPU_BL* c) const;
+         /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one         
+        virtual vector<AbsRTTask*> getTasks(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();

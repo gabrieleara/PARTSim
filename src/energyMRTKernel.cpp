@@ -79,6 +79,22 @@ namespace RTSim {
         assert(found[0] != found[1]); // task can be either in begin dispatch or end dispatch on c
     }
 
+    void EnergyMRTKernel::updateDispatchingOrder(CPU_BL* c) {
+        vector<AbsRTTask*> tasks_c = getTasks(c);
+        if (getTaskRunning(c) != NULL)
+            tasks_c.push_back(getTaskRunning(c));
+
+        for (DispatchMultiEvt *e : _beginEvts[c])
+            e->drop();
+        for (DispatchMultiEvt *e : _endEvts[c])
+            e->drop();
+
+        for (AbsRTTask* t : tasks_c) {
+            Tick newBegCS = decideBeginCtxSwitch(c, t);
+            postEvt(c, t, newBegCS, false);
+        }
+    }
+
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
         AbsRTTask* t = MRTKernel::getTask(c);
         return t;
@@ -300,13 +316,12 @@ namespace RTSim {
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        // if necessary, deschedule the task.
         CPU * p         = e->getCPU();
         AbsRTTask *dt   = _m_currExe[p];
         AbsRTTask *st   = getDispatchingTask(dynamic_cast<CPU_BL*>(p));
         assert(st != NULL); assert(p != NULL);
 
-
+        // if necessary, deschedule the task.
         if ( st != NULL && dt == st ) {
             stringstream ss;
             ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
@@ -387,8 +402,6 @@ namespace RTSim {
 
         // only on big-little: update the state of the CPUs island
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
-        if (!isDispatching(p) && getTaskRunning(p) == NULL)
-            p->setBusy(false);
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
         cout << ".............................." << endl;
         cout << t->toString() << " has just finished on " << p->toString() << ". Actual time = [" << SIMUL.getTime() << "]" << endl;
@@ -399,6 +412,9 @@ namespace RTSim {
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
+
+        if (!isDispatching(p) && getTaskRunning(p) == NULL)
+            p->setBusy(false);
 
         if (!getIsland(Island::LITTLE)->isBusy()) {
             cout << "little's free => clock down to min speed" << endl;
@@ -503,7 +519,29 @@ namespace RTSim {
         }
     }
 
-    void EnergyMRTKernel::chooseCPU_BL(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows) {
+    void EnergyMRTKernel::balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows) {
+        // Load balancing policy: don't put all the load on a core of an island, but use also the others.
+        // Mechanism: if chosen CPU is busy, find a free CPU in the island with the same consumption.
+        // Note: with this algorithm tasks cannot be assigned to a core in an island
+        // different than the originally chosen one
+        cout << __func__ << endl;
+        if ( (*chosenCPU)->isBusy() ) {
+            cout << (*chosenCPU)->toString() << " was chosen but it's busy" << endl;
+            for (int i = 1; i < iDeltaPows.size(); i++) {
+                cout << iDeltaPows[i].cons << " VS " << iDeltaPows[0].cons << " busy? "
+                     << iDeltaPows[i].cpu->isBusy() << " " << iDeltaPows[i].cpu->toString() << endl;
+                if (iDeltaPows[i].cons == iDeltaPows[0].cons && !iDeltaPows[i].cpu->isBusy()) {
+                    *chosenCPU = iDeltaPows[i].cpu;
+                    chosenOPP = iDeltaPows[i].opp;
+                    chosenCPUchanged = true;
+                    break;
+                }
+            }
+        }
+        else cout << "CPU is not busy => skip" << endl;
+    }
+
+    void EnergyMRTKernel::chooseCPU_BL(AbsRTTask* t, vector<struct ConsumptionTable> iDeltaPows) {
         // TODO: switch from nlogn to n for min()
         // sort table of consumption
         sort(iDeltaPows.begin(), iDeltaPows.end(),
@@ -520,22 +558,7 @@ namespace RTSim {
         bool chosenCPUchanged = false;
         bool toBeChanged = chosenCPU->isBusy();
 
-        // if chosen CPU is busy, find a free CPU in the island with the same consumption.
-        // Note: with this algorithm tasks cannot be assigned to a core in an island
-        // different than the originally chosen one
-        if (chosenCPU->isBusy()) {
-            cout << chosenCPU->toString() << " was chosen but it's busy" << endl;
-            for (int i = 1; i < iDeltaPows.size(); i++) {
-                cout << iDeltaPows[i].cons << " VS " << iDeltaPows[0].cons << " busy? "
-                     << iDeltaPows[i].cpu->isBusy() << " " << iDeltaPows[i].cpu->toString() << endl;
-                if (iDeltaPows[i].cons == iDeltaPows[0].cons && !iDeltaPows[i].cpu->isBusy()) {
-                    chosenCPU = iDeltaPows[i].cpu;
-                    chosenOPP = iDeltaPows[i].opp;
-                    chosenCPUchanged = true;
-                    break;
-                }
-            }
-        }
+        balanceLoad(&chosenCPU, chosenOPP, chosenCPUchanged, iDeltaPows);
 
         cout << "Temporarily chosenCPU: " << chosenCPU->toString() << " with freq " << chosenCPU->getFrequency(chosenOPP) << endl;
         leaveLittle3(t, iDeltaPows, chosenCPU);
@@ -548,16 +571,17 @@ namespace RTSim {
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp)
     {
-        // This variable is only needed before the scheduling finishes (onEndDispatchMulti())
+        cout << "Dispatching " << t->toString() << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
+        // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
         _m_dispatching[t] = make_pair(pp, opp);
 
         // this is meant to be a virtual assignment of CPU OPP
         pp->setOPP(opp);
         pp->setBusy(true);
 
-        cout << "Dispatching " << t->toString() << endl;
-        dispatch(p, t);
+        //dispatch(p, t);
+        updateDispatchingOrder(pp);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
