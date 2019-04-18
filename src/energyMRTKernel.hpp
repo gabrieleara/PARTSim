@@ -13,75 +13,6 @@
 
 namespace RTSim {
 
-  class EnergyMRTKernel;
-
-  /** 
-        This class models an event of "start of context switch". It
-        serves to implement a context switch on a certain processor.
-        Different from the BeginDispatchEvt for single processor
-        kernels (RTKernel), since it needs to store a pointer to the
-        CPU and the amount of overhead for the context switch (which
-        may also depend on the migration status of the task).
-        Also, it extends BeginDispatchMultiEvt in MRTKernel because
-        a core has now a list of tasks to be served.
-    */
-    class BeginDispatchMultiListEvt : public Event {
-        EnergyMRTKernel &_kernel;
-        CPU &_cpu;
-        vector<AbsRTTask*> _tasks;
-
-    private:
-        void eraseFirstTask() { _tasks.erase(_tasks.begin()); }
-    
-    public:
-        BeginDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c);
-
-        CPU * getCPU() { return &_cpu; }
-        BeginDispatchMultiListEvt* addTask(AbsRTTask* t) {
-          _tasks.push_back(t);
-          return this;
-        }
-        virtual AbsRTTask* getTask() {
-          return _tasks.at(0);
-        }
-        virtual void doit();
-        virtual void drop() {
-          eraseFirstTask();
-          if (_tasks.empty())
-            Event::drop();
-        }
-
-    };
-
-    /** 
-        This class models and event of "start of context switch". It
-        serves to implement a context switch on a certain processor.
-        Different from the EndDispatchEvt for single processor
-        kernels (RTKernel), since it needs to store a pointer to the
-        CPU on which the contxt switch may happen.
-        Also here, managing a list of tasks for core is needed.
-    */
-    class EndDispatchMultiListEvt : public Event {
-        EnergyMRTKernel &_kernel;
-        CPU &_cpu;
-        vector<AbsRTTask*> _tasks;
-
-    private:
-        void eraseFirstTask() { _tasks.erase(_tasks.begin()); }
-    public:
-        EndDispatchMultiListEvt(EnergyMRTKernel &k, CPU &c);
-        EndDispatchMultiListEvt* addTask(AbsRTTask *t) { _tasks.push_back(t); return this; }
-        virtual AbsRTTask *getTask() { return _tasks.at(0); }
-        CPU * getCPU() { return &_cpu; }
-        virtual void doit();
-        virtual void drop() {
-          eraseFirstTask();
-          if (_tasks.empty())
-            Event::drop();
-        }
-    };
-
-
     /**
         \ingroup kernel
 
@@ -134,11 +65,9 @@ namespace RTSim {
 
         bool _tryingTaskOnCPU_BL;
 
-        /// The BeginDispatchMultiEvt for every CPU
-        std::map<CPU*, BeginDispatchMultiListEvt *> _beginEvt;
-
-        /// The EndDispatchMultiEvt for every CPU
-        std::map<CPU*, EndDispatchMultiListEvt *> _endEvt;
+        /// cores have a queue of ready=dispatching tasks
+        map<CPU_BL*, vector<BeginDispatchMultiEvt*>> _beginEvts;
+        map<CPU_BL*, vector<EndDispatchMultiEvt*>> _endEvts;
 
         /**
          * Needed by migration mechanism. What OPP do running tasks need to finish on time on their core?
@@ -200,8 +129,14 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
 
-        /// decides when to make context switch (i.e. call onBeginDispatchMulti)
+        /// decides when to make context switch (i.e. call onBeginDispatchMulti) for t on p
         Tick decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t);
+
+        /// commodity function for posting an event for context switching
+        void postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt);
+
+        /// drop event of context switch to t on c, whenever in future
+        void dropEvt(CPU_BL* c, AbsRTTask* t);
 
     public:
 
@@ -285,14 +220,14 @@ namespace RTSim {
          * Begins the dispatch process (context switch). The task is dispatched, but not
          * executed yet. Its execution on its CPU_BL starts with onEndDispatchMulti()
          */
-        virtual void onBeginDispatchMultiList(BeginDispatchMultiListEvt* e);
+        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
 
         /**
          *  First a task is dispatched, but not executed yet, in the
          *  onBeginDispatchMulti. Then, in the onEndDispatchMulti, its execution starts
          *  on the processor.
          */
-        virtual void onEndDispatchMultiList(EndDispatchMultiListEvt* e);
+        virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
 
         /// called when OPP changes
         void onOppChanged(unsigned int curropp);

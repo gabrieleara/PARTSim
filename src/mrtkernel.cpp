@@ -34,17 +34,12 @@ namespace RTSim {
 
 
     BeginDispatchMultiEvt::BeginDispatchMultiEvt(MRTKernel &k, CPU &c)
-        : Event(Event::_DEFAULT_PRIORITY + 10), 
-          _kernel(k),
-          _cpu(c)
+        : DispatchMultiEvt(k,c,Event::_DEFAULT_PRIORITY + 10)
     {
     }
 
     EndDispatchMultiEvt::EndDispatchMultiEvt(MRTKernel &k, CPU &c)
-        : Event(Event::_DEFAULT_PRIORITY + 10), 
-          _kernel(k),
-          _cpu(c),
-          _task(0)
+        : DispatchMultiEvt(k,c,Event::_DEFAULT_PRIORITY + 10)
     {
     }
 

@@ -28,6 +28,24 @@ namespace RTSim {
 
     class MRTKernel;
 
+    // Interface
+    class DispatchMultiEvt : public Event {
+    protected:
+        MRTKernel &_kernel;
+        CPU &_cpu;
+        AbsRTTask *_task;
+    public:
+        DispatchMultiEvt(MRTKernel &k, CPU &c, int prio) 
+            : Event(Event::_DEFAULT_PRIORITY + 10),
+            _kernel(k),
+            _cpu(c),
+            _task(0) {};
+        CPU * getCPU() { return &_cpu; }
+        void setTask(AbsRTTask *t) {_task = t; }
+        AbsRTTask *getTask() { return _task; }
+        virtual void doit() = 0;
+    };
+
     /** 
         This class models and event of "start of context switch". It
         serves to implement a context switch on a certain processor.
@@ -36,13 +54,9 @@ namespace RTSim {
         CPU and the amount of overhead for the context switch (which
         may also depend on the migration status of the task).
     */
-    class BeginDispatchMultiEvt : public Event {
-        MRTKernel &_kernel;
-        CPU &_cpu;
+    class BeginDispatchMultiEvt : public DispatchMultiEvt {
     public:
         BeginDispatchMultiEvt(MRTKernel &k, CPU &c);
-
-        CPU * getCPU() { return &_cpu; }
         virtual void doit();
     };
 
@@ -53,15 +67,9 @@ namespace RTSim {
         kernels (RTKernel), since it needs to store a pointer to the
         CPU on which the contxt switch may happen.
     */
-    class EndDispatchMultiEvt : public Event {
-        MRTKernel &_kernel;
-        CPU &_cpu;
-        AbsRTTask *_task;
+    class EndDispatchMultiEvt : public DispatchMultiEvt {
     public:
         EndDispatchMultiEvt(MRTKernel &k, CPU &c);
-        CPU * getCPU() { return &_cpu; }
-        virtual void setTask(AbsRTTask *t) {_task = t; }
-        virtual AbsRTTask *getTask() { return _task; }
         virtual void doit();
     };
 
