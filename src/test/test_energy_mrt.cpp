@@ -18,17 +18,18 @@ string task_name = "";
 int init_sequence = 0;
 
 int cleanup_suite();
-int init_suite(vector<CPU*> *cpus);
+int init_suite(vector<CPU_BL*> *cpus, EnergyMRTKernel** kern, EDFScheduler** edfsched);
+bool inRange(int,int);
 
 
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     vector<PeriodicTask*> task; // to be cleared after each test
-    init_suite(&cpus);
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     task_name = "T0_task1";
     cout << "Creating task: " << task_name << endl;
@@ -40,16 +41,16 @@ TEST_CASE("exp0") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kern->getProcessor(t0);
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(t0)));
 
     REQUIRE(t0->getName() == "T0_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t0->getWCET(c0->getSpeed()))  == 497);
+    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     SIMUL.endSingleRun();
     delete t0;
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
     delete kern;
@@ -58,12 +59,11 @@ TEST_CASE("exp0") {
 TEST_CASE("exp1") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     vector<PeriodicTask*> task; // to be cleared after each test
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     task_name = "T1_task1";
     cout << "Creating task: " << task_name << endl;
@@ -80,22 +80,22 @@ TEST_CASE("exp1") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kern->getProcessor(t0);
-    CPU *c1 = kern->getProcessor(t1);
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(t1));
 
     REQUIRE(t0->getName() == "T1_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t0->getWCET(c0->getSpeed()))  == 497);
+    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE(t1->getName() == "T1_task2");
     REQUIRE(c1->getFrequency() == 2000);
-    REQUIRE(c1->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t1->getWCET(c1->getSpeed())) == 497);
+    REQUIRE(c1->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t1->getWCET(c1->getSpeed())), 497));
 
     SIMUL.endSingleRun();
     delete t1; delete t0;
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
     delete kern;
@@ -104,11 +104,10 @@ TEST_CASE("exp1") {
 TEST_CASE("exp2") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    vector<CPU_BL*> cpus;
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     task_name = "T2_task1";
     cout << "Creating task: " << task_name << endl;
@@ -125,25 +124,25 @@ TEST_CASE("exp2") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kern->getProcessor(t0);
-    CPU *c1 = kern->getProcessor(t1);
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(t1));
 
     for(string s : kern->getRunningTasks())
       cout << "running :" << s<<endl;
 
     REQUIRE(t0->getName() == "T2_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t0->getWCET(c0->getSpeed()))  == 497);
+    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE(t1->getName() == "T2_task2");
     REQUIRE(c1->getFrequency() == 2000);
-    REQUIRE(c1->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t1->getWCET(c1->getSpeed())) == 248);
+    REQUIRE(c1->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t1->getWCET(c1->getSpeed())), 248));
 
     SIMUL.endSingleRun();
     delete t0; delete t1;
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
     delete kern;
@@ -152,11 +151,10 @@ TEST_CASE("exp2") {
 TEST_CASE("exp3") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    vector<CPU_BL*> cpus;
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     task_name = "T3_task1";
     cout << "Creating task: " << task_name << endl;
@@ -167,16 +165,16 @@ TEST_CASE("exp3") {
     SIMUL.initSingleRun();
     SIMUL.run_to(10);
 
-    CPU *c0 = kern->getProcessor(t0);
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
 
     REQUIRE(t0->getName() == "T3_task1");
     REQUIRE(c0->getFrequency() == 500);
-    REQUIRE(c0->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t0->getWCET(c0->getSpeed()))  == 65);
+    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 65));
 
     SIMUL.endSingleRun();
     delete t0;
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
     delete kern;
@@ -185,12 +183,11 @@ TEST_CASE("exp3") {
 TEST_CASE("exp4") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     for (int j = 0; j < 4; j++) {
         task_name = "T4_Task_LITTLE_" + std::to_string(j);
@@ -207,35 +204,35 @@ TEST_CASE("exp4") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kern->getProcessor(task[0]);
-    CPU *c1 = kern->getProcessor(task[1]);
-    CPU *c2 = kern->getProcessor(task[2]);
-    CPU *c3 = kern->getProcessor(task[3]);
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[0]));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[1]));
+    CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[2]));
+    CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[3]));
 
     REQUIRE(task[0]->getName() == "T4_Task_LITTLE_0");
     REQUIRE(c0->getFrequency() == 700);
-    REQUIRE(c0->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(task[0]->getWCET(c0->getSpeed()))  == 488);
+    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(task[0]->getWCET(c0->getSpeed())), 488));
 
     REQUIRE(task[1]->getName() == "T4_Task_LITTLE_1");
     REQUIRE(c1->getFrequency() == 700);
-    REQUIRE(c1->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(task[1]->getWCET(c1->getSpeed())) == 488);
+    REQUIRE(c1->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(task[1]->getWCET(c1->getSpeed())), 488));
 
     REQUIRE(task[2]->getName() == "T4_Task_LITTLE_2");
     REQUIRE(c2->getFrequency() == 700);
-    REQUIRE(c2->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(task[2]->getWCET(c2->getSpeed())) == 488);
+    REQUIRE(c2->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(task[2]->getWCET(c2->getSpeed())), 488));
 
     REQUIRE(task[3]->getName() == "T4_Task_LITTLE_3");
     REQUIRE(c3->getFrequency() == 700);
-    REQUIRE(c3->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(task[3]->getWCET(c3->getSpeed())) == 488);
+    REQUIRE(c3->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(task[3]->getWCET(c3->getSpeed())), 488));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
     delete kern;
@@ -244,12 +241,11 @@ TEST_CASE("exp4") {
 TEST_CASE("exp5") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     for (int j = 0; j < 4; j++) {
         int wcet = 5; //* (j+1);
@@ -269,48 +265,48 @@ TEST_CASE("exp5") {
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
 
-    CPU *c0 = kern->getProcessor(task[0]);
-    CPU *c1 = kern->getProcessor(task[1]);
-    CPU *c2 = kern->getProcessor(task[2]);
-    CPU *c3 = kern->getProcessor(task[3]);
-cout << c0->toString() << endl;
-cout << c1->toString() << endl;
-cout << c2->toString() << endl;
-cout << c3->toString() << endl;
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[0]));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[1]));
+    CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[2]));
+    CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[3]));
+    cout << c0->toString() << endl;
+    cout << c1->toString() << endl;
+    cout << c2->toString() << endl;
+    cout << c3->toString() << endl;
     abort();
 
     PeriodicTask* t = task[0];
     REQUIRE(t->getName() == "T5_task0");
     REQUIRE(c0->getFrequency() == 500);
-    REQUIRE(c0->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c0->getSpeed()))  == 32);
+    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c0->getSpeed())), 32));
     cout << t->toString() << " on "<< c0->toString()<<endl;
 
     t = task[1];
     REQUIRE(t->getName() == "T5_task1");
     REQUIRE(c1->getFrequency() == 500);
-    REQUIRE(c1->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c1->getSpeed())) == 32);
+    REQUIRE(c1->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c1->getSpeed())), 32));
     cout << t->toString() << " on "<< c1->toString()<<endl;
 
     t = task[2];
     REQUIRE(t->getName() == "T5_task2");
     REQUIRE(c2->getFrequency() == 500);
-    REQUIRE(c2->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c2->getSpeed())) == 32);
+    REQUIRE(c2->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c2->getSpeed())), 32));
     cout << t->toString() << " on "<< c2->toString()<<endl;
 
     t = task[3];
     REQUIRE(t->getName() == "T5_task3");
     REQUIRE(c3->getFrequency() == 500);
-    REQUIRE(c3->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c3->getSpeed())) == 32);
+    REQUIRE(c3->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c3->getSpeed())), 32));
     cout << t->toString() << " on "<< c3->toString()<<endl;
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
     cpus.clear();
     delete edfsched;
 	delete kern;
@@ -320,13 +316,12 @@ cout << c3->toString() << endl;
 TEST_CASE("exp6") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
-    CPU* cpu_task[5]; // to be cleared after each test
+    vector<CPU_BL*> cpus;
+    CPU_BL* cpu_task[5]; // to be cleared after each test
     PeriodicTask* task[5]; // to be cleared after each test
-    init_suite(&cpus);
-    
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     int i, wcet = 300;
     for (int j = 0; j < 5; j++) {
@@ -349,18 +344,18 @@ TEST_CASE("exp6") {
 
     for (int j = 0; j < 5; j++) {
     	cout << j << endl;
-        cpu_task[j] = kern->getProcessor(task[j]);
+        cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
     	if (j == 4)
     		cpu_task[j] = kern->getDispatchingProcessor(task[j]);
     }
 
     i = 0;
     PeriodicTask* t = task[i];
-    CPU* c = cpu_task[i];
+    CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task0");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed()))  == 298);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -368,8 +363,8 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task1");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 298);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -377,8 +372,8 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task2");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 298);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 3;
@@ -386,8 +381,8 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task3");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 298);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())),299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -395,26 +390,25 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task4");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 198);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 199));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 5; j++)
         delete task[j];
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
 }
 
 TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    CPU* cpu_task[5]; // to be cleared after each test
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    CPU_BL* cpu_task[5]; // to be cleared after each test
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     int wcets[] = { 63, 63, 63, 63, 30 };
     int i;
@@ -439,16 +433,16 @@ TEST_CASE("exp7") {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task[j] = kern->getProcessor(task[j]);
+        cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
     }
 
     i = 0;
     PeriodicTask* t = task[i];
-    CPU* c = cpu_task[i];
+    CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task0");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed()))  == 415);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -456,8 +450,8 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task1");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 415);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -465,8 +459,8 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task2");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 415);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 3;
@@ -474,8 +468,8 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task3");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 415);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -483,26 +477,25 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task4");
     REQUIRE(c->getFrequency() == 700);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 75);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 75));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
 }
 
 TEST_CASE("exp8") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU*> cpus;
+    vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    CPU* cpu_task[5]; // to be cleared after each test
-    init_suite(&cpus);
-
-    EDFScheduler *edfsched = new EDFScheduler;
-    EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, cpus, "The sole kernel" + to_string(init_sequence));
+    CPU_BL* cpu_task[5]; // to be cleared after each test
+    EDFScheduler *edfsched; EnergyMRTKernel *kern;
+    init_suite(&cpus, &kern, &edfsched);
+    assert(kern != NULL); assert(edfsched != NULL);
 
     int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
     int i;
@@ -522,16 +515,16 @@ TEST_CASE("exp8") {
     SIMUL.run_to(1);
 
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        cpu_task[j] = kern->getProcessor(task[j]);
+        cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
     }
 
     i = 0;
     PeriodicTask* t = task[i];
-    CPU* c = cpu_task[i];
+    CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + i);
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed()))  == 499);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 499));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -539,8 +532,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + i);
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 477);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 477));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -548,8 +541,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + i);
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 261);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 261));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 3;
@@ -557,8 +550,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 297);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 297));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -566,8 +559,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 162);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 162));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 5;
@@ -575,8 +568,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 8);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 8));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 6;
@@ -584,8 +577,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 61);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 61));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 7;
@@ -593,8 +586,8 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIsland() == CPU::Island::LITTLE);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 170);
+    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 170));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 8;
@@ -602,23 +595,24 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task"+i);
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIsland() == CPU::Island::BIG);
-    REQUIRE(int(t->getWCET(c->getSpeed())) == 273);
+    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 273));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU* c:cpus) delete c;
+    for (CPU_BL* c:cpus) delete c;
 }
 
 // Not finding an example with a call to a local function, I outed out for CUnit.
 // But I think it's duable to conform to framework TEST UNIT
-int init_suite(vector<CPU*> *cpus) {
+int init_suite(vector<CPU_BL*> *cpus, EnergyMRTKernel** kern, EDFScheduler** edfsched) {
     cout << "init_suite" << endl;
 
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
+    vector<CPU_BL *> cpus_little, cpus_big;
 
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -641,16 +635,16 @@ int init_suite(vector<CPU*> *cpus) {
 
     unsigned long int max_frequency = max(F_little[F_little.size() - 1], F_big[F_big.size() - 1]);
 
-    /* ------------------------- Creating CPUs -------------------------*/
+    /* ------------------------- Creating CPU_BLs -------------------------*/
     for (unsigned int i = 0; i < 4; ++i) {
-        /* Create 4 LITTLE CPUs */
+        /* Create 4 LITTLE CPU_BLs */
         string cpu_name = "LITTLE_" + to_string(i);
 
-        cout << "Creating CPU: " << cpu_name << endl;
+        cout << "Creating CPU_BL: " << cpu_name << endl;
 
         cout << "f is " << F_little[F_little.size() - 1] << " max_freq " << max_frequency << endl;
 
-        CPUModel *pm = new CPUModelBP(V_little[V_little.size() - 1], F_little[F_little.size() - 1], max_frequency);
+        CPUModelBP *pm = new CPUModelBP(V_little[V_little.size() - 1], F_little[F_little.size() - 1], max_frequency);
         {
             CPUModelBP::PowerModelBPParams idle_pp = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
             CPUModelBP::ComputationalModelBPParams idle_cp = {1, 0, 0, 0};
@@ -678,26 +672,24 @@ int init_suite(vector<CPU*> *cpus) {
         }
 
         cout << "creating cpu" << endl;
-        CPU *c = new CPU(cpu_name, V_little, F_little, pm);
-        c->setOPP(OPP_little);
-        c->setWorkload("idle");
-        c->setIsland(CPU::Island::LITTLE);
+        CPU_BL *c = new CPU_BL(cpu_name, "idle", pm);
+        c->setIndex(i);
+        pm->setCPU(c);
         pm->setFrequencyMax(max_frequency);
-        c->setIslandCurOPP();
         //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
         //ptrace.push_back(power_trace);
 
-        cpus->push_back(c);
+        cpus_little.push_back(c);
     }
 
     for (unsigned int i = 0; i < 4; ++i) {
-        /* Create 4 big CPUs */
+        /* Create 4 big CPU_BLs */
 
         string cpu_name = "BIG_" + to_string(i);
 
-        cout << "Creating CPU: " << cpu_name << endl;
+        cout << "Creating CPU_BL: " << cpu_name << endl;
 
-        CPUModel *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
+        CPUModelBP *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
         {
             CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
             CPUModelBP::ComputationalModelBPParams idle_cp = {1, 0, 0, 0};
@@ -724,21 +716,41 @@ int init_suite(vector<CPU*> *cpus) {
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
         }
 
-        CPU *c = new CPU(cpu_name, V_big, F_big, pm);
-        c->setOPP(OPP_big);
-        c->setWorkload("idle");
-        c->setIsland(CPU::Island::BIG);
+        CPU_BL *c = new CPU_BL(cpu_name, "idle", pm);
+        c->setIndex(i);
+        pm->setCPU(c);
         pm->setFrequencyMax(max_frequency);
-        c->setIslandCurOPP();
         //TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
         //ptrace.push_back(power_trace);
 
-        cpus->push_back(c);
+        cpus_big.push_back(c);
     }
 
-    CPU::referenceFrequency = 2000; // BIG_3 frequency
+    vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
+    vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
+    Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little);
+    Island_BL *island_bl_big = new Island_BL("island_big", Island::BIG, cpus_big, opps_big);
+
+    *edfsched = new EDFScheduler;
+    //schedulers.push_back(edfsched);
+
+    *kern = new EnergyMRTKernel(*edfsched, island_bl_big, island_bl_little, "The sole kernel");
+    //kernels.push_back(kern);
+
+    island_bl_big->setKernel(*kern);
+    island_bl_little->setKernel(*kern);
+    CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
     init_sequence++;
     cout << "end init_suite" << endl;
     return 0;
+}
+
+bool inRange(int eval, int expected) {
+    const int error = 5;
+
+    int min = int(eval - eval * error/100);
+    int max = int(eval + eval * error/100);
+
+    return expected >= min && expected <= max; 
 }
