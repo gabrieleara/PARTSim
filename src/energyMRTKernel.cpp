@@ -60,22 +60,28 @@ namespace RTSim {
 
     void EnergyMRTKernel::dropEvt(CPU_BL* c, AbsRTTask* t) {
         bool found[2] = {false, false};
+        int i = 0;
 
         for (BeginDispatchMultiEvt* e : _beginEvts[c]) {
             if (e->getTask() == t) {
                 e->drop();
+                _beginEvts[c].erase(_beginEvts[c].begin() + i);
                 found[0] = true;
             }
+            i++;
         }
 
+        i = 0;
         for (EndDispatchMultiEvt* e : _endEvts[c]) {
             if (e->getTask() == t) {
                 e->drop();
+                _endEvts[c].erase(_endEvts[c].begin() + i);
                 found[1] = true;
             }
+            i++;
         }
 
-        assert(found[0] != false && found[1] != false);
+        assert(found[0] || found[1]); // the event was found in either queues
         assert(found[0] != found[1]); // task can be either in begin dispatch or end dispatch on c
     }
 
@@ -86,18 +92,25 @@ namespace RTSim {
             tasks_c.push_back(getTaskRunning(c));
         sort(tasks_c.begin(), tasks_c.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
 
+if (SIMUL.getTime() == 500)
+    cout <<"";
+
         for (DispatchMultiEvt *e : _beginEvts[c])
             e->drop();
         for (DispatchMultiEvt *e : _endEvts[c])
             e->drop();
+        _beginEvts.erase(c);
+        _endEvts.erase(c);
 
-        for (int i = tasks_c.size() - 1; i >= 0; i++) { // from task with bigger deadline
-            for (int j = i - 1; j >= 0; j++) // for all tasks with smaller deadline
+        for (int i = tasks_c.size() - 1; i >= 0; i--) { // from task with bigger deadline
+            for (int j = i - 1; j >= 0; j--) // for all tasks with smaller deadline
                 order[tasks_c.at(i)] += order[tasks_c.at(i)] + (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
         }
 
         for (AbsRTTask* t : tasks_c) {
             //Tick newBegCS = decideBeginCtxSwitch(c, t);
+            if (order.find(t) == order.end())
+                order[t] = SIMUL.getTime();
             postEvt(c, t, order[t], false);
             cout << "Dispatch order for " << c->toString() << ":" << endl;
             cout << taskname(t) << " -> t=" << order[t] << endl;
@@ -301,6 +314,10 @@ namespace RTSim {
         return false;
     }
 
+    double EnergyMRTKernel::time() {
+        return double(SIMUL.getTime());
+    }
+
     // --------------------------------------------------------------- context switch
 
     // Note MRTKernel version differs: dispatch() tasks a free CUP and calls onBDM(), which in turns
@@ -313,6 +330,7 @@ namespace RTSim {
         AbsRTTask *dt   = _m_currExe[p];
         AbsRTTask *st   = getDispatchingTask(dynamic_cast<CPU_BL*>(p));
         assert(st != NULL); assert(p != NULL);
+        dropEvt(dynamic_cast<CPU_BL*>(p), st);
 
         // if necessary, deschedule the task.
         if ( st != NULL && dt == st ) {
@@ -351,8 +369,7 @@ namespace RTSim {
 
     // Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
     // Also called when a periodic task ends its WCET
-    void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e)
-    {
+    void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e) {
         AbsRTTask* t = e->getTask();
         _m_currExe_OPP[t] = _m_dispatching[t].second;
         CPU_BL* cpu = dynamic_cast<CPU_BL*>(e->getCPU()); //_m_dispatching[t].first;
@@ -361,6 +378,7 @@ namespace RTSim {
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString());
         cout << "for " << taskname(t) << " on " << cpu->toString() << endl;
         MRTKernel::onEndDispatchMulti(e);
+        dropEvt(cpu,t);
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
@@ -564,7 +582,7 @@ namespace RTSim {
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp)
     {
-        cout << "Dispatching " << t->toString() << endl;
+        cout << __func__ << " " << t->toString() << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
         // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
         _m_dispatching[t] = make_pair(pp, opp);

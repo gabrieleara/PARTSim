@@ -44,8 +44,13 @@ namespace RTSim {
         void setTask(AbsRTTask *t) {_task = t; }
         AbsRTTask *getTask() { return _task; }
         virtual void doit() = 0;
+        virtual string toString() {
+            stringstream ss;
+            ss << taskname(getTask()) << " " << getCPU()->getName() << " at " << getTime();
+            return ss.str(); 
+        }
     };
-
+    
     /** 
         This class models and event of "start of context switch". It
         serves to implement a context switch on a certain processor.
@@ -58,6 +63,11 @@ namespace RTSim {
     public:
         BeginDispatchMultiEvt(MRTKernel &k, CPU &c);
         virtual void doit();
+        virtual string toString() { 
+            stringstream ss ;
+            ss << "BeginDMEvt " << DispatchMultiEvt::toString();
+            return ss.str();
+        } 
     };
 
     /** 
@@ -71,6 +81,11 @@ namespace RTSim {
     public:
         EndDispatchMultiEvt(MRTKernel &k, CPU &c);
         virtual void doit();
+        virtual string toString() {
+            stringstream ss ;
+            ss << "EndDMEvt " << DispatchMultiEvt::toString();
+            return ss.str();
+        }
     };
 
     /** 

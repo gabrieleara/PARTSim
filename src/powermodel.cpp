@@ -57,7 +57,7 @@ namespace RTSim
 
     void CPUModel::setVoltage(double v)
     {
-        DBGPRINT_2("CPUModel::setVoltage ", v);
+        //DBGPRINT_2("CPUModel::setVoltage ", v);
         //cout << endl << "CPUModel::setVoltage" << endl;
         if (v==0)
           cout << "asd";
@@ -175,7 +175,7 @@ namespace RTSim
         assert(_comp_param.find(curr_wl) != _comp_param.end());
         assert(_F == 1000 * getCPU()->getFrequency());
         long double ret = 1.0 / slownessModel(_comp_param[curr_wl], _F);
-        DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
+        //DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
 
         //cout << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
         return ret;

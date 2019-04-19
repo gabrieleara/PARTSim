@@ -52,8 +52,7 @@ TEST_CASE("exp0") {
     delete t0;
     for (CPU_BL* c:cpus) delete c;
     cpus.clear();
-    delete edfsched;
-    delete kern;
+    delete edfsched; delete kern;
 }
 
 TEST_CASE("exp1") {
@@ -308,8 +307,7 @@ TEST_CASE("exp5") {
         delete task[j];
     for (CPU_BL* c:cpus) delete c;
     cpus.clear();
-    delete edfsched;
-	delete kern;
+    delete edfsched; delete kern;
 }
 
 // test showing that frequency of little/big island may be raised
@@ -398,6 +396,7 @@ TEST_CASE("exp6") {
     for (int j = 0; j < 5; j++)
         delete task[j];
     for (CPU_BL* c:cpus) delete c;
+    delete edfsched; delete kern;
 }
 
 TEST_CASE("exp7") {
@@ -485,6 +484,7 @@ TEST_CASE("exp7") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     for (CPU_BL* c:cpus) delete c;
+    delete edfsched; delete kern;
 }
 
 TEST_CASE("exp8") {
@@ -603,6 +603,7 @@ TEST_CASE("exp8") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     for (CPU_BL* c:cpus) delete c;
+    delete edfsched; delete kern;
 }
 
 // Not finding an example with a call to a local function, I outed out for CUnit.

@@ -190,5 +190,6 @@ namespace MetaSim {
     };
 
   ostream& operator<<(ostream& out, Entity& e);
+
 }
 #endif

@@ -270,6 +270,8 @@ namespace RTSim {
         /// to debug internal functions...
         void test();
 
+        double time();
+
         void printMap();
 
         void printBool(bool b);
