@@ -255,8 +255,8 @@ namespace RTSim {
          */
         virtual AbsRTTask* getTaskRunning(CPU* c);
 
-         /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one         
-        virtual vector<AbsRTTask*> getTasks(CPU_BL* c) const;
+         /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
+        virtual vector<AbsRTTask*> getTasksDispatching(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();

@@ -80,19 +80,49 @@ namespace RTSim {
     }
 
     void EnergyMRTKernel::updateDispatchingOrder(CPU_BL* c) {
-        vector<AbsRTTask*> tasks_c = getTasks(c);
+        map<AbsRTTask*, Tick> order;
+        vector<AbsRTTask*> tasks_c = getTasksDispatching(c);
         if (getTaskRunning(c) != NULL)
             tasks_c.push_back(getTaskRunning(c));
+        sort(tasks_c.begin(), tasks_c.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
 
         for (DispatchMultiEvt *e : _beginEvts[c])
             e->drop();
         for (DispatchMultiEvt *e : _endEvts[c])
             e->drop();
 
-        for (AbsRTTask* t : tasks_c) {
-            Tick newBegCS = decideBeginCtxSwitch(c, t);
-            postEvt(c, t, newBegCS, false);
+        for (int i = tasks_c.size() - 1; i >= 0; i++) { // from task with bigger deadline
+            for (int j = i - 1; j >= 0; j++) // for all tasks with smaller deadline
+                order[tasks_c.at(i)] += order[tasks_c.at(i)] + (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
         }
+
+        for (AbsRTTask* t : tasks_c) {
+            //Tick newBegCS = decideBeginCtxSwitch(c, t);
+            postEvt(c, t, order[t], false);
+            cout << "Dispatch order for " << c->toString() << ":" << endl;
+            cout << taskname(t) << " -> t=" << order[t] << endl;
+        }
+    }
+
+/// obsolete
+    Tick EnergyMRTKernel::decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t) {
+        Tick ctx = SIMUL.getTime(); // suppose myself is the only task for core
+        Tick wcet_t = (Tick) ceil(t->getRemainingWCET(p->getSpeed()));
+        AbsRTTask* runningTask = getTaskRunning(p);
+        vector<AbsRTTask*> tasks_c = getTasksDispatching(p);
+        if (runningTask != NULL)
+            tasks_c.push_back(runningTask);
+
+        cout << __func__ << " " << t->toString() << endl;
+
+        for ( const AbsRTTask* task : tasks_c ) {
+            if (task == t) continue;
+            if (t->getDeadline() >= task->getDeadline())
+                ctx += (Tick) ceil(task->getRemainingWCET(p->getSpeed()));
+        }
+
+        assert( double(ctx) >= double(SIMUL.getTime()) );
+        return ctx;
     }
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
@@ -100,7 +130,7 @@ namespace RTSim {
         return t;
     }
 
-    vector<AbsRTTask*> EnergyMRTKernel::getTasks(CPU_BL* c) const {
+    vector<AbsRTTask*> EnergyMRTKernel::getTasksDispatching(CPU_BL* c) const {
         vector<AbsRTTask*> t;
 
         for (const auto& elem : _m_dispatching)
@@ -109,6 +139,7 @@ namespace RTSim {
                 t.push_back(tt);
             }
 
+        sort(t.begin(), t.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
         return t;
     }
 
@@ -116,7 +147,7 @@ namespace RTSim {
         double utilizationIsland = 0.0;
 
         for (CPU_BL* c1 : getProcessors(island)) {
-            vector<AbsRTTask*> tasks = getTasks(c1);
+            vector<AbsRTTask*> tasks = getTasksDispatching(c1);
             AbsRTTask* runningTask = getTaskRunning(c1);
             if (runningTask != NULL) {
                 utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
@@ -146,7 +177,7 @@ namespace RTSim {
 
     double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
         double utilization = 0.0;
-        vector<AbsRTTask*> ths = getTasks(c);
+        vector<AbsRTTask*> ths = getTasksDispatching(c);
         AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getTaskRunning(c);
         if (runningTask != NULL)
             ths.push_back(runningTask);
@@ -212,44 +243,6 @@ namespace RTSim {
             if (elem.second.first == p)
                 return true;
         return false;
-    }
-
-    Tick EnergyMRTKernel::decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t) {
-        Tick ctx = SIMUL.getTime(); // suppose myself is the only task for core
-        Tick wcet_t = (Tick) ceil(t->getRemainingWCET(p->getSpeed()));
-        struct dl_wcet {Tick dl; Tick wcet;} temp;
-        vector<struct dl_wcet> dl_wcets;
-
-        // there is a running
-        AbsRTTask* runningTask = getTaskRunning(p);
-        if (runningTask != NULL){
-            temp.wcet = (Tick) ceil(runningTask->getRemainingWCET(p->getSpeed()));
-            temp.dl=runningTask->getDeadline();
-            dl_wcets.push_back( temp ); // wcet of running task
-        }
-
-        // there are myself and other dispatching
-        for ( const AbsRTTask* elem : getTasks(p) )
-            if (elem != t) {
-                temp.wcet = (Tick) ceil(elem->getRemainingWCET(p->getSpeed()));
-                temp.dl = elem->getDeadline();
-                dl_wcets.push_back( temp );
-            }
-
-        // there is only myself
-        // nop...
-
-
-        sort(dl_wcets.begin(), dl_wcets.end(), [] (struct dl_wcet const& e1, struct dl_wcet const& e2) { return e1.dl > e2.dl; });
-    
-        for ( struct dl_wcet w : dl_wcets )
-          if (wcet_t < w.dl) {
-            ctx += w.wcet;
-            break;
-          }
-
-        assert( double(ctx) >= double(SIMUL.getTime()) );
-        return ctx;
     }
 
     void EnergyMRTKernel::onOppChanged(unsigned int curropp) {
@@ -524,7 +517,7 @@ namespace RTSim {
         // Mechanism: if chosen CPU is busy, find a free CPU in the island with the same consumption.
         // Note: with this algorithm tasks cannot be assigned to a core in an island
         // different than the originally chosen one
-        cout << __func__ << endl;
+        cout << __func__ << ":" << endl;
         if ( (*chosenCPU)->isBusy() ) {
             cout << (*chosenCPU)->toString() << " was chosen but it's busy" << endl;
             for (int i = 1; i < iDeltaPows.size(); i++) {
@@ -538,7 +531,7 @@ namespace RTSim {
                 }
             }
         }
-        else cout << "CPU is not busy => skip" << endl;
+        else cout << "\tCPU is not busy => skip" << endl;
     }
 
     void EnergyMRTKernel::chooseCPU_BL(AbsRTTask* t, vector<struct ConsumptionTable> iDeltaPows) {
@@ -606,8 +599,8 @@ namespace RTSim {
             }*/
         }
         else {
-            ctx = decideBeginCtxSwitch(dynamic_cast<CPU_BL*>(p),t);
-            postEvt(p, t, ctx, false);
+            //ctx = decideBeginCtxSwitch(dynamic_cast<CPU_BL*>(p),t);
+            //postEvt(p, t, ctx, false);
             cout << "beginEvt " << taskname(t) << " set to t=" << ctx << endl;
         }
 
@@ -698,7 +691,7 @@ namespace RTSim {
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
-             << " - it has already ntasks=" << getTasks(c).size() << endl;
+             << " - it has already ntasks=" << getTasksDispatching(c).size() << endl;
 
         //for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
         for (struct OPP tryOPP : c->getHigherOPPs()) {
@@ -711,7 +704,7 @@ namespace RTSim {
             printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
             // check whether task is admissible with the new frequency and where
-            if (_sched->isAdmissible(c, getTasks(c), t)) {
+            if (_sched->isAdmissible(c, getTasksDispatching(c), t)) {
                 cout << "\t\t\tHere task would be admissible" << endl;
 
                 double utilization          = 0.0; // utilization on the CPU c (without new task)
