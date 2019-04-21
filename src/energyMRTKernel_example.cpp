@@ -27,20 +27,9 @@
 using namespace MetaSim;
 using namespace RTSim;
 
-void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
-  for (unsigned int f = 200000; f <= 2000000; f += 100000) {
-    std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;
-  }
-}
+void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params);
 
-void dumpAllSpeeds() {
-  std::cout << "LITTLE:" << std::endl;
-  CPUModelBP::ComputationalModelBPParams bzip2_cp = {0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
-  dumpSpeeds(bzip2_cp);
-  std::cout << "BIG:" << std::endl;
-  bzip2_cp = {0.17833, 1.63265e+6, 1.62033, 118803};
-  dumpSpeeds(bzip2_cp);
-}
+void dumpAllSpeeds();
 
 int main(int argc, char *argv[])
 {
@@ -48,7 +37,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
     vector<CPU_BL*> cpus;
-    int TEST_NO = 6;
+    int TEST_NO = 11;
 
     dumpAllSpeeds();
     
@@ -464,20 +453,18 @@ int main(int argc, char *argv[])
             return 0;
         }
         else if (TEST_NO==11) { // todo temp use case
-            int wcets[] = { 101,101,101,8, 200,500,500,500  };
-            vector<PeriodicTask*> tasks;
+            int wcets[] = { 101,101,101,8, 200,500,500,500, 101,200,1,1,233,55  };
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-                task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
-                cout << "Creating task: " << task_name;
+                task_name = "T11_task" + std::to_string(j);
+                cout << "Creating task: " << task_name << " ";
                 PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
                 char instr[60] = "";
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
-                tasks.push_back(t);
             }
-            SIMUL.run(500);
+            SIMUL.run(1000);
             return 0;
         }
 
@@ -526,4 +513,19 @@ int main(int argc, char *argv[])
     } catch (BaseExc &e) {
         cout << e.what() << endl;
     }
+}
+
+void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params) {
+  for (unsigned int f = 200000; f <= 2000000; f += 100000) {
+    std::cout << "Slowness of " << f << " is " << CPUModelBP::slownessModel(params, f) << std::endl;
+  }
+}
+
+void dumpAllSpeeds() {
+  std::cout << "LITTLE:" << std::endl;
+  CPUModelBP::ComputationalModelBPParams bzip2_cp = {0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
+  dumpSpeeds(bzip2_cp);
+  std::cout << "BIG:" << std::endl;
+  bzip2_cp = {0.17833, 1.63265e+6, 1.62033, 118803};
+  dumpSpeeds(bzip2_cp);
 }

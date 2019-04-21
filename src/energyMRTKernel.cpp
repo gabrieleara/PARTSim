@@ -109,9 +109,9 @@ if (SIMUL.getTime() == 500)
 
         for (AbsRTTask* t : tasks_c) {
             //Tick newBegCS = decideBeginCtxSwitch(c, t);
-            if (order.find(t) == order.end())
-                order[t] = SIMUL.getTime();
-            postEvt(c, t, order[t], false);
+            //if (order.find(t) == order.end())
+            //    order[t] = SIMUL.getTime();
+            postEvt(c, t, order[t] + SIMUL.getTime(), false);
             cout << "Dispatch order for " << c->toString() << ":" << endl;
             cout << taskname(t) << " -> t=" << order[t] << endl;
         }
@@ -636,12 +636,8 @@ if (SIMUL.getTime() == 500)
         int i               = 0;
 
         // how many "new" tasks in the ready queue?
-        for (i = 0; i < ncpu; ++i) {
-            AbsRTTask *t = _sched->getTaskN(i);
-            if (t == NULL) break;
-            else if (getProcessor(t) == NULL &&
-                     !isDispatching(t)) num_newtasks++;
-        }
+        while (_sched->getTaskN(num_newtasks) != NULL)
+            num_newtasks++;
 
         _sched->print();
         DBGPRINT_2("New tasks: ", num_newtasks);
