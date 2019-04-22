@@ -86,14 +86,16 @@ namespace RTSim {
     }
 
     void EnergyMRTKernel::updateDispatchingOrder(CPU_BL* c) {
+        cout << __func__ << ":" << endl;
+
         map<AbsRTTask*, Tick> order;
         vector<AbsRTTask*> tasks_c = getTasksDispatching(c);
         if (getTaskRunning(c) != NULL)
             tasks_c.push_back(getTaskRunning(c));
+        if (tasks_c.empty()) { cout << "No tasks found on " << c->getName() << " => skip" << endl; return; }
         sort(tasks_c.begin(), tasks_c.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
+        c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tasks_c.at(0))->getInstrQueue().at(0).get())->getWorkload());
 
-if (SIMUL.getTime() == 500)
-    cout <<"";
 
         for (DispatchMultiEvt *e : _beginEvts[c])
             e->drop();
@@ -102,18 +104,21 @@ if (SIMUL.getTime() == 500)
         _beginEvts.erase(c);
         _endEvts.erase(c);
 
+if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1200.0)
+    cout <<"";
+
         for (int i = tasks_c.size() - 1; i >= 0; i--) { // from task with bigger deadline
             for (int j = i - 1; j >= 0; j--) // for all tasks with smaller deadline
-                order[tasks_c.at(i)] += order[tasks_c.at(i)] + (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
+                order[tasks_c.at(i)] += (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
         }
 
+        cout << "Dispatch order for " << c->toString() << ":" << endl;
         for (AbsRTTask* t : tasks_c) {
             //Tick newBegCS = decideBeginCtxSwitch(c, t);
             //if (order.find(t) == order.end())
             //    order[t] = SIMUL.getTime();
             postEvt(c, t, order[t] + SIMUL.getTime(), false);
-            cout << "Dispatch order for " << c->toString() << ":" << endl;
-            cout << taskname(t) << " -> t=" << order[t] << endl;
+            cout << taskname(t) << " (" << ceil(t->getRemainingWCET(c->getSpeed())) << ") -> t=" << order[t] << endl;
         }
     }
 
@@ -258,12 +263,13 @@ if (SIMUL.getTime() == 500)
         return false;
     }
 
-    void EnergyMRTKernel::onOppChanged(unsigned int curropp) {
+    void EnergyMRTKernel::onOppChanged(unsigned int curropp, Island_BL* island) {
         if (isTryngTaskOnCPU_BL())
             return;
 
         // scale wcets of tasks on the island, update their beginevt and endevt
-
+        for (CPU_BL* c : island->getProcessors())
+            updateDispatchingOrder(c);
     }
 
 
@@ -592,7 +598,8 @@ if (SIMUL.getTime() == 500)
         pp->setBusy(true);
 
         //dispatch(p, t);
-        updateDispatchingOrder(pp);
+        // update for pp island? todo
+        //updateDispatchingOrder(pp);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {

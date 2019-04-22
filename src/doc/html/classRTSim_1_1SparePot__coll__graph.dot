@@ -1,0 +1,12 @@
+digraph "RTSim::SparePot"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  Node3 [label="RTSim::SparePot",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="MetaSim::Entity",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1Entity.html"];
+  Node5 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="RTSim::Supervisor",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1Supervisor.html"];
+  Node6 -> Node3 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" last_change_time\nspare_budget" ,fontname="Helvetica"];
+  Node6 [label="MetaSim::Tick",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1Tick.html"];
+}

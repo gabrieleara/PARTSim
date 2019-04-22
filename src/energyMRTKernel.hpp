@@ -235,8 +235,8 @@ namespace RTSim {
          */
         virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
 
-        /// called when OPP changes
-        void onOppChanged(unsigned int curropp);
+        /// called when OPP changes on an island
+        void onOppChanged(unsigned int curropp, Island_BL* island);
 
         /**
          * Invoked when a task ends

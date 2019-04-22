@@ -1,0 +1,25 @@
+digraph "MetaSim::BaseStat"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node0 [label="MetaSim::BaseStat",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node0 -> Node1 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node1 [label="MetaSim::StatCount",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatCount.html",tooltip="Counts the number of occurrences of an event. "];
+  Node1 -> Node2 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node2 [label="RTSim::GlobalPreemptionStat",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1GlobalPreemptionStat.html"];
+  Node1 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node3 [label="RTSim::MissCount",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1MissCount.html"];
+  Node0 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="MetaSim::StatMax",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatMax.html",tooltip="Computes the max value. "];
+  Node0 -> Node5 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="MetaSim::StatMean",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatMean.html",tooltip="Computes a mean value X_m = (Sigma{X_i}i=1,N)/N. "];
+  Node0 -> Node6 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node6 [label="MetaSim::StatMin",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatMin.html",tooltip="Computes the min value. "];
+  Node0 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node7 [label="MetaSim::StatPercent",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatPercent.html",tooltip="Computes the percentage of occurrences of an event. "];
+  Node7 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 [label="RTSim::MissPercentage",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1MissPercentage.html"];
+  Node0 -> Node9 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="MetaSim::StatSqrMean",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1StatSqrMean.html"];
+}

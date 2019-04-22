@@ -1,0 +1,25 @@
+digraph "RTSim::PIRManager"
+{
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  rankdir="LR";
+  Node3 [label="RTSim::PIRManager",height=0.2,width=0.4,color="black", fillcolor="grey75", style="filled", fontcolor="black"];
+  Node4 -> Node3 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node4 [label="RTSim::ResManager",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1ResManager.html"];
+  Node5 -> Node4 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node5 [label="MetaSim::Entity",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classMetaSim_1_1Entity.html"];
+  Node6 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _kernel" ,fontname="Helvetica"];
+  Node6 [label="RTSim::AbsKernel",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1AbsKernel.html"];
+  Node7 -> Node4 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _sched" ,fontname="Helvetica"];
+  Node7 [label="RTSim::Scheduler",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1Scheduler.html"];
+  Node5 -> Node7 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node8 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _currExe" ,fontname="Helvetica"];
+  Node8 [label="RTSim::AbsRTTask",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1AbsRTTask.html"];
+  Node9 -> Node8 [dir="back",color="midnightblue",fontsize="10",style="solid",fontname="Helvetica"];
+  Node9 [label="RTSim::AbsTask",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classRTSim_1_1AbsTask.html"];
+  Node6 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _kernel" ,fontname="Helvetica"];
+  Node10 -> Node7 [dir="back",color="darkorchid3",fontsize="10",style="dashed",label=" _queue" ,fontname="Helvetica"];
+  Node10 [label="priority_list\< RTSim\l::TaskModel *, RTSim\l::TaskModel::TaskModelCmp \>",height=0.2,width=0.4,color="black", fillcolor="white", style="filled",URL="$classpriority__list.html"];
+  Node11 -> Node10 [dir="back",color="firebrick4",fontsize="10",style="solid",fontname="Helvetica"];
+  Node11 [label="std::set\< RTSim::TaskModel\l * , RTSim::TaskModel::TaskModel\lCmp , std::allocator\<RTSim::TaskModel * \>  \>",height=0.2,width=0.4,color="grey75", fillcolor="white", style="filled"];
+}

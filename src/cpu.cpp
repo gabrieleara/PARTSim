@@ -342,7 +342,7 @@ namespace RTSim
         _currentOPP = opp;
         for (CPU_BL* c : getProcessors())
             c->updateCPUModel();
-        _kernel->onOppChanged(_currentOPP);
+        _kernel->onOppChanged(_currentOPP, this);
     }
 
 
