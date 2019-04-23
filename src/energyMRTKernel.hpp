@@ -10,6 +10,7 @@
 #include "rttask.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
+#define LEAVE_LITTLE3_ENABLED 0
 
 namespace RTSim {
 
@@ -109,17 +110,6 @@ namespace RTSim {
 
         Island_BL* getIsland(Island island) const { return _islands[island]; }
 
-        vector<CPU_BL*> getProcessors() const { 
-            static vector<CPU_BL*> CPU_BLs;
-            if (CPU_BLs.size() == 0) {
-                for (CPU_BL* c : getIslandLittle()->getProcessors())
-                    CPU_BLs.push_back(c);
-                for (CPU_BL* c : getIslandBig()->getProcessors())
-                    CPU_BLs.push_back(c);
-            }
-            return CPU_BLs;
-        }
-
         vector<CPU_BL*> getProcessors(Island island) const {
             return getIsland(island)->getProcessors();
         }
@@ -151,6 +141,25 @@ namespace RTSim {
           */
         EnergyMRTKernel(Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
+        virtual ~EnergyMRTKernel() {
+          cout << "~EnergyMRTKernel" << endl;
+          delete _islands[0];
+          delete _islands[1];
+
+          for (auto& e : _beginEvts)
+            for (DispatchMultiEvt* d : e.second)
+              delete d;
+          for (auto& e : _endEvts)
+            for (DispatchMultiEvt* d : e.second)
+              delete d;
+
+          auto it = _m_dispatching.cbegin();
+          while(it != _m_dispatching.cend()) {
+            _m_dispatching.erase(it);
+            it++;
+          }
+          
+        }
 
         Island_BL* getIslandLittle() const { return _islands[0]; }
         Island_BL* getIslandBig() const { return _islands[1]; }
@@ -204,6 +213,15 @@ namespace RTSim {
         /// Tells what task has been dispatched to a CPU_BL (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
         AbsRTTask* getDispatchingTask(const CPU_BL* CPU_BL) const;
+
+        vector<CPU_BL*> getProcessors() const { 
+            vector<CPU_BL*> CPU_BLs;
+            for (CPU_BL* c : getIslandLittle()->getProcessors())
+                CPU_BLs.push_back(c);
+            for (CPU_BL* c : getIslandBig()->getProcessors())
+                CPU_BLs.push_back(c);
+            return CPU_BLs;
+        }
 
         /**
            Returns island utilization given a capacity to scale up/down tasks WCET.

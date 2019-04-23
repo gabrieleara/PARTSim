@@ -20,8 +20,6 @@
 #include "exeinstr.hpp"
 #include "cpu.hpp"
 
-#define LEAVE_LITTLE3_ENABLED 0
-
 namespace RTSim {
     using namespace MetaSim;
 
@@ -29,6 +27,14 @@ namespace RTSim {
             : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name)
     {
         setIslandBig(big); setIslandLittle(little);
+
+        cout << "===================2" << endl;
+        for (CPU_BL* c : getProcessors(Island::BIG))
+          cout << c->getName() << endl;
+        cout << "===================" << endl;
+        for (CPU_BL* c : getProcessors())
+          cout << c->getName() << endl;
+        cout << "===================" << endl;
 
         for(CPU_BL* c : getProcessors())  {
             _m_currExe[c] = NULL;
@@ -215,8 +221,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         return utilization;
     }
 
-    CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) const
-    {
+    CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) const {
         // process may be in the limbo between onBegin and onEndMultiDispatch,
         // thus it might not be caught by MRTKernel
         CPU_BL* ret = NULL;

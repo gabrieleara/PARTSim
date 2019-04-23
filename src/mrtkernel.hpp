@@ -199,7 +199,7 @@ namespace RTSim {
          */
         MRTKernel(Scheduler*, const std::string &name);
 
-        ~MRTKernel();
+        virtual ~MRTKernel();
 
         /**
          * Adds a CPU to the set of CPUs handled by the kernel.

@@ -404,7 +404,7 @@ int main(int argc, char *argv[])
         else if (TEST_NO == 10) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
             // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
-            int wcets[] = { 101,101,101,8, 200,500,500,500,  101  }; // 9 tasks
+            int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
             vector<PeriodicTask*> tasks;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
@@ -429,7 +429,7 @@ int main(int argc, char *argv[])
             k->addForcedDispatch(tasks[7], cpus_big[3], 18);
 
             k->addForcedDispatch(tasks[8], cpus_big[3], 18);
-            //k->addForcedDispatch(tasks[9], cpus_big[3], 18);
+            k->addForcedDispatch(tasks[9], cpus_big[3], 18);
 
             SIMUL.initSingleRun();
             SIMUL.run_to(33);

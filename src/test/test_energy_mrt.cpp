@@ -18,18 +18,16 @@ string task_name = "";
 int init_sequence = 0;
 
 int cleanup_suite();
-int init_suite(vector<CPU_BL*> *cpus, EnergyMRTKernel** kern, EDFScheduler** edfsched);
+int init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
 
 
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU_BL*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     task_name = "T0_task1";
     cout << "Creating task: " << task_name << endl;
@@ -50,19 +48,15 @@ TEST_CASE("exp0") {
 
     SIMUL.endSingleRun();
     delete t0;
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched; delete kern;
+    delete kern;
 }
 
 TEST_CASE("exp1") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU_BL*> cpus;
-    vector<PeriodicTask*> task; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     task_name = "T1_task1";
     cout << "Creating task: " << task_name << endl;
@@ -94,19 +88,15 @@ TEST_CASE("exp1") {
 
     SIMUL.endSingleRun();
     delete t1; delete t0;
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched;
     delete kern;
 }
 
 TEST_CASE("exp2") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU_BL*> cpus;
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     task_name = "T2_task1";
     cout << "Creating task: " << task_name << endl;
@@ -141,19 +131,15 @@ TEST_CASE("exp2") {
 
     SIMUL.endSingleRun();
     delete t0; delete t1;
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched;
     delete kern;
 }
 
 TEST_CASE("exp3") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU_BL*> cpus;
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     task_name = "T3_task1";
     cout << "Creating task: " << task_name << endl;
@@ -173,20 +159,16 @@ TEST_CASE("exp3") {
 
     SIMUL.endSingleRun();
     delete t0;
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched;
     delete kern;
 }
 
 TEST_CASE("exp4") {
     cout << "Begin of experiment " << init_sequence << endl;
 
-    vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     for (int j = 0; j < 4; j++) {
         task_name = "T4_Task_LITTLE_" + std::to_string(j);
@@ -231,9 +213,6 @@ TEST_CASE("exp4") {
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched;
     delete kern;
 }
 
@@ -242,9 +221,9 @@ TEST_CASE("exp5") {
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     for (int j = 0; j < 4; j++) {
         int wcet = 5; //* (j+1);
@@ -305,9 +284,7 @@ TEST_CASE("exp5") {
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU_BL* c:cpus) delete c;
-    cpus.clear();
-    delete edfsched; delete kern;
+    delete kern;
 }
 
 // test showing that frequency of little/big island may be raised
@@ -317,9 +294,9 @@ TEST_CASE("exp6") {
     vector<CPU_BL*> cpus;
     CPU_BL* cpu_task[5]; // to be cleared after each test
     PeriodicTask* task[5]; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     int i, wcet = 300;
     for (int j = 0; j < 5; j++) {
@@ -395,8 +372,7 @@ TEST_CASE("exp6") {
     SIMUL.endSingleRun();
     for (int j = 0; j < 5; j++)
         delete task[j];
-    for (CPU_BL* c:cpus) delete c;
-    delete edfsched; delete kern;
+    delete kern;
 }
 
 TEST_CASE("exp7") {
@@ -405,9 +381,9 @@ TEST_CASE("exp7") {
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
     CPU_BL* cpu_task[5]; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     int wcets[] = { 63, 63, 63, 63, 30 };
     int i;
@@ -483,8 +459,7 @@ TEST_CASE("exp7") {
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU_BL* c:cpus) delete c;
-    delete edfsched; delete kern;
+    delete kern;
 }
 
 TEST_CASE("exp8") {
@@ -493,9 +468,9 @@ TEST_CASE("exp8") {
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
     CPU_BL* cpu_task[5]; // to be cleared after each test
-    EDFScheduler *edfsched; EnergyMRTKernel *kern;
-    init_suite(&cpus, &kern, &edfsched);
-    assert(kern != NULL); assert(edfsched != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
 
     int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
     int i;
@@ -602,14 +577,18 @@ TEST_CASE("exp8") {
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++)
         delete task[j];
-    for (CPU_BL* c:cpus) delete c;
-    delete edfsched; delete kern;
+    delete kern;
 }
 
 // Not finding an example with a call to a local function, I outed out for CUnit.
 // But I think it's duable to conform to framework TEST UNIT
-int init_suite(vector<CPU_BL*> *cpus, EnergyMRTKernel** kern, EDFScheduler** edfsched) {
+int init_suite(EnergyMRTKernel** kern) {
     cout << "init_suite" << endl;
+
+    #if LEAVE_LITTLE3_ENABLED
+        cout << "Error: tests thought for LEAVE_LITTLE3_ENABLED disable" << endl;
+        abort();
+    #endif
 
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
@@ -732,15 +711,24 @@ int init_suite(vector<CPU_BL*> *cpus, EnergyMRTKernel** kern, EDFScheduler** edf
     Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little);
     Island_BL *island_bl_big = new Island_BL("island_big", Island::BIG, cpus_big, opps_big);
 
-    *edfsched = new EDFScheduler;
-    //schedulers.push_back(edfsched);
+    EDFScheduler *edfsched = new EDFScheduler;
 
-    *kern = new EnergyMRTKernel(*edfsched, island_bl_big, island_bl_little, "The sole kernel");
+    *kern = new EnergyMRTKernel(edfsched, island_bl_big, island_bl_little, "The sole kernel");
     //kernels.push_back(kern);
 
     island_bl_big->setKernel(*kern);
     island_bl_little->setKernel(*kern);
     CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
+
+cout << "---------------" << endl;
+    for (CPU_BL* c : cpus_little)
+        cout << c->getName() << endl;
+    for (CPU_BL* c : cpus_big)
+        cout << c->getName() << endl;
+cout << "---------------" << endl;
+    for (CPU_BL* c : (*kern)->getProcessors())
+        cout << c->getName() << endl;
+cout << "---------------" << endl;
 
     init_sequence++;
     cout << "end init_suite" << endl;

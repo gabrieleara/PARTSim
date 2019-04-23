@@ -93,7 +93,7 @@ namespace RTSim
             const vector<unsigned int> &F= {},
             CPUModel *pm = nullptr);
 
-        ~CPU();
+        virtual ~CPU();
 
         virtual string getName() const {
             return Entity::getName();
@@ -290,6 +290,10 @@ namespace RTSim
         assert(_pm != nullptr);
     };
 
+    virtual ~CPU_BL() {
+      delete _pm;
+    }
+
     virtual unsigned int getOPP() const;
 
     virtual void setOPP(unsigned int opp);
@@ -367,6 +371,8 @@ namespace RTSim
 
     ~Island_BL() {
         _opps.clear();
+        for (CPU_BL* c : _cpus)
+          delete c;
         _cpus.clear();
     }
 
