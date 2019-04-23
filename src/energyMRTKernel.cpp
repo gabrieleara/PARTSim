@@ -28,14 +28,6 @@ namespace RTSim {
     {
         setIslandBig(big); setIslandLittle(little);
 
-        cout << "===================2" << endl;
-        for (CPU_BL* c : getProcessors(Island::BIG))
-          cout << c->getName() << endl;
-        cout << "===================" << endl;
-        for (CPU_BL* c : getProcessors())
-          cout << c->getName() << endl;
-        cout << "===================" << endl;
-
         for(CPU_BL* c : getProcessors())  {
             _m_currExe[c] = NULL;
             _isContextSwitching[c] = false;
