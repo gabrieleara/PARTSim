@@ -1,4 +1,4 @@
-/***************************************************************************
+    /***************************************************************************
  *   begin                : Thu Apr 24 15:54:58 CEST 2003
  *   copyright            : (C) 2003 by Agostino Mascitti
  *   email                : a.mascitti@sssup.it
@@ -43,6 +43,7 @@ namespace RTSim {
 
     void EnergyMRTKernel::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
         CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
+        assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
         if (endevt) {
             EndDispatchMultiEvt *ee = new EndDispatchMultiEvt(*this, *c);
             ee->post(when);
@@ -92,7 +93,7 @@ namespace RTSim {
         vector<AbsRTTask*> tasks_c = getTasksDispatching(c);
         if (getTaskRunning(c) != NULL)
             tasks_c.push_back(getTaskRunning(c));
-        if (tasks_c.empty()) { cout << "No tasks found on " << c->getName() << " => skip" << endl; return; }
+        if (tasks_c.empty()) { cout << "\tNo tasks found on " << c->getName() << " => skip" << endl; return; }
         sort(tasks_c.begin(), tasks_c.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tasks_c.at(0))->getInstrQueue().at(0).get())->getWorkload());
 
@@ -104,7 +105,7 @@ namespace RTSim {
         _beginEvts.erase(c);
         _endEvts.erase(c);
 
-if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1200.0)
+if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "T10_task8" )
     cout <<"";
 
         for (int i = tasks_c.size() - 1; i >= 0; i--) { // from task with bigger deadline
@@ -112,13 +113,14 @@ if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1
                 order[tasks_c.at(i)] += (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
         }
 
-        cout << "Dispatch order for " << c->toString() << ":" << endl;
+        cout << "\tDispatch order for " << c->toString() << ":" << endl;
         for (AbsRTTask* t : tasks_c) {
             //Tick newBegCS = decideBeginCtxSwitch(c, t);
             //if (order.find(t) == order.end())
             //    order[t] = SIMUL.getTime();
-            postEvt(c, t, order[t] + SIMUL.getTime(), false);
-            cout << taskname(t) << " (" << ceil(t->getRemainingWCET(c->getSpeed())) << ") -> t=" << order[t] << endl;
+            Tick when = order[t] + SIMUL.getTime();
+            postEvt(c, t, when, false);
+            cout << "\t" << taskname(t) << " (" << ceil(t->getRemainingWCET(c->getSpeed())) << ") -> t=" << when << endl;
         }
     }
 
@@ -334,7 +336,7 @@ if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1
 
         CPU * p         = e->getCPU();
         AbsRTTask *dt   = _m_currExe[p];
-        AbsRTTask *st   = getDispatchingTask(dynamic_cast<CPU_BL*>(p));
+        AbsRTTask *st   = e->getTask();//getDispatchingTask(dynamic_cast<CPU_BL*>(p));
         assert(st != NULL); assert(p != NULL);
         dropEvt(dynamic_cast<CPU_BL*>(p), st);
 
@@ -444,7 +446,7 @@ if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1
 
         printState();
 
-        //migrate(p);
+        migrate(p);
 
         // migrate ( and its dispatch() ) needs to know the required OPP of t on its core
         _m_currExe_OPP.erase(t);
@@ -479,14 +481,13 @@ if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1
 
                  assert(!iDeltaPows.empty()); // there is at least the curCPU
 
-
                  chooseCPU_BL(tt, iDeltaPows);
 
                  // Update WCET (time, endEvt) of tasks on the chosen island
                  CPU_BL* chosenCPU = _m_dispatching[tt].first;
                  chosenCPU->setOPP(_m_dispatching[tt].second);
                  chosenCPU->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
-                 double oldSpeed[NUM_ISLANDS] = {getBigs()[0]->getSpeed(), getLittles()[0]->getSpeed()};
+                 double oldSpeed[NUM_ISLANDS] = {getIslandBig()->getProcessors()[0]->getSpeed(), getIslandLittle()->getProcessors()[0]->getSpeed()};
                  for (auto& rt : _m_currExe)
                       if (rt.second != NULL && chosenCPU->getIslandType() == dynamic_cast<CPU_BL*>(rt.first)->getIslandType()) {
 
@@ -691,8 +692,9 @@ if (SIMUL.getTime() == 0 && c->getName() == "LITTLE_0" && c->getFrequency() == 1
             } else {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
-                // todo don't know how to discard a task here. Think you need to work with _beginEvt and _endEvt
+                // todo this makes the task arrives
                 _sched->extract(t);
+                _sched->removeTask(t);
             }
             num_newtasks--;
 

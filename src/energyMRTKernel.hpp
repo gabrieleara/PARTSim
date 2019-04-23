@@ -156,8 +156,6 @@ namespace RTSim {
         Island_BL* getIslandBig() const { return _islands[1]; }
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
-        vector<CPU_BL*> getLittles() const { getIslandLittle()->getProcessors(); }
-        vector<CPU_BL*> getBigs() const { getIslandBig()->getProcessors(); }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a

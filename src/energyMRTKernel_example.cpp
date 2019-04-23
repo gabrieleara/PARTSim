@@ -36,8 +36,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    vector<CPU_BL*> cpus;
-    int TEST_NO = 11;
+    int TEST_NO = 10;
 
     dumpAllSpeeds();
     
@@ -382,7 +381,6 @@ int main(int argc, char *argv[])
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
 
-            cpus.clear();
             schedulers.clear();
             kernels.clear();
 
@@ -420,32 +418,33 @@ int main(int argc, char *argv[])
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
-            k->addForcedDispatch(tasks[0], cpus[0], 5);
-            k->addForcedDispatch(tasks[1],cpus[1],5);
-            k->addForcedDispatch(tasks[2],cpus[2],5);
-            k->addForcedDispatch(tasks[3],cpus[3],5);
+            k->addForcedDispatch(tasks[0], cpus_little[0], 7);
+            k->addForcedDispatch(tasks[1], cpus_little[1], 7);
+            k->addForcedDispatch(tasks[2], cpus_little[2], 7);
+            k->addForcedDispatch(tasks[3], cpus_little[3], 7);
 
-            k->addForcedDispatch(tasks[4],cpus[4],18);
-            k->addForcedDispatch(tasks[5],cpus[5],18);
-            k->addForcedDispatch(tasks[6],cpus[6],18);
-            k->addForcedDispatch(tasks[7],cpus[7],18);
+            k->addForcedDispatch(tasks[4], cpus_big[0], 18);
+            k->addForcedDispatch(tasks[5], cpus_big[1], 18);
+            k->addForcedDispatch(tasks[6], cpus_big[2], 18);
+            k->addForcedDispatch(tasks[7], cpus_big[3], 18);
 
-            k->addForcedDispatch(tasks[8],cpus[4],18);
+            k->addForcedDispatch(tasks[8], cpus_big[3], 18);
+            //k->addForcedDispatch(tasks[9], cpus_big[3], 18);
 
             SIMUL.initSingleRun();
-            SIMUL.run_to(1);
+            SIMUL.run_to(33);
 
-            assert(k->getProcessor(tasks[0])->getName() == cpus[0]->getName());
-            assert(k->getProcessor(tasks[1])->getName() == cpus[1]->getName());
-            assert(k->getProcessor(tasks[2])->getName() == cpus[2]->getName());
-            assert(k->getProcessor(tasks[3])->getName() == cpus[3]->getName());
+            assert(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+            assert(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+            assert(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName());
 
-            assert(k->getProcessor(tasks[4])->getName() == cpus[4]->getName());
-            assert(k->getProcessor(tasks[5])->getName() == cpus[5]->getName());
-            assert(k->getProcessor(tasks[6])->getName() == cpus[6]->getName());
-            assert(k->getProcessor(tasks[7])->getName() == cpus[7]->getName());
+            assert(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
+            assert(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+            assert(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+            assert(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
 
-            assert(k->getDispatchingProcessor(tasks[8])->getName() == cpus[4]->getName());
+            assert(k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
 
             SIMUL.run_to(500);
 
@@ -453,7 +452,7 @@ int main(int argc, char *argv[])
             return 0;
         }
         else if (TEST_NO==11) { // todo temp use case
-            int wcets[] = { 101,101,101,8, 200,500,500,500, 101,200,1,1,233,55  };
+            int wcets[] = { 101,101,101,8, 200,500,500,500, 101 };
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T11_task" + std::to_string(j);
                 cout << "Creating task: " << task_name << " ";
