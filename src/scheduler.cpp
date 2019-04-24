@@ -81,11 +81,6 @@ namespace RTSim {
 
     Scheduler::~Scheduler() {}
 
-    Scheduler::Scheduler(const Scheduler& sched) {
-        
-    }
-
-
     void Scheduler::enqueueModel(TaskModel* model)
     {
         AbsRTTask* task = model->getTask();

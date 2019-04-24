@@ -18,46 +18,67 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace std;
 
-    SchedulerMulti::SchedulerMulti(vector<CPU*> cpus, Scheduler s, const string& name)
+    SchedulerMulti::SchedulerMulti(vector<CPU*> cpus, vector<Scheduler*> scheds, const string& name)
             : Entity(name) {
-        for (CPU* c : cpus)
-            _queues[c] = s;
+        assert(cpus.size() == scheds.size());
+        for (int i = 0; i < cpus.size(); i++)
+            _queues[cpus.at(i)] = scheds.at(i);
     }
 
-    bool SchedulerMulti::isInAnyQueue(AbsTask* t) const {
-
+    bool SchedulerMulti::isInAnyQueue(AbsRTTask* t) const {
+        bool found = false;
+        for (const auto& q : _queues)
+            for (int i = 0; i < countTasks(q.first); i++)
+                if (t == q.second->getTaskN(i) ) {
+                    found = true;
+                    break;
+                }
+        return found;
     }
 
-    void addTask(AbsTask* t, CPU* c) {
-
+    void SchedulerMulti::addTask(AbsRTTask* t, CPU* c) {
+        _queues[c]->insert(t);
     }
 
-    void removeFromQueue(CPU* c) {
-
+    void SchedulerMulti::removeFirstFromQueue(CPU* c) {
+        extract(c);
+    }
+    
+    void SchedulerMulti::removeFromQueue(CPU* c, AbsRTTask* t) {
+        _queues[c]->removeTask(t);
     }
 
-    AbsTask* extract(CPU* c) const {
-
+    AbsRTTask* SchedulerMulti::getFirst(CPU* c) const {
+        return _queues[c]->getFirst();
     }
 
-    AbsTask* pop(CPU* c) {
-
+    AbsRTTask* SchedulerMulti::extract(CPU* c) {
+        _queues[c]->extract();
     }
 
-        void empty(CPU* c);
-
-        bool isEmpty(CPU* c) const;
-
-        void migrate(MigrationPolicy* m) {
-            m->perform();
+    void SchedulerMulti::empty(CPU* c) {
+        while (!isEmpty(c)) {
+            removeFirstFromQueue(c);
         }
+    }
 
-        void balance(BalancingPolicy* b) {
-            b->perform();
-        }
+    bool SchedulerMulti::isEmpty(CPU* c) const {
+        return countTasks(c) == 0;
+    }
 
-    void setRunning(CPU* c);
+    unsigned int SchedulerMulti::countTasks(CPU* c) const {
+        int i = 0;
+        while( _queues[c]->getTaskN(i) != NULL )
+            i++
+        return i;
+    }
 
-        bool isRunning(CPU* c) const;
-    };
+    void SchedulerMulti::migrate(MigrationPolicy* m, Event *e) {
+        m->perform(e);
+    }
+
+    void SchedulerMulti::balance(BalancingPolicy* b, Event *e) {
+        b->perform(e);
+    }
+
 }

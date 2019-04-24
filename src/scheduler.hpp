@@ -306,12 +306,12 @@ namespace RTSim {
         */
         virtual void enqueueModel(TaskModel* model);
 
-        /** 
+        /**
          * This function returns a TaskModel from a task. It is
          * used mainly inside this class, but it can also be
          * used by some resource manager. */
         TaskModel* find(AbsRTTask* task) const;
-    
+
         /// @todo change it into ResManager
         friend class PIRManager;
     };    

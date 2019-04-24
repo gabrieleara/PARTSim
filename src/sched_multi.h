@@ -18,6 +18,7 @@
 #include <string>
 #include "entity.hpp"
 #include "scheduler.hpp"
+#include "taskevt.hpp"
 
 namespace RTSim {
 
@@ -27,19 +28,19 @@ namespace RTSim {
     class Policy {
     public:
         /// Activates the policy
-        virtual void perform() = 0;
+        virtual void perform(Event* e) = 0;
     };
 
     class MigrationPolicy : public Policy {
     public:
         /// Activates the policy
-        virtual void perform() = 0;
+        virtual void perform(Event *e) = 0;
     };
 
     class BalancingPolicy : public Policy {
     public:
         /// Activates the policy
-        virtual void perform() = 0;
+        virtual void perform(Event *e) = 0;
     };
 
     /**
@@ -51,39 +52,42 @@ namespace RTSim {
 
         This implementation is quite general and you can specialize it.
 
-        @see CPU, AbsTask
+        @see CPU, AbsRTTask
      */
     class SchedulerMulti : public MetaSim::Entity {
     private:
-        map<CPU*, Scheduler> _queues;
+        map<CPU*, Scheduler*> _queues;
 
-        virtual bool isInAnyQueue(AbsTask* t) const;
+
+        ~SchedulerMulti() {
+            for (auto c : _queues)
+                delete c.second;
+        }
+
+        virtual bool isInAnyQueue(AbsRTTask* t) const;
     public:
         SchedulerMulti(vector<CPU*> cpus, Scheduler s, const string& name);
 
-        virtual void addTask(AbsTask* t, CPU* c);
+        virtual void addTask(AbsRTTask* t, CPU* c);
 
-        virtual void removeFromQueue(CPU* c);
+        virtual void removeFirstFromQueue(CPU* c);
 
-        virtual AbsTask* extract(CPU* c) const;
+        virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
-        virtual AbsTask* pop(CPU* c);
+        virtual AbsRTTask* getFirst(CPU* c) const;
+
+        virtual AbsRTTask* extract(CPU* c);
 
         void empty(CPU* c);
 
         bool isEmpty(CPU* c) const;
 
-        void migrate(MigrationPolicy* m) {
-            m->perform();
-        }
+        unsigned int countTasks(CPU* c) const;
 
-        void balance(BalancingPolicy* b) {
-            b->perform();
-        }
+        void migrate(MigrationPolicy* m, Event *e);
 
-        virtual void setRunning(CPU* c);
+        void balance(BalancingPolicy* b, Event *e);
 
-        bool isRunning(CPU* c) const;
     };
 
 }

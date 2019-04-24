@@ -58,10 +58,9 @@ namespace MetaSim {
     */
     class Entity {
     public:
-      // will allow cout << e;
-      friend ostream& operator<<(ostream& out, Entity& instance);
-
-      virtual string toString() const { return "Default Entity::toString()";  };
+      virtual string toString() const {
+        return "Default Entity::toString() for " + getName();
+      };
 
     private:
         /** Hide the assignment operator. Entities are not
