@@ -631,8 +631,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
     }
 
     /* Decide a CPU for each ready task */
-    void EnergyMRTKernel::dispatch()
-    {
+    void EnergyMRTKernel::dispatch() {
         // test();
         DBGENTER(_KERNEL_DBG_LEV);
 

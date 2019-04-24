@@ -64,7 +64,7 @@ timer.cpp
 trace.cpp
 traceevent.cpp
 tracepower.cpp
-waitinstr.cpp)            # Add main.cpp file of project root directory as source file
+waitinstr.cpp sched_multi.h sched_multi.cpp)            # Add main.cpp file of project root directory as source file
 
 add_executable(simple_example ${SOURCE_FILES})       # Add executable target with source files listed in SOURCE_FILES variable
 
