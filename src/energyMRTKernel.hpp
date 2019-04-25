@@ -18,11 +18,99 @@
 #include "mrtkernel.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
+#include "multi_sched.h"
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 #define LEAVE_LITTLE3_ENABLED 0
 
 namespace RTSim {
+
+    /**
+        \ingroup sched
+
+        Extension of MultiScheduler for Big-Little.
+        Tasks are also bound to the desired OPP.
+
+        Notice this is not a scheduler, its a class to manage cores queues
+        of ready and running tasks.
+     */
+    class EnergyMultiScheduler : public MultiScheduler {
+    private:
+        /// OPP needed by tasks
+        map<AbsRTTask*, unsigned int> _opps;
+
+    public:
+        EnergyMultiScheduler(MRTKernel* kernel, vector<CPU_BL*> cpus, vector<Scheduler*> s, const string& name);
+
+        /// Add a task to the queue of a core
+        virtual void addTask(AbsRTTask* t, CPU_BL* c, const string& params, int opp) {
+            assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
+            MultiScheduler::addTask(t, c, params);
+            _opps[t] = opp;
+        }
+
+        /**
+         * Add a task to the queue of a core. Use instead
+         * of addTask if you don't need specific task parameters
+         */
+        virtual void insertTask(AbsRTTask* t, CPU_BL* c, int opp) {
+            assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
+            MultiScheduler::insertTask(t, c);
+            _opps[t] = opp;
+        }
+
+        /// Remove the first task of a core queue
+        virtual void removeFirstFromQueue(CPU_BL* c) {
+            AbsRTTask *t = getFirst(c);
+            removeFromQueue(c, t);
+        }
+
+        /// Remove a specific task from a core queue
+        virtual void removeFromQueue(CPU_BL* c, AbsRTTask* t) {
+            MultiScheduler::removeFirstFromQueue(c);
+            _opps.erase(t);
+            assert(_opps.find(t) == _opps.end());
+        }
+
+        /// Empties a core queue
+        virtual void empty(CPU_BL* c) {
+            vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
+            MultiScheduler::empty(c);
+            for (AbsRTTask* t : tasks)
+                _opps.erase(t);
+        }
+
+        virtual void makeRunning(AbsRTTask* t, CPU* c) {
+            MultiScheduler::makeRunning(t, c);
+            c->setOPP(_opps[t]);
+        }
+
+        virtual void endRun() {
+            MultiScheduler::endRun();
+            _opps.clear();
+        }
+
+        virtual unsigned int getOPP(AbsRTTask* t) {
+            return _opps[t];
+        }
+
+        string toString(CPU_BL* c) {
+            vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
+            stringstream ss;
+            int i = 1;
+            for (AbsRTTask* t : tasks)
+                ss << i++ << ") " << t->toString() << endl;
+            return ss.str();
+        }
+
+        string toString() {
+            stringstream ss;
+            ss << "EnergyMultiScheduler:" << endl;
+            for (const auto& q : _queues)
+                ss << toString(dynamic_cast<CPU_BL*>(q.first));
+            return ss.str();
+        }
+    };
 
     /**
         \ingroup kernel
@@ -52,10 +140,7 @@ namespace RTSim {
         system with different CPU_BLs can be also be simulated. It is up
         to the instruction class to implement the correct duration of
         its execution by asking the kernel of its task the speed of
-        the processor on whitch it's scheduled.
-
-        We will probably have to derive from this class to implement
-        static partition and mixed task allocation to CPU_BL.
+        the processor on which it's scheduled.
 
         @see absCPU_BLFactory, Scheduler, ResManager, AbsRTTask
     */
@@ -76,29 +161,19 @@ namespace RTSim {
 
         bool _tryingTaskOnCPU_BL;
 
-        /// cores have a queue of ready=dispatching tasks
-        map<CPU_BL*, vector<BeginDispatchMultiEvt*>> _beginEvts;
-        map<CPU_BL*, vector<EndDispatchMultiEvt*>> _endEvts;
-
-        /**
-         * Needed by migration mechanism. What OPP do running tasks need to finish on time on their core?
-         */
-        map<AbsRTTask*, int> _m_currExe_OPP;
-
         /**
          * List of tasks ready on a CPU_BL with a given frequency.
          * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU_BL OPP.
          * In fact, the dispatch() could choose to schedule a task on a big CPU_BL with freq 200 and
          * another on another big with freq 1900. But in Big Little all CPU_BLs have same freq/OPP.
          */
-        map<const AbsRTTask *, pair<CPU_BL*, int>> _m_dispatching;
+        //map<const AbsRTTask *, pair<CPU_BL*, int>> _m_dispatching;
+
+        /// cores queues, containing ready and running tasks for each core
+        EnergyMultiScheduler *_queues;
 
         /// for debug, if you want to force a certain choice of cores and frequencies
         map<Task*, pair<CPU_BL*, int>> _m_forcedDispatch;
-
-        /// list of tasks that you are trying to migrate (i.e., they already had a core assigned but you are
-        /// trying to move it to a better one). Migration happens when a task ends
-        vector<AbsRTTask*> _m_migrating;
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
@@ -132,43 +207,22 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
 
-        /// decides when to make context switch (i.e. call onBeginDispatchMulti) for t on p
-        Tick decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t);
-
-        /// commodity function for posting an event for context switching
-        void postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt);
-
-        /// drop event of context switch to t on c, whenever in future
-        void dropEvt(CPU_BL* c, AbsRTTask* t);
-
-        /// Update when the context switches of tasks of c will happen
-        void updateDispatchingOrder(CPU_BL* c);
-
     public:
 
         /**
-          * Kernel with scheduler s and CPU_BLs CPU_BLs
+          * Kernel with scheduler s and CPU_BLs CPU_BLs.
+          * qs are the schedulers you want for MultiScheduler, the queues of cores.
+          *
+          * @see MultiScheduler
           */
-        EnergyMRTKernel(Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
+        EnergyMRTKernel(vector<Scheduler*> qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
         virtual ~EnergyMRTKernel() {
           cout << "~EnergyMRTKernel" << endl;
           delete _islands[0];
           delete _islands[1];
 
-          for (auto& e : _beginEvts)
-            for (DispatchMultiEvt* d : e.second)
-              delete d;
-          for (auto& e : _endEvts)
-            for (DispatchMultiEvt* d : e.second)
-              delete d;
-
-          auto it = _m_dispatching.cbegin();
-          while(it != _m_dispatching.cend()) {
-            _m_dispatching.erase(it);
-            it++;
-          }
-          
+          delete _queues;
         }
 
         Island_BL* getIslandLittle() const { return _islands[0]; }
@@ -218,11 +272,7 @@ namespace RTSim {
 
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
-        CPU_BL* getDispatchingProcessor(const AbsRTTask* t) const;
-
-        /// Tells what task has been dispatched to a CPU_BL (when it's in the limbo
-        /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
-        AbsRTTask* getDispatchingTask(const CPU_BL* CPU_BL) const;
+        CPU_BL* getDispatchingProcessor(const AbsRTTask* t);
 
         vector<CPU_BL*> getProcessors() const { 
             vector<CPU_BL*> CPU_BLs;
@@ -282,15 +332,16 @@ namespace RTSim {
         virtual AbsRTTask* getTaskRunning(CPU* c);
 
          /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
-        virtual vector<AbsRTTask*> getTasksDispatching(CPU_BL* c) const;
+        virtual vector<AbsRTTask*> getTasksReady(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();
+            _queues->newRun();
+        }
 
-            for (auto& elem : _m_dispatching) {
-                elem.second.first = NULL;
-                elem.second.second = -1;
-            }
+        virtual void endRun() {
+            MRTKernel::endRun();
+            _queues->endRun();
         }
 
         /// to debug internal functions...

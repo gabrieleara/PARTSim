@@ -23,7 +23,7 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    EnergyMRTKernel::EnergyMRTKernel(Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
+    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
             : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name)
     {
         setIslandBig(big); setIslandLittle(little);
@@ -31,158 +31,31 @@ namespace RTSim {
         for(CPU_BL* c : getProcessors())  {
             _m_currExe[c] = NULL;
             _isContextSwitching[c] = false;
-            //_beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
-            //_endEvt[c] = new EndDispatchMultiEvt(*this, *c);
         }
 
         _sched->setKernel(this);
         setTryingTaskOnCPU_BL(false);
+        _queues = new EnergyMultiScheduler(this, getProcessors(), qs, "energymultischeduler");
     }
 
-    void EnergyMRTKernel::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
-        CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
-        assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
-        if (endevt) {
-            EndDispatchMultiEvt *ee = new EndDispatchMultiEvt(*this, *c);
-            ee->post(when);
-            ee->setTask(t);
-            _endEvts[cc].push_back(ee);
-        }
-        else {
-            BeginDispatchMultiEvt *ee = new BeginDispatchMultiEvt(*this, *c);
-            ee->post(when);
-            ee->setTask(t);
-            _beginEvts[cc].push_back(ee);
-        }
-        
-    }
-
-    void EnergyMRTKernel::dropEvt(CPU_BL* c, AbsRTTask* t) {
-        bool found[2] = {false, false};
-        int i = 0;
-
-        for (BeginDispatchMultiEvt* e : _beginEvts[c]) {
-            if (e->getTask() == t) {
-                e->drop();
-                _beginEvts[c].erase(_beginEvts[c].begin() + i);
-                found[0] = true;
-            }
-            i++;
-        }
-
-        i = 0;
-        for (EndDispatchMultiEvt* e : _endEvts[c]) {
-            if (e->getTask() == t) {
-                e->drop();
-                _endEvts[c].erase(_endEvts[c].begin() + i);
-                found[1] = true;
-            }
-            i++;
-        }
-
-        assert(found[0] || found[1]); // the event was found in either queues
-        assert(found[0] != found[1]); // task can be either in begin dispatch or end dispatch on c
-    }
-
-    void EnergyMRTKernel::updateDispatchingOrder(CPU_BL* c) {
-        cout << __func__ << ":" << endl;
-
-        map<AbsRTTask*, Tick> order;
-        vector<AbsRTTask*> tasks_c = getTasksDispatching(c);
-        if (getTaskRunning(c) != NULL)
-            tasks_c.push_back(getTaskRunning(c));
-        if (tasks_c.empty()) { cout << "\tNo tasks found on " << c->getName() << " => skip" << endl; return; }
-        sort(tasks_c.begin(), tasks_c.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
-        c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tasks_c.at(0))->getInstrQueue().at(0).get())->getWorkload());
-
-
-        for (DispatchMultiEvt *e : _beginEvts[c])
-            e->drop();
-        for (DispatchMultiEvt *e : _endEvts[c])
-            e->drop();
-        _beginEvts.erase(c);
-        _endEvts.erase(c);
-
-if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "T10_task8" )
-    cout <<"";
-
-        for (int i = tasks_c.size() - 1; i >= 0; i--) { // from task with bigger deadline
-            for (int j = i - 1; j >= 0; j--) // for all tasks with smaller deadline
-                order[tasks_c.at(i)] += (Tick) ceil(tasks_c.at(j)->getRemainingWCET(c->getSpeed()));
-        }
-
-        cout << "\tDispatch order for " << c->toString() << ":" << endl;
-        for (AbsRTTask* t : tasks_c) {
-            //Tick newBegCS = decideBeginCtxSwitch(c, t);
-            //if (order.find(t) == order.end())
-            //    order[t] = SIMUL.getTime();
-            Tick when = order[t] + SIMUL.getTime();
-            postEvt(c, t, when, false);
-            cout << "\t" << taskname(t) << " (" << ceil(t->getRemainingWCET(c->getSpeed())) << ") -> t=" << when << endl;
-        }
-    }
-
-/// obsolete
-    Tick EnergyMRTKernel::decideBeginCtxSwitch(CPU_BL* p, AbsRTTask* t) {
-        Tick ctx = SIMUL.getTime(); // suppose myself is the only task for core
-        Tick wcet_t = (Tick) ceil(t->getRemainingWCET(p->getSpeed()));
-        AbsRTTask* runningTask = getTaskRunning(p);
-        vector<AbsRTTask*> tasks_c = getTasksDispatching(p);
-        if (runningTask != NULL)
-            tasks_c.push_back(runningTask);
-
-        cout << __func__ << " " << t->toString() << endl;
-
-        for ( const AbsRTTask* task : tasks_c ) {
-            if (task == t) continue;
-            if (t->getDeadline() >= task->getDeadline())
-                ctx += (Tick) ceil(task->getRemainingWCET(p->getSpeed()));
-        }
-
-        assert( double(ctx) >= double(SIMUL.getTime()) );
-        return ctx;
+    EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU_BL*> cpus, vector<Scheduler*> s, const string& name)
+        : MultiScheduler(kernel, vector<CPU*> {}, s, name)
+    {
+        // seems I can't cast above...
+        vector<CPU*> v;
+        for (CPU_BL* c : cpus)
+            v.push_back(c);
+        MultiScheduler(kernel, v, s, name);
     }
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
-        AbsRTTask* t = MRTKernel::getTask(c);
+        AbsRTTask* t = _queues->getRunningTask(c);
         return t;
     }
 
-    vector<AbsRTTask*> EnergyMRTKernel::getTasksDispatching(CPU_BL* c) const {
-        vector<AbsRTTask*> t;
-
-        for (const auto& elem : _m_dispatching)
-            if (c == elem.second.first) {
-                AbsRTTask *tt = const_cast<AbsRTTask *>(elem.first);
-                t.push_back(tt);
-            }
-
-        sort(t.begin(), t.end(), [] (AbsRTTask* t1, AbsRTTask* t2) { return t1->getDeadline() < t2->getDeadline(); });
+    vector<AbsRTTask*> EnergyMRTKernel::getTasksReady(CPU_BL* c) const {
+        vector<AbsRTTask*> t = _queues->getReadyTasks(c);
         return t;
-    }
-
-    double EnergyMRTKernel::getIslandUtilization(double capacity, Island island, int *nTasksIsland) {
-        double utilizationIsland = 0.0;
-
-        for (CPU_BL* c1 : getProcessors(island)) {
-            vector<AbsRTTask*> tasks = getTasksDispatching(c1);
-            AbsRTTask* runningTask = getTaskRunning(c1);
-            if (runningTask != NULL) {
-                utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
-                if (nTasksIsland != NULL)
-                    *nTasksIsland = *nTasksIsland + 1;
-            }
-            for (AbsRTTask* th : tasks) {
-                if (getDispatchingProcessor(th)->getIslandType() == c1->getIslandType() || 
-                    dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) {
-                    utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
-                    if (nTasksIsland != NULL)
-                        *nTasksIsland = *nTasksIsland + 1;
-                }
-            }
-        }
-
-        return utilizationIsland;
     }
 
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, CPU_BL* c, double capacity) const {
@@ -193,9 +66,29 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         return util;
     }
 
+    CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) {
+        CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->isInAnyQueue(t));
+        if (_queues->getRunningTask(c) == t)
+            c = NULL;
+
+        return c;
+    }
+
+    double EnergyMRTKernel::getTotalPowerConsumption() {
+        return totalPowerCosumption;
+    }
+
+    bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
+        return _queues->isInAnyQueue(t);
+    }
+
+    bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
+        return _queues->isEmpty(p);
+    }
+
     double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
         double utilization = 0.0;
-        vector<AbsRTTask*> ths = getTasksDispatching(c);
+        vector<AbsRTTask*> ths = getTasksReady(c);
         AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getTaskRunning(c);
         if (runningTask != NULL)
             ths.push_back(runningTask);
@@ -213,62 +106,35 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         return utilization;
     }
 
-    CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) const {
-        // process may be in the limbo between onBegin and onEndMultiDispatch,
-        // thus it might not be caught by MRTKernel
-        CPU_BL* ret = NULL;
+    double EnergyMRTKernel::getIslandUtilization(double capacity, Island island, int *nTasksIsland) {
+        double utilizationIsland = 0.0;
 
-        for (const auto &elem : _m_dispatching)
-            if (elem.first == t) {
-                ret = elem.second.first;
-                break;
+        for (CPU_BL* c1 : getProcessors(island)) {
+            vector<AbsRTTask*> tasks = getTasksReady(c1);
+            AbsRTTask* runningTask = getTaskRunning(c1);
+            if (runningTask != NULL) {
+                utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
+                if (nTasksIsland != NULL)
+                    *nTasksIsland = *nTasksIsland + 1;
             }
-
-        return ret;
-    }
-
-    AbsRTTask* EnergyMRTKernel::getDispatchingTask(const CPU_BL* cpu) const {
-        // process may be in the limbo between onBegin and onEndMultiDispatch,
-        // thus it might not be caught by MRTKernel
-        AbsRTTask* ret = NULL;
-
-        for (const auto &elem : _m_dispatching)
-            if (elem.second.first == cpu) {
-                ret = const_cast<AbsRTTask*>(elem.first);
-                break;
+            for (AbsRTTask* th : tasks) {
+                if (getDispatchingProcessor(th)->getIslandType() == c1->getIslandType() ||
+                    dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) {
+                    utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
+                    if (nTasksIsland != NULL)
+                        *nTasksIsland = *nTasksIsland + 1;
+                }
             }
+        }
 
-        return ret;
-    }
-
-    double EnergyMRTKernel::getTotalPowerConsumption() {
-        return totalPowerCosumption;
-    }
-
-    bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
-        if (t == NULL || _m_dispatching.empty())
-            return false;
-
-        auto it = _m_dispatching.find(t);
-        if(it != _m_dispatching.end())
-            return true;
-        return false;
-    }
-
-    bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
-        for (auto& elem: _m_dispatching)
-            if (elem.second.first == p)
-                return true;
-        return false;
+        return utilizationIsland;
     }
 
     void EnergyMRTKernel::onOppChanged(unsigned int curropp, Island_BL* island) {
         if (isTryngTaskOnCPU_BL())
             return;
 
-        // scale wcets of tasks on the island, update their beginevt and endevt
-        for (CPU_BL* c : island->getProcessors())
-            updateDispatchingOrder(c);
+        // scale wcets of tasks on the island
     }
 
 
@@ -290,13 +156,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
 
     // for gdb
     void EnergyMRTKernel::printMap() {
-        for (const auto& elem:_m_dispatching) {
-            if (elem.first != NULL)
-                cout << elem.first->toString();
-            if (elem.second.first != NULL)
-                cout << " in " << elem.second.first->toString() << " freq " << elem.second.second;
-            cout << endl;
-        }
+        cout << _queues->toString();
     }
 
     // for gdb
@@ -331,13 +191,11 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        CPU * p         = e->getCPU();
-        AbsRTTask *dt   = _m_currExe[p];
-        AbsRTTask *st   = e->getTask();//getDispatchingTask(dynamic_cast<CPU_BL*>(p));
+        CPU_BL * p      = dynamic_cast<CPU_BL*>(e->getCPU());
+        AbsRTTask *dt   = _queues->getRunningTask(p);
+        AbsRTTask *st   = e->getTask();
         assert(st != NULL); assert(p != NULL);
-        dropEvt(dynamic_cast<CPU_BL*>(p), st);
 
-        // if necessary, deschedule the task.
         if ( st != NULL && dt == st ) {
             stringstream ss;
             ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
@@ -345,10 +203,10 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
             cout << ss.str() << endl;
             return;
         }
+        // if necessary, deschedule the task.
         if ( dt != NULL ) {
             _m_oldExe[dt] = p;
             _m_currExe[p] = NULL;
-            _m_dispatching.erase(dt);
             dt->deschedule();
             cout << dt->toString() << " descheduled for " << taskname(st) <<endl;
         }
@@ -366,7 +224,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         if (oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
         
-        postEvt(p, st, SIMUL.getTime() + overhead, true);
+        _queues->onBeginDispatchMultiFinished(p, st, overhead);
 
         cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << endl;
 
@@ -375,34 +233,28 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
     // Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
     // Also called when a periodic task ends its WCET
     void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e) {
-        AbsRTTask* t = e->getTask();
-        _m_currExe_OPP[t] = _m_dispatching[t].second;
-        CPU_BL* cpu = dynamic_cast<CPU_BL*>(e->getCPU()); //_m_dispatching[t].first;
+        AbsRTTask* t      = e->getTask();
+        CPU_BL* cpu       = dynamic_cast<CPU_BL*>(e->getCPU());
         assert (t != NULL); assert(cpu != NULL);
         
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString());
         cout << "for " << taskname(t) << " on " << cpu->toString() << endl;
         MRTKernel::onEndDispatchMulti(e);
-        dropEvt(cpu,t);
+        _queues->onEndDispatchMultiFinished(cpu,t);
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
         // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
-        int opp = _m_dispatching[t].second;
+        int opp = _queues->getOPP(t);
         if (opp > cpu->getOPP()) {
             cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
             cpu->setOPP(opp);
         }
 
         _m_oldExe[t] = cpu;
-        _m_dispatching.erase(t);
-
 
         //todo remove
-        for (const auto& elem : _m_dispatching)
-        {
-            cout << elem.first->toString() << " in " << elem.second.first->toString() << ", " << elem.second.first->getFrequency(elem.second.second) << endl;
-        }
+        _queues->toString();
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
         // ExecInstr::schedule() is called after each task's onEndDispatchMulti()
@@ -432,21 +284,14 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         if (!isDispatching(p) && getTaskRunning(p) == NULL)
             p->setBusy(false);
 
-        if (!getIsland(Island::LITTLE)->isBusy()) {
-            cout << "little's free => clock down to min speed" << endl;
-            getIsland(Island::LITTLE)->setOPP(0);
-        }
-        if (!getIsland(Island::BIG)->isBusy()) {
-            cout << "big's free => clock down to min speed" << endl;
-            getIsland(Island::BIG)->setOPP(0);
+        if (!p->getIsland()->isBusy()) {
+            cout << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
+            p->getIsland()->setOPP(0);
         }
 
         printState();
 
-        migrate(p);
-
-        // migrate ( and its dispatch() ) needs to know the required OPP of t on its core
-        _m_currExe_OPP.erase(t);
+        //migrate(p);
     }
 
     void EnergyMRTKernel::migrate(CPU_BL* endingCPU) {
@@ -458,7 +303,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
            If c is big, same.
 
            Try not to touch running tasks.
-         */
+         /
          if (_m_dispatching.empty())
              return;
 
@@ -494,7 +339,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
 
                   }
 
-             }
+             }*/
 
     }
 
@@ -584,20 +429,16 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         dispatch(chosenCPU, t, chosenOPP);
     }
 
-    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp)
-    {
+    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
         cout << __func__ << " " << t->toString() << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
         // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
-        _m_dispatching[t] = make_pair(pp, opp);
+        _queues->insertTask(t, pp, opp);
 
-        // this is meant to be a virtual assignment of CPU OPP
+        // this is meant to be a virtual assignment of CPU OPP.
+        // Needed to make the rest of the code work properly
         pp->setOPP(opp);
         pp->setBusy(true);
-
-        //dispatch(p, t);
-        // update for pp island? todo
-        //updateDispatchingOrder(pp);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
@@ -635,7 +476,6 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         // test();
         DBGENTER(_KERNEL_DBG_LEV);
 
-        int ncpu            = getProcessors().size();
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
 
@@ -688,19 +528,20 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
             } else {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
-                // todo this makes the task arrives
+                // todo not good, this makes the task arrive
                 _sched->extract(t);
                 _sched->removeTask(t);
             }
             num_newtasks--;
 
             cout << "Decisions 'til now:" << endl;
-            for (auto const& elem : _m_dispatching)
-                cout << elem.first->toString() << " in " << elem.second.first->toString() /* << " freq " << elem.second.second */ << endl;
+            cout << _queues->toString() << endl;
 
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);
 
+        for (CPU_BL *c : getProcessors())
+            _queues->schedule(c);
     }
 
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
@@ -710,7 +551,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
-             << " - it has already ntasks=" << getTasksDispatching(c).size() << endl;
+             << " - it has already ntasks=" << getTasksReady(c).size() << endl;
 
         //for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
         for (struct OPP tryOPP : c->getHigherOPPs()) {
@@ -723,7 +564,7 @@ if (SIMUL.getTime() == 32 && tasks_c.size() == 1 && taskname(tasks_c.at(0)) == "
             printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
             // check whether task is admissible with the new frequency and where
-            if (_sched->isAdmissible(c, getTasksDispatching(c), t)) {
+            if (_sched->isAdmissible(c, getTasksReady(c), t)) {
                 cout << "\t\t\tHere task would be admissible" << endl;
 
                 double utilization          = 0.0; // utilization on the CPU c (without new task)

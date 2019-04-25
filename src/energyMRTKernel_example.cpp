@@ -58,7 +58,6 @@ int main(int argc, char *argv[])
         //JSONTrace jtrace("trace.json");
 
         vector<TracePowerConsumption *> ptrace;
-        //vector<EDFScheduler *> schedulers;
         vector<Scheduler *> schedulers;
         vector<RTKernel *> kernels;
         vector<CPU_BL *> cpus_little, cpus_big;
@@ -177,13 +176,13 @@ int main(int argc, char *argv[])
 
         vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
         vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-        Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little);
-        Island_BL *island_bl_big = new Island_BL("island_big", Island::BIG, cpus_big, opps_big);
+        Island_BL *island_bl_little = new Island_BL("little island", Island::LITTLE, cpus_little, opps_little);
+        Island_BL *island_bl_big = new Island_BL("big island", Island::BIG, cpus_big, opps_big);
 
         EDFScheduler *edfsched = new EDFScheduler;
         schedulers.push_back(edfsched);
 
-        EnergyMRTKernel *kern = new EnergyMRTKernel(edfsched, island_bl_big, island_bl_little, "The sole kernel");
+        EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);
 
         island_bl_big->setKernel(kern);
@@ -385,7 +384,7 @@ int main(int argc, char *argv[])
             kernels.clear();
 
             RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
-            EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
+            //EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
             for (PeriodicTask* t : tasks)
                 kernels[0]->addTask(*t, "");
