@@ -74,6 +74,8 @@ namespace RTSim {
 
         /// Transition from ready to running for task t on core c
         virtual void makeRunning(AbsRTTask* t, CPU* c) {
+            assert(c != NULL); assert(t != NULL);
+
             _running_tasks[c] = t;
             postBeginEvt(c, t, SIMUL.getTime());
         }
@@ -91,13 +93,18 @@ namespace RTSim {
             _running_tasks.erase(c);
         }
 
+        /// Add a task to the scheduler of a core. @see insertTask
+        virtual void addTask(AbsRTTask* t, CPU* c, const string& params);
     private:
+
         /// Posts a context switch event
         void postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt);
 
     public:
 
-        MultiScheduler(MRTKernel *k, vector<CPU*> cpus, vector<Scheduler*> s, const string& name);
+        MultiScheduler() : Entity("trash multisched"){};
+
+        MultiScheduler(MRTKernel *k, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
         ~MultiScheduler() {
             for (auto c : _queues)
@@ -109,29 +116,21 @@ namespace RTSim {
             return _queues[c];
         }
 
-        /// Add a task to the queue of a core
-        virtual void addTask(AbsRTTask* t, CPU* c, const string& params);
+        /// Counts the tasks of a core queue
+        unsigned int countTasks(CPU* c);
 
-        /*
-         * Add a task to the queue of a core. Use instead
-         * of addTask if you don't need specific task parameters
-         */
-        virtual void insertTask(AbsRTTask* t, CPU* c);
+        /// Empties a core queue
+        virtual void empty(CPU* c);
 
-        /// Remove the first task of a core queue
-        virtual void removeFirstFromQueue(CPU* c);
-
-        /// Remove a specific task from a core queue
-        virtual void removeFromQueue(CPU* c, AbsRTTask* t);
+        /// True if the core queue is empty
+        bool isEmpty(CPU* c);
 
         /// Get the task of a core queue
         virtual AbsRTTask* getFirst(CPU* c);
 
-        /// Its CPU if task in dispatched in any queue, else NULL
-        virtual CPU* isInAnyQueue(const AbsRTTask* t);
-
         /// Get running task for core c
         virtual AbsRTTask* getRunningTask(CPU* c) {
+            assert(c != NULL);
             return _running_tasks[c];
         }
 
@@ -139,6 +138,8 @@ namespace RTSim {
         vector<AbsRTTask*> getAllTasksInQueue(CPU* c);
 
         vector<AbsRTTask*> getReadyTasks(CPU* c) {
+            assert(c != NULL);
+
             vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
             AbsRTTask* r = getRunningTask(c);
             for (int i = 0; r != NULL && i < tasks.size(); i++)
@@ -149,35 +150,40 @@ namespace RTSim {
             return tasks;
         }
 
-        /// pop (= get & remove) the first task of a core queue
-        virtual AbsRTTask* popFromQueue(CPU* c) {
-            AbsRTTask* t = getFirst(c);
-            removeFirstFromQueue(c);
-            return t;
-        }
+        /**
+         * Add a task to the queue of a core. addTask() is to
+         * be called before, only once, to insert t in the scheduler.
+         */
+        virtual void insertTask(AbsRTTask* t, CPU* c);
 
-        /// Empties a core queue
-        virtual void empty(CPU* c);
+        /// Its CPU if task in dispatched in any queue, else NULL
+        virtual CPU* isInAnyQueue(const AbsRTTask* t);
 
-        /// True if the core queue is empty
-        bool isEmpty(CPU* c);
+        /// Remove the first task of a core queue
+        virtual void removeFirstFromQueue(CPU* c);
 
-        /// Counts the tasks of a core queue
-        unsigned int countTasks(CPU* c);
+        /// Remove a specific task from a core queue
+        virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
         /// schedule first task of core queue
         void schedule(CPU* c) {
             if (getRunningTask(c) != NULL)
                 makeReady(c);
-            makeRunning(getFirst(c), c);
+            AbsRTTask *t = getFirst(c);
+            if (t != NULL)
+                makeRunning(t, c);
         }
 
         void onBeginDispatchMultiFinished(CPU* c, AbsRTTask* newTask, Tick overhead) {
+            assert(c != NULL); assert(newTask != NULL); assert(double(overhead) >= 0.0);
+
             dropEvt(c, newTask);
             postEndEvt(c, newTask, SIMUL.getTime() + overhead);
         }
 
         void onEndDispatchMultiFinished(CPU* c, AbsRTTask* t) {
+            assert(c != NULL); assert(t != NULL);
+
             dropEvt(c, t);
         }
 
@@ -187,6 +193,8 @@ namespace RTSim {
             for (auto& e : _queues)
                 empty(e.first);
         }
+
+        virtual string toString();
 
     };
 

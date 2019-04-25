@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 11;
+    int TEST_NO = 0;
 
     dumpAllSpeeds();
     
@@ -180,7 +180,8 @@ int main(int argc, char *argv[])
         Island_BL *island_bl_big = new Island_BL("big island", Island::BIG, cpus_big, opps_big);
 
         EDFScheduler *edfsched = new EDFScheduler;
-        schedulers.push_back(edfsched);
+        for (int i = 0; i < 8; i++)
+            schedulers.push_back(new EDFScheduler());
 
         EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);

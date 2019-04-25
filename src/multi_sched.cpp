@@ -19,7 +19,7 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace std;
 
-    MultiScheduler::MultiScheduler(MRTKernel* k, vector<CPU*> cpus, vector<Scheduler*> scheds, const string& name)
+    MultiScheduler::MultiScheduler(MRTKernel* k, vector<CPU*>& cpus, vector<Scheduler*>& scheds, const string& name)
             : Entity(name) {
         assert(cpus.size() == scheds.size());
         for (int i = 0; i < cpus.size(); i++)
@@ -32,6 +32,7 @@ namespace RTSim {
     }
 
     void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {
+        addTask(t, c, "");
         _queues[c]->insert(t);
     }
 
@@ -90,8 +91,9 @@ namespace RTSim {
     }
 
     void MultiScheduler::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
-        CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
         assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
+
+            CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
         if (endevt) {
             EndDispatchMultiEvt *ee  = new EndDispatchMultiEvt(*_kernel, *c);
             ee->post(when);
@@ -109,6 +111,7 @@ namespace RTSim {
 
     void MultiScheduler::dropEvt(CPU* c, AbsRTTask* t) {
         bool found[2] = {false, false};
+        assert(c != NULL); assert(t != NULL);
 
         if (_beginEvts[c]->getTask() == t) {
             _beginEvts[c]->drop();
@@ -124,6 +127,10 @@ namespace RTSim {
 
         assert(found[0] || found[1]); // the event was found in either queues
         assert(found[0] != found[1]); // task can be either in begin dispatch or end dispatch on c
+    }
+
+    string MultiScheduler::toString() {
+        return "MultiScheduler toString().";
     }
 
 }

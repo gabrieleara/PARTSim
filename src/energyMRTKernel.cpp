@@ -23,7 +23,7 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
+    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
             : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name)
     {
         setIslandBig(big); setIslandLittle(little);
@@ -35,18 +35,18 @@ namespace RTSim {
 
         _sched->setKernel(this);
         setTryingTaskOnCPU_BL(false);
-        _queues = new EnergyMultiScheduler(this, getProcessors(), qs, "energymultischeduler");
-    }
 
-    EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU_BL*> cpus, vector<Scheduler*> s, const string& name)
-        : MultiScheduler(kernel, vector<CPU*> {}, s, name)
-    {
-        // seems I can't cast above...
+        // todo is there a shorter solution to pass directly vector<CPU_BL*> to EMS?
+        vector<CPU_BL*> cpus = getProcessors();
         vector<CPU*> v;
         for (CPU_BL* c : cpus)
-            v.push_back(c);
-        MultiScheduler(kernel, v, s, name);
+            v.push_back((CPU*) c);
+
+        _queues = new EnergyMultiScheduler(this, v, qs, "energymultischeduler");
     }
+
+    EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
+        : MultiScheduler(kernel, cpus, s, name) { }
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
@@ -79,7 +79,7 @@ namespace RTSim {
     }
 
     bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
-        return _queues->isInAnyQueue(t);
+        return _queues->isInAnyQueue(t) != NULL;
     }
 
     bool EnergyMRTKernel::isDispatching(CPU_BL *p) {

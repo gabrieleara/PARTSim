@@ -40,7 +40,7 @@ namespace RTSim {
         map<AbsRTTask*, unsigned int> _opps;
 
     public:
-        EnergyMultiScheduler(MRTKernel* kernel, vector<CPU_BL*> cpus, vector<Scheduler*> s, const string& name);
+        EnergyMultiScheduler(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
         /// Add a task to the queue of a core
         virtual void addTask(AbsRTTask* t, CPU_BL* c, const string& params, int opp) {
@@ -99,15 +99,20 @@ namespace RTSim {
             stringstream ss;
             int i = 1;
             for (AbsRTTask* t : tasks)
-                ss << i++ << ") " << t->toString() << endl;
+                ss << "\t" << i++ << ") " << t->toString() << endl;
             return ss.str();
         }
 
-        string toString() {
+        virtual string toString() {
             stringstream ss;
             ss << "EnergyMultiScheduler:" << endl;
-            for (const auto& q : _queues)
-                ss << toString(dynamic_cast<CPU_BL*>(q.first));
+            for (const auto& q : _queues) {
+                string qs = toString(dynamic_cast<CPU_BL *>(q.first));
+                if (qs == "")
+                    ss << "\tEmpty queue for " << q.first->getName() << endl;
+                else
+                    ss << q.first->getName() << endl << qs << endl;
+            }
             return ss.str();
         }
     };
@@ -215,7 +220,7 @@ namespace RTSim {
           *
           * @see MultiScheduler
           */
-        EnergyMRTKernel(vector<Scheduler*> qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
+        EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
         virtual ~EnergyMRTKernel() {
           cout << "~EnergyMRTKernel" << endl;
