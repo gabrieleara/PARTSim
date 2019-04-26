@@ -259,6 +259,11 @@ namespace RTSim
       return strm << a.toString();
     }
 
+    // useless, because entity are copied and thus they change name by implementation of Entity...
+    bool operator==(const CPU& lhs, const CPU& rhs) {
+      return lhs.getName() == rhs.getName();
+    }
+
     void CPU::updateCPUModel() {
         powmod->setVoltage(getVoltage());
         powmod->setFrequency(getFrequency());
@@ -344,6 +349,5 @@ namespace RTSim
             c->updateCPUModel();
         _kernel->onOppChanged(_currentOPP, this);
     }
-
 
 }

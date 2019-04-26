@@ -31,12 +31,11 @@ void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params);
 
 void dumpAllSpeeds();
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 0;
+    int TEST_NO = 6;
 
     dumpAllSpeeds();
     

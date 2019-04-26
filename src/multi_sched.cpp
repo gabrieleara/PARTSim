@@ -35,6 +35,8 @@ namespace RTSim {
         try {
         _queues[c]->insert(t);
         } catch(RTSchedExc &e) {
+	        // core schedulers/queues don't know tasks until this point
+	        cout << "Receiving this error once per task is ok" << endl;
           addTask(t,c,"");
           insertTask(t,c);
         }

@@ -12,8 +12,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SIMPLE_EXAMPLE_MULTI_SCHED_H
-#define SIMPLE_EXAMPLE_MULTI_SCHED_H
+#ifndef SIMPLE_EXAMPLE_MULTI_SCHED_HPP
+#define SIMPLE_EXAMPLE_MULTI_SCHED_HPP
 
 #include <string>
 #include "entity.hpp"
@@ -63,10 +63,10 @@ namespace RTSim {
 
         /// Post begin/end event
         void postBeginEvt(CPU* c, AbsRTTask* t, Tick when) {
-            postEvt(c, t, when, true);
+            postEvt(c, t, when, false);
         }
         void postEndEvt(CPU* c, AbsRTTask* t, Tick when) {
-            postEvt(c, t, when, false);
+            postEvt(c, t, when, true);
         }
 
         /// Drops all context switch events of task t on core c
@@ -76,6 +76,7 @@ namespace RTSim {
         virtual void makeRunning(AbsRTTask* t, CPU* c) {
             assert(c != NULL); assert(t != NULL);
 
+            dropEvt(c, t);
             postBeginEvt(c, t, SIMUL.getTime());
         }
 
@@ -107,8 +108,12 @@ namespace RTSim {
         MultiScheduler(MRTKernel *k, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
         ~MultiScheduler() {
-            for (auto c : _queues)
+            for (auto c : _queues) {
+                vector<AbsRTTask*> tt = getAllTasksInQueue(c.first);
+                for (AbsRTTask* t : tt)
+                  delete t;
                 delete c.second;
+            }
         }
 
         /// Get scheduler of a core
@@ -189,11 +194,12 @@ namespace RTSim {
 
         /// schedule first task of core queue
         void schedule(CPU* c) {
+        	assert(c != NULL);
             if (getRunningTask(c) != NULL)
                 makeReady(c);
             AbsRTTask *t = getFirst(c);
-            if (t != NULL)
-                makeRunning(t, c);
+            if (t != NULL)  // request to schedule on core with no assigned tasks
+            	makeRunning(t, c);
         }
 
         virtual void newRun() {}
@@ -208,4 +214,4 @@ namespace RTSim {
     };
 
 } // namespace RTSim
-#endif //SIMPLE_EXAMPLE_MULTI_SCHED_H
+#endif //SIMPLE_EXAMPLE_MULTI_SCHED_HPP

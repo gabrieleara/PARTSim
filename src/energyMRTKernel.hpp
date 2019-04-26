@@ -3,7 +3,6 @@
     copyright            : (C) 2003 by Giuseppe Lipari
     email                : lipari@sssup.it
  ***************************************************************************/
- *                                                                         *
  /***************************************************************************
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -37,17 +36,12 @@ namespace RTSim {
     class EnergyMultiScheduler : public MultiScheduler {
     private:
         /// OPP needed by tasks
-        map<AbsRTTask*, unsigned int> _opps;
+        map<AbsRTTask*, pair<CPU_BL*, unsigned int>> _opps;
 
     public:
         EnergyMultiScheduler(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
-        /// Add a task to the queue of a core
-        virtual void addTask(AbsRTTask* t, CPU_BL* c, const string& params, int opp) {
-            assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
-            MultiScheduler::addTask(t, c, params);
-            _opps[t] = opp;
-        }
+        ~EnergyMultiScheduler() { cout << __func__ << endl; }
 
         /**
          * Add a task to the queue of a core. Use instead
@@ -56,7 +50,7 @@ namespace RTSim {
         virtual void insertTask(AbsRTTask* t, CPU_BL* c, int opp) {
             assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
             MultiScheduler::insertTask(t, c);
-            _opps[t] = opp;
+            _opps[t] = make_pair(c, opp);
         }
 
         /// Remove the first task of a core queue
@@ -80,9 +74,9 @@ namespace RTSim {
                 _opps.erase(t);
         }
 
-        virtual void makeRunning(AbsRTTask* t, CPU* c) {
+        virtual void makeRunning(AbsRTTask* t, CPU_BL* c) {
             MultiScheduler::makeRunning(t, c);
-            c->setOPP(_opps[t]);
+            c->setOPP(getOPP(c));
         }
 
         virtual void endRun() {
@@ -90,8 +84,12 @@ namespace RTSim {
             _opps.clear();
         }
 
-        virtual unsigned int getOPP(AbsRTTask* t) {
-            return _opps[t];
+        virtual unsigned int getOPP(CPU_BL* c) {
+            unsigned int maxOPP = 0;
+            for (const auto& e : _opps)
+              if ( e.second.first->getName() == c->getName() && e.second.second > maxOPP)
+                maxOPP = e.second.second;
+            return maxOPP;
         }
 
         string toString(CPU_BL* c) {
@@ -99,7 +97,7 @@ namespace RTSim {
             stringstream ss;
             int i = 1;
             for (AbsRTTask* t : tasks)
-                ss << "\t" << i++ << ") " << t->toString() << endl;
+                ss << "\t" << i++ << ") " << t->toString();
             return ss.str();
         }
 

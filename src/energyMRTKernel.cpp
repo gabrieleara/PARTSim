@@ -36,7 +36,7 @@ namespace RTSim {
         _sched->setKernel(this);
         setTryingTaskOnCPU_BL(false);
 
-        // todo is there a shorter solution to pass directly vector<CPU_BL*> to EMS?
+        // todo is there a shorter solution to pass directly vector<CPU_BL*> to EMS
         vector<CPU_BL*> cpus = getProcessors();
         vector<CPU*> v;
         for (CPU_BL* c : cpus)
@@ -47,7 +47,6 @@ namespace RTSim {
 
     EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
         : MultiScheduler(kernel, cpus, s, name) { }
-
 
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
@@ -205,6 +204,8 @@ namespace RTSim {
         AbsRTTask *st   = e->getTask();
         assert(st != NULL); assert(p != NULL);
 
+        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onBeginDispatchMulti() for " << taskname(st) << " on " << p->toString() << endl
+          ;
         if ( st != NULL && dt == st ) {
             stringstream ss;
             ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
@@ -221,7 +222,6 @@ namespace RTSim {
         }
 
         DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
-        // todo
         cout << __func__ << " Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
 
         //_endEvt[p]->setTask(st);
@@ -246,15 +246,14 @@ namespace RTSim {
         CPU_BL* cpu       = dynamic_cast<CPU_BL*>(e->getCPU());
         assert (t != NULL); assert(cpu != NULL);
         
-        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString());
-        cout << "for " << taskname(t) << " on " << cpu->toString() << endl;
+        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() for " << taskname(t) << " on " << cpu->toString() << endl;
         _queues->onEndDispatchMultiFinished(cpu,t);
         MRTKernel::onEndDispatchMulti(e);
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
         // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
-        int opp = _queues->getOPP(t);
+        unsigned int opp = _queues->getOPP(cpu);
         if (opp > cpu->getOPP()) {
             cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
             cpu->setOPP(opp);

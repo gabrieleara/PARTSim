@@ -585,13 +585,15 @@ int init_suite(EnergyMRTKernel** kern) {
     cout << "init_suite" << endl;
 
     #if LEAVE_LITTLE3_ENABLED
-        cout << "Error: tests thought for LEAVE_LITTLE3_ENABLED disable" << endl;
+        cout << "Error: tests thought for LEAVE_LITTLE3_ENABLED disabled" << endl;
         abort();
     #endif
 
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     vector<CPU_BL *> cpus_little, cpus_big;
+    vector<Scheduler*> schedulers;
+    vector<RTKernel*> kernels;
 
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -707,13 +709,15 @@ int init_suite(EnergyMRTKernel** kern) {
 
     vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
     vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-    Island_BL *island_bl_little = new Island_BL("island_little", Island::LITTLE, cpus_little, opps_little);
-    Island_BL *island_bl_big = new Island_BL("island_big", Island::BIG, cpus_big, opps_big);
+    Island_BL *island_bl_little = new Island_BL("little island", Island::LITTLE, cpus_little, opps_little);
+    Island_BL *island_bl_big = new Island_BL("big island", Island::BIG, cpus_big, opps_big);
 
     EDFScheduler *edfsched = new EDFScheduler;
+    for (int i = 0; i < 8; i++)
+      schedulers.push_back(new EDFScheduler());
 
-    *kern = new EnergyMRTKernel(edfsched, island_bl_big, island_bl_little, "The sole kernel");
-    //kernels.push_back(kern);
+    *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
+    kernels.push_back(*kern);
 
     island_bl_big->setKernel(*kern);
     island_bl_little->setKernel(*kern);

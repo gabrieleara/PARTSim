@@ -9,7 +9,7 @@ namespace RTSim {
     class EmptyTask : public BaseExc {
     public:
         EmptyTask()
-            :BaseExc("Task witout instructions in queue", "Task", "task.cpp") {}
+            :BaseExc("Task without instructions in queue", "Task", "task.cpp") {}
     };
     class KernAlreadySet: public BaseExc {
     public:

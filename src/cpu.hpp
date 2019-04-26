@@ -175,15 +175,13 @@ namespace RTSim
         ///Useful for debug
         virtual void check();
 
-        bool operator==(const CPU& c) const {
-            return getName().compare(c.getName()) == 0;
-        }
-
     };
 
     /// to string operator
     ostream& operator<<(ostream &strm, CPU &a);
 
+    bool operator==(const CPU& rhs, const CPU& lhs);
+    
     /**
      * The abstract CPU factory. Is the base class for every CPU factory which
      * will be implemented.
@@ -333,7 +331,7 @@ namespace RTSim
     virtual unsigned long int getFrequency() const;
 
     virtual double getVoltage() const;
-
+    
   };
 
   class EnergyMRTKernel;
