@@ -3,8 +3,8 @@
     copyright            : (C) 2003 by Giuseppe Lipari
     email                : lipari@sssup.it
  ***************************************************************************/
-/***************************************************************************
  *                                                                         *
+ /***************************************************************************
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
  *   the Free Software Foundation; either version 2 of the License, or     *
@@ -18,7 +18,7 @@
 #include "mrtkernel.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
-#include "multi_sched.h"
+#include "multi_sched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 #define LEAVE_LITTLE3_ENABLED 0
@@ -111,7 +111,7 @@ namespace RTSim {
                 if (qs == "")
                     ss << "\tEmpty queue for " << q.first->getName() << endl;
                 else
-                    ss << q.first->getName() << endl << qs << endl;
+                    ss << "\t" << q.first->getName() << ":" << endl << qs << endl;
             }
             return ss.str();
         }
@@ -357,6 +357,8 @@ namespace RTSim {
         void printMap();
 
         void printBool(bool b);
+
+        virtual void printState();
 
         bool manageForcedDispatch(Task*);
 

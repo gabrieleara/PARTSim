@@ -48,6 +48,7 @@ namespace RTSim {
     EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
         : MultiScheduler(kernel, cpus, s, name) { }
 
+
     AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
         return t;
@@ -83,7 +84,7 @@ namespace RTSim {
     }
 
     bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
-        return _queues->isEmpty(p);
+      return !_queues->isEmpty(p);
     }
 
     double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
@@ -164,6 +165,14 @@ namespace RTSim {
         cout << b << endl;
     }
 
+    void EnergyMRTKernel::printState() {
+      for (CPU_BL *c : getProcessors()) {
+          AbsRTTask *t = _queues->getRunningTask(c);
+          cout << c->getName() << ": " << (t == NULL ? "0" : taskname(t)) << "\t";
+      }
+      cout << endl;
+    }
+
     void EnergyMRTKernel::addForcedDispatch(PeriodicTask* t, CPU_BL* c, int opp) {
         _m_forcedDispatch[t] = make_pair(c, opp);
     }
@@ -239,8 +248,8 @@ namespace RTSim {
         
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() " << (e->getTask()==NULL?"":e->getTask()->toString());
         cout << "for " << taskname(t) << " on " << cpu->toString() << endl;
-        MRTKernel::onEndDispatchMulti(e);
         _queues->onEndDispatchMultiFinished(cpu,t);
+        MRTKernel::onEndDispatchMulti(e);
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
@@ -280,6 +289,7 @@ namespace RTSim {
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
+        _queues->onEnd(p);
 
         if (!isDispatching(p) && getTaskRunning(p) == NULL)
             p->setBusy(false);

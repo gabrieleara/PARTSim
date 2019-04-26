@@ -12,7 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "multi_sched.h"
+#include <multi_sched.hpp>
 #include <mrtkernel.hpp>
 
 namespace RTSim {
@@ -32,8 +32,12 @@ namespace RTSim {
     }
 
     void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {
-        addTask(t, c, "");
+        try {
         _queues[c]->insert(t);
+        } catch(RTSchedExc &e) {
+          addTask(t,c,"");
+          insertTask(t,c);
+        }
     }
 
     void MultiScheduler::removeFirstFromQueue(CPU* c) {
@@ -110,23 +114,17 @@ namespace RTSim {
     }
 
     void MultiScheduler::dropEvt(CPU* c, AbsRTTask* t) {
-        bool found[2] = {false, false};
         assert(c != NULL); assert(t != NULL);
 
-        if (_beginEvts[c]->getTask() == t) {
+        if (_beginEvts[c] != NULL && _beginEvts[c]->getTask() == t) {
             _beginEvts[c]->drop();
             _beginEvts.erase(c);
-            found[0] = true;
         }
 
-        if (_endEvts[c]->getTask() == t) {
+        if (_endEvts[c] != NULL && _endEvts[c]->getTask() == t) {
             _endEvts[c]->drop();
             _endEvts.erase(c);
-            found[1] = true;
         }
-
-        assert(found[0] || found[1]); // the event was found in either queues
-        assert(found[0] != found[1]); // task can be either in begin dispatch or end dispatch on c
     }
 
     string MultiScheduler::toString() {

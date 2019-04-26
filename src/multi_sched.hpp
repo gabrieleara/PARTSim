@@ -76,7 +76,6 @@ namespace RTSim {
         virtual void makeRunning(AbsRTTask* t, CPU* c) {
             assert(c != NULL); assert(t != NULL);
 
-            _running_tasks[c] = t;
             postBeginEvt(c, t, SIMUL.getTime());
         }
 
@@ -90,6 +89,7 @@ namespace RTSim {
             AbsRTTask *oldTask = getRunningTask(c);
             dropEvt(c, oldTask);
 
+            //rimuovere da shcuedler o modificare getalltasksinqueue
             _running_tasks.erase(c);
         }
 
@@ -159,6 +159,28 @@ namespace RTSim {
         /// Its CPU if task in dispatched in any queue, else NULL
         virtual CPU* isInAnyQueue(const AbsRTTask* t);
 
+        void onBeginDispatchMultiFinished(CPU* c, AbsRTTask* newTask, Tick overhead) {
+          assert(c != NULL); assert(newTask != NULL); assert(double(overhead) >= 0.0);
+
+          dropEvt(c, newTask);
+          postEndEvt(c, newTask, SIMUL.getTime() + overhead);
+        }
+
+        void onEndDispatchMultiFinished(CPU* c, AbsRTTask* t) {
+          assert(c != NULL); assert(t != NULL);
+
+          _running_tasks[c] = t;
+          dropEvt(c, t);
+        }
+
+        /// Kernel signals end of task event (WCET finished)
+        void onEnd(CPU* c) {
+          assert(c != NULL);
+
+          makeReady(c);
+          removeFirstFromQueue(c);
+        }
+
         /// Remove the first task of a core queue
         virtual void removeFirstFromQueue(CPU* c);
 
@@ -174,19 +196,6 @@ namespace RTSim {
                 makeRunning(t, c);
         }
 
-        void onBeginDispatchMultiFinished(CPU* c, AbsRTTask* newTask, Tick overhead) {
-            assert(c != NULL); assert(newTask != NULL); assert(double(overhead) >= 0.0);
-
-            dropEvt(c, newTask);
-            postEndEvt(c, newTask, SIMUL.getTime() + overhead);
-        }
-
-        void onEndDispatchMultiFinished(CPU* c, AbsRTTask* t) {
-            assert(c != NULL); assert(t != NULL);
-
-            dropEvt(c, t);
-        }
-
         virtual void newRun() {}
 
         virtual void endRun() {
@@ -198,5 +207,5 @@ namespace RTSim {
 
     };
 
-}
+} // namespace RTSim
 #endif //SIMPLE_EXAMPLE_MULTI_SCHED_H
