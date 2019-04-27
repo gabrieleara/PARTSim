@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
 
         EDFScheduler *edfsched = new EDFScheduler;
         for (int i = 0; i < 8; i++)
-            schedulers.push_back(new EDFScheduler());
+            schedulers.push_back(new EDFScheduler);
 
         EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);
@@ -396,9 +396,6 @@ int main(int argc, char *argv[]) {
 
             // random workloads...delay(unif,PDF).
             // todo above code not tested
-
-            // todo domanda: round robin e' gia' implementato. pero' e' uno scheduler, le decisioni di piazzamento a CPU
-            // le faccio sempre io con energyMRTKernel? Non sarebbe quello che succede in Linux pero' -> userei MRTKernel. Giusto?
         }
         else if (TEST_NO == 10) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
@@ -417,10 +414,10 @@ int main(int argc, char *argv[]) {
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 7);
-            k->addForcedDispatch(tasks[1], cpus_little[1], 7);
-            k->addForcedDispatch(tasks[2], cpus_little[2], 7);
-            k->addForcedDispatch(tasks[3], cpus_little[3], 7);
+            k->addForcedDispatch(tasks[0], cpus_little[0], 6);
+            k->addForcedDispatch(tasks[1], cpus_little[1], 6);
+            k->addForcedDispatch(tasks[2], cpus_little[2], 6);
+            k->addForcedDispatch(tasks[3], cpus_little[3], 6);
 
             k->addForcedDispatch(tasks[4], cpus_big[0], 18);
             k->addForcedDispatch(tasks[5], cpus_big[1], 18);
@@ -431,22 +428,37 @@ int main(int argc, char *argv[]) {
             k->addForcedDispatch(tasks[9], cpus_big[3], 18);
 
             SIMUL.initSingleRun();
-            SIMUL.run_to(33);
+            SIMUL.run_to(36);
 
             assert(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
             assert(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
             assert(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName());
+            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
 
             assert(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
             assert(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
             assert(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
             assert(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
 
+            // task8 comes in place of task3
             assert(k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
 
-            SIMUL.run_to(500);
+            SIMUL.run_to(199);
 
+            assert(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+            assert(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+            assert(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+
+            //assert(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
+            assert(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+            assert(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+            assert(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+
+            // task9 comes in place of task4
+            assert(k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
+
+            SIMUL.run_to(1000);
             SIMUL.endSingleRun();
             return 0;
         }

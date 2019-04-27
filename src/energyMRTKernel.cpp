@@ -293,7 +293,10 @@ namespace RTSim {
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
-        migrate(p);
+        if (!p->isBusy())
+            migrate(p);
+        else // core has already some ready tasks
+            _queues->schedule(p);
 
         if (!p->getIsland()->isBusy()) {
             cout << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
@@ -338,10 +341,13 @@ namespace RTSim {
         if (endingCPU->getIslandType() == IslandType::BIG)
             cout << "\tBalancing on big island load" << endl;
         
-        // take a ready task of the island and put it on endingCPU
+        // Take a ready task of the island and put it on endingCPU.
+        // However, if core has only ready tasks, then such task, shouldn't
+        // be the only ready one for its original core (why to move it in that case?)
         for (CPU_BL * c : getProcessors(endingCPU->getIslandType())) {
             readyTasks = getReadyTasks(c);
-            if (!readyTasks.empty()) {
+            unsigned int nTasksOnCore = readyTasks.size() + (getRunningTask(c) == NULL ? 0 : 1);
+            if (nTasksOnCore > 1) {
                 AbsRTTask *tt = readyTasks.at(0);
                 cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
                 _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead

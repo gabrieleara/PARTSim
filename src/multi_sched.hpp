@@ -197,7 +197,11 @@ namespace RTSim {
             assert(t != NULL); assert(original != NULL); assert(final != NULL);
 
             try {
+// todo
+if (taskname(t).find("task9") != string::npos)
+    cout<<"";
                 removeFromQueue(original, t);
+                insertTask(t, final);
                 makeRunning(t, final);
             } catch(RTSchedExc &e) {
                 insertTask(t, final);

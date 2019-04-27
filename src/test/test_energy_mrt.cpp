@@ -15,16 +15,23 @@ string workload = "bzip2";
 string task_name = "";
 int init_sequence = 0;
 
-enum Requisite { EMRTK_LEAVE_LITTLE_3 = 1, EMRTK_MIGRATE };
+class Requisite { 
+    public:
+        bool EMRTK_leave_little3, EMRTK_migrate;
+        // in the default case, you don't want neither leave_little3 and migrate
+        Requisite(bool leave_little3 = false, bool migrate = false)
+            : EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate) {}
+};
 
 int cleanup_suite();
 int init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
-bool checkRequisites(enum Requisite reqs);
+bool checkRequisites(Requisite reqs);
 
 TEST_CASE("exp0") {
+    init_sequence = 0;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false, false) ))  return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -44,7 +51,7 @@ TEST_CASE("exp0") {
 
     REQUIRE(t0->getName() == "T0_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(c0->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     SIMUL.endSingleRun();
@@ -53,8 +60,9 @@ TEST_CASE("exp0") {
 }
 
 TEST_CASE("exp1") {
+    init_sequence = 1;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -80,12 +88,12 @@ TEST_CASE("exp1") {
 
     REQUIRE(t0->getName() == "T1_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(c0->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE(t1->getName() == "T1_task2");
     REQUIRE(c1->getFrequency() == 2000);
-    REQUIRE(c1->getIslandType() == Island::BIG);
+    REQUIRE(c1->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t1->getWCET(c1->getSpeed())), 497));
 
     SIMUL.endSingleRun();
@@ -94,8 +102,9 @@ TEST_CASE("exp1") {
 }
 
 TEST_CASE("exp2") {
+    init_sequence = 2;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -124,12 +133,12 @@ TEST_CASE("exp2") {
 
     REQUIRE(t0->getName() == "T2_task1");
     REQUIRE(c0->getFrequency() == 2000);
-    REQUIRE(c0->getIslandType() == Island::BIG);
+    REQUIRE(c0->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE(t1->getName() == "T2_task2");
     REQUIRE(c1->getFrequency() == 2000);
-    REQUIRE(c1->getIslandType() == Island::BIG);
+    REQUIRE(c1->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t1->getWCET(c1->getSpeed())), 248));
 
     SIMUL.endSingleRun();
@@ -138,8 +147,9 @@ TEST_CASE("exp2") {
 }
 
 TEST_CASE("exp3") {
+    init_sequence = 3;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -158,7 +168,7 @@ TEST_CASE("exp3") {
 
     REQUIRE(t0->getName() == "T3_task1");
     REQUIRE(c0->getFrequency() == 500);
-    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(c0->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t0->getWCET(c0->getSpeed())), 65));
 
     SIMUL.endSingleRun();
@@ -167,8 +177,9 @@ TEST_CASE("exp3") {
 }
 
 TEST_CASE("exp4") {
+    init_sequence = 4;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     PeriodicTask* task[5]; // to be cleared after each test
     EnergyMRTKernel *kern;
@@ -197,22 +208,22 @@ TEST_CASE("exp4") {
 
     REQUIRE(task[0]->getName() == "T4_Task_LITTLE_0");
     REQUIRE(c0->getFrequency() == 700);
-    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(c0->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(task[0]->getWCET(c0->getSpeed())), 488));
 
     REQUIRE(task[1]->getName() == "T4_Task_LITTLE_1");
     REQUIRE(c1->getFrequency() == 700);
-    REQUIRE(c1->getIslandType() == Island::LITTLE);
+    REQUIRE(c1->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(task[1]->getWCET(c1->getSpeed())), 488));
 
     REQUIRE(task[2]->getName() == "T4_Task_LITTLE_2");
     REQUIRE(c2->getFrequency() == 700);
-    REQUIRE(c2->getIslandType() == Island::LITTLE);
+    REQUIRE(c2->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(task[2]->getWCET(c2->getSpeed())), 488));
 
     REQUIRE(task[3]->getName() == "T4_Task_LITTLE_3");
     REQUIRE(c3->getFrequency() == 700);
-    REQUIRE(c3->getIslandType() == Island::LITTLE);
+    REQUIRE(c3->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(task[3]->getWCET(c3->getSpeed())), 488));
 
     SIMUL.endSingleRun();
@@ -222,8 +233,9 @@ TEST_CASE("exp4") {
 }
 
 TEST_CASE("exp5") {
+    init_sequence = 5;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -261,28 +273,28 @@ TEST_CASE("exp5") {
     PeriodicTask* t = task[0];
     REQUIRE(t->getName() == "T5_task0");
     REQUIRE(c0->getFrequency() == 500);
-    REQUIRE(c0->getIslandType() == Island::LITTLE);
+    REQUIRE(c0->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c0->getSpeed())), 32));
     cout << t->toString() << " on "<< c0->toString()<<endl;
 
     t = task[1];
     REQUIRE(t->getName() == "T5_task1");
     REQUIRE(c1->getFrequency() == 500);
-    REQUIRE(c1->getIslandType() == Island::LITTLE);
+    REQUIRE(c1->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c1->getSpeed())), 32));
     cout << t->toString() << " on "<< c1->toString()<<endl;
 
     t = task[2];
     REQUIRE(t->getName() == "T5_task2");
     REQUIRE(c2->getFrequency() == 500);
-    REQUIRE(c2->getIslandType() == Island::LITTLE);
+    REQUIRE(c2->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c2->getSpeed())), 32));
     cout << t->toString() << " on "<< c2->toString()<<endl;
 
     t = task[3];
     REQUIRE(t->getName() == "T5_task3");
     REQUIRE(c3->getFrequency() == 500);
-    REQUIRE(c3->getIslandType() == Island::LITTLE);
+    REQUIRE(c3->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c3->getSpeed())), 32));
     cout << t->toString() << " on "<< c3->toString()<<endl;
 
@@ -294,8 +306,9 @@ TEST_CASE("exp5") {
 
 // test showing that frequency of little/big island may be raised
 TEST_CASE("exp6") {
+    init_sequence = 6;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     vector<CPU_BL*> cpus;
     CPU_BL* cpu_task[5]; // to be cleared after each test
@@ -335,7 +348,7 @@ TEST_CASE("exp6") {
     CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task0");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -344,7 +357,7 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task1");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -353,7 +366,7 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task2");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -362,7 +375,7 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task3");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())),299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -371,7 +384,7 @@ TEST_CASE("exp6") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T6_task4");
     REQUIRE(c->getFrequency() == 2000);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 199));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -382,8 +395,9 @@ TEST_CASE("exp6") {
 }
 
 TEST_CASE("exp7") {
+    init_sequence = 7;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -423,7 +437,7 @@ TEST_CASE("exp7") {
     CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task0");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -432,7 +446,7 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task1");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -441,7 +455,7 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task2");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -450,7 +464,7 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task3");
     REQUIRE(c->getFrequency() == 500);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 415));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -459,7 +473,7 @@ TEST_CASE("exp7") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T7_task4");
     REQUIRE(c->getFrequency() == 700);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 75));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
@@ -470,8 +484,9 @@ TEST_CASE("exp7") {
 }
 
 TEST_CASE("exp8") {
+    init_sequence = 8;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
+    if (!checkRequisites( Requisite(false,false) )) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[9]; // to be cleared after each test
@@ -505,7 +520,7 @@ TEST_CASE("exp8") {
     CPU_BL* c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 499));
 
@@ -514,7 +529,7 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 477));
 
@@ -523,7 +538,7 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 297));
 
@@ -532,7 +547,7 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 449));
 
@@ -541,7 +556,7 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 179));
 
@@ -550,7 +565,7 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 22));
 
@@ -561,7 +576,7 @@ TEST_CASE("exp8") {
     cout << "a"<<endl;
     REQUIRE(c->getFrequency() == 1400);
     cout << "b"<<endl;
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     cout << "c"<<endl;
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 168));
@@ -571,7 +586,7 @@ TEST_CASE("exp8") {
     c = kern->getDispatchingProcessor(t);
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1400);
-    REQUIRE(c->getIslandType() == Island::LITTLE);
+    REQUIRE(c->getIslandType() == IslandType::LITTLE);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 468));
 
@@ -580,13 +595,89 @@ TEST_CASE("exp8") {
     c = cpu_task[i];
     REQUIRE(t->getName() == "T8_task" + to_string(i));
     REQUIRE(c->getFrequency() == 1700);
-    REQUIRE(c->getIslandType() == Island::BIG);
+    REQUIRE(c->getIslandType() == IslandType::BIG);
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
     REQUIRE(inRange(int(t->getWCET(c->getSpeed())), 310));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete task[j];
+    delete kern;
+}
+
+TEST_CASE("exp9") {
+    init_sequence = 9;
+    cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( Requisite(false, true) )) return;
+
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+
+    int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
+    vector<PeriodicTask*> tasks;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        t->insertCode(instr);
+        kern->addTask(*t, "");
+        //ttrace.attachToTask(*t);
+        tasks.push_back(t);
+    }
+    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+    k->addForcedDispatch(tasks[0], cpus_little[0], 6);
+    k->addForcedDispatch(tasks[1], cpus_little[1], 6);
+    k->addForcedDispatch(tasks[2], cpus_little[2], 6);
+    k->addForcedDispatch(tasks[3], cpus_little[3], 6);
+
+    k->addForcedDispatch(tasks[4], cpus_big[0], 18);
+    k->addForcedDispatch(tasks[5], cpus_big[1], 18);
+    k->addForcedDispatch(tasks[6], cpus_big[2], 18);
+    k->addForcedDispatch(tasks[7], cpus_big[3], 18);
+
+    k->addForcedDispatch(tasks[8], cpus_big[3], 18);
+    k->addForcedDispatch(tasks[9], cpus_big[3], 18);
+
+    SIMUL.initSingleRun();
+    SIMUL.run_to(36);
+
+    REQUIRE(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    //REQUIRE(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+
+    REQUIRE(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
+    REQUIRE(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+
+    // task8 comes in place of task3
+    REQUIRE(k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+
+    SIMUL.run_to(199);
+
+    REQUIRE(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    //REQUIRE(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+
+    //REQUIRE(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
+    REQUIRE(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+
+    // task9 comes in place of task4
+    REQUIRE(k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
+
+    SIMUL.run_to(1000);
+    SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete tasks[j];
     delete kern;
 }
 
@@ -720,8 +811,8 @@ int init_suite(EnergyMRTKernel** kern) {
 
     vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
     vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-    Island_BL *island_bl_little = new Island_BL("little island", Island::LITTLE, cpus_little, opps_little);
-    Island_BL *island_bl_big = new Island_BL("big island", Island::BIG, cpus_big, opps_big);
+    Island_BL *island_bl_little = new Island_BL("little island", IslandType::LITTLE, cpus_little, opps_little);
+    Island_BL *island_bl_big = new Island_BL("big island", IslandType::BIG, cpus_big, opps_big);
 
     EDFScheduler *edfsched = new EDFScheduler;
     for (int i = 0; i < 8; i++)
@@ -748,10 +839,16 @@ bool inRange(int eval, int expected) {
     return expected >= min && expected <= max; 
 }
 
-bool checkRequisites(enum Requisite reqs) {
-  if ( (reqs & Requisite::EMRTK_LEAVE_LITTLE_3) != 0 && EMRTK_LEAVE_LITTLE3_ENABLED)
-    return false;
-  if ( (reqs & Requisite::EMRTK_MIGRATE) != 0 && EMRTK_MIGRATE_ENABLED)
-    return false;
-  return true;
+bool checkRequisites(Requisite reqs) {
+    cout << "Experiments requires EMRTK_leave_little3: " << reqs.EMRTK_leave_little3 << " and EMRTK_migrate: " << reqs.EMRTK_migrate << endl;
+    cout << "Current settings: EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << ", EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << endl; 
+    if ( reqs.EMRTK_leave_little3 != EMRTK_LEAVE_LITTLE3_ENABLED) {
+        cout << "Test requires EMRTK_LEAVE_LITTLE3_ENABLED = 1, but it's disabled: " << EMRTK_LEAVE_LITTLE3_ENABLED << ". Skip" << endl;
+        return false;
+    }
+    if ( reqs.EMRTK_migrate != EMRTK_MIGRATE_ENABLED) {
+        cout << "Test requires EMRTK_MIGRATE_ENABLED = 1, but it's disabled: " << EMRTK_MIGRATE_ENABLED << ". Skip" << endl;
+        return false;
+    }
+    return true;
 }

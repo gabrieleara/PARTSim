@@ -128,6 +128,11 @@ namespace RTSim {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel* model = find(task);
+
+// todo
+if (taskname(task).find("task9") != string::npos) {
+    cout << SIMUL.getTime();
+}
 	
         if (model == NULL) // raise an exception
             throw RTSchedExc("AbsRTTask not found");

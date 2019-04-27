@@ -422,7 +422,6 @@ namespace RTSim
     }
 
     bool isBusy() {
-        cout << __func__ << " for " << IslandName[_island] << endl;
         for (CPU_BL* c : _cpus)
             if (c->isBusy()){
                 cout << c->toString() << " is busy"<<endl;

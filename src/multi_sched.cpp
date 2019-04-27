@@ -33,6 +33,9 @@ namespace RTSim {
 
     void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {
         try {
+// todo
+if (taskname(t).find("task9") != string::npos)
+    cout<<"";
             _queues[c]->insert(t);
         } catch(RTSchedExc &e) {
             // core schedulers/queues don't know tasks until this point
@@ -50,7 +53,7 @@ namespace RTSim {
     void MultiScheduler::removeFromQueue(CPU* c, AbsRTTask* t) {
         assert(c != NULL); assert(t != NULL);
         _queues[c]->extract(t);
-	    dropEvt(c, t);
+	      dropEvt(c, t);
     }
 
     AbsRTTask* MultiScheduler::getFirst(CPU* c) {
