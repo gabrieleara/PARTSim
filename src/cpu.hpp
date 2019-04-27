@@ -256,12 +256,12 @@ namespace RTSim
   // ------------------------------------------------------------ Big-Little. Classes not meant to be extended
   // Design: I had a class "CPU", which already seemed ok for managing Big-littles. However, this brough bugs,
   // for example when updating an OPP, since it didn't update automatically the OPP of the island.
-  // With CPU_BL, a core belongs to an island and changing OPP means changing island OPP. Moreover, classes were
+  // With CPU_BL, a core belongs to an IslandType and changing OPP means changing IslandType OPP. Moreover, classes were
   // build while realizing EnergyMRTKernel, which is a kinda self-adaptive kernel and thus needs to try different
   // OPPs. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others.
 
   class Island_BL;
-  typedef enum { LITTLE=0, BIG, NUM_ISLANDS } Island;
+  typedef enum { LITTLE=0, BIG, NUM_ISLANDS } IslandType;
 
   class CPU_BL : public CPU {
       friend class Island_BL; // otherwise I would have infinite recursion
@@ -310,7 +310,7 @@ namespace RTSim
         return _island;
     }
 
-    Island getIslandType();
+    IslandType getIslandType();
 
     double getCurrentPowerConsumption()
     {
@@ -341,7 +341,7 @@ namespace RTSim
     static string IslandName[NUM_ISLANDS];
 
   private:
-    Island _island;
+    IslandType _island;
 
     vector<CPU_BL*> _cpus;
 
@@ -352,7 +352,7 @@ namespace RTSim
     EnergyMRTKernel* _kernel;
 
   public:
-    Island_BL(const string &name, const Island island, const vector<CPU_BL *> cpus,
+    Island_BL(const string &name, const IslandType island, const vector<CPU_BL *> cpus,
             const vector<struct OPP> opps)
             : Entity(name) {
         _island     = island;
@@ -364,7 +364,7 @@ namespace RTSim
             c->_island = this;
 
         assert(!opps.empty() && !cpus.empty());
-        assert(_island == Island::BIG || _island == Island::LITTLE);
+        assert(_island == IslandType::BIG || _island == IslandType::LITTLE);
     };
 
     ~Island_BL() {
@@ -378,7 +378,7 @@ namespace RTSim
 
     unsigned int getOPPsize() const { return _opps.size(); }
 
-    Island getIslandType() { return _island; }
+    IslandType getIslandType() { return _island; }
 
     vector<CPU_BL*> getProcessors() { return _cpus; }
 

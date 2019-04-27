@@ -48,12 +48,12 @@ namespace RTSim {
     EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
         : MultiScheduler(kernel, cpus, s, name) { }
 
-    AbsRTTask* EnergyMRTKernel::getTaskRunning(CPU* c) {
+    AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
         return t;
     }
 
-    vector<AbsRTTask*> EnergyMRTKernel::getTasksReady(CPU_BL* c) const {
+    vector<AbsRTTask*> EnergyMRTKernel::getReadyTasks(CPU_BL* c) const {
         vector<AbsRTTask*> t = _queues->getReadyTasks(c);
         return t;
     }
@@ -88,8 +88,8 @@ namespace RTSim {
 
     double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
         double utilization = 0.0;
-        vector<AbsRTTask*> ths = getTasksReady(c);
-        AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getTaskRunning(c);
+        vector<AbsRTTask*> ths = getReadyTasks(c);
+        AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getRunningTask(c);
         if (runningTask != NULL)
             ths.push_back(runningTask);
 
@@ -106,12 +106,12 @@ namespace RTSim {
         return utilization;
     }
 
-    double EnergyMRTKernel::getIslandUtilization(double capacity, Island island, int *nTasksIsland) {
+    double EnergyMRTKernel::getIslandUtilization(double capacity, IslandType island, int *nTasksIsland) {
         double utilizationIsland = 0.0;
 
         for (CPU_BL* c1 : getProcessors(island)) {
-            vector<AbsRTTask*> tasks = getTasksReady(c1);
-            AbsRTTask* runningTask = getTaskRunning(c1);
+            vector<AbsRTTask*> tasks = getReadyTasks(c1);
+            AbsRTTask* runningTask = getRunningTask(c1);
             if (runningTask != NULL) {
                 utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
                 if (nTasksIsland != NULL)
@@ -290,8 +290,10 @@ namespace RTSim {
         _m_dispatched.erase(t);
         _queues->onEnd(p);
 
-        if (!isDispatching(p) && getTaskRunning(p) == NULL)
+        if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
+
+        migrate(p);
 
         if (!p->getIsland()->isBusy()) {
             cout << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
@@ -300,62 +302,59 @@ namespace RTSim {
 
         printState();
 
-        //migrate(p);
     }
 
     void EnergyMRTKernel::migrate(CPU_BL* endingCPU) {
         /**
-           Migration mechanism: a task finishes on CPU c.
-           Find again a feasible assignment of tasks to cores (dispatch), only considering tasks in
-           dispatching[] originally scheduled on big and starting from OPP given by running tasks.
-           If c is little and has no ready and running tasks => min freq.
-           If c is big, same.
+           Migration mechanism: a task finishes on CPU c, leaving it idle.
+           If c is a little, try moving ready tasks originally assigned to
+           big island. If you can't find any, then balance load on little island.
+           If c is a big core, balance load on big island.
 
            Try not to touch running tasks.
-         /
-         if (_m_dispatching.empty())
-             return;
+        */
+        if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return; }
+        if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return; }
+        cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
 
-         cout << __func__ << " time=" << SIMUL.getTime() << endl;
+        vector<AbsRTTask*> readyTasks;
+        if (endingCPU->getIslandType() == IslandType::LITTLE) {
+            for (CPU_BL * c : getIslandBig()->getProcessors()) {
+                readyTasks = getReadyTasks(c);
+                for (AbsRTTask * tt : readyTasks) {
+                    vector<struct ConsumptionTable> iDeltaPows;
+                    tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
+                    if (!iDeltaPows.empty()) {
+                        cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;                        
+                        _queues->onMigrationFinished(tt, c, endingCPU);
+                        // onEndDispatchMulti will take care of increasing core OPP
+                        return;
+                    }
+                }
+            }
+            cout << "\tNo migration from big island to endingCPU => balance little island load" << endl;
+        }
 
-         for (auto& t : _m_dispatching)
-             if ( t.second.first->getIslandType() == Island::BIG || (!LEAVE_LITTLE3_ENABLED ? false : t.second.first->getName() == "LITTLE_3") ) {
-                 vector<struct ConsumptionTable> iDeltaPows;
-                 AbsRTTask* tt = const_cast<AbsRTTask*>(t.first);
-                 CPU_BL* curCPU = t.second.first;
-                 //_m_dispatching.erase(tt); if commented brings bugs in getUtilization todo
-
-                 cout << "Dealing with task " << tt->toString() << "." << endl;
-                 for (CPU_BL* cc : getProcessors(Island::LITTLE))
-                    tryTaskOnCPU_BL(tt, cc, iDeltaPows);
-                 tryTaskOnCPU_BL(tt, curCPU, iDeltaPows);
-
-                 assert(!iDeltaPows.empty()); // there is at least the curCPU
-
-                 chooseCPU_BL(tt, iDeltaPows);
-
-                 // Update WCET (time, endEvt) of tasks on the chosen island
-                 CPU_BL* chosenCPU = _m_dispatching[tt].first;
-                 chosenCPU->setOPP(_m_dispatching[tt].second);
-                 chosenCPU->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
-                 double oldSpeed[NUM_ISLANDS] = {getIslandBig()->getProcessors()[0]->getSpeed(), getIslandLittle()->getProcessors()[0]->getSpeed()};
-                 for (auto& rt : _m_currExe)
-                      if (rt.second != NULL && chosenCPU->getIslandType() == dynamic_cast<CPU_BL*>(rt.first)->getIslandType()) {
-
-                          cout << rt.second->toString() << " had WCET " << rt.second->getWCET(oldSpeed[chosenCPU->getIslandType()]) << endl;
-                          rt.second->refreshExec(oldSpeed[chosenCPU->getIslandType()], chosenCPU->getSpeed());
-                          cout << " now has WCET " << rt.second->getWCET(chosenCPU->getSpeed()) << endl;
-
-                  }
-
-             }*/
-
-    }
+        if (endingCPU->getIslandType() == IslandType::BIG)
+            cout << "\tBalancing on big island load" << endl;
+        
+        // take a ready task of the island and put it on endingCPU
+        for (CPU_BL * c : getProcessors(endingCPU->getIslandType())) {
+            readyTasks = getReadyTasks(c);
+            if (!readyTasks.empty()) {
+                AbsRTTask *tt = readyTasks.at(0);
+                cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
+                _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead
+                break;
+            }
+        }
+         
+    } // end EMRTK::migrate()
 
 
     // ----------------------------------------------------------- choosing cores for tasks
 
-    void EnergyMRTKernel::leaveLittle3(AbsRTTask* t, vector<struct EnergyMRTKernel::ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU) {
+    void EnergyMRTKernel::leaveLittle3(AbsRTTask* t, vector<struct ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU) {
         /**
          * Policy of leaving a little core free for big-WCET tasks, which otherwise would be scheduled on
          * big cores, thus increasing power consumption.
@@ -364,8 +363,8 @@ namespace RTSim {
          */
 
         cout << __func__ << "():" << endl;
-        if (!LEAVE_LITTLE3_ENABLED) { cout << "\tPolicy deactivated. Skip"<<endl; return; }
-        if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIslandType() == Island::BIG) {
+        if (!EMRTK_LEAVE_LITTLE3_ENABLED) { cout << "\tPolicy deactivated. Skip"<<endl; return; }
+        if (chosenCPU->getName().find("LITTLE_3") == string::npos || chosenCPU->getIslandType() == IslandType::BIG) {
             cout << "chosenCPU in big island or is not little_3 => skip" << endl;
             return;
         }
@@ -374,7 +373,7 @@ namespace RTSim {
 
         for (int i = 0; i < iDeltaPows.size(); i++) {
             cout << iDeltaPows[i].cons << " " << iDeltaPows[i].cpu->toString() << endl;
-            if (iDeltaPows[i].cpu->getIslandType() == Island::LITTLE && iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
+            if (iDeltaPows[i].cpu->getIslandType() == IslandType::LITTLE && iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
                 chosenCPU = iDeltaPows[i].cpu;
                 chosenCPU->setOPP(iDeltaPows[i].opp);
                 cout << "Changing to " << iDeltaPows[i].cpu->toString() << " - chosenCPU=" << chosenCPU->toString() << endl;
@@ -560,7 +559,7 @@ namespace RTSim {
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
-             << " - it has already ntasks=" << getTasksReady(c).size() << endl;
+             << " - it has already ntasks=" << getReadyTasks(c).size() << endl;
 
         //for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size(); ooo++) {
         for (struct OPP tryOPP : c->getHigherOPPs()) {
@@ -573,7 +572,7 @@ namespace RTSim {
             printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
             // check whether task is admissible with the new frequency and where
-            if (_sched->isAdmissible(c, getTasksReady(c), t)) {
+            if (_sched->isAdmissible(c, getReadyTasks(c), t)) {
                 cout << "\t\t\tHere task would be admissible" << endl;
 
                 double utilization          = 0.0; // utilization on the CPU c (without new task)
@@ -584,7 +583,7 @@ namespace RTSim {
                 double iOldPow              = 0.0;
                 double iDeltaPow            = 0.0; // additional power to schedule t on CPU c on the whole island (big/little)
                 int    nTaskIsland          = 0;
-                Island island;
+                IslandType island;
 
 
                 if (t->toString().find("T4_task_LITTLE_1") != string::npos && c->toString().find("LITTLE_1") != string::npos)

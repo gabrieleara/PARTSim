@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 6;
+    int TEST_NO = 10;
 
     dumpAllSpeeds();
     
@@ -175,8 +175,8 @@ int main(int argc, char *argv[]) {
 
         vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
         vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-        Island_BL *island_bl_little = new Island_BL("little island", Island::LITTLE, cpus_little, opps_little);
-        Island_BL *island_bl_big = new Island_BL("big island", Island::BIG, cpus_big, opps_big);
+        Island_BL *island_bl_little = new Island_BL("little island", IslandType::LITTLE, cpus_little, opps_little);
+        Island_BL *island_bl_big = new Island_BL("big island", IslandType::BIG, cpus_big, opps_big);
 
         EDFScheduler *edfsched = new EDFScheduler;
         for (int i = 0; i < 8; i++)
@@ -448,21 +448,6 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(500);
 
             SIMUL.endSingleRun();
-            return 0;
-        }
-        else if (TEST_NO==11) { // todo temp use case
-            int wcets[] = { 101,101,101,8, 200,500,500,500, 101 };
-            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-                task_name = "T11_task" + std::to_string(j);
-                cout << "Creating task: " << task_name << " ";
-                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-                char instr[60] = "";
-                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-                t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
-                ttrace.attachToTask(*t);
-            }
-            SIMUL.run(1000);
             return 0;
         }
 

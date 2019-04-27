@@ -15,13 +15,16 @@ string workload = "bzip2";
 string task_name = "";
 int init_sequence = 0;
 
+enum Requisite { EMRTK_LEAVE_LITTLE_3 = 1, EMRTK_MIGRATE };
+
 int cleanup_suite();
 int init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
-
+bool checkRequisites(enum Requisite reqs);
 
 TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -51,6 +54,7 @@ TEST_CASE("exp0") {
 
 TEST_CASE("exp1") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -91,6 +95,7 @@ TEST_CASE("exp1") {
 
 TEST_CASE("exp2") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -134,6 +139,7 @@ TEST_CASE("exp2") {
 
 TEST_CASE("exp3") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -162,6 +168,7 @@ TEST_CASE("exp3") {
 
 TEST_CASE("exp4") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     PeriodicTask* task[5]; // to be cleared after each test
     EnergyMRTKernel *kern;
@@ -216,6 +223,7 @@ TEST_CASE("exp4") {
 
 TEST_CASE("exp5") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -287,6 +295,7 @@ TEST_CASE("exp5") {
 // test showing that frequency of little/big island may be raised
 TEST_CASE("exp6") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     vector<CPU_BL*> cpus;
     CPU_BL* cpu_task[5]; // to be cleared after each test
@@ -374,6 +383,7 @@ TEST_CASE("exp6") {
 
 TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -461,6 +471,7 @@ TEST_CASE("exp7") {
 
 TEST_CASE("exp8") {
     cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( static_cast<Requisite>(~Requisite::EMRTK_LEAVE_LITTLE_3 | ~Requisite::EMRTK_MIGRATE)) ) return;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[9]; // to be cleared after each test
@@ -735,4 +746,12 @@ bool inRange(int eval, int expected) {
     int max = int(eval + eval * error/100);
 
     return expected >= min && expected <= max; 
+}
+
+bool checkRequisites(enum Requisite reqs) {
+  if ( (reqs & Requisite::EMRTK_LEAVE_LITTLE_3) != 0 && EMRTK_LEAVE_LITTLE3_ENABLED)
+    return false;
+  if ( (reqs & Requisite::EMRTK_MIGRATE) != 0 && EMRTK_MIGRATE_ENABLED)
+    return false;
+  return true;
 }

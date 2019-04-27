@@ -19,8 +19,9 @@
 #include "rttask.hpp"
 #include "multi_sched.hpp"
 
-#define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
-#define LEAVE_LITTLE3_ENABLED 0
+#define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
+#define EMRTK_LEAVE_LITTLE3_ENABLED 0
+#define EMRTK_MIGRATE_ENABLED       1
 
 namespace RTSim {
 
@@ -196,18 +197,18 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
-        Island_BL* getIsland(Island island) const { return _islands[island]; }
+        Island_BL* getIsland(IslandType island) const { return _islands[island]; }
 
-        vector<CPU_BL*> getProcessors(Island island) const {
-            return getIsland(island)->getProcessors();
-        }
-
-        /// Tries to schedule a task on a CPU_BL, for all valid OPPs,
-        /// remembering power consumption
+        /**
+           Tries to schedule a task on a CPU_BL, for all valid OPPs,
+           remembering power consumption
+        */
         void tryTaskOnCPU_BL(AbsRTTask *t, CPU_BL *c, vector<struct ConsumptionTable> &iDeltaPows);
 
         /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
+
+        /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
 
     public:
@@ -277,6 +278,7 @@ namespace RTSim {
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
         CPU_BL* getDispatchingProcessor(const AbsRTTask* t);
 
+        /// Get all processors, in all islands
         vector<CPU_BL*> getProcessors() const { 
             vector<CPU_BL*> CPU_BLs;
             for (CPU_BL* c : getIslandLittle()->getProcessors())
@@ -286,11 +288,16 @@ namespace RTSim {
             return CPU_BLs;
         }
 
+        /// Get processors of an island
+        vector<CPU_BL*> getProcessors(IslandType island) const {
+            return getIsland(island)->getProcessors();
+        }
+
         /**
            Returns island utilization given a capacity to scale up/down tasks WCET.
            It also returns the number of tasks being scheduled in the island
         */
-        double getIslandUtilization(double capacity, Island island, int *nTaskIsland);
+        double getIslandUtilization(double capacity, IslandType  island, int *nTaskIsland);
 
         /// Returns utilization of task t on CPU_BL c. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(AbsRTTask* t, CPU_BL* c, double capacity) const;
@@ -332,10 +339,10 @@ namespace RTSim {
          *  Returns a pointer to the task which is executing on given
          *  CPU_BL (NULL if given CPU_BL is idle)
          */
-        virtual AbsRTTask* getTaskRunning(CPU* c);
+        virtual AbsRTTask* getRunningTask(CPU* c);
 
          /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
-        virtual vector<AbsRTTask*> getTasksReady(CPU_BL* c) const;
+        virtual vector<AbsRTTask*> getReadyTasks(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();

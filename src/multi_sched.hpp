@@ -61,10 +61,11 @@ namespace RTSim {
         MRTKernel* _kernel;
 
 
-        /// Post begin/end event
+        /// Post begin event for a task on a core
         void postBeginEvt(CPU* c, AbsRTTask* t, Tick when) {
             postEvt(c, t, when, false);
         }
+        /// Post end event for a task on a core
         void postEndEvt(CPU* c, AbsRTTask* t, Tick when) {
             postEvt(c, t, when, true);
         }
@@ -156,8 +157,7 @@ namespace RTSim {
         }
 
         /**
-         * Add a task to the queue of a core. addTask() is to
-         * be called before, only once, to insert t in the scheduler.
+         * Add a task to the queue of a core.
          */
         virtual void insertTask(AbsRTTask* t, CPU* c);
 
@@ -182,14 +182,33 @@ namespace RTSim {
         void onEnd(CPU* c) {
           assert(c != NULL);
 
+          AbsRTTask *t = getRunningTask(c);
+          assert(t != NULL);
+          removeFromQueue(c, t);
           makeReady(c);
-          removeFirstFromQueue(c);
         }
 
-        /// Remove the first task of a core queue
+        /**
+           To be called when migration finishes. 
+           It deletes ctx switch events on the original core and
+           prepares for context switch on the final core (= chosen after migration)
+        */
+        void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) {
+            assert(t != NULL); assert(original != NULL); assert(final != NULL);
+
+            try {
+                removeFromQueue(original, t);
+                makeRunning(t, final);
+            } catch(RTSchedExc &e) {
+                insertTask(t, final);
+                onMigrationFinished(t,original, final);
+            }
+        }
+
+        /// Remove the first task of a core queue. Also removes its ctx evt
         virtual void removeFirstFromQueue(CPU* c);
 
-        /// Remove a specific task from a core queue
+        /// Remove a specific task from a core queue. Also removes its ctx evt
         virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
         /// schedule first task of core queue

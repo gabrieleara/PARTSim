@@ -299,7 +299,7 @@ namespace RTSim
         return _island->isBusy();
     }
 
-    Island CPU_BL::getIslandType() {
+    IslandType CPU_BL::getIslandType() {
         return _island->getIslandType();
     }
 

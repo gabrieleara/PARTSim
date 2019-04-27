@@ -33,12 +33,12 @@ namespace RTSim {
 
     void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {
         try {
-        _queues[c]->insert(t);
+            _queues[c]->insert(t);
         } catch(RTSchedExc &e) {
-	        // core schedulers/queues don't know tasks until this point
-	        cout << "Receiving this error once per task is ok" << endl;
-          addTask(t,c,"");
-          insertTask(t,c);
+            // core schedulers/queues don't know tasks until this point
+            cout << "Receiving this error once per task is ok" << endl;
+            addTask(t,c,"");
+            insertTask(t,c);
         }
     }
 
@@ -48,10 +48,13 @@ namespace RTSim {
     }
     
     void MultiScheduler::removeFromQueue(CPU* c, AbsRTTask* t) {
+        assert(c != NULL); assert(t != NULL);
         _queues[c]->extract(t);
+	    dropEvt(c, t);
     }
 
     AbsRTTask* MultiScheduler::getFirst(CPU* c) {
+        assert(c != NULL);
         return _queues[c]->getFirst();
     }
 
