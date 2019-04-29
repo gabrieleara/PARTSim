@@ -26,6 +26,74 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace std;
 
+  /**
+     Manages tasks migration among cores, remembering what they executed and how long.
+  */
+  class MigrationManager {
+  protected:
+    /// The managed events
+    enum EventType { SCHEDULE = 0, DESCHEDULE, WL_CHANGE, SUSPEND, END };
+
+    typedef multimap<AbsTask*, tuple<Tick, enum EventType, CPU*, string wl>> MigrationTableType;
+
+    /// tasks history table. E.g., Task tt at time t  has got running on CPU c executing bzip2
+    ///                            Task tt at time t1 got descheduled
+    MigrationTableType _tasks_history;
+
+  private:
+    /// Adds an event to the task history
+    void addTaskEvent(AbsTask* t, Tick when, enum EventType e, CPU* c) {
+      _tasks_history.insert(make_pair(t, make_tuple(when, e, c, c->getWorkload())));
+    }
+
+    string mapEventType(enum EventType e) const;
+
+  public:
+    MigrationManager(){};
+    ~MigrationManager() { _tasks_history.clear(); };
+
+    void addSchedulingEvent(AbsTask* tt, Tick when, CPU* c) {
+      addTaskEvent(tt, when, SCHEDULE, c);
+    }
+
+    void addSupensionEvent(AbsTask* tt, Tick when) {
+      addTaskEvent(tt, when, SUSPEND, NULL);
+    }
+
+    void addDeschedulingEvent(AbsTask* tt, Tick when) {
+      addTaskEvent(tt, when, DESCHEDULE, NULL);
+    }
+
+    void addEndEvent(AbsTask* tt, Tick when) {
+      addTaskEvent(tt, when, END, NULL);
+    }
+
+    /// you should change CPU worload before to call this method
+    void addWorloadChangeEvent(AbsTask* tt, Tick when, CPU* c) {
+      addTaskEvent(tt, when, WL_CHANGE, c);
+    }
+
+    MigrationTableType getEventsForTask(AbsTask* tt) {
+      MigrationTableType rows;
+      for (const auto& elem : _tasks_history)
+        if (elem.first == tt)
+          rows.insert(elem);
+      return rows;
+    }
+
+    string toString() const {
+      stringstream ss;
+      ss << "Tasks migration histories:" << endl;
+
+      for (const auto &elem : _tasks_history) {
+        ss << elem.first->toString() << " -> [" << double(get<0>(elem.second)) << 
+          ", " << mapEventType(get<1>(elem.second)) << ", " << get<2>(elem.second)->getName() << "]" << endl;
+      }
+      return ss.str();
+    }
+
+  }; 
+
     /**
         \ingroup sched
 

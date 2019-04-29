@@ -26,6 +26,89 @@
 namespace RTSim {
 
     /**
+       Manages tasks migrations among cores and how islands frequency
+       has changed over time.
+
+       Expected scenarios - task migration history:
+       t. tick evt   core      wl
+       t1  0  sched  little_0  bzip
+       t1 10  susp
+       t1 15  sched  little_3  bzip
+       t1 25  cg_wl            encrypt
+       t1 50  desch
+       t1 80  sched  little2   encrypt
+
+       island frequency history:
+       island       tick OPP
+       little_island   0   0
+       little_island 240  10
+       little_island 500  11
+    */
+    class EnergyMigrationManager : public MigrationManager {
+    private:
+      typedef multimap<Island_BL*, pair<Tick, unsigned int opp>> IslandOPPsTableType; 
+
+      /// Remeber Island frequencies over time
+      IslandOPPsTableType _islands_history;
+
+    protected:
+      /// Returns the opp the island had at time tick. And you can infere CPU frequency
+      unsigned int getOPPAtTime(Tick tick, Island_BL* island) const {
+        unsigned int opp = 0;
+        for (const auto& elem : _islands_history)
+          if (elem.first == island && elem.second.first <= tick) {
+            opp = elem.second.second;
+          }
+        return opp;
+      }
+
+    public:
+      EnergyMigrationManager(vector<Island_BL*> islands) {
+        // At the beginning, islands frequency is supposed to be the minimum
+        for (Island_BL* i : islands)
+          addIslandEvent(i, Tick(0), 0);
+      }
+      ~EnergyMigrationManager() { _islands.history.clear(); }
+
+      /// Add an island frequency change event
+      void addIslandEvent(Island_BL* i, Tick when, unsigned int opp) {
+        _islands_history.insert(make_pair(i, make_pair(when, opp)));
+      }
+
+      string toString() const {
+        stringstream ss;
+        ss << MigrationManager::toString();
+
+        ss << "Island frequencies over time:" << endl;
+        for (const auto& elem : _islands_history) {
+          ss << elem.first->toString() << " at " << double(elem.second.first) << "\tfreq " << elem.first->getFrequency(elem.second.second) << endl;
+        }
+        return ss.str();
+      }
+
+      /// Gets the total power consumption for a task tt
+      double getConsumption(AbsTask* tt) const {
+        double cons = 0.0;
+        Tick   prevTE = Tick(0); // previous tick of task considered
+        for (const auto& elem : getEventsForTask(tt)) {
+          CPU* cpu = get<2>(elem.second);
+          auto coreEvts = getCPUEvents(prevTE, get<0>(elem.second), cpu->getIsland());
+          prevTE = get<0>(elem.second);
+          Tick prevTopp = coreEvts.second.first;
+          for (const auto& rowOPP : ++coreEvts.begin()) {
+            string startingWL = cpu->getWorkload();
+            cons += (rowOPP.second.first - prevTopp) * cpu->getPowerConsumption(cpu->getFrequency(rowOPP.second.second)));
+            cpu->setWorkload(startingWL);
+          }
+        }
+
+        assert(cons >= 0.0);
+        return cons;
+      }
+
+    };
+
+    /**
         \ingroup sched
 
         Extension of MultiScheduler for Big-Little.
@@ -38,6 +121,8 @@ namespace RTSim {
     private:
         /// OPP needed by tasks
         map<AbsRTTask*, pair<CPU_BL*, unsigned int>> _opps;
+
+      //      multimap<AbsRTTask*, pair<Tick, CPU_BL*> > _tasks_history; // Tasks history: task tt run on core c at time t
 
     public:
         EnergyMultiScheduler(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);

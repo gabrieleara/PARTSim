@@ -19,6 +19,32 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace std;
 
+    string MigrationManager::mapEventType(enum EventType e) const {
+        string res;
+        switch (e) {
+        case SCHEDULE:
+            res = "schedule";
+            break;
+        case DESCHEDULE:
+            res = "deschedule";
+            break;
+        case SUSPEND:
+            res = "suspend";
+            break;
+        case END:
+            res = "end";
+            break;
+        default:
+            res = "?";
+            break;
+        }
+        return res;
+    }
+
+    ostream& operator<<(ostream& out, const MigrationManager& m) {
+        return out << m.toString();
+    }
+
     MultiScheduler::MultiScheduler(MRTKernel* k, vector<CPU*>& cpus, vector<Scheduler*>& scheds, const string& name)
             : Entity(name) {
         assert(cpus.size() == scheds.size());
