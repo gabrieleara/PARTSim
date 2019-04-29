@@ -674,6 +674,26 @@ TEST_CASE("exp9") {
     // task9 comes in place of task4
     REQUIRE(k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
 
+    SIMUL.run_to(500);
+
+    REQUIRE(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    REQUIRE(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); // has ended already
+
+    REQUIRE(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); // has ended already
+    REQUIRE(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+
+    SIMUL.run_to(536);
+
+    REQUIRE(k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+
+    SIMUL.run_to(941);
+
+    REQUIRE(k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());    
+
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
