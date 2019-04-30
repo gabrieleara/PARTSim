@@ -341,7 +341,7 @@ namespace RTSim {
         // todo
         cout << __func__ << "Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
 
-         if (st) _m_dispatched[st] = p;
+        if (st) _m_dispat[st] = p;
         _endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
         Tick overhead (_contextSwitchDelay);
@@ -350,8 +350,7 @@ namespace RTSim {
         _endEvt[p]->post(SIMUL.getTime() + overhead);
     }
 
-    void MRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e)
-    {
+    void MRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e) {
         // performs the "real" context switch
         DBGENTER(_KERNEL_DBG_LEV);
 

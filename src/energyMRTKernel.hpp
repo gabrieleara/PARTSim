@@ -21,7 +21,7 @@
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       1
+#define EMRTK_MIGRATE_ENABLED       0
 
 namespace RTSim {
 
@@ -65,18 +65,20 @@ namespace RTSim {
     public:
       EnergyMigrationManager(vector<Island_BL*> islands) {
         // At the beginning, islands frequency is supposed to be the minimum
-        for (Island_BL* i : islands)
-          addIslandEvent(i, Tick(0), 0);
+        //        for (Island_BL* i : islands)
+        //addFrequencyChangeEvent(i, Tick(0), 0);
       }
       ~EnergyMigrationManager() { _islands_history.clear(); }
 
       /// Add an island frequency change event
-      void addIslandEvent(Island_BL* i, Tick when, unsigned int opp) {
+      void addFrequencyChangeEvent(Island_BL* i, Tick when, unsigned int opp) {
+        assert(opp >= 0 && opp < i->getOPPsize());
         MigrationCPURow r = { i, when, opp };
         _islands_history.push_back(r);
       }
 
-      void dumpToFile(const bool alsoConsumptions = false, const string filename = "migrationManager.txt") {
+      /// Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file
+      void dumpToFile(const bool alsoConsumptions = true, const string filename = "migrationManager.txt") {
         ofstream stream;
         stream.open(filename);
         stream << toString();
@@ -91,12 +93,13 @@ namespace RTSim {
         stream.close();
       }
 
+      /// Returns island frequencies over time and tasks migrations
       string toString() const {
         stringstream ss;
         ss << MigrationManager::toString();
 
-        ss << "Island frequencies over time:" << endl;
-        ss << "Island\tTick\topp" << endl;
+        ss << endl << "Island frequencies over time:" << endl;
+        ss << "Island\t\tTick\topp" << endl;
         for (const auto& elem : _islands_history) {
           ss << elem.island->toString() << "\t" << double(elem.tick) << "\t" << elem.island->getFrequency(elem.opp) << endl;
         }
@@ -105,7 +108,7 @@ namespace RTSim {
 
       /**
          Gets the total power consumption for a task tt and
-         outputs to a stream, if != NULL
+         outputs to a stream, if it is != NULL
       */
       double getConsumption(AbsRTTask* tt, ostream& os = cout) const {
         double cons = 0.0;
@@ -151,10 +154,11 @@ namespace RTSim {
           
           if (shallSum) {
             CPU_BL *cpu = dynamic_cast<CPU_BL*> (r1.cpu);
-            cons += double(r2.tick - r1.tick) * cpu->getPowerConsumption(getOPPAtTime(r1.tick, cpu->getIsland()));
-           
+            double freq = cpu->getFrequency(getOPPAtTime(r1.tick, cpu->getIsland()));
+            cons += double(r2.tick - r1.tick) * cpu->getPowerConsumption(freq);
+         
             char buf[100] = "";
-            sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(r1.tick), cpu->getPowerConsumption(getOPPAtTime(r1.tick, cpu->getIsland())));
+            sprintf(buf, "(%ld-%ld)*%f + ", long(double(r2.tick)), long(double(r1.tick)), cpu->getPowerConsumption(freq));
             os << buf;
           }
           else {
@@ -308,17 +312,10 @@ namespace RTSim {
         // little, big (order matters for speed)
         Island_BL* _islands[2];
 
-        double totalPowerCosumption;
-
         bool _tryingTaskOnCPU_BL;
 
-        /**
-         * List of tasks ready on a CPU_BL with a given frequency.
-         * Please use this instead of MRTKernel::_m_dispatched because you need to remember CPU_BL OPP.
-         * In fact, the dispatch() could choose to schedule a task on a big CPU_BL with freq 200 and
-         * another on another big with freq 1900. But in Big Little all CPU_BLs have same freq/OPP.
-         */
-        //map<const AbsRTTask *, pair<CPU_BL*, int>> _m_dispatching;
+        /// The energy migration manager/recorder, recording tasks movements and cpu frequencies over time
+        EnergyMigrationManager _e_migration_manager;
 
         /// cores queues, containing ready and running tasks for each core
         EnergyMultiScheduler *_queues;
@@ -452,8 +449,13 @@ namespace RTSim {
         /// Returns utilization of tasks on CPU_BL c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(CPU_BL* c, double freq, double capacity) const;
 
-        /// Returns power consumption after SIMUL.getTime() == 1
-        double getTotalPowerConsumption();
+        /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
+        void dumpPowerConsumption(bool alsoConsumptions = true, const string& filename = "") {
+          if (filename == "")
+            _e_migration_manager.dumpToFile(alsoConsumptions);
+          else
+            _e_migration_manager.dumpToFile(alsoConsumptions, filename);
+        }
 
         /**
          * Begins the dispatch process (context switch). The task is dispatched, but not

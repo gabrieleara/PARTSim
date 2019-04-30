@@ -24,8 +24,7 @@ namespace RTSim {
     using namespace MetaSim;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
-            : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name)
-    {
+      : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
         setIslandBig(big); setIslandLittle(little);
 
         for(CPU_BL* c : getProcessors())  {
@@ -36,7 +35,7 @@ namespace RTSim {
         _sched->setKernel(this);
         setTryingTaskOnCPU_BL(false);
 
-        // todo is there a shorter solution to pass directly vector<CPU_BL*> to EMS
+        // todo is there a shorter solution to pass directly vector<CPU_BL*> to EMS?
         vector<CPU_BL*> cpus = getProcessors();
         vector<CPU*> v;
         for (CPU_BL* c : cpus)
@@ -72,10 +71,6 @@ namespace RTSim {
             c = NULL;
 
         return c;
-    }
-
-    double EnergyMRTKernel::getTotalPowerConsumption() {
-        return totalPowerCosumption;
     }
 
     bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
@@ -134,6 +129,8 @@ namespace RTSim {
         if (isTryngTaskOnCPU_BL())
             return;
 
+        cout << __func__ << endl;
+        _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
         // scale wcets of tasks on the island
     }
 
@@ -199,7 +196,7 @@ namespace RTSim {
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        CPU_BL * p      = dynamic_cast<CPU_BL*>(e->getCPU());
+        CPU_BL    *p    = dynamic_cast<CPU_BL*>(e->getCPU());
         AbsRTTask *dt   = _queues->getRunningTask(p);
         AbsRTTask *st   = e->getTask();
         assert(st != NULL); assert(p != NULL);
@@ -218,6 +215,7 @@ namespace RTSim {
             _m_oldExe[dt] = p;
             _m_currExe[p] = NULL;
             dt->deschedule();
+            _e_migration_manager.addDeschedulingEvent(dt, SIMUL.getTime());
             cout << dt->toString() << " descheduled for " << taskname(st) <<endl;
         }
 
@@ -230,7 +228,7 @@ namespace RTSim {
         // exit(0);
         Tick overhead (_contextSwitchDelay);
         CPU_BL* oldProcessor = dynamic_cast<CPU_BL*>(getOldProcessor(st));
-        if (oldProcessor != p && oldProcessor != NULL)
+        if (st != NULL && oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
         
         _queues->onBeginDispatchMultiFinished(p, st, overhead);
@@ -255,10 +253,11 @@ namespace RTSim {
         // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
         unsigned int opp = _queues->getOPP(cpu);
         if (opp > cpu->getOPP()) {
-            cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
-            cpu->setOPP(opp);
+          cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
+          cpu->setOPP(opp);
         }
-
+        
+        _e_migration_manager.addSchedulingEvent(t, SIMUL.getTime(), cpu);
         _m_oldExe[t] = cpu;
 
         //todo remove
@@ -289,6 +288,7 @@ namespace RTSim {
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
         _queues->onEnd(p);
+        _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
@@ -341,7 +341,7 @@ namespace RTSim {
         if (endingCPU->getIslandType() == IslandType::BIG)
             cout << "\tBalancing on big island load" << endl;
         
-        // Take a ready task of the island and put it on endingCPU.
+        // Take a ready task of the island and put it into endingCPU.
         // However, if core has only ready tasks, then such task, shouldn't
         // be the only ready one for its original core (why to move it in that case?)
         for (CPU_BL * c : getProcessors(endingCPU->getIslandType())) {
@@ -449,7 +449,7 @@ namespace RTSim {
         // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
         _queues->insertTask(t, pp, opp);
 
-        // this is meant to be a virtual assignment of CPU OPP.
+        // This is meant to be a virtual assignment of CPU OPP.
         // Needed to make the rest of the code work properly
         pp->setOPP(opp);
         pp->setBusy(true);
@@ -489,6 +489,7 @@ namespace RTSim {
     void EnergyMRTKernel::dispatch() {
         // test();
         DBGENTER(_KERNEL_DBG_LEV);
+        setTryingTaskOnCPU_BL(true);
 
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
@@ -553,6 +554,7 @@ namespace RTSim {
 
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);
+        setTryingTaskOnCPU_BL(false);
 
         for (CPU_BL *c : getProcessors())
             _queues->schedule(c);
@@ -561,7 +563,6 @@ namespace RTSim {
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
         int startingOPP = c->getOPP();
         string startingWL = c->getWorkload();
-        setTryingTaskOnCPU_BL(true);
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
@@ -650,7 +651,6 @@ namespace RTSim {
 
         c->setOPP(startingOPP);
         c->setWorkload(startingWL);
-        setTryingTaskOnCPU_BL(false);
     } // end of tryTaskOnCPU_BL()
 
 }

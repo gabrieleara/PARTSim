@@ -20,6 +20,7 @@
 #include "scheduler.hpp"
 #include "taskevt.hpp"
 #include "mrtkernel.hpp"
+#include <exeinstr.hpp>
 
 namespace RTSim {
 
@@ -43,7 +44,7 @@ namespace RTSim {
   private:
     /// Adds an event to the task history
     void addTaskEvent(AbsRTTask* t, Tick when, enum EventType e, CPU* c) {
-      MigrationTaskRow r { t, when, e, c, c->getWorkload() };
+      MigrationTaskRow r { t, when, e, c, (c == NULL ? "" : c->getWorkload()) };
       _tasks_history.push_back(r);
     }
 
@@ -54,7 +55,10 @@ namespace RTSim {
     ~MigrationManager() { _tasks_history.clear(); };
 
     void addSchedulingEvent(AbsRTTask* tt, Tick when, CPU* c) {
+      string wl = c->getWorkload();
+      c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
       addTaskEvent(tt, when, SCHEDULE, c);
+      c->setWorkload(wl);
     }
 
     void addSupensionEvent(AbsRTTask* tt, Tick when) {
@@ -85,11 +89,11 @@ namespace RTSim {
     string toString() const {
       stringstream ss;
       ss << "Tasks migration histories:" << endl;
-      ss << "Task\tTick\tEvt\tcpu\twl" << endl;
+      ss << "Task\tTick\tEvt\t\tcpu\twl" << endl;
 
       for (const auto &elem : _tasks_history) {
         ss << taskname(elem.task) << "\t" << double(elem.tick) << 
-          "\t" << mapEventType(elem.evt) << "\t" << elem.cpu->getName() << "\t" << elem.wl << endl;
+          "\t" << mapEventType(elem.evt) << "\t" << (elem.cpu == NULL ? "" : elem.cpu->getName()) << "\t" << elem.wl << endl;
       }
       return ss.str();
     }
@@ -285,7 +289,7 @@ if (taskname(t).find("task9") != string::npos)
         /// Remove a specific task from a core queue. Also removes its ctx evt
         virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
-        /// schedule first task of core queue
+        /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
         	assert(c != NULL);
             if (getRunningTask(c) != NULL)

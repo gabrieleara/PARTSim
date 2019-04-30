@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 10;
+    int TEST_NO = 0;
 
     dumpAllSpeeds();
     
@@ -504,7 +504,9 @@ int main(int argc, char *argv[]) {
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;
 
+
         SIMUL.run(1000); // 5000
+        dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption();
     } catch (BaseExc &e) {
         cout << e.what() << endl;
     }

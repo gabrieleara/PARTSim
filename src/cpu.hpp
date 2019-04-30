@@ -472,6 +472,10 @@ namespace RTSim
         return OPPs;
     }
 
+    string toString() const {
+      return getName();
+    }
+
     virtual void newRun() {}
     virtual void endRun() {}
 
