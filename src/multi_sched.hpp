@@ -34,16 +34,17 @@ namespace RTSim {
     /// The managed events
     enum EventType { SCHEDULE = 0, DESCHEDULE, WL_CHANGE, SUSPEND, END };
 
-    typedef multimap<AbsTask*, tuple<Tick, enum EventType, CPU*, string wl>> MigrationTableType;
+    typedef struct MigrationTaskRow { AbsRTTask* task; Tick tick; enum EventType evt; CPU* cpu; string wl; } MigrationRow;
 
     /// tasks history table. E.g., Task tt at time t  has got running on CPU c executing bzip2
     ///                            Task tt at time t1 got descheduled
-    MigrationTableType _tasks_history;
+    vector<MigrationTaskRow> _tasks_history;
 
   private:
     /// Adds an event to the task history
-    void addTaskEvent(AbsTask* t, Tick when, enum EventType e, CPU* c) {
-      _tasks_history.insert(make_pair(t, make_tuple(when, e, c, c->getWorkload())));
+    void addTaskEvent(AbsRTTask* t, Tick when, enum EventType e, CPU* c) {
+      MigrationTaskRow r { t, when, e, c, c->getWorkload() };
+      _tasks_history.push_back(r);
     }
 
     string mapEventType(enum EventType e) const;
@@ -52,42 +53,43 @@ namespace RTSim {
     MigrationManager(){};
     ~MigrationManager() { _tasks_history.clear(); };
 
-    void addSchedulingEvent(AbsTask* tt, Tick when, CPU* c) {
+    void addSchedulingEvent(AbsRTTask* tt, Tick when, CPU* c) {
       addTaskEvent(tt, when, SCHEDULE, c);
     }
 
-    void addSupensionEvent(AbsTask* tt, Tick when) {
+    void addSupensionEvent(AbsRTTask* tt, Tick when) {
       addTaskEvent(tt, when, SUSPEND, NULL);
     }
 
-    void addDeschedulingEvent(AbsTask* tt, Tick when) {
+    void addDeschedulingEvent(AbsRTTask* tt, Tick when) {
       addTaskEvent(tt, when, DESCHEDULE, NULL);
     }
 
-    void addEndEvent(AbsTask* tt, Tick when) {
+    void addEndEvent(AbsRTTask* tt, Tick when) {
       addTaskEvent(tt, when, END, NULL);
     }
 
     /// you should change CPU worload before to call this method
-    void addWorloadChangeEvent(AbsTask* tt, Tick when, CPU* c) {
+    void addWorloadChangeEvent(AbsRTTask* tt, Tick when, CPU* c) {
       addTaskEvent(tt, when, WL_CHANGE, c);
     }
 
-    MigrationTableType getEventsForTask(AbsTask* tt) {
-      MigrationTableType rows;
+    vector<MigrationTaskRow> getEventsForTask(AbsRTTask* tt) {
+      vector<MigrationTaskRow> rows;
       for (const auto& elem : _tasks_history)
-        if (elem.first == tt)
-          rows.insert(elem);
+        if (elem.task == tt)
+          rows.push_back(elem);
       return rows;
     }
 
     string toString() const {
       stringstream ss;
       ss << "Tasks migration histories:" << endl;
+      ss << "Task\tTick\tEvt\tcpu\twl" << endl;
 
       for (const auto &elem : _tasks_history) {
-        ss << elem.first->toString() << " -> [" << double(get<0>(elem.second)) << 
-          ", " << mapEventType(get<1>(elem.second)) << ", " << get<2>(elem.second)->getName() << "]" << endl;
+        ss << taskname(elem.task) << "\t" << double(elem.tick) << 
+          "\t" << mapEventType(elem.evt) << "\t" << elem.cpu->getName() << "\t" << elem.wl << endl;
       }
       return ss.str();
     }

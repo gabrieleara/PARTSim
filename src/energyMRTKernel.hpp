@@ -46,18 +46,18 @@ namespace RTSim {
     */
     class EnergyMigrationManager : public MigrationManager {
     private:
-      typedef multimap<Island_BL*, pair<Tick, unsigned int opp>> IslandOPPsTableType; 
+      typedef struct MigrationCPURow { Island_BL* island; Tick tick; unsigned int opp; } MigrationCPURow;
 
       /// Remeber Island frequencies over time
-      IslandOPPsTableType _islands_history;
+      vector<MigrationCPURow> _islands_history;
 
     protected:
       /// Returns the opp the island had at time tick. And you can infere CPU frequency
       unsigned int getOPPAtTime(Tick tick, Island_BL* island) const {
         unsigned int opp = 0;
         for (const auto& elem : _islands_history)
-          if (elem.first == island && elem.second.first <= tick) {
-            opp = elem.second.second;
+          if (elem.island == island && elem.tick <= tick) {
+            opp = elem.opp;
           }
         return opp;
       }
@@ -68,11 +68,27 @@ namespace RTSim {
         for (Island_BL* i : islands)
           addIslandEvent(i, Tick(0), 0);
       }
-      ~EnergyMigrationManager() { _islands.history.clear(); }
+      ~EnergyMigrationManager() { _islands_history.clear(); }
 
       /// Add an island frequency change event
       void addIslandEvent(Island_BL* i, Tick when, unsigned int opp) {
-        _islands_history.insert(make_pair(i, make_pair(when, opp)));
+        MigrationCPURow r = { i, when, opp };
+        _islands_history.push_back(r);
+      }
+
+      void dumpToFile(const bool alsoConsumptions = false, const string filename = "migrationManager.txt") {
+        ofstream stream;
+        stream.open(filename);
+        stream << toString();
+
+        stream << endl << endl;
+
+        if (alsoConsumptions)
+          for (MigrationTaskRow r : _tasks_history) {
+            getConsumption(r.task, stream);
+          }
+
+        stream.close();
       }
 
       string toString() const {
@@ -80,27 +96,73 @@ namespace RTSim {
         ss << MigrationManager::toString();
 
         ss << "Island frequencies over time:" << endl;
+        ss << "Island\tTick\topp" << endl;
         for (const auto& elem : _islands_history) {
-          ss << elem.first->toString() << " at " << double(elem.second.first) << "\tfreq " << elem.first->getFrequency(elem.second.second) << endl;
+          ss << elem.island->toString() << "\t" << double(elem.tick) << "\t" << elem.island->getFrequency(elem.opp) << endl;
         }
         return ss.str();
       }
 
-      /// Gets the total power consumption for a task tt
-      double getConsumption(AbsTask* tt) const {
+      /**
+         Gets the total power consumption for a task tt and
+         outputs to a stream, if != NULL
+      */
+      double getConsumption(AbsRTTask* tt, ostream& os = cout) const {
         double cons = 0.0;
-        Tick   prevTE = Tick(0); // previous tick of task considered
-        for (const auto& elem : getEventsForTask(tt)) {
-          CPU* cpu = get<2>(elem.second);
-          auto coreEvts = getCPUEvents(prevTE, get<0>(elem.second), cpu->getIsland());
-          prevTE = get<0>(elem.second);
-          Tick prevTopp = coreEvts.second.first;
-          for (const auto& rowOPP : ++coreEvts.begin()) {
-            string startingWL = cpu->getWorkload();
-            cons += (rowOPP.second.first - prevTopp) * cpu->getPowerConsumption(cpu->getFrequency(rowOPP.second.second)));
-            cpu->setWorkload(startingWL);
+        //        MigrationCPURow r1, r2;
+        os << __func__ << "():" << endl << "cons = ";
+
+        // if there is no event event, I suppose there is an error somewhere
+        for (int i = 1; i < _tasks_history.size(); i++) {
+          const MigrationTaskRow r1 = _tasks_history.at(0);
+          const MigrationTaskRow r2 = _tasks_history.at(1);
+          bool shallSum = false;
+          switch (r2.evt) {
+          case SUSPEND:
+            os << "(case SUSPEND) ";
+            if (r1.evt == SCHEDULE || r1.evt == WL_CHANGE)
+              shallSum = true;
+            break;
+          case END:
+            os << "(case END) ";
+            shallSum = true;
+            break;
+          case SCHEDULE:
+            os << "(case SCHEDULE) 0 + ";
+            // in all cases, cons += 0.0;
+            break;
+          case DESCHEDULE:
+            os << "(case DESCHEDULE) ";
+            shallSum = true;
+            if (r1.evt == DESCHEDULE)
+              shallSum = false;
+            break;
+          case WL_CHANGE:
+            os << "(case WL_CHANGE) ";
+            shallSum = true;
+            break;
+          default:
+            os << "default => error";
+            cout << "default => error";
+            abort();
           }
-        }
+          string startingWL = r1.cpu->getWorkload();
+          r1.cpu->setWorkload(r1.wl);
+          
+          if (shallSum) {
+            CPU_BL *cpu = dynamic_cast<CPU_BL*> (r1.cpu);
+            cons += double(r2.tick - r1.tick) * cpu->getPowerConsumption(getOPPAtTime(r1.tick, cpu->getIsland()));
+           
+            char buf[100] = "";
+            sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(r1.tick), cpu->getPowerConsumption(getOPPAtTime(r1.tick, cpu->getIsland())));
+            os << buf;
+          }
+          else {
+            os << "0 + ";
+          }
+
+          r1.cpu->setWorkload(startingWL);
+        } // for
 
         assert(cons >= 0.0);
         return cons;

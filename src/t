@@ -1,0 +1,27 @@
+g++ -Wno-deprecated -Wno-deprecated-declarations --std=c++11 -I. -g   -c -o energyMRTKernel_example.o energyMRTKernel_example.cpp
+In file included from energyMRTKernel_example.cpp:21:0:
+./energyMRTKernel.hpp: In member function ‘double RTSim::EnergyMigrationManager::getConsumption(RTSim::AbsRTTask*, std::ostream&) const’:
+./energyMRTKernel.hpp:153:51: error: ‘class RTSim::CPU’ has no member named ‘getPowerConsumption’; did you mean ‘getMaxPowerConsumption’?
+             cons += (r2.tick - r1.tick) * r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                   ^~~~~~~~~~~~~~~~~~~
+                                                   getMaxPowerConsumption
+./energyMRTKernel.hpp:153:101: error: ‘class RTSim::CPU’ has no member named ‘getIsland’
+             cons += (r2.tick - r1.tick) * r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                                                                     ^~~~~~~~~
+./energyMRTKernel.hpp:156:67: error: ‘t1’ was not declared in this scope
+             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                                   ^~
+./energyMRTKernel.hpp:156:67: note: suggested alternative: ‘y1’
+             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                                   ^~
+                                                                   y1
+./energyMRTKernel.hpp:156:85: error: ‘class RTSim::CPU’ has no member named ‘getPowerConsumption’; did you mean ‘getMaxPowerConsumption’?
+             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                                                     ^~~~~~~~~~~~~~~~~~~
+                                                                                     getMaxPowerConsumption
+In file included from energyMRTKernel_example.cpp:21:0:
+./energyMRTKernel.hpp:156:135: error: ‘class RTSim::CPU’ has no member named ‘getIsland’
+             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
+                                                                                                                                       ^~~~~~~~~
+<builtin>: recipe for target 'energyMRTKernel_example.o' failed
+make: *** [energyMRTKernel_example.o] Error 1
