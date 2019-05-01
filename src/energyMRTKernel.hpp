@@ -71,19 +71,22 @@ namespace RTSim {
       ~EnergyMigrationManager() { _islands_history.clear(); }
 
       /// Add an island frequency change event
-      void addFrequencyChangeEvent(Island_BL* i, Tick when, unsigned int opp) {
-        assert(opp >= 0 && opp < i->getOPPsize());
-        MigrationCPURow r = { i, when, opp };
+      void addFrequencyChangeEvent(Island_BL* island, Tick when, unsigned int opp) {
+        assert(opp >= 0 && opp < island->getOPPsize());
+        if (getOPPAtTime(when, island) == opp) // frequency already recorded
+          return;
+
+        MigrationCPURow r = { island, when, opp };
         _islands_history.push_back(r);
       }
 
       /**
 	 Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file.
 
- 	 If you need tasks migrations, then pass also the scheduler to get scheduled tasks.
+ 	 If you need tasks migrations, then pass also them.
 	*/
-      void dumpToFile(const bool alsoConsumptions = true, Scheduler *s = NULL, const string filename = "migrationManager.txt") {
-	assert (alsoConsumptions && s != NULL);
+      void dumpToFile(const bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string filename = "migrationManager.txt") {
+        assert (alsoConsumptions && !tasks.empty());
 
         ofstream stream;
         stream.open(filename);
@@ -92,10 +95,8 @@ namespace RTSim {
         stream << endl << endl;
 
         if (alsoConsumptions) {
-	  int i = 0;
-	  AbsRTTask *t;
     double totalConsumption = 0.0;
-	  while ( (t = s->getTaskN(i++)) != NULL ) {
+	  for ( AbsRTTask *t : tasks ) {
             double cons = getConsumption(t, stream);
             totalConsumption += cons;
     }
@@ -128,8 +129,15 @@ namespace RTSim {
 
         // if there is no event event, I suppose there is an error somewhere
         for (int i = 1; i < _tasks_history.size(); i++) {
-          const MigrationTaskRow r1 = _tasks_history.at(i-1);
-          const MigrationTaskRow r2 = _tasks_history.at(i);
+          int j = i - 1;
+          while (j >= 0 && _tasks_history.at(j).task != tt)
+            j--;
+          if (j < 0) continue; // no corresponding row found for task tt
+          const MigrationTaskRow r1 = _tasks_history.at(j); // corresponding previous evt of task of r2
+          const MigrationTaskRow r2 = _tasks_history.at(i); // row of considered evt
+          if (r1.task != r2.task)
+            continue;
+
           bool shallSum = false;
           switch (r2.evt) {
           case SUSPEND:
@@ -182,7 +190,7 @@ namespace RTSim {
         } // for
 
         os << " = " << cons << endl;
-        os << "\t(a + at the end is normal)";
+        os << "\t(a + at the end is normal)" << endl;
 
         assert(cons >= 0.0);
         return cons;
@@ -337,7 +345,7 @@ namespace RTSim {
         EnergyMultiScheduler *_queues;
 
         /// for debug, if you want to force a certain choice of cores and frequencies
-        map<Task*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
+        map<AbsRTTask*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
@@ -464,11 +472,11 @@ namespace RTSim {
         double getUtilization(CPU_BL* c, double freq, double capacity) const;
 
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
-        void dumpPowerConsumption(bool alsoConsumptions = true, const string& filename = "") {
+      void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
           if (filename == "")
-            _e_migration_manager.dumpToFile(alsoConsumptions, _sched);
+            _e_migration_manager.dumpToFile(alsoConsumptions, tasks);
           else
-            _e_migration_manager.dumpToFile(alsoConsumptions, _sched, filename);
+            _e_migration_manager.dumpToFile(alsoConsumptions, tasks, filename);
         }
 
         /**
@@ -530,7 +538,7 @@ namespace RTSim {
 
         bool manageForcedDispatch(Task*);
 
-        void addForcedDispatch(RTSim::PeriodicTask *t, CPU_BL *c, unsigned int opp);
+        void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp);
     };
 }
 

@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 1;
+    int TEST_NO = 2;
 
     dumpAllSpeeds();
     
@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
         vector<Scheduler *> schedulers;
         vector<RTKernel *> kernels;
         vector<CPU_BL *> cpus_little, cpus_big;
+        vector<AbsRTTask*> tasks;
 
         vector<double> V_little = {
                 0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -210,6 +211,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
+            tasks.push_back(t);
 
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
         }
@@ -221,6 +223,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
+            tasks.push_back(t);
 
             task_name = "task2";
             cout << "Creating task: " << task_name << endl;
@@ -228,6 +231,7 @@ int main(int argc, char *argv[]) {
             t->insertCode("fixed(500," + workload + ");");
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
+            tasks.push_back(t);
 
             // task1 (500,500) => BIG_3 max freq, task2 (500,500) => BIG_2 max freq
         }
@@ -239,6 +243,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
+            tasks.push_back(t);
 
             task_name = "task2";
             cout << "Creating task: " << task_name << endl;
@@ -246,6 +251,7 @@ int main(int argc, char *argv[]) {
             t->insertCode("fixed(250," + workload + ");");
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
+            tasks.push_back(t);
 
             // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
@@ -257,6 +263,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
+            tasks.push_back(t);
 
             // little freq 500
         }
@@ -270,6 +277,7 @@ int main(int argc, char *argv[]) {
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
+                tasks.push_back(t);
             }
         }
         else if(TEST_NO == 5) {
@@ -284,7 +292,7 @@ int main(int argc, char *argv[]) {
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
-
+                tasks.push_back(t);
             }
 
             // small tasks. They should be scheduled on a single little at frequency with min voltage = 500
@@ -292,7 +300,6 @@ int main(int argc, char *argv[]) {
         else if(TEST_NO == 6) {
           /* This experiment shows that other CPUs frequencies are increased for the
              entire island after a decision for other tasks has already been made*/
-            vector<PeriodicTask*> task;
             vector<CPU*> cpu_task;
             int i, wcet = 300;
             for (int j = 0; j < 5; j++) {
@@ -308,7 +315,7 @@ int main(int argc, char *argv[]) {
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
 
-                task.push_back(t);
+                tasks.push_back(t);
             }
         }
         else if(TEST_NO == 7) {
@@ -322,6 +329,7 @@ int main(int argc, char *argv[]) {
             t->insertCode(instr);
             kernels[0]->addTask(*t, "");
             ttrace.attachToTask(*t);
+            tasks.push_back(t);
           }
 
           /* Towards random workloads, but this time alg. first decides to
@@ -340,6 +348,7 @@ int main(int argc, char *argv[]) {
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
+                tasks.push_back(t);
             }
             // towards random workloads...
         }
@@ -349,7 +358,6 @@ int main(int argc, char *argv[]) {
             int task_period = 500;
             int mode = 0;
             int seed = 98;
-            vector<PeriodicTask*> tasks;
             srand(seed); // random nums are expected to be the same in all simulations
 
             for (int j = 0; j < taskNO; j++) {
@@ -386,7 +394,7 @@ int main(int argc, char *argv[]) {
             RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
             //EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
-            for (PeriodicTask* t : tasks)
+            for (AbsRTTask* t : tasks)
                 kernels[0]->addTask(*t, "");
 
             SIMUL.initSingleRun();
@@ -401,7 +409,6 @@ int main(int argc, char *argv[]) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
             // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
             int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
-            vector<PeriodicTask*> tasks;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
                 cout << "Creating task: " << task_name;
@@ -472,7 +479,6 @@ int main(int argc, char *argv[]) {
             int wcets[] = { 30,  30  };
             int deadl[] = { 500, 400 };
             int activ[] = { 0,   6   };
-            vector<PeriodicTask*> tasks;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
                 cout << "Creating task: " << task_name;
@@ -490,7 +496,7 @@ int main(int argc, char *argv[]) {
             k->addForcedDispatch(tasks[1], cpus_little[0], 6);
 
             SIMUL.initSingleRun();
-            tasks[1]->activate(Tick(activ[1]));
+            dynamic_cast<Task*>(tasks[1])->activate(Tick(activ[1]));
             SIMUL.run_to(17);
 
             assert(k->getProcessor(tasks[1]) == cpus_little[0]);
@@ -548,7 +554,7 @@ int main(int argc, char *argv[]) {
 
 
         SIMUL.run(1000); // 5000
-        dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption();
+        dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption(true, tasks);
     } catch (BaseExc &e) {
         cout << e.what() << endl;
     }

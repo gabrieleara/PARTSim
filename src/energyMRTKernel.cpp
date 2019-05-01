@@ -169,7 +169,7 @@ namespace RTSim {
       cout << endl;
     }
 
-    void EnergyMRTKernel::addForcedDispatch(PeriodicTask* t, CPU_BL* c, unsigned int opp) {
+    void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp) {
         _m_forcedDispatch[t] = make_tuple(c, opp);
     }
 
