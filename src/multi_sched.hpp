@@ -300,12 +300,12 @@ if (taskname(t).find("task9") != string::npos)
 
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
-        	assert(c != NULL);
+        	  assert(c != NULL);
             if (getRunningTask(c) != NULL)
                 makeReady(c);
             AbsRTTask *t = getFirst(c);
             if (t != NULL)  // request to schedule on core with no assigned tasks
-            	makeRunning(t, c);
+                 makeRunning(t, c);
         }
 
         virtual void newRun() {}

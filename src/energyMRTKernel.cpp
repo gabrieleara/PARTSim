@@ -1,4 +1,4 @@
-    /***************************************************************************
+ /***************************************************************************
  *   begin                : Thu Apr 24 15:54:58 CEST 2003
  *   copyright            : (C) 2003 by Agostino Mascitti
  *   email                : a.mascitti@sssup.it
@@ -256,7 +256,9 @@ namespace RTSim {
           cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
           cpu->setOPP(opp);
         }
-        
+        else // otherwise you have to same freq change events
+          _e_migration_manager.addFrequencyChangeEvent(cpu->getIsland(), SIMUL.getTime(), opp);
+
         _e_migration_manager.addSchedulingEvent(t, SIMUL.getTime(), cpu);
         _m_oldExe[t] = cpu;
 

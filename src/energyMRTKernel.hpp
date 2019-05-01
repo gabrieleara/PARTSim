@@ -77,19 +77,31 @@ namespace RTSim {
         _islands_history.push_back(r);
       }
 
-      /// Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file
-      void dumpToFile(const bool alsoConsumptions = true, const string filename = "migrationManager.txt") {
+      /**
+	 Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file.
+
+ 	 If you need tasks migrations, then pass also the scheduler to get scheduled tasks.
+	*/
+      void dumpToFile(const bool alsoConsumptions = true, Scheduler *s = NULL, const string filename = "migrationManager.txt") {
+	assert (alsoConsumptions && s != NULL);
+
         ofstream stream;
         stream.open(filename);
         stream << toString();
 
         stream << endl << endl;
 
-        if (alsoConsumptions)
-          for (MigrationTaskRow r : _tasks_history) {
-            getConsumption(r.task, stream);
-          }
-
+        if (alsoConsumptions) {
+	  int i = 0;
+	  AbsRTTask *t;
+    double totalConsumption = 0.0;
+	  while ( (t = s->getTaskN(i++)) != NULL ) {
+            double cons = getConsumption(t, stream);
+            totalConsumption += cons;
+    }
+    stream << endl << endl << "Total tasks consumption = " << totalConsumption << endl;
+	}
+        
         stream.close();
       }
 
@@ -99,7 +111,7 @@ namespace RTSim {
         ss << MigrationManager::toString();
 
         ss << endl << "Island frequencies over time:" << endl;
-        ss << "Island\t\tTick\topp" << endl;
+        ss << "Island\t\tTick\tFrequency" << endl;
         for (const auto& elem : _islands_history) {
           ss << elem.island->toString() << "\t" << double(elem.tick) << "\t" << elem.island->getFrequency(elem.opp) << endl;
         }
@@ -112,13 +124,12 @@ namespace RTSim {
       */
       double getConsumption(AbsRTTask* tt, ostream& os = cout) const {
         double cons = 0.0;
-        //        MigrationCPURow r1, r2;
-        os << __func__ << "():" << endl << "cons = ";
+        os << __func__ << "(" << taskname(tt) << "):" << endl << "\tcons = ";
 
         // if there is no event event, I suppose there is an error somewhere
         for (int i = 1; i < _tasks_history.size(); i++) {
-          const MigrationTaskRow r1 = _tasks_history.at(0);
-          const MigrationTaskRow r2 = _tasks_history.at(1);
+          const MigrationTaskRow r1 = _tasks_history.at(i-1);
+          const MigrationTaskRow r2 = _tasks_history.at(i);
           bool shallSum = false;
           switch (r2.evt) {
           case SUSPEND:
@@ -131,7 +142,7 @@ namespace RTSim {
             shallSum = true;
             break;
           case SCHEDULE:
-            os << "(case SCHEDULE) 0 + ";
+            os << "(case SCHEDULE) ";
             // in all cases, cons += 0.0;
             break;
           case DESCHEDULE:
@@ -149,24 +160,29 @@ namespace RTSim {
             cout << "default => error";
             abort();
           }
-          string startingWL = r1.cpu->getWorkload();
-          r1.cpu->setWorkload(r1.wl);
           
           if (shallSum) {
+            string startingWL = r1.cpu->getWorkload();
+            r1.cpu->setWorkload(r1.wl);
+
             CPU_BL *cpu = dynamic_cast<CPU_BL*> (r1.cpu);
             double freq = cpu->getFrequency(getOPPAtTime(r1.tick, cpu->getIsland()));
             cons += double(r2.tick - r1.tick) * cpu->getPowerConsumption(freq);
          
             char buf[100] = "";
-            sprintf(buf, "(%ld-%ld)*%f + ", long(double(r2.tick)), long(double(r1.tick)), cpu->getPowerConsumption(freq));
+            sprintf(buf, "(%ld-%ld)*%f (freq=%ld) + ", long(double(r2.tick)), long(double(r1.tick)), cpu->getPowerConsumption(freq), long(freq));
             os << buf;
+
+            r1.cpu->setWorkload(startingWL);
           }
           else {
             os << "0 + ";
           }
 
-          r1.cpu->setWorkload(startingWL);
         } // for
+
+        os << " = " << cons << endl;
+        os << "\t(a + at the end is normal)";
 
         assert(cons >= 0.0);
         return cons;
@@ -450,9 +466,9 @@ namespace RTSim {
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
         void dumpPowerConsumption(bool alsoConsumptions = true, const string& filename = "") {
           if (filename == "")
-            _e_migration_manager.dumpToFile(alsoConsumptions);
+            _e_migration_manager.dumpToFile(alsoConsumptions, _sched);
           else
-            _e_migration_manager.dumpToFile(alsoConsumptions, filename);
+            _e_migration_manager.dumpToFile(alsoConsumptions, _sched, filename);
         }
 
         /**
