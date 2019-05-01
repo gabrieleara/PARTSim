@@ -23,7 +23,6 @@ class Requisite {
             : EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate) {}
 };
 
-int cleanup_suite();
 int init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
 bool checkRequisites(Requisite reqs);
@@ -57,6 +56,7 @@ TEST_CASE("exp0") {
     SIMUL.endSingleRun();
     delete t0;
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp1") {
@@ -99,6 +99,7 @@ TEST_CASE("exp1") {
     SIMUL.endSingleRun();
     delete t1; delete t0;
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp2") {
@@ -144,6 +145,7 @@ TEST_CASE("exp2") {
     SIMUL.endSingleRun();
     delete t0; delete t1;
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp3") {
@@ -174,6 +176,7 @@ TEST_CASE("exp3") {
     SIMUL.endSingleRun();
     delete t0;
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp4") {
@@ -230,6 +233,7 @@ TEST_CASE("exp4") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp5") {
@@ -302,6 +306,7 @@ TEST_CASE("exp5") {
     for (int j = 0; j < 4; j++)
         delete task[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 // test showing that frequency of little/big island may be raised
@@ -392,6 +397,7 @@ TEST_CASE("exp6") {
     for (int j = 0; j < 5; j++)
         delete task[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp7") {
@@ -481,6 +487,7 @@ TEST_CASE("exp7") {
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete task[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp8") {
@@ -603,6 +610,7 @@ TEST_CASE("exp8") {
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete task[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 TEST_CASE("exp9") {
@@ -699,6 +707,63 @@ TEST_CASE("exp9") {
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete tasks[j];
     delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
+}
+
+TEST_CASE("exp10") {
+	/**
+	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
+	    Then, another task, more important, arrives at time 6. Would this last task begin its
+	    context switch at time 8, thus being scheduled at time 8+8=16?
+	    Experiment requires EDF scheduler.
+	  */
+	init_sequence = 10;
+    cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( Requisite(false, false) )) return;
+
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+
+	int wcets[] = { 30,  30  };
+	int deadl[] = { 500, 400 };
+	int activ[] = { 0,   6   };
+	vector<PeriodicTask*> tasks;
+	for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+	    task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
+	    cout << "Creating task: " << task_name;
+	    PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
+	    char instr[60] = "";
+	    sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+	    t->insertCode(instr);
+	    kern->addTask(*t, "");
+	    //ttrace.attachToTask(*t);
+	    tasks.push_back(t);
+	}
+	EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+	k->setContextSwitchDelay(Tick(8));
+	k->addForcedDispatch(tasks[0], cpus_little[0], 6);
+	k->addForcedDispatch(tasks[1], cpus_little[0], 6);
+
+	SIMUL.initSingleRun();
+	tasks[1]->activate(Tick(activ[1]));
+	SIMUL.run_to(17);
+
+	assert(k->getProcessor(tasks[1]) == cpus_little[0]);
+	assert(k->getDispatchingProcessor(tasks[0]) == cpus_little[0]);
+
+	SIMUL.run_to(156);
+
+	assert(k->getProcessor(tasks[0]) == cpus_little[0]);
+	assert(tasks[1]->isActive() == false);
+
+	SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete tasks[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
 }
 
 // Not finding an example with a call to a local function, I outed out for CUnit.
@@ -845,8 +910,7 @@ int init_suite(EnergyMRTKernel** kern) {
     island_bl_little->setKernel(*kern);
     CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
-    init_sequence++;
-    cout << "end init_suite" << endl;
+    cout << "end init_suite of Experiment #" << init_suite << endl;
     return 0;
 }
 
@@ -862,11 +926,11 @@ bool inRange(int eval, int expected) {
 bool checkRequisites(Requisite reqs) {
     cout << "Experiments requires EMRTK_leave_little3: " << reqs.EMRTK_leave_little3 << " and EMRTK_migrate: " << reqs.EMRTK_migrate << endl;
     cout << "Current settings: EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << ", EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << endl; 
-    if ( reqs.EMRTK_leave_little3 != EMRTK_LEAVE_LITTLE3_ENABLED) {
+    if ( reqs.EMRTK_leave_little3 != EMRTK_LEAVE_LITTLE3_ENABLED ) {
         cout << "Test requires EMRTK_LEAVE_LITTLE3_ENABLED = 1, but it's disabled: " << EMRTK_LEAVE_LITTLE3_ENABLED << ". Skip" << endl;
         return false;
     }
-    if ( reqs.EMRTK_migrate != EMRTK_MIGRATE_ENABLED) {
+    if ( reqs.EMRTK_migrate != EMRTK_MIGRATE_ENABLED ) {
         cout << "Test requires EMRTK_MIGRATE_ENABLED = 1, but it's disabled: " << EMRTK_MIGRATE_ENABLED << ". Skip" << endl;
         return false;
     }

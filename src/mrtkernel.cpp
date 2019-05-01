@@ -341,7 +341,7 @@ namespace RTSim {
         // todo
         cout << __func__ << "Scheduling task " << taskname(st) << " on cpu " << p->toString() << endl;
 
-        if (st) _m_dispat[st] = p;
+        if (st) _m_dispatched[st] = p;
         _endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
         Tick overhead (_contextSwitchDelay);

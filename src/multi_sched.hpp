@@ -151,8 +151,11 @@ namespace RTSim {
         virtual void makeRunning(AbsRTTask* t, CPU* c) {
             assert(c != NULL); assert(t != NULL);
 
+            Tick when = SIMUL.getTime();
+            if (isContextSwitching(c))
+              when = _endEvts[c]->getTime();
             dropEvt(c, t);
-            postBeginEvt(c, t, SIMUL.getTime());
+            postBeginEvt(c, t, when);
         }
 
         /// Transition from running to ready on core c
@@ -237,6 +240,12 @@ namespace RTSim {
 
         /// Its CPU if task in dispatched in any queue, else NULL
         virtual CPU* isInAnyQueue(const AbsRTTask* t);
+
+        /// True if CPU is under a context switch (= there is a task in the limbo between beginDispatchMulti - endDispatchMulti)
+        bool isContextSwitching(CPU* c) const {
+          bool ret = _endEvts.find(c) != _endEvts.end();
+          return ret;
+        }
 
         void onBeginDispatchMultiFinished(CPU* c, AbsRTTask* newTask, Tick overhead) {
           assert(c != NULL); assert(newTask != NULL); assert(double(overhead) >= 0.0);

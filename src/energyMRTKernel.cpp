@@ -169,15 +169,15 @@ namespace RTSim {
       cout << endl;
     }
 
-    void EnergyMRTKernel::addForcedDispatch(PeriodicTask* t, CPU_BL* c, int opp) {
-        _m_forcedDispatch[t] = make_pair(c, opp);
+    void EnergyMRTKernel::addForcedDispatch(PeriodicTask* t, CPU_BL* c, unsigned int opp) {
+        _m_forcedDispatch[t] = make_tuple(c, opp);
     }
 
     // for gdb
     bool EnergyMRTKernel::manageForcedDispatch(Task* t) {
-        if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end()) {
+        if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end() ) { //&& get<2>(_m_forcedDispatch[t]) == SIMUL.getTime()) {
             cout << __func__ << endl;
-            dispatch(_m_forcedDispatch[t].first, t, _m_forcedDispatch[t].second);
+            dispatch(get<0>(_m_forcedDispatch[t]), t, get<1>(_m_forcedDispatch[t]));
             _m_forcedDispatch.erase(t);
             return true;
         }
@@ -453,36 +453,6 @@ namespace RTSim {
         // Needed to make the rest of the code work properly
         pp->setOPP(opp);
         pp->setBusy(true);
-    }
-
-    void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask* t) {
-        DBGENTER(_KERNEL_DBG_LEV);
-        cout << "EnergyMRTKernel::dispatch(p,t)" << endl;
-        Tick ctx;
-
-        if (p == NULL) throw RTKernelExc("Dispatch with NULL parameter");
-
-        DBGPRINT_2("dispatching on processor ", p);
-        //_beginEvt[p]->drop();
-
-        if (_isContextSwitching[p]) {
-            // left todo
-            DBGPRINT("Context switch is disabled!");
-            /*_beginEvt[p]->post(_endEvt[p]->getTime());
-            AbsRTTask *task = _endEvt[p]->getTask();
-            _endEvt[p]->drop();
-            if (task != NULL) {
-                _endEvt[p]->setTask(NULL);
-                _m_dispatching[task].first = NULL;
-            }*/
-        }
-        else {
-            //ctx = decideBeginCtxSwitch(dynamic_cast<CPU_BL*>(p),t);
-            //postEvt(p, t, ctx, false);
-            cout << "beginEvt " << taskname(t) << " set to t=" << ctx << endl;
-        }
-
-
     }
 
     /* Decide a CPU for each ready task */

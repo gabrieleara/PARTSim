@@ -147,12 +147,12 @@ namespace RTSim {
     void MultiScheduler::dropEvt(CPU* c, AbsRTTask* t) {
         assert(c != NULL); assert(t != NULL);
 
-        if (_beginEvts[c] != NULL && _beginEvts[c]->getTask() == t) {
+        if (_beginEvts.find(c) != _beginEvts.end() && _beginEvts[c]->getTask() == t) {
             _beginEvts[c]->drop();
             _beginEvts.erase(c);
         }
 
-        if (_endEvts[c] != NULL && _endEvts[c]->getTask() == t) {
+        if (_endEvts.find(c) != _endEvts.end() && _endEvts[c]->getTask() == t) {
             _endEvts[c]->drop();
             _endEvts.erase(c);
         }

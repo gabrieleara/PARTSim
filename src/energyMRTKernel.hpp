@@ -321,7 +321,7 @@ namespace RTSim {
         EnergyMultiScheduler *_queues;
 
         /// for debug, if you want to force a certain choice of cores and frequencies
-        map<Task*, pair<CPU_BL*, int>> _m_forcedDispatch;
+        map<Task*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
@@ -377,6 +377,7 @@ namespace RTSim {
         Island_BL* getIslandBig() const { return _islands[1]; }
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
+	Scheduler* getScheduler() { return _sched; }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
@@ -414,9 +415,6 @@ namespace RTSim {
             of tasks. Info about task is needed
          */
         virtual void dispatch(CPU* c) {}
-
-        /// decides when task context switch begins on the CPU
-        void dispatch(CPU* c, AbsRTTask* t);
 
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
@@ -516,7 +514,7 @@ namespace RTSim {
 
         bool manageForcedDispatch(Task*);
 
-        void addForcedDispatch(RTSim::PeriodicTask *t, CPU_BL *c, int opp);
+        void addForcedDispatch(RTSim::PeriodicTask *t, CPU_BL *c, unsigned int opp);
     };
 }
 

@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 0;
+    int TEST_NO = 11;
 
     dumpAllSpeeds();
     
@@ -459,6 +459,48 @@ int main(int argc, char *argv[]) {
             assert(k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
 
             SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            return 0;
+        }
+        else if (TEST_NO == 11) {
+            /**
+                At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
+                Then, another task, more important, arrives at time 6. Would this last task begin its
+                context switch at time 8, thus being scheduled at time 8+8=16?
+                Experiment requires EDF scheduler.
+              */
+            int wcets[] = { 30,  30  };
+            int deadl[] = { 500, 400 };
+            int activ[] = { 0,   6   };
+            vector<PeriodicTask*> tasks;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                kern->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->setContextSwitchDelay(Tick(8));
+            k->addForcedDispatch(tasks[0], cpus_little[0], 6);
+            k->addForcedDispatch(tasks[1], cpus_little[0], 6);
+
+            SIMUL.initSingleRun();
+            tasks[1]->activate(Tick(activ[1]));
+            SIMUL.run_to(17);
+
+            assert(k->getProcessor(tasks[1]) == cpus_little[0]);
+            assert(k->getDispatchingProcessor(tasks[0]) == cpus_little[0]);
+
+            SIMUL.run_to(156);
+
+            assert(k->getProcessor(tasks[0]) == cpus_little[0]);
+            assert(tasks[1]->isActive() == false);
+
             SIMUL.endSingleRun();
             return 0;
         }
