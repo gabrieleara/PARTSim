@@ -46,7 +46,7 @@ namespace RTSim {
     }
 
     EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
-        : MultiScheduler(kernel, cpus, s, name) { }
+      : MultiScheduler(kernel, cpus, s, kernel->getName() + name) { }
 
     AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
@@ -244,7 +244,10 @@ namespace RTSim {
         AbsRTTask* t      = e->getTask();
         CPU_BL* cpu       = dynamic_cast<CPU_BL*>(e->getCPU());
         assert (t != NULL); assert(cpu != NULL);
-        
+
+        if (SIMUL.getTime() == 100)
+          cout <<"";
+
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() for " << taskname(t) << " on " << cpu->toString() << endl;
         _queues->onEndDispatchMultiFinished(cpu,t);
         MRTKernel::onEndDispatchMulti(e);
@@ -262,9 +265,6 @@ namespace RTSim {
 
         _e_migration_manager.addSchedulingEvent(t, SIMUL.getTime(), cpu);
         _m_oldExe[t] = cpu;
-
-        //todo remove
-        _queues->toString();
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
         // ExecInstr::schedule() is called after each task's onEndDispatchMulti()

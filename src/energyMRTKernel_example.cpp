@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 2;
+    int TEST_NO = 12;
 
     dumpAllSpeeds();
     
@@ -186,8 +186,6 @@ int main(int argc, char *argv[]) {
         EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
         kernels.push_back(kern);
 
-        island_bl_big->setKernel(kern);
-        island_bl_little->setKernel(kern);
         CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
         /*
@@ -507,6 +505,37 @@ int main(int argc, char *argv[]) {
             assert(k->getProcessor(tasks[0]) == cpus_little[0]);
             assert(tasks[1]->isActive() == false);
 
+            SIMUL.endSingleRun();
+            return 0;
+        }
+        else if (TEST_NO == 12) {
+            schedulers.clear();
+            kernels.clear();
+
+            RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
+            for (int i = 0; i < 8; i++) {
+                delete schedulers[i];
+                schedulers.push_back(new RRScheduler(100));
+            }
+            EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, rrsched, island_bl_big, island_bl_little, "Round Robin");
+            kernels.push_back(kern);
+
+            int wcets[] = { 30  };
+            int deadl[] = { 500 };
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                kern->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(500);
             SIMUL.endSingleRun();
             return 0;
         }

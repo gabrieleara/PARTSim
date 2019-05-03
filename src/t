@@ -1,27 +1,1397 @@
-g++ -Wno-deprecated -Wno-deprecated-declarations --std=c++11 -I. -g   -c -o energyMRTKernel_example.o energyMRTKernel_example.cpp
-In file included from energyMRTKernel_example.cpp:21:0:
-./energyMRTKernel.hpp: In member function ‘double RTSim::EnergyMigrationManager::getConsumption(RTSim::AbsRTTask*, std::ostream&) const’:
-./energyMRTKernel.hpp:153:51: error: ‘class RTSim::CPU’ has no member named ‘getPowerConsumption’; did you mean ‘getMaxPowerConsumption’?
-             cons += (r2.tick - r1.tick) * r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                   ^~~~~~~~~~~~~~~~~~~
-                                                   getMaxPowerConsumption
-./energyMRTKernel.hpp:153:101: error: ‘class RTSim::CPU’ has no member named ‘getIsland’
-             cons += (r2.tick - r1.tick) * r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                                                                     ^~~~~~~~~
-./energyMRTKernel.hpp:156:67: error: ‘t1’ was not declared in this scope
-             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                                   ^~
-./energyMRTKernel.hpp:156:67: note: suggested alternative: ‘y1’
-             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                                   ^~
-                                                                   y1
-./energyMRTKernel.hpp:156:85: error: ‘class RTSim::CPU’ has no member named ‘getPowerConsumption’; did you mean ‘getMaxPowerConsumption’?
-             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                                                     ^~~~~~~~~~~~~~~~~~~
-                                                                                     getMaxPowerConsumption
-In file included from energyMRTKernel_example.cpp:21:0:
-./energyMRTKernel.hpp:156:135: error: ‘class RTSim::CPU’ has no member named ‘getIsland’
-             sprintf(buf, "(%f-%f)*%f + ", double(r2.tick), double(t1.tick), r1.cpu->getPowerConsumption(getOPPAtTime(r1.tick, r1.cpu->getIsland()));
-                                                                                                                                       ^~~~~~~~~
-<builtin>: recipe for target 'energyMRTKernel_example.o' failed
-make: *** [energyMRTKernel_example.o] Error 1
+LITTLE:
+Slowness of 200000 is 15.5327
+Slowness of 300000 is 10.5645
+Slowness of 400000 is 8.08046
+Slowness of 500000 is 6.59
+Slowness of 600000 is 5.59636
+Slowness of 700000 is 4.88661
+Slowness of 800000 is 4.3543
+Slowness of 900000 is 3.94028
+Slowness of 1000000 is 3.60906
+Slowness of 1100000 is 3.33806
+Slowness of 1200000 is 3.11223
+Slowness of 1300000 is 2.92114
+Slowness of 1400000 is 2.75735
+Slowness of 1500000 is 2.61539
+Slowness of 1600000 is 2.49118
+Slowness of 1700000 is 2.38158
+Slowness of 1800000 is 2.28416
+Slowness of 1900000 is 2.19699
+Slowness of 2000000 is 2.11854
+BIG:
+Slowness of 200000 is 8.64252
+Slowness of 300000 is 5.75019
+Slowness of 400000 is 4.31585
+Slowness of 500000 is 3.46772
+Slowness of 600000 is 2.90979
+Slowness of 700000 is 2.51516
+Slowness of 800000 is 2.22107
+Slowness of 900000 is 1.99322
+Slowness of 1000000 is 1.81134
+Slowness of 1100000 is 1.66271
+Slowness of 1200000 is 1.53894
+Slowness of 1300000 is 1.43424
+Slowness of 1400000 is 1.34452
+Slowness of 1500000 is 1.26677
+Slowness of 1600000 is 1.19874
+Slowness of 1700000 is 1.13871
+Slowness of 1800000 is 1.08536
+Slowness of 1900000 is 1.03762
+Slowness of 2000000 is 0.994655
+current OPPs indices: [0, 0]
+Workload: [bzip2]
+Creating CPU: LITTLE_0
+f is 1400 max_freq 2000
+creating cpu
+Creating CPU: LITTLE_1
+f is 1400 max_freq 2000
+creating cpu
+Creating CPU: LITTLE_2
+f is 1400 max_freq 2000
+creating cpu
+Creating CPU: LITTLE_3
+f is 1400 max_freq 2000
+creating cpu
+Creating CPU: BIG_0
+Creating CPU: BIG_1
+Creating CPU: BIG_2
+Creating CPU: BIG_3
+Test to perform is 12
+Creating task: T12_task0wl: bzip2
+Task::insertCode. instr created: N7MetaSim6EntityE60
+Task T12_task0: instruction list
+0) ExecInstr wl: bzip2 wcet: 30
+
+Actual time = [0]
+Dealing with task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30.
+
+Trying to scale up CPUs
+	Trying to schedule on CPU (CPU) LITTLE_0 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.064380)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 200 = 0
+			getUtilization of considered task 465.981648/500.000000 (capacity=0.064380)=0.932000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.932 - CPU capacity=0.0643802
+				Scaled task WCET 465.982 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.932000)*0.021194675735205719=0.019753, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0197534
+		Using frequency 300 instead of 200 (cap. 0.094656)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 300 = 0
+			getUtilization of considered task 316.936425/500.000000 (capacity=0.094656)=0.634000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.634 - CPU capacity=0.0946562
+				Scaled task WCET 316.936 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.634000)*0.027893847845378905=0.017685, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0176847
+		Using frequency 400 instead of 200 (cap. 0.123755)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 400 = 0
+			getUtilization of considered task 242.413703/500.000000 (capacity=0.123755)=0.486000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.486 - CPU capacity=0.123755
+				Scaled task WCET 242.414 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.486000)*0.034584910122792238=0.016808, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0168083
+		Using frequency 500 instead of 200 (cap. 0.151745)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 500 = 0
+			getUtilization of considered task 197.699981/500.000000 (capacity=0.151745)=0.396000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.396 - CPU capacity=0.151745
+				Scaled task WCET 197.7 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.396000)*0.041251325053481773=0.016336, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0163355
+		Using frequency 600 instead of 200 (cap. 0.178688)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 600 = 0
+			getUtilization of considered task 167.890759/500.000000 (capacity=0.178688)=0.336000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.336 - CPU capacity=0.178688
+				Scaled task WCET 167.891 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.336000)*0.052319657352449797=0.017579, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0175794
+		Using frequency 700 instead of 200 (cap. 0.204641)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 700 = 0
+			getUtilization of considered task 146.598394/500.000000 (capacity=0.204641)=0.294000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.294 - CPU capacity=0.204641
+				Scaled task WCET 146.598 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.294000)*0.065029911379232544=0.019119, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0191188
+		Using frequency 800 instead of 200 (cap. 0.229658)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 800 = 0
+			getUtilization of considered task 130.629065/500.000000 (capacity=0.229658)=0.262000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.262 - CPU capacity=0.229658
+				Scaled task WCET 130.629 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.262000)*0.079851394604561865=0.020921, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0209211
+		Using frequency 900 instead of 200 (cap. 0.253789)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 900 = 0
+			getUtilization of considered task 118.208426/500.000000 (capacity=0.253789)=0.238000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.238 - CPU capacity=0.253789
+				Scaled task WCET 118.208 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.238000)*0.092533329966067265=0.022023, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0220229
+		Using frequency 1000 instead of 200 (cap. 0.277080)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 1000 = 0
+			getUtilization of considered task 108.271870/500.000000 (capacity=0.277080)=0.218000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.218 - CPU capacity=0.27708
+				Scaled task WCET 108.272 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.218000)*0.11091742007886773=0.024180, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.02418
+		Using frequency 1100 instead of 200 (cap. 0.299575)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 1100 = 0
+			getUtilization of considered task 100.141921/500.000000 (capacity=0.299575)=0.202000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.202 - CPU capacity=0.299575
+				Scaled task WCET 100.142 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.202000)*0.13164427431989231=0.026592, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0265921
+		Using frequency 1200 instead of 200 (cap. 0.321313)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 1200 = 0
+			getUtilization of considered task 93.366926/500.000000 (capacity=0.321313)=0.188000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.188 - CPU capacity=0.321313
+				Scaled task WCET 93.3669 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.188000)*0.15483716203488945=0.029109, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0291094
+		Using frequency 1300 instead of 200 (cap. 0.342332)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 1300 = 0
+			getUtilization of considered task 87.634204/500.000000 (capacity=0.342332)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.342332
+				Scaled task WCET 87.6342 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.1858440448446991=0.032709, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0327086
+		Using frequency 1400 instead of 200 (cap. 0.362667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_0 cur freq 1400 = 0
+			getUtilization of considered task 82.720410/500.000000 (capacity=0.362667)=0.166000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.166 - CPU capacity=0.362667
+				Scaled task WCET 82.7204 DL 500
+			In the CPU island of LITTLE_0, 0 are being scheduled
+			new = (0.000000 + 0.166000)*0.22079887437090551=0.036653, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0366526
+	Trying to schedule on CPU (CPU) LITTLE_1 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.064380)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 200 = 0
+			getUtilization of considered task 465.981648/500.000000 (capacity=0.064380)=0.932000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.932 - CPU capacity=0.0643802
+				Scaled task WCET 465.982 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.932000)*0.021194675735205719=0.019753, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0197534
+		Using frequency 300 instead of 200 (cap. 0.094656)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 300 = 0
+			getUtilization of considered task 316.936425/500.000000 (capacity=0.094656)=0.634000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.634 - CPU capacity=0.0946562
+				Scaled task WCET 316.936 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.634000)*0.027893847845378905=0.017685, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0176847
+		Using frequency 400 instead of 200 (cap. 0.123755)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 400 = 0
+			getUtilization of considered task 242.413703/500.000000 (capacity=0.123755)=0.486000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.486 - CPU capacity=0.123755
+				Scaled task WCET 242.414 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.486000)*0.034584910122792238=0.016808, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0168083
+		Using frequency 500 instead of 200 (cap. 0.151745)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 500 = 0
+			getUtilization of considered task 197.699981/500.000000 (capacity=0.151745)=0.396000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.396 - CPU capacity=0.151745
+				Scaled task WCET 197.7 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.396000)*0.041251325053481773=0.016336, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0163355
+		Using frequency 600 instead of 200 (cap. 0.178688)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 600 = 0
+			getUtilization of considered task 167.890759/500.000000 (capacity=0.178688)=0.336000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.336 - CPU capacity=0.178688
+				Scaled task WCET 167.891 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.336000)*0.052319657352449797=0.017579, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0175794
+		Using frequency 700 instead of 200 (cap. 0.204641)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 700 = 0
+			getUtilization of considered task 146.598394/500.000000 (capacity=0.204641)=0.294000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.294 - CPU capacity=0.204641
+				Scaled task WCET 146.598 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.294000)*0.065029911379232544=0.019119, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0191188
+		Using frequency 800 instead of 200 (cap. 0.229658)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 800 = 0
+			getUtilization of considered task 130.629065/500.000000 (capacity=0.229658)=0.262000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.262 - CPU capacity=0.229658
+				Scaled task WCET 130.629 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.262000)*0.079851394604561865=0.020921, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0209211
+		Using frequency 900 instead of 200 (cap. 0.253789)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 900 = 0
+			getUtilization of considered task 118.208426/500.000000 (capacity=0.253789)=0.238000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.238 - CPU capacity=0.253789
+				Scaled task WCET 118.208 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.238000)*0.092533329966067265=0.022023, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0220229
+		Using frequency 1000 instead of 200 (cap. 0.277080)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 1000 = 0
+			getUtilization of considered task 108.271870/500.000000 (capacity=0.277080)=0.218000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.218 - CPU capacity=0.27708
+				Scaled task WCET 108.272 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.218000)*0.11091742007886773=0.024180, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.02418
+		Using frequency 1100 instead of 200 (cap. 0.299575)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 1100 = 0
+			getUtilization of considered task 100.141921/500.000000 (capacity=0.299575)=0.202000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.202 - CPU capacity=0.299575
+				Scaled task WCET 100.142 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.202000)*0.13164427431989231=0.026592, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0265921
+		Using frequency 1200 instead of 200 (cap. 0.321313)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 1200 = 0
+			getUtilization of considered task 93.366926/500.000000 (capacity=0.321313)=0.188000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.188 - CPU capacity=0.321313
+				Scaled task WCET 93.3669 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.188000)*0.15483716203488945=0.029109, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0291094
+		Using frequency 1300 instead of 200 (cap. 0.342332)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 1300 = 0
+			getUtilization of considered task 87.634204/500.000000 (capacity=0.342332)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.342332
+				Scaled task WCET 87.6342 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.1858440448446991=0.032709, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0327086
+		Using frequency 1400 instead of 200 (cap. 0.362667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_1 cur freq 1400 = 0
+			getUtilization of considered task 82.720410/500.000000 (capacity=0.362667)=0.166000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.166 - CPU capacity=0.362667
+				Scaled task WCET 82.7204 DL 500
+			In the CPU island of LITTLE_1, 0 are being scheduled
+			new = (0.000000 + 0.166000)*0.22079887437090551=0.036653, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0366526
+	Trying to schedule on CPU (CPU) LITTLE_2 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.064380)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 200 = 0
+			getUtilization of considered task 465.981648/500.000000 (capacity=0.064380)=0.932000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.932 - CPU capacity=0.0643802
+				Scaled task WCET 465.982 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.932000)*0.021194675735205719=0.019753, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0197534
+		Using frequency 300 instead of 200 (cap. 0.094656)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 300 = 0
+			getUtilization of considered task 316.936425/500.000000 (capacity=0.094656)=0.634000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.634 - CPU capacity=0.0946562
+				Scaled task WCET 316.936 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.634000)*0.027893847845378905=0.017685, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0176847
+		Using frequency 400 instead of 200 (cap. 0.123755)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 400 = 0
+			getUtilization of considered task 242.413703/500.000000 (capacity=0.123755)=0.486000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.486 - CPU capacity=0.123755
+				Scaled task WCET 242.414 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.486000)*0.034584910122792238=0.016808, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0168083
+		Using frequency 500 instead of 200 (cap. 0.151745)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 500 = 0
+			getUtilization of considered task 197.699981/500.000000 (capacity=0.151745)=0.396000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.396 - CPU capacity=0.151745
+				Scaled task WCET 197.7 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.396000)*0.041251325053481773=0.016336, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0163355
+		Using frequency 600 instead of 200 (cap. 0.178688)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 600 = 0
+			getUtilization of considered task 167.890759/500.000000 (capacity=0.178688)=0.336000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.336 - CPU capacity=0.178688
+				Scaled task WCET 167.891 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.336000)*0.052319657352449797=0.017579, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0175794
+		Using frequency 700 instead of 200 (cap. 0.204641)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 700 = 0
+			getUtilization of considered task 146.598394/500.000000 (capacity=0.204641)=0.294000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.294 - CPU capacity=0.204641
+				Scaled task WCET 146.598 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.294000)*0.065029911379232544=0.019119, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0191188
+		Using frequency 800 instead of 200 (cap. 0.229658)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 800 = 0
+			getUtilization of considered task 130.629065/500.000000 (capacity=0.229658)=0.262000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.262 - CPU capacity=0.229658
+				Scaled task WCET 130.629 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.262000)*0.079851394604561865=0.020921, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0209211
+		Using frequency 900 instead of 200 (cap. 0.253789)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 900 = 0
+			getUtilization of considered task 118.208426/500.000000 (capacity=0.253789)=0.238000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.238 - CPU capacity=0.253789
+				Scaled task WCET 118.208 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.238000)*0.092533329966067265=0.022023, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0220229
+		Using frequency 1000 instead of 200 (cap. 0.277080)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 1000 = 0
+			getUtilization of considered task 108.271870/500.000000 (capacity=0.277080)=0.218000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.218 - CPU capacity=0.27708
+				Scaled task WCET 108.272 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.218000)*0.11091742007886773=0.024180, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.02418
+		Using frequency 1100 instead of 200 (cap. 0.299575)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 1100 = 0
+			getUtilization of considered task 100.141921/500.000000 (capacity=0.299575)=0.202000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.202 - CPU capacity=0.299575
+				Scaled task WCET 100.142 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.202000)*0.13164427431989231=0.026592, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0265921
+		Using frequency 1200 instead of 200 (cap. 0.321313)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 1200 = 0
+			getUtilization of considered task 93.366926/500.000000 (capacity=0.321313)=0.188000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.188 - CPU capacity=0.321313
+				Scaled task WCET 93.3669 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.188000)*0.15483716203488945=0.029109, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0291094
+		Using frequency 1300 instead of 200 (cap. 0.342332)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 1300 = 0
+			getUtilization of considered task 87.634204/500.000000 (capacity=0.342332)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.342332
+				Scaled task WCET 87.6342 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.1858440448446991=0.032709, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0327086
+		Using frequency 1400 instead of 200 (cap. 0.362667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_2 cur freq 1400 = 0
+			getUtilization of considered task 82.720410/500.000000 (capacity=0.362667)=0.166000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.166 - CPU capacity=0.362667
+				Scaled task WCET 82.7204 DL 500
+			In the CPU island of LITTLE_2, 0 are being scheduled
+			new = (0.000000 + 0.166000)*0.22079887437090551=0.036653, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0366526
+	Trying to schedule on CPU (CPU) LITTLE_3 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.064380)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 200 = 0
+			getUtilization of considered task 465.981648/500.000000 (capacity=0.064380)=0.932000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.932 - CPU capacity=0.0643802
+				Scaled task WCET 465.982 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.932000)*0.021194675735205719=0.019753, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0197534
+		Using frequency 300 instead of 200 (cap. 0.094656)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 300 = 0
+			getUtilization of considered task 316.936425/500.000000 (capacity=0.094656)=0.634000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.634 - CPU capacity=0.0946562
+				Scaled task WCET 316.936 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.634000)*0.027893847845378905=0.017685, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0176847
+		Using frequency 400 instead of 200 (cap. 0.123755)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 400 = 0
+			getUtilization of considered task 242.413703/500.000000 (capacity=0.123755)=0.486000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.486 - CPU capacity=0.123755
+				Scaled task WCET 242.414 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.486000)*0.034584910122792238=0.016808, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0168083
+		Using frequency 500 instead of 200 (cap. 0.151745)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 500 = 0
+			getUtilization of considered task 197.699981/500.000000 (capacity=0.151745)=0.396000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.396 - CPU capacity=0.151745
+				Scaled task WCET 197.7 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.396000)*0.041251325053481773=0.016336, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0163355
+		Using frequency 600 instead of 200 (cap. 0.178688)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 600 = 0
+			getUtilization of considered task 167.890759/500.000000 (capacity=0.178688)=0.336000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.336 - CPU capacity=0.178688
+				Scaled task WCET 167.891 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.336000)*0.052319657352449797=0.017579, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0175794
+		Using frequency 700 instead of 200 (cap. 0.204641)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 700 = 0
+			getUtilization of considered task 146.598394/500.000000 (capacity=0.204641)=0.294000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.294 - CPU capacity=0.204641
+				Scaled task WCET 146.598 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.294000)*0.065029911379232544=0.019119, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0191188
+		Using frequency 800 instead of 200 (cap. 0.229658)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 800 = 0
+			getUtilization of considered task 130.629065/500.000000 (capacity=0.229658)=0.262000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.262 - CPU capacity=0.229658
+				Scaled task WCET 130.629 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.262000)*0.079851394604561865=0.020921, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0209211
+		Using frequency 900 instead of 200 (cap. 0.253789)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 900 = 0
+			getUtilization of considered task 118.208426/500.000000 (capacity=0.253789)=0.238000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.238 - CPU capacity=0.253789
+				Scaled task WCET 118.208 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.238000)*0.092533329966067265=0.022023, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0220229
+		Using frequency 1000 instead of 200 (cap. 0.277080)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 1000 = 0
+			getUtilization of considered task 108.271870/500.000000 (capacity=0.277080)=0.218000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.218 - CPU capacity=0.27708
+				Scaled task WCET 108.272 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.218000)*0.11091742007886773=0.024180, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.02418
+		Using frequency 1100 instead of 200 (cap. 0.299575)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 1100 = 0
+			getUtilization of considered task 100.141921/500.000000 (capacity=0.299575)=0.202000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.202 - CPU capacity=0.299575
+				Scaled task WCET 100.142 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.202000)*0.13164427431989231=0.026592, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0265921
+		Using frequency 1200 instead of 200 (cap. 0.321313)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 1200 = 0
+			getUtilization of considered task 93.366926/500.000000 (capacity=0.321313)=0.188000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.188 - CPU capacity=0.321313
+				Scaled task WCET 93.3669 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.188000)*0.15483716203488945=0.029109, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0291094
+		Using frequency 1300 instead of 200 (cap. 0.342332)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 1300 = 0
+			getUtilization of considered task 87.634204/500.000000 (capacity=0.342332)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.342332
+				Scaled task WCET 87.6342 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.1858440448446991=0.032709, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0327086
+		Using frequency 1400 instead of 200 (cap. 0.362667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) LITTLE_3 cur freq 1400 = 0
+			getUtilization of considered task 82.720410/500.000000 (capacity=0.362667)=0.166000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.166 - CPU capacity=0.362667
+				Scaled task WCET 82.7204 DL 500
+			In the CPU island of LITTLE_3, 0 are being scheduled
+			new = (0.000000 + 0.166000)*0.22079887437090551=0.036653, old 0.000000*0.021194675735205719=0.000000
+			iDeltaPow = new-old = 0.0366526
+	Trying to schedule on CPU (CPU) BIG_0 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.115707)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 200 = 0
+			getUtilization of considered task 259.275736/500.000000 (capacity=0.115707)=0.520000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.52 - CPU capacity=0.115707
+				Scaled task WCET 259.276 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.520000)*0.10689883516049144=0.055587, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0555874
+		Using frequency 300 instead of 200 (cap. 0.173907)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 300 = 0
+			getUtilization of considered task 172.505792/500.000000 (capacity=0.173907)=0.346000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.346 - CPU capacity=0.173907
+				Scaled task WCET 172.506 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.346000)*0.13970996768128896=0.048340, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0483396
+		Using frequency 400 instead of 200 (cap. 0.231704)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 400 = 0
+			getUtilization of considered task 129.475486/500.000000 (capacity=0.231704)=0.260000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.26 - CPU capacity=0.231704
+				Scaled task WCET 129.475 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.260000)*0.17254073494781069=0.044861, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0448606
+		Using frequency 500 instead of 200 (cap. 0.288374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 500 = 0
+			getUtilization of considered task 104.031557/500.000000 (capacity=0.288374)=0.210000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.21 - CPU capacity=0.288374
+				Scaled task WCET 104.032 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.210000)*0.20542199597921751=0.043139, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0431386
+		Using frequency 600 instead of 200 (cap. 0.343667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 600 = 0
+			getUtilization of considered task 87.293839/500.000000 (capacity=0.343667)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.343667
+				Scaled task WCET 87.2938 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.23837539593876572=0.041954, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0419541
+		Using frequency 700 instead of 200 (cap. 0.397589)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 700 = 0
+			getUtilization of considered task 75.454834/500.000000 (capacity=0.397589)=0.152000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.152 - CPU capacity=0.397589
+				Scaled task WCET 75.4548 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.152000)*0.26357905603761922=0.040064, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.040064
+		Using frequency 800 instead of 200 (cap. 0.450233)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 800 = 0
+			getUtilization of considered task 66.632119/500.000000 (capacity=0.450233)=0.134000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.134 - CPU capacity=0.450233
+				Scaled task WCET 66.6321 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.134000)*0.30546681733331926=0.040933, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0409326
+		Using frequency 900 instead of 200 (cap. 0.501702)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 900 = 0
+			getUtilization of considered task 59.796495/500.000000 (capacity=0.501702)=0.120000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.12 - CPU capacity=0.501702
+				Scaled task WCET 59.7965 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.120000)*0.36239971418729677=0.043488, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.043488
+		Using frequency 1000 instead of 200 (cap. 0.552078)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1000 = 0
+			getUtilization of considered task 54.340143/500.000000 (capacity=0.552078)=0.110000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.11 - CPU capacity=0.552078
+				Scaled task WCET 54.3401 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.110000)*0.42626921155847375=0.046890, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0468896
+		Using frequency 1100 instead of 200 (cap. 0.601427)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1100 = 0
+			getUtilization of considered task 49.881348/500.000000 (capacity=0.601427)=0.100000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.1 - CPU capacity=0.601427
+				Scaled task WCET 49.8813 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.100000)*0.49726505630006657=0.049727, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0497265
+		Using frequency 1200 instead of 200 (cap. 0.649799)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1200 = 0
+			getUtilization of considered task 46.168145/500.000000 (capacity=0.649799)=0.094000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.094 - CPU capacity=0.649799
+				Scaled task WCET 46.1681 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.094000)*0.57565841180879918=0.054112, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0541119
+		Using frequency 1300 instead of 200 (cap. 0.697232)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1300 = 0
+			getUtilization of considered task 43.027298/500.000000 (capacity=0.697232)=0.088000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.088 - CPU capacity=0.697232
+				Scaled task WCET 43.0273 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.088000)*0.66135787861810502=0.058199, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0581995
+		Using frequency 1400 instead of 200 (cap. 0.743759)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1400 = 0
+			getUtilization of considered task 40.335628/500.000000 (capacity=0.743759)=0.082000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.082 - CPU capacity=0.743759
+				Scaled task WCET 40.3356 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.082000)*0.73326989654704866=0.060128, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0601281
+		Using frequency 1500 instead of 200 (cap. 0.789410)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1500 = 0
+			getUtilization of considered task 38.003060/500.000000 (capacity=0.789410)=0.078000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.078 - CPU capacity=0.78941
+				Scaled task WCET 38.0031 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.078000)*0.8342257969619431=0.065070, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0650696
+		Using frequency 1600 instead of 200 (cap. 0.834210)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1600 = 0
+			getUtilization of considered task 35.962156/500.000000 (capacity=0.834210)=0.072000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.072 - CPU capacity=0.83421
+				Scaled task WCET 35.9622 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.072000)*0.97228087013117692=0.070004, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0700042
+		Using frequency 1700 instead of 200 (cap. 0.878184)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1700 = 0
+			getUtilization of considered task 34.161400/500.000000 (capacity=0.878184)=0.070000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.07 - CPU capacity=0.878184
+				Scaled task WCET 34.1614 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.070000)*1.1304810266914016=0.079134, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0791337
+		Using frequency 1800 instead of 200 (cap. 0.921355)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1800 = 0
+			getUtilization of considered task 32.560746/500.000000 (capacity=0.921355)=0.066000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.066 - CPU capacity=0.921355
+				Scaled task WCET 32.5607 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.066000)*1.3063897075230402=0.086222, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0862217
+		Using frequency 1900 instead of 200 (cap. 0.963744)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 1900 = 0
+			getUtilization of considered task 31.128590/500.000000 (capacity=0.963744)=0.064000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.064 - CPU capacity=0.963744
+				Scaled task WCET 31.1286 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.064000)*1.543230679615395=0.098767, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0987668
+		Using frequency 2000 instead of 200 (cap. 1.005374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_0 cur freq 2000 = 0
+			getUtilization of considered task 29.839652/500.000000 (capacity=1.005374)=0.060000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.06 - CPU capacity=1.00537
+				Scaled task WCET 29.8397 DL 500
+			In the CPU island of BIG_0, 0 are being scheduled
+			new = (0.000000 + 0.060000)*1.9190279782678905=0.115142, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.115142
+	Trying to schedule on CPU (CPU) BIG_1 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.115707)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 200 = 0
+			getUtilization of considered task 259.275736/500.000000 (capacity=0.115707)=0.520000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.52 - CPU capacity=0.115707
+				Scaled task WCET 259.276 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.520000)*0.10689883516049144=0.055587, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0555874
+		Using frequency 300 instead of 200 (cap. 0.173907)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 300 = 0
+			getUtilization of considered task 172.505792/500.000000 (capacity=0.173907)=0.346000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.346 - CPU capacity=0.173907
+				Scaled task WCET 172.506 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.346000)*0.13970996768128896=0.048340, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0483396
+		Using frequency 400 instead of 200 (cap. 0.231704)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 400 = 0
+			getUtilization of considered task 129.475486/500.000000 (capacity=0.231704)=0.260000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.26 - CPU capacity=0.231704
+				Scaled task WCET 129.475 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.260000)*0.17254073494781069=0.044861, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0448606
+		Using frequency 500 instead of 200 (cap. 0.288374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 500 = 0
+			getUtilization of considered task 104.031557/500.000000 (capacity=0.288374)=0.210000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.21 - CPU capacity=0.288374
+				Scaled task WCET 104.032 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.210000)*0.20542199597921751=0.043139, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0431386
+		Using frequency 600 instead of 200 (cap. 0.343667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 600 = 0
+			getUtilization of considered task 87.293839/500.000000 (capacity=0.343667)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.343667
+				Scaled task WCET 87.2938 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.23837539593876572=0.041954, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0419541
+		Using frequency 700 instead of 200 (cap. 0.397589)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 700 = 0
+			getUtilization of considered task 75.454834/500.000000 (capacity=0.397589)=0.152000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.152 - CPU capacity=0.397589
+				Scaled task WCET 75.4548 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.152000)*0.26357905603761922=0.040064, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.040064
+		Using frequency 800 instead of 200 (cap. 0.450233)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 800 = 0
+			getUtilization of considered task 66.632119/500.000000 (capacity=0.450233)=0.134000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.134 - CPU capacity=0.450233
+				Scaled task WCET 66.6321 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.134000)*0.30546681733331926=0.040933, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0409326
+		Using frequency 900 instead of 200 (cap. 0.501702)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 900 = 0
+			getUtilization of considered task 59.796495/500.000000 (capacity=0.501702)=0.120000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.12 - CPU capacity=0.501702
+				Scaled task WCET 59.7965 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.120000)*0.36239971418729677=0.043488, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.043488
+		Using frequency 1000 instead of 200 (cap. 0.552078)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1000 = 0
+			getUtilization of considered task 54.340143/500.000000 (capacity=0.552078)=0.110000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.11 - CPU capacity=0.552078
+				Scaled task WCET 54.3401 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.110000)*0.42626921155847375=0.046890, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0468896
+		Using frequency 1100 instead of 200 (cap. 0.601427)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1100 = 0
+			getUtilization of considered task 49.881348/500.000000 (capacity=0.601427)=0.100000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.1 - CPU capacity=0.601427
+				Scaled task WCET 49.8813 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.100000)*0.49726505630006657=0.049727, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0497265
+		Using frequency 1200 instead of 200 (cap. 0.649799)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1200 = 0
+			getUtilization of considered task 46.168145/500.000000 (capacity=0.649799)=0.094000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.094 - CPU capacity=0.649799
+				Scaled task WCET 46.1681 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.094000)*0.57565841180879918=0.054112, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0541119
+		Using frequency 1300 instead of 200 (cap. 0.697232)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1300 = 0
+			getUtilization of considered task 43.027298/500.000000 (capacity=0.697232)=0.088000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.088 - CPU capacity=0.697232
+				Scaled task WCET 43.0273 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.088000)*0.66135787861810502=0.058199, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0581995
+		Using frequency 1400 instead of 200 (cap. 0.743759)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1400 = 0
+			getUtilization of considered task 40.335628/500.000000 (capacity=0.743759)=0.082000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.082 - CPU capacity=0.743759
+				Scaled task WCET 40.3356 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.082000)*0.73326989654704866=0.060128, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0601281
+		Using frequency 1500 instead of 200 (cap. 0.789410)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1500 = 0
+			getUtilization of considered task 38.003060/500.000000 (capacity=0.789410)=0.078000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.078 - CPU capacity=0.78941
+				Scaled task WCET 38.0031 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.078000)*0.8342257969619431=0.065070, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0650696
+		Using frequency 1600 instead of 200 (cap. 0.834210)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1600 = 0
+			getUtilization of considered task 35.962156/500.000000 (capacity=0.834210)=0.072000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.072 - CPU capacity=0.83421
+				Scaled task WCET 35.9622 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.072000)*0.97228087013117692=0.070004, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0700042
+		Using frequency 1700 instead of 200 (cap. 0.878184)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1700 = 0
+			getUtilization of considered task 34.161400/500.000000 (capacity=0.878184)=0.070000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.07 - CPU capacity=0.878184
+				Scaled task WCET 34.1614 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.070000)*1.1304810266914016=0.079134, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0791337
+		Using frequency 1800 instead of 200 (cap. 0.921355)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1800 = 0
+			getUtilization of considered task 32.560746/500.000000 (capacity=0.921355)=0.066000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.066 - CPU capacity=0.921355
+				Scaled task WCET 32.5607 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.066000)*1.3063897075230402=0.086222, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0862217
+		Using frequency 1900 instead of 200 (cap. 0.963744)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 1900 = 0
+			getUtilization of considered task 31.128590/500.000000 (capacity=0.963744)=0.064000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.064 - CPU capacity=0.963744
+				Scaled task WCET 31.1286 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.064000)*1.543230679615395=0.098767, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0987668
+		Using frequency 2000 instead of 200 (cap. 1.005374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_1 cur freq 2000 = 0
+			getUtilization of considered task 29.839652/500.000000 (capacity=1.005374)=0.060000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.06 - CPU capacity=1.00537
+				Scaled task WCET 29.8397 DL 500
+			In the CPU island of BIG_1, 0 are being scheduled
+			new = (0.000000 + 0.060000)*1.9190279782678905=0.115142, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.115142
+	Trying to schedule on CPU (CPU) BIG_2 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.115707)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 200 = 0
+			getUtilization of considered task 259.275736/500.000000 (capacity=0.115707)=0.520000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.52 - CPU capacity=0.115707
+				Scaled task WCET 259.276 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.520000)*0.10689883516049144=0.055587, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0555874
+		Using frequency 300 instead of 200 (cap. 0.173907)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 300 = 0
+			getUtilization of considered task 172.505792/500.000000 (capacity=0.173907)=0.346000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.346 - CPU capacity=0.173907
+				Scaled task WCET 172.506 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.346000)*0.13970996768128896=0.048340, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0483396
+		Using frequency 400 instead of 200 (cap. 0.231704)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 400 = 0
+			getUtilization of considered task 129.475486/500.000000 (capacity=0.231704)=0.260000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.26 - CPU capacity=0.231704
+				Scaled task WCET 129.475 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.260000)*0.17254073494781069=0.044861, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0448606
+		Using frequency 500 instead of 200 (cap. 0.288374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 500 = 0
+			getUtilization of considered task 104.031557/500.000000 (capacity=0.288374)=0.210000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.21 - CPU capacity=0.288374
+				Scaled task WCET 104.032 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.210000)*0.20542199597921751=0.043139, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0431386
+		Using frequency 600 instead of 200 (cap. 0.343667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 600 = 0
+			getUtilization of considered task 87.293839/500.000000 (capacity=0.343667)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.343667
+				Scaled task WCET 87.2938 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.23837539593876572=0.041954, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0419541
+		Using frequency 700 instead of 200 (cap. 0.397589)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 700 = 0
+			getUtilization of considered task 75.454834/500.000000 (capacity=0.397589)=0.152000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.152 - CPU capacity=0.397589
+				Scaled task WCET 75.4548 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.152000)*0.26357905603761922=0.040064, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.040064
+		Using frequency 800 instead of 200 (cap. 0.450233)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 800 = 0
+			getUtilization of considered task 66.632119/500.000000 (capacity=0.450233)=0.134000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.134 - CPU capacity=0.450233
+				Scaled task WCET 66.6321 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.134000)*0.30546681733331926=0.040933, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0409326
+		Using frequency 900 instead of 200 (cap. 0.501702)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 900 = 0
+			getUtilization of considered task 59.796495/500.000000 (capacity=0.501702)=0.120000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.12 - CPU capacity=0.501702
+				Scaled task WCET 59.7965 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.120000)*0.36239971418729677=0.043488, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.043488
+		Using frequency 1000 instead of 200 (cap. 0.552078)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1000 = 0
+			getUtilization of considered task 54.340143/500.000000 (capacity=0.552078)=0.110000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.11 - CPU capacity=0.552078
+				Scaled task WCET 54.3401 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.110000)*0.42626921155847375=0.046890, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0468896
+		Using frequency 1100 instead of 200 (cap. 0.601427)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1100 = 0
+			getUtilization of considered task 49.881348/500.000000 (capacity=0.601427)=0.100000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.1 - CPU capacity=0.601427
+				Scaled task WCET 49.8813 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.100000)*0.49726505630006657=0.049727, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0497265
+		Using frequency 1200 instead of 200 (cap. 0.649799)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1200 = 0
+			getUtilization of considered task 46.168145/500.000000 (capacity=0.649799)=0.094000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.094 - CPU capacity=0.649799
+				Scaled task WCET 46.1681 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.094000)*0.57565841180879918=0.054112, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0541119
+		Using frequency 1300 instead of 200 (cap. 0.697232)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1300 = 0
+			getUtilization of considered task 43.027298/500.000000 (capacity=0.697232)=0.088000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.088 - CPU capacity=0.697232
+				Scaled task WCET 43.0273 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.088000)*0.66135787861810502=0.058199, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0581995
+		Using frequency 1400 instead of 200 (cap. 0.743759)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1400 = 0
+			getUtilization of considered task 40.335628/500.000000 (capacity=0.743759)=0.082000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.082 - CPU capacity=0.743759
+				Scaled task WCET 40.3356 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.082000)*0.73326989654704866=0.060128, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0601281
+		Using frequency 1500 instead of 200 (cap. 0.789410)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1500 = 0
+			getUtilization of considered task 38.003060/500.000000 (capacity=0.789410)=0.078000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.078 - CPU capacity=0.78941
+				Scaled task WCET 38.0031 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.078000)*0.8342257969619431=0.065070, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0650696
+		Using frequency 1600 instead of 200 (cap. 0.834210)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1600 = 0
+			getUtilization of considered task 35.962156/500.000000 (capacity=0.834210)=0.072000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.072 - CPU capacity=0.83421
+				Scaled task WCET 35.9622 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.072000)*0.97228087013117692=0.070004, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0700042
+		Using frequency 1700 instead of 200 (cap. 0.878184)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1700 = 0
+			getUtilization of considered task 34.161400/500.000000 (capacity=0.878184)=0.070000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.07 - CPU capacity=0.878184
+				Scaled task WCET 34.1614 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.070000)*1.1304810266914016=0.079134, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0791337
+		Using frequency 1800 instead of 200 (cap. 0.921355)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1800 = 0
+			getUtilization of considered task 32.560746/500.000000 (capacity=0.921355)=0.066000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.066 - CPU capacity=0.921355
+				Scaled task WCET 32.5607 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.066000)*1.3063897075230402=0.086222, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0862217
+		Using frequency 1900 instead of 200 (cap. 0.963744)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 1900 = 0
+			getUtilization of considered task 31.128590/500.000000 (capacity=0.963744)=0.064000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.064 - CPU capacity=0.963744
+				Scaled task WCET 31.1286 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.064000)*1.543230679615395=0.098767, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0987668
+		Using frequency 2000 instead of 200 (cap. 1.005374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_2 cur freq 2000 = 0
+			getUtilization of considered task 29.839652/500.000000 (capacity=1.005374)=0.060000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.06 - CPU capacity=1.00537
+				Scaled task WCET 29.8397 DL 500
+			In the CPU island of BIG_2, 0 are being scheduled
+			new = (0.000000 + 0.060000)*1.9190279782678905=0.115142, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.115142
+	Trying to schedule on CPU (CPU) BIG_3 cur freq 200 using freq 200 - it has already ntasks=0
+		Using frequency 200 instead of 200 (cap. 0.115707)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 200 = 0
+			getUtilization of considered task 259.275736/500.000000 (capacity=0.115707)=0.520000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.52 - CPU capacity=0.115707
+				Scaled task WCET 259.276 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.520000)*0.10689883516049144=0.055587, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0555874
+		Using frequency 300 instead of 200 (cap. 0.173907)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 300 = 0
+			getUtilization of considered task 172.505792/500.000000 (capacity=0.173907)=0.346000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.346 - CPU capacity=0.173907
+				Scaled task WCET 172.506 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.346000)*0.13970996768128896=0.048340, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0483396
+		Using frequency 400 instead of 200 (cap. 0.231704)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 400 = 0
+			getUtilization of considered task 129.475486/500.000000 (capacity=0.231704)=0.260000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.26 - CPU capacity=0.231704
+				Scaled task WCET 129.475 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.260000)*0.17254073494781069=0.044861, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0448606
+		Using frequency 500 instead of 200 (cap. 0.288374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 500 = 0
+			getUtilization of considered task 104.031557/500.000000 (capacity=0.288374)=0.210000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.21 - CPU capacity=0.288374
+				Scaled task WCET 104.032 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.210000)*0.20542199597921751=0.043139, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0431386
+		Using frequency 600 instead of 200 (cap. 0.343667)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 600 = 0
+			getUtilization of considered task 87.293839/500.000000 (capacity=0.343667)=0.176000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.176 - CPU capacity=0.343667
+				Scaled task WCET 87.2938 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.176000)*0.23837539593876572=0.041954, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0419541
+		Using frequency 700 instead of 200 (cap. 0.397589)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 700 = 0
+			getUtilization of considered task 75.454834/500.000000 (capacity=0.397589)=0.152000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.152 - CPU capacity=0.397589
+				Scaled task WCET 75.4548 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.152000)*0.26357905603761922=0.040064, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.040064
+		Using frequency 800 instead of 200 (cap. 0.450233)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 800 = 0
+			getUtilization of considered task 66.632119/500.000000 (capacity=0.450233)=0.134000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.134 - CPU capacity=0.450233
+				Scaled task WCET 66.6321 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.134000)*0.30546681733331926=0.040933, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0409326
+		Using frequency 900 instead of 200 (cap. 0.501702)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 900 = 0
+			getUtilization of considered task 59.796495/500.000000 (capacity=0.501702)=0.120000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.12 - CPU capacity=0.501702
+				Scaled task WCET 59.7965 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.120000)*0.36239971418729677=0.043488, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.043488
+		Using frequency 1000 instead of 200 (cap. 0.552078)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1000 = 0
+			getUtilization of considered task 54.340143/500.000000 (capacity=0.552078)=0.110000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.11 - CPU capacity=0.552078
+				Scaled task WCET 54.3401 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.110000)*0.42626921155847375=0.046890, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0468896
+		Using frequency 1100 instead of 200 (cap. 0.601427)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1100 = 0
+			getUtilization of considered task 49.881348/500.000000 (capacity=0.601427)=0.100000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.1 - CPU capacity=0.601427
+				Scaled task WCET 49.8813 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.100000)*0.49726505630006657=0.049727, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0497265
+		Using frequency 1200 instead of 200 (cap. 0.649799)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1200 = 0
+			getUtilization of considered task 46.168145/500.000000 (capacity=0.649799)=0.094000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.094 - CPU capacity=0.649799
+				Scaled task WCET 46.1681 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.094000)*0.57565841180879918=0.054112, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0541119
+		Using frequency 1300 instead of 200 (cap. 0.697232)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1300 = 0
+			getUtilization of considered task 43.027298/500.000000 (capacity=0.697232)=0.088000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.088 - CPU capacity=0.697232
+				Scaled task WCET 43.0273 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.088000)*0.66135787861810502=0.058199, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0581995
+		Using frequency 1400 instead of 200 (cap. 0.743759)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1400 = 0
+			getUtilization of considered task 40.335628/500.000000 (capacity=0.743759)=0.082000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.082 - CPU capacity=0.743759
+				Scaled task WCET 40.3356 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.082000)*0.73326989654704866=0.060128, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0601281
+		Using frequency 1500 instead of 200 (cap. 0.789410)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1500 = 0
+			getUtilization of considered task 38.003060/500.000000 (capacity=0.789410)=0.078000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.078 - CPU capacity=0.78941
+				Scaled task WCET 38.0031 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.078000)*0.8342257969619431=0.065070, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0650696
+		Using frequency 1600 instead of 200 (cap. 0.834210)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1600 = 0
+			getUtilization of considered task 35.962156/500.000000 (capacity=0.834210)=0.072000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.072 - CPU capacity=0.83421
+				Scaled task WCET 35.9622 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.072000)*0.97228087013117692=0.070004, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0700042
+		Using frequency 1700 instead of 200 (cap. 0.878184)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1700 = 0
+			getUtilization of considered task 34.161400/500.000000 (capacity=0.878184)=0.070000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.07 - CPU capacity=0.878184
+				Scaled task WCET 34.1614 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.070000)*1.1304810266914016=0.079134, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0791337
+		Using frequency 1800 instead of 200 (cap. 0.921355)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1800 = 0
+			getUtilization of considered task 32.560746/500.000000 (capacity=0.921355)=0.066000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.066 - CPU capacity=0.921355
+				Scaled task WCET 32.5607 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.066000)*1.3063897075230402=0.086222, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0862217
+		Using frequency 1900 instead of 200 (cap. 0.963744)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 1900 = 0
+			getUtilization of considered task 31.128590/500.000000 (capacity=0.963744)=0.064000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.064 - CPU capacity=0.963744
+				Scaled task WCET 31.1286 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.064000)*1.543230679615395=0.098767, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.0987668
+		Using frequency 2000 instead of 200 (cap. 1.005374)
+			Here task would be admissible
+			Total utilization tasks already in CPU (CPU) BIG_3 cur freq 2000 = 0
+			getUtilization of considered task 29.839652/500.000000 (capacity=1.005374)=0.060000
+			Utilization cur task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 would be 0.06 - CPU capacity=1.00537
+				Scaled task WCET 29.8397 DL 500
+			In the CPU island of BIG_3, 0 are being scheduled
+			new = (0.000000 + 0.060000)*1.9190279782678905=0.115142, old 0.000000*0.10689883516049144=0.000000
+			iDeltaPow = new-old = 0.115142
+0.0163355 (CPU) LITTLE_0 cur freq 200 500
+0.0163355 (CPU) LITTLE_1 cur freq 200 500
+0.0163355 (CPU) LITTLE_2 cur freq 200 500
+0.0163355 (CPU) LITTLE_3 cur freq 200 500
+0.0168083 (CPU) LITTLE_0 cur freq 200 400
+0.0168083 (CPU) LITTLE_1 cur freq 200 400
+0.0168083 (CPU) LITTLE_2 cur freq 200 400
+0.0168083 (CPU) LITTLE_3 cur freq 200 400
+0.0175794 (CPU) LITTLE_1 cur freq 200 600
+0.0175794 (CPU) LITTLE_0 cur freq 200 600
+0.0175794 (CPU) LITTLE_2 cur freq 200 600
+0.0175794 (CPU) LITTLE_3 cur freq 200 600
+0.0176847 (CPU) LITTLE_0 cur freq 200 300
+0.0176847 (CPU) LITTLE_1 cur freq 200 300
+0.0176847 (CPU) LITTLE_2 cur freq 200 300
+0.0176847 (CPU) LITTLE_3 cur freq 200 300
+0.0191188 (CPU) LITTLE_2 cur freq 200 700
+0.0191188 (CPU) LITTLE_1 cur freq 200 700
+0.0191188 (CPU) LITTLE_3 cur freq 200 700
+0.0191188 (CPU) LITTLE_0 cur freq 200 700
+0.0197534 (CPU) LITTLE_3 cur freq 200 200
+0.0197534 (CPU) LITTLE_1 cur freq 200 200
+0.0197534 (CPU) LITTLE_0 cur freq 200 200
+0.0197534 (CPU) LITTLE_2 cur freq 200 200
+0.0209211 (CPU) LITTLE_1 cur freq 200 800
+0.0209211 (CPU) LITTLE_3 cur freq 200 800
+0.0209211 (CPU) LITTLE_2 cur freq 200 800
+0.0209211 (CPU) LITTLE_0 cur freq 200 800
+0.0220229 (CPU) LITTLE_1 cur freq 200 900
+0.0220229 (CPU) LITTLE_2 cur freq 200 900
+0.0220229 (CPU) LITTLE_0 cur freq 200 900
+0.0220229 (CPU) LITTLE_3 cur freq 200 900
+0.02418 (CPU) LITTLE_0 cur freq 200 1000
+0.02418 (CPU) LITTLE_3 cur freq 200 1000
+0.02418 (CPU) LITTLE_2 cur freq 200 1000
+0.02418 (CPU) LITTLE_1 cur freq 200 1000
+0.0265921 (CPU) LITTLE_3 cur freq 200 1100
+0.0265921 (CPU) LITTLE_2 cur freq 200 1100
+0.0265921 (CPU) LITTLE_1 cur freq 200 1100
+0.0265921 (CPU) LITTLE_0 cur freq 200 1100
+0.0291094 (CPU) LITTLE_3 cur freq 200 1200
+0.0291094 (CPU) LITTLE_2 cur freq 200 1200
+0.0291094 (CPU) LITTLE_1 cur freq 200 1200
+0.0291094 (CPU) LITTLE_0 cur freq 200 1200
+0.0327086 (CPU) LITTLE_2 cur freq 200 1300
+0.0327086 (CPU) LITTLE_3 cur freq 200 1300
+0.0327086 (CPU) LITTLE_1 cur freq 200 1300
+0.0327086 (CPU) LITTLE_0 cur freq 200 1300
+0.0366526 (CPU) LITTLE_3 cur freq 200 1400
+0.0366526 (CPU) LITTLE_1 cur freq 200 1400
+0.0366526 (CPU) LITTLE_2 cur freq 200 1400
+0.0366526 (CPU) LITTLE_0 cur freq 200 1400
+0.040064 (CPU) BIG_2 cur freq 200 700
+0.040064 (CPU) BIG_3 cur freq 200 700
+0.040064 (CPU) BIG_0 cur freq 200 700
+0.040064 (CPU) BIG_1 cur freq 200 700
+0.0409326 (CPU) BIG_2 cur freq 200 800
+0.0409326 (CPU) BIG_3 cur freq 200 800
+0.0409326 (CPU) BIG_0 cur freq 200 800
+0.0409326 (CPU) BIG_1 cur freq 200 800
+0.0419541 (CPU) BIG_1 cur freq 200 600
+0.0419541 (CPU) BIG_2 cur freq 200 600
+0.0419541 (CPU) BIG_3 cur freq 200 600
+0.0419541 (CPU) BIG_0 cur freq 200 600
+0.0431386 (CPU) BIG_1 cur freq 200 500
+0.0431386 (CPU) BIG_0 cur freq 200 500
+0.0431386 (CPU) BIG_3 cur freq 200 500
+0.0431386 (CPU) BIG_2 cur freq 200 500
+0.043488 (CPU) BIG_2 cur freq 200 900
+0.043488 (CPU) BIG_3 cur freq 200 900
+0.043488 (CPU) BIG_1 cur freq 200 900
+0.043488 (CPU) BIG_0 cur freq 200 900
+0.0448606 (CPU) BIG_2 cur freq 200 400
+0.0448606 (CPU) BIG_0 cur freq 200 400
+0.0448606 (CPU) BIG_3 cur freq 200 400
+0.0448606 (CPU) BIG_1 cur freq 200 400
+0.0468896 (CPU) BIG_0 cur freq 200 1000
+0.0468896 (CPU) BIG_1 cur freq 200 1000
+0.0468896 (CPU) BIG_2 cur freq 200 1000
+0.0468896 (CPU) BIG_3 cur freq 200 1000
+0.0483396 (CPU) BIG_3 cur freq 200 300
+0.0483396 (CPU) BIG_1 cur freq 200 300
+0.0483396 (CPU) BIG_0 cur freq 200 300
+0.0483396 (CPU) BIG_2 cur freq 200 300
+0.0497265 (CPU) BIG_1 cur freq 200 1100
+0.0497265 (CPU) BIG_2 cur freq 200 1100
+0.0497265 (CPU) BIG_0 cur freq 200 1100
+0.0497265 (CPU) BIG_3 cur freq 200 1100
+0.0541119 (CPU) BIG_1 cur freq 200 1200
+0.0541119 (CPU) BIG_3 cur freq 200 1200
+0.0541119 (CPU) BIG_2 cur freq 200 1200
+0.0541119 (CPU) BIG_0 cur freq 200 1200
+0.0555874 (CPU) BIG_3 cur freq 200 200
+0.0555874 (CPU) BIG_2 cur freq 200 200
+0.0555874 (CPU) BIG_1 cur freq 200 200
+0.0555874 (CPU) BIG_0 cur freq 200 200
+0.0581995 (CPU) BIG_2 cur freq 200 1300
+0.0581995 (CPU) BIG_0 cur freq 200 1300
+0.0581995 (CPU) BIG_1 cur freq 200 1300
+0.0581995 (CPU) BIG_3 cur freq 200 1300
+0.0601281 (CPU) BIG_0 cur freq 200 1400
+0.0601281 (CPU) BIG_3 cur freq 200 1400
+0.0601281 (CPU) BIG_2 cur freq 200 1400
+0.0601281 (CPU) BIG_1 cur freq 200 1400
+0.0650696 (CPU) BIG_2 cur freq 200 1500
+0.0650696 (CPU) BIG_3 cur freq 200 1500
+0.0650696 (CPU) BIG_0 cur freq 200 1500
+0.0650696 (CPU) BIG_1 cur freq 200 1500
+0.0700042 (CPU) BIG_1 cur freq 200 1600
+0.0700042 (CPU) BIG_3 cur freq 200 1600
+0.0700042 (CPU) BIG_2 cur freq 200 1600
+0.0700042 (CPU) BIG_0 cur freq 200 1600
+0.0791337 (CPU) BIG_3 cur freq 200 1700
+0.0791337 (CPU) BIG_1 cur freq 200 1700
+0.0791337 (CPU) BIG_2 cur freq 200 1700
+0.0791337 (CPU) BIG_0 cur freq 200 1700
+0.0862217 (CPU) BIG_3 cur freq 200 1800
+0.0862217 (CPU) BIG_1 cur freq 200 1800
+0.0862217 (CPU) BIG_2 cur freq 200 1800
+0.0862217 (CPU) BIG_0 cur freq 200 1800
+0.0987668 (CPU) BIG_0 cur freq 200 1900
+0.0987668 (CPU) BIG_3 cur freq 200 1900
+0.0987668 (CPU) BIG_2 cur freq 200 1900
+0.0987668 (CPU) BIG_1 cur freq 200 1900
+0.115142 (CPU) BIG_3 cur freq 200 2000
+0.115142 (CPU) BIG_2 cur freq 200 2000
+0.115142 (CPU) BIG_0 cur freq 200 2000
+0.115142 (CPU) BIG_1 cur freq 200 2000
+balanceLoad:
+	CPU is not busy => skip
+Temporarily chosenCPU: (CPU) LITTLE_0 cur freq 200 with freq 500
+leaveLittle3():
+	Policy deactivated. Skip
+time = 0 - going to schedule task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 in CPU LITTLE_0 with freq 500 speed=1 chosenOPP 3 - CPU not changed 
+dispatch PeriodicTask T12_task0 DL = T 500 WCET(abs) 30
+Receiving this error once per task is ok
+Decisions 'til now:
+EnergyMultiScheduler:
+	LITTLE_0:
+	1) PeriodicTask T12_task0 DL = T 500 WCET(abs) 30
+	Empty queue for LITTLE_1
+	Empty queue for LITTLE_2
+	Empty queue for LITTLE_3
+	Empty queue for BIG_0
+	Empty queue for BIG_1
+	Empty queue for BIG_2
+	Empty queue for BIG_3
+
+
+time =0 EnergyMRTKernel::onBeginDispatchMulti() for T12_task0 on (CPU) LITTLE_0 cur freq 500
+onBeginDispatchMulti Scheduling task T12_task0 on cpu (CPU) LITTLE_0 cur freq 500
+T12_task0 end ctx switch set at t=0
+
+time =0 EnergyMRTKernel::onEndDispatchMulti() for T12_task0 on (CPU) LITTLE_0 cur freq 500
+LITTLE_0: T12_task0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: 0	BIG_0: 0	BIG_1: 0	BIG_2: 0	BIG_3: 0	
+task::onsched (CPU) LITTLE_0 cur freq 500
+Setting PeriodicTask T12_task0 DL = T 500 WCET(abs) 30 endEvt at t=198
+Actual time = [100]
+Dealing with task PeriodicTask T12_task0 DL = T 500 WCET(abs) 30.
+Task has already been dispatched, but dispatching is not complete => skip
+
+time =100 EnergyMRTKernel::onBeginDispatchMulti() for T12_task0 on (CPU) LITTLE_0 cur freq 500
+onBeginDispatchMulti Scheduling task T12_task0 on cpu (CPU) LITTLE_0 cur freq 500
+T12_task0 end ctx switch set at t=100
+
+time =100 EnergyMRTKernel::onEndDispatchMulti() for T12_task0 on (CPU) LITTLE_0 cur freq 500
+LITTLE_0: T12_task0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: 0	BIG_0: 0	BIG_1: 0	BIG_2: 0	BIG_3: 0	
+task::onsched (CPU) LITTLE_0 cur freq 500
+Class=Task Module=task.cpp Message:Trying to schedule an already executing task...

@@ -21,7 +21,7 @@
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       1
+#define EMRTK_MIGRATE_ENABLED       0
 
 namespace RTSim {
 
@@ -68,7 +68,7 @@ namespace RTSim {
         //        for (Island_BL* i : islands)
         //addFrequencyChangeEvent(i, Tick(0), 0);
       }
-      ~EnergyMigrationManager() { _islands_history.clear(); }
+      ~EnergyMigrationManager() { cout << __func__ << endl; _islands_history.clear(); }
 
       /// Add an island frequency change event
       void addFrequencyChangeEvent(Island_BL* island, Tick when, unsigned int opp) {

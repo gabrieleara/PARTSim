@@ -289,6 +289,7 @@ namespace RTSim
     };
 
     virtual ~CPU_BL() {
+      cout << __func__ << endl;
       delete _pm;
     }
 
@@ -368,6 +369,7 @@ namespace RTSim
     };
 
     ~Island_BL() {
+	cout << __func__ << endl;
         _opps.clear();
         for (CPU_BL* c : _cpus)
           delete c;
