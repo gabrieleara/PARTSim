@@ -906,8 +906,6 @@ int init_suite(EnergyMRTKernel** kern) {
     *kern = new EnergyMRTKernel(schedulers, edfsched, island_bl_big, island_bl_little, "The sole kernel");
     kernels.push_back(*kern);
 
-    island_bl_big->setKernel(*kern);
-    island_bl_little->setKernel(*kern);
     CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
     cout << "end init_suite of Experiment #" << init_suite << endl;

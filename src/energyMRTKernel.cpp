@@ -26,6 +26,7 @@ namespace RTSim {
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
         setIslandBig(big); setIslandLittle(little);
+        big->setKernel(this); little->setKernel(this);
 
         for(CPU_BL* c : getProcessors())  {
             _m_currExe[c] = NULL;
