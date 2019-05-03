@@ -99,10 +99,6 @@ namespace RTSim
             return Entity::getName();
         }
 
-        // ------------------------------------------------------ toString()
-
-        friend ostream& operator<<(ostream &strm, CPU &a);
-
         virtual string toString() const {
             stringstream ss;
             ss << "(CPU) " << getName() << " cur freq " << getFrequency();
@@ -254,16 +250,18 @@ namespace RTSim
     };
 
   // ------------------------------------------------------------ Big-Little. Classes not meant to be extended
-  // Design: I had a class "CPU", which already seemed ok for managing Big-littles. However, this brough bugs,
+  // Design: I had a class "CPU", which already seemed ok for managing Big-Littles. However, this brought bugs,
   // for example when updating an OPP, since it didn't update automatically the OPP of the island.
-  // With CPU_BL, a core belongs to an IslandType and changing OPP means changing IslandType OPP. Moreover, classes were
-  // build while realizing EnergyMRTKernel, which is a kinda self-adaptive kernel and thus needs to try different
-  // OPPs. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others.
+  // With CPU_BL, instead, a core belongs to an IslandType and changing OPP means changing IslandType OPP. Moreover, classes were
+  // built while realizing EnergyMRTKernel, which is a kinda self-adaptive kernel and thus needs to try different
+  // OPPs to dispatch a task. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others and
+  // make their experiments work => don't touch others classes, or limit modifications.
+  // It seems I'm breaking Liskov Substitution Principle. Hope not too much... :) 
 
   class Island_BL;
   typedef enum { LITTLE=0, BIG, NUM_ISLANDS } IslandType;
 
-  class CPU_BL : public CPU {
+  class CPU_BL final : public CPU {
       friend class Island_BL; // otherwise I would have infinite recursion
   private:
     Island_BL* _island;
@@ -337,7 +335,7 @@ namespace RTSim
 
   class EnergyMRTKernel;
 
-  class Island_BL : public Entity {
+  class Island_BL final : public Entity {
   public:
     static string IslandName[NUM_ISLANDS];
 
