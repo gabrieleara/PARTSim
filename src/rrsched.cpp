@@ -18,7 +18,14 @@ namespace RTSim {
             return true;
         return false;
     }
-    
+
+    bool RRScheduler::isRoundExpired(AbsRTTask *task) {
+        RRModel *model = dynamic_cast<RRModel*>(find(task));
+        if (model == 0) throw RRSchedExc("Cannot find task");
+        bool res = model->isRoundExpired();
+        return res;
+    }
+
     Tick RRScheduler::RRModel::getPriority() const
     {
         return 1;

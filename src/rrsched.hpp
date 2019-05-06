@@ -89,6 +89,12 @@ namespace RTSim {
         RRScheduler(int defSlice);
 
         /**
+           This function returns true if the round has expired for the
+           given task.
+        */
+        bool isRoundExpired(AbsRTTask* t);
+
+        /**
            Set the Round Robin slice.
         */
         virtual void setRRSlice(AbsRTTask* task, Tick slice);

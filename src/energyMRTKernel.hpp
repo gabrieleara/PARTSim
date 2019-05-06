@@ -18,10 +18,11 @@
 #include "task.hpp"
 #include "rttask.hpp"
 #include "multi_sched.hpp"
+#include "rrsched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       0
+#define EMRTK_MIGRATE_ENABLED       1
 
 namespace RTSim {
 
@@ -356,6 +357,16 @@ namespace RTSim {
         */
         void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
+        Island_BL* getIsland(IslandType island) const { return _islands[island]; }
+
+        /**
+           Tells if a task is to be descheduled on a CPU
+
+           This method has been introduced for RRScheduler, which needs to tell wheather a
+           task has finished its quantum
+        */
+        bool isToBeDescheduled(CPU_BL* p, AbsRTTask *t);
+
         /**
          * Implements the policy of leaving little 3 free, just in case a task with high WCET arrives,
          * risking to be forced to schedule it on big cores, increasing power consumption.
@@ -365,7 +376,6 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
-        Island_BL* getIsland(IslandType island) const { return _islands[island]; }
 
         /**
            Tries to schedule a task on a CPU_BL, for all valid OPPs,
@@ -443,6 +453,9 @@ namespace RTSim {
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
         CPU_BL* getDispatchingProcessor(const AbsRTTask* t);
+
+        /// Returns tasks to be dispatched for the used scheduler
+        void getNewTasks(vector<AbsRTTask*> tasks, int& num_newtasks);
 
         /// Get all processors, in all islands
         vector<CPU_BL*> getProcessors() const { 
@@ -528,7 +541,7 @@ namespace RTSim {
         /// to debug internal functions...
         void test();
 
-        double time();
+        static double time();
 
         void printMap();
 

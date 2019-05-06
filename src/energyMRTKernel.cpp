@@ -191,8 +191,21 @@ namespace RTSim {
 
     // --------------------------------------------------------------- context switch
 
-    // Note MRTKernel version differs: dispatch() tasks a free CUP and calls onBDM(), which in turns
-    // assigns a task. EnergyMRTKernel, instead, needs to make assignment decisions: dispatch() chooses
+    bool EnergyMRTKernel::isToBeDescheduled(CPU_BL *p, AbsRTTask *t) {
+      assert(p != NULL);
+
+      if (dynamic_cast<RRScheduler*>(_sched) && t != NULL) { // t is null at time == 0
+        bool res = false;
+        try {
+          res = dynamic_cast<RRScheduler*>(_queues->getScheduler(p))->isRoundExpired(t);
+        } catch (BaseExc& e) { /* */ }
+        return res;
+      }
+      return false; // neutral...
+    }
+
+    // Note MRTKernel version differs: dispatch() gives tasks a free CPU and calls onBDM(), which in turns
+    // assigns them. EnergyMRTKernel, instead, needs to make assignment decisions: dispatch() chooses
     // a CPU for all tasks, and on*DM() makes the context switch (split into onBDM() and onEBM(), as in MRTKernel)
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
@@ -202,17 +215,16 @@ namespace RTSim {
         AbsRTTask *st   = e->getTask();
         assert(st != NULL); assert(p != NULL);
 
-        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onBeginDispatchMulti() for " << taskname(st) << " on " << p->toString() << endl
-          ;
+        cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onBeginDispatchMulti() for " << taskname(st) << " on " << p->toString() << endl;
         if ( st != NULL && dt == st ) {
             stringstream ss;
             ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
             DBGPRINT(ss.str());
-            cout << ss.str() << endl;
+            cout << ss.str() << endl; 
             return;
         }
         // if necessary, deschedule the task.
-        if ( dt != NULL ) {
+        if ( dt != NULL || isToBeDescheduled(p, dt) ) {
             _m_oldExe[dt] = p;
             _m_currExe[p] = NULL;
             dt->deschedule();
@@ -458,6 +470,25 @@ namespace RTSim {
         pp->setBusy(true);
     }
 
+  /*void EnergyMRTKernel::getNewTasks(vector<Task*> tasks, int& new_tasks) {
+        if (dynamic_cast<EDFScheduler*>(_sched)) {
+           while (_sched->getTaskN(num_newtasks) != NULL) {
+              tasks.push_back(_sched->getTaskN(num_newtasks));
+              num_newtasks++;
+           }
+        }
+        else if (dynamic_cast<RRScheduler*>(_sched)) {
+          for (CPU_BL *c : getProcessors()) {
+              AbsRTTask *t = _queues->getFirst(c);
+              if (t != NULL) {
+                tasks.push_back(t);
+                new_tasks++;
+              }
+          }
+        }
+        tasks.push_back(NULL);
+    }*/
+
     /* Decide a CPU for each ready task */
     void EnergyMRTKernel::dispatch() {
         // test();
@@ -466,8 +497,10 @@ namespace RTSim {
 
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
+        //vector<AbsRTTask*> tasks;
 
         // how many "new" tasks in the ready queue?
+        //getNewTasks(tasks, num_newtasks);
         while (_sched->getTaskN(num_newtasks) != NULL)
             num_newtasks++;
 
