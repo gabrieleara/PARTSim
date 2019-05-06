@@ -292,7 +292,6 @@ namespace RTSim
 
     void CPU_BL::setBusy(bool busy) {
         _isBusy = busy;
-        _island->updateBusy();
     }
 
     bool CPU_BL::isIslandBusy() {

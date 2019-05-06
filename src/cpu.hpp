@@ -120,9 +120,6 @@ namespace RTSim
         /// Useful for debug
         virtual int getOPP();
 
-        /// expose the internal OPPs, read-only
-        std::vector<struct OPP> const & getOPPs() const { return OPPs; };
-
         /// Useful for debug
         virtual void setOPP(unsigned int newOPP);
 
@@ -400,17 +397,6 @@ namespace RTSim
 
     void setOPP(unsigned int opp);
 
-    void updateBusy() {
-        /*bool b = true;
-        for (CPU_BL* c : _cpus)
-            if (!c->isBusy()) {
-                b = false;
-                break;
-            }
-        for(CPU_BL* c : _cpus)
-            c->_isBusy = b;*/
-    }
-
     vector<struct OPP> getHigherOPPs() {
         int maxOPP = _currentOPP;
         assert(_currentOPP >= 0 && _currentOPP < _opps.size());
@@ -478,6 +464,13 @@ namespace RTSim
 
     virtual void newRun() {}
     virtual void endRun() {}
+
+    // functions of base class you shouldn't use
+    virtual unsigned long int getFrequencySwitching() { assert("Do not use it" == ""); }
+    virtual double getCurrentPowerConsumption() { assert("Do not use it" == ""); }
+    virtual void setMaxPowerConsumption(double e) { assert("Do not use it" == ""); }
+    virtual double getMaxConsumption() { assert("Do not use it" == "");  }
+    virtual void check() { assert("Do not use it" == ""); }
 
 };
 
