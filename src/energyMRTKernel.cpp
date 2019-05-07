@@ -319,7 +319,6 @@ namespace RTSim {
         }
 
         printState();
-
     }
 
     void EnergyMRTKernel::migrate(CPU_BL* endingCPU) {

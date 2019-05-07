@@ -22,6 +22,9 @@
 #include "mrtkernel.hpp"
 #include <exeinstr.hpp>
 
+#include <rrsched.hpp>
+#include <edfsched.hpp>
+
 namespace RTSim {
 
     using namespace MetaSim;
@@ -100,6 +103,7 @@ namespace RTSim {
 
   }; 
 
+
     /**
         \ingroup sched
 
@@ -168,8 +172,8 @@ namespace RTSim {
             AbsRTTask *oldTask = getRunningTask(c);
             dropEvt(c, oldTask);
 
-            //rimuovere da shcuedler o modificare getalltasksinqueue
             _running_tasks.erase(c);
+            oldTask->deschedule();
         }
 
         /// Add a task to the scheduler of a core. @see insertTask
@@ -280,9 +284,6 @@ namespace RTSim {
             assert(t != NULL); assert(original != NULL); assert(final != NULL);
 
             try {
-// todo
-if (taskname(t).find("task9") != string::npos)
-    cout<<"";
                 removeFromQueue(original, t);
                 insertTask(t, final);
                 makeRunning(t, final);
@@ -301,15 +302,39 @@ if (taskname(t).find("task9") != string::npos)
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
             assert(c != NULL);
-            if (double(SIMUL.getTime()) == 100.0)
-              cout << "";
             AbsRTTask *t = getFirst(c);
-            if (getRunningTask(c) != NULL && getRunningTask(c) != t)
+            if (double(SIMUL.getTime()) == 100.0 && t!=NULL&&t->toString().find( "T12_task1") != string::npos) {
+              cout << "";
+              getFirst(c);
+            }
+            if (shouldDeschedule(c, t))
                 makeReady(c);
-            if (t != NULL)  // request to schedule on core with no assigned tasks
+            if (shouldSchedule(c, t))  // request to schedule on core with no assigned tasks
                  makeRunning(t, c);
         }
 
+        bool shouldDeschedule(CPU *c, AbsRTTask *t) {
+            if (dynamic_cast<RRScheduler*>(_queues[c])) {
+                return getRunningTask(c) != NULL;
+            }
+            else if (dynamic_cast<EDFScheduler*>(_queues[c])){
+                return getRunningTask(c) != NULL && getRunningTask(c) != t;
+            }
+            assert(false);  // add your choice
+            return false;
+        }
+
+      bool shouldSchedule(CPU* c, AbsRTTask *t) {
+        if (dynamic_cast<RRScheduler*>(_queues[c])) {
+          RRScheduler *s = dynamic_cast<RRScheduler*>(_queues[c]);
+          return t != NULL && !s->isRoundExpired(t);
+        }
+        else if (dynamic_cast<EDFScheduler*>(_queues[c])) {
+          return t != NULL;
+        }
+        assert(false); // add your choice
+        return false;
+      }
 
         virtual void newRun() {}
 
