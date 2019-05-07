@@ -160,6 +160,7 @@ namespace RTSim {
               when = _endEvts[c]->getTime();
             dropEvt(c, t);
             postBeginEvt(c, t, when);
+            cout << "t = " << SIMUL.getTime() << ", ctx switch set at " << double(when) << " for " << taskname(t) << endl;
         }
 
         /// Transition from running to ready on core c
@@ -174,6 +175,7 @@ namespace RTSim {
 
             _running_tasks.erase(c);
             oldTask->deschedule();
+            cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
         }
 
         /// Add a task to the scheduler of a core. @see insertTask
@@ -307,15 +309,17 @@ namespace RTSim {
               cout << "";
               getFirst(c);
             }
+
             if (shouldDeschedule(c, t))
                 makeReady(c);
             if (shouldSchedule(c, t))  // request to schedule on core with no assigned tasks
                  makeRunning(t, c);
+            
         }
 
         bool shouldDeschedule(CPU *c, AbsRTTask *t) {
             if (dynamic_cast<RRScheduler*>(_queues[c])) {
-                return getRunningTask(c) != NULL;
+              return getRunningTask(c) != NULL;
             }
             else if (dynamic_cast<EDFScheduler*>(_queues[c])){
                 return getRunningTask(c) != NULL && getRunningTask(c) != t;

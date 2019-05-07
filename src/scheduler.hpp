@@ -205,6 +205,11 @@ namespace RTSim {
         virtual void insert(AbsRTTask *) throw(RTSchedExc, BaseExc);
 
         /**
+          * Have you inserted the task t yet?
+          */
+        bool isFound(AbsRTTask *t);
+
+        /**
          *  extract a task from the queue.
          */
         virtual void extract(AbsRTTask *) throw(RTSchedExc, BaseExc);
@@ -282,6 +287,7 @@ namespace RTSim {
         virtual void newRun();
         virtual void endRun();
         virtual void print();
+        virtual string toString();
 
     protected:
         /// pointer to the kernel

@@ -233,9 +233,12 @@ namespace RTSim {
             _queue.begin();
         for (unsigned int i = 0; i < n; i++) it++;
 
-        
-
         return (*it)->getTask();    
+    }
+
+    bool Scheduler::isFound(AbsRTTask *t) {
+        TaskModel* model = find(t);
+        return model != NULL;
     }
 
     void Scheduler::notify(AbsRTTask* task)
@@ -267,6 +270,17 @@ namespace RTSim {
         DBGPRINT("Ready queue: ");
         for (; it != _queue.end(); ++it)
             DBGPRINT_2(taskname((*it)->getTask()), " -> ");
+    }
+
+    string Scheduler::toString() {
+        string s;
+        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
+            _queue.begin();
+        for (unsigned int i = 0; i < _queue.size(); i++) it++;
+            if ((*it) != NULL && (*it)->getTask() != NULL)
+                s += taskname((*it)->getTask()) + "\t";
+        
+        return s; 
     }
 
     AbsRTTask* Scheduler::getFirst()

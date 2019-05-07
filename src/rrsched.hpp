@@ -76,6 +76,8 @@ namespace RTSim {
                currently executing thread.
             */
             bool isRoundExpired();
+
+            string toString();
         };
     
         int defaultSlice;

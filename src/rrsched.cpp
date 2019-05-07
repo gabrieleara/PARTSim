@@ -19,6 +19,11 @@ namespace RTSim {
         return false;
     }
 
+    string RRScheduler::RRModel::toString() {
+        string s = "RRModel for " + _rtTask->toString() + ", slice " + to_string(double(getRRSlice())) + ", expired: " + (isRoundExpired() ? "yes" : "no");
+        return s;
+    }
+
     bool RRScheduler::isRoundExpired(AbsRTTask *task) {
         RRModel *model = dynamic_cast<RRModel*>(find(task));
         if (model == 0) throw RRSchedExc("Cannot find task");
