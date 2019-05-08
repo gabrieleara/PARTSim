@@ -169,8 +169,8 @@ namespace RTSim {
         DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles, "Current speed ", currentSpeed);
         DBGPRINT_4(" result ", ((double)currentCost - actCycles)/currentSpeed, " to tick ", ceil( ((double)currentCost - actCycles)/currentSpeed) );
         Tick tmp = 0;
-        if (((double)currentCost) > actCycles)
-            tmp = (Tick) ceil( ((double)currentCost - actCycles)/currentSpeed);
+        if (((double)currentCost) > actCycles * currentSpeed)
+            tmp = (Tick) ceil( ((double)currentCost - actCycles * currentSpeed)/currentSpeed);
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 

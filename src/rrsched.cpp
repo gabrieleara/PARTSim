@@ -157,6 +157,10 @@ namespace RTSim {
         
     }
 
+    string RRScheduler::toString() {
+      return Scheduler::toString();
+    }
+
     RRScheduler *RRScheduler::createInstance(vector<string> &par)    
     {
         int slice;

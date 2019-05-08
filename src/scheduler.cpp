@@ -276,9 +276,11 @@ namespace RTSim {
         string s;
         priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
             _queue.begin();
-        for (unsigned int i = 0; i < _queue.size(); i++) it++;
+        for (unsigned int i = 0; i < _queue.size(); i++) {
             if ((*it) != NULL && (*it)->getTask() != NULL)
                 s += taskname((*it)->getTask()) + "\t";
+	    it++;
+ 	}
         
         return s; 
     }

@@ -106,7 +106,8 @@ namespace RTSim {
     {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT("Scheduling " << getName());
-        
+	
+        _lastSched = SIMUL.getTime();
         schedEvt.process();        
     }
     

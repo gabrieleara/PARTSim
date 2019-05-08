@@ -384,6 +384,7 @@ namespace RTSim {
         Tick getMinIAT() const { return Tick(int_time->getMinimum());}
 
         virtual Tick getLastSched() {return _lastSched;}
+	virtual void setLastSched(Tick ls) {_lastSched = ls;}
 
         /**
             Returns the worst-case computation time. If the maxC parameter

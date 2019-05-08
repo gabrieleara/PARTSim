@@ -117,6 +117,8 @@ namespace RTSim {
 
         void removeTask(AbsRTTask *t) {}
 
+        string toString();
+
         static RRScheduler *createInstance(vector<string> &par);
     };
 
