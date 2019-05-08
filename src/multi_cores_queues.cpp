@@ -12,7 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <multi_sched.hpp>
+#include <multi_cores_queues.hpp>
 #include <mrtkernel.hpp>
 
 namespace RTSim {
@@ -48,8 +48,10 @@ namespace RTSim {
     MultiScheduler::MultiScheduler(MRTKernel* k, vector<CPU*>& cpus, vector<Scheduler*>& scheds, const string& name)
             : Entity(name) {
         assert(cpus.size() == scheds.size());
-        for (int i = 0; i < cpus.size(); i++)
+        for (int i = 0; i < cpus.size(); i++) {
+          //scheds.at(i)->setKernel(NULL);
             _queues[cpus.at(i)] = scheds.at(i);
+        }
         _kernel = k;
     }
 

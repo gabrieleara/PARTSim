@@ -17,7 +17,7 @@
 #include "mrtkernel.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
-#include "multi_sched.hpp"
+#include "multi_cores_queues.hpp"
 #include "rrsched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
@@ -512,6 +512,12 @@ namespace RTSim {
          * Invoked when a task ends
          */
         virtual void onEnd(AbsRTTask* t);
+
+      /**
+       * Specifically called when RRScheduler is used, it informs the kernel that
+       * finishingTask has just finished its round (slice)
+       */
+        void onRound(AbsRTTask* finishingTask);
 
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);

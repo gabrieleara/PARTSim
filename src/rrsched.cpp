@@ -2,6 +2,7 @@
 #include <task.hpp>
 #include <cassert>
 #include <sstream>
+#include <energyMRTKernel.hpp>
 
 namespace RTSim {
     using namespace MetaSim;
@@ -59,6 +60,7 @@ namespace RTSim {
 
     void RRScheduler::notify(AbsRTTask* task)
     {
+cout << __func__ << ":"<<endl;
         DBGENTER(_RR_SCHED_DBG_LEV);
         _rrEvt.drop();
 
@@ -69,6 +71,7 @@ namespace RTSim {
                 _rrEvt.post(SIMUL.getTime() + model->getRRSlice());
                 DBGPRINT_2("rrEvt post at time ", 
                            SIMUL.getTime() + model->getRRSlice());
+                cout << "\trrEvt post at time " << SIMUL.getTime() + model->getRRSlice() << " task " << taskname(task) << endl;
             }
         }
       
@@ -77,23 +80,29 @@ namespace RTSim {
 
     void RRScheduler::round(Event *)
     {
+cout << __func__ << " t = " << SIMUL.getTime() << ":" << endl;
+
         DBGENTER(_RR_SCHED_DBG_LEV);
         RRModel* model = dynamic_cast<RRModel *>(_queue.front());
-        if (model == 0) throw RRSchedExc("Cannot find task");
+        if (model == 0) return; //throw RRSchedExc("Cannot find task");
 
         if (model->isRoundExpired()) {
             DBGPRINT("Round expired");
             _queue.erase(model);
+            // todo temp
+            cout << "\tRound expired for task " << model->toString() << " => removed" << endl;
             if (model->isActive()) {
                 model->setInsertTime(SIMUL.getTime());
                 _queue.insert(model);
+                // todo temp
+                cout << "\tand then reinserted into queue" << endl;
             }
         }
         
 //         if it is not active... ?
         RRModel* first = dynamic_cast<RRModel *>(_queue.front());
 //         if (first == 0) throw RRSchedExc("Cannot find task");
-
+        
         if (first != 0) {
             Tick slice = first->getRRSlice();
             if (slice == 0) _rrEvt.drop();
@@ -101,12 +110,20 @@ namespace RTSim {
                 if (first != model || first->isRoundExpired()) {
                     _rrEvt.drop();
                     _rrEvt.post(SIMUL.getTime() + slice);
+                    //todo rem
+                    cout << "\tround evt set at " << SIMUL.getTime() + slice << " for task " << first->toString() << endl;
                 }
             }
         }
+
+        cout << "RRScheduler queue: " << toString() << endl;
+
         if (_kernel) {
             DBGPRINT("informing the kernel");
-            _kernel->dispatch();
+            if (dynamic_cast<EnergyMRTKernel*>(_kernel))
+                dynamic_cast<EnergyMRTKernel*>(_kernel)->onRound(model->getTask());
+            else // if you are not using EMRTKernel
+                _kernel->dispatch();
         }
         
     }

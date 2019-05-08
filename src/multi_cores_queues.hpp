@@ -174,8 +174,8 @@ namespace RTSim {
             dropEvt(c, oldTask);
 
             _running_tasks.erase(c);
-            oldTask->deschedule();
-            cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
+            //oldTask->deschedule();
+            //cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
         }
 
         /// Add a task to the scheduler of a core. @see insertTask
@@ -216,6 +216,14 @@ namespace RTSim {
 
         /// Get the task of a core queue
         virtual AbsRTTask* getFirst(CPU* c);
+
+        /// Get processor where task is running
+        CPU *getProcessor(AbsRTTask *t) const {
+          for (const auto& elem : _running_tasks)
+            if (elem.second == t)
+              return elem.first;
+          return NULL;
+        }
 
         /// Get running task for core c
         virtual AbsRTTask* getRunningTask(CPU* c) {
@@ -268,11 +276,12 @@ namespace RTSim {
         }
 
         /// Kernel signals end of task event (WCET finished)
-        void onEnd(CPU* c) {
-          assert(c != NULL);
+        void onEnd(AbsRTTask *t, CPU* c) {
+          assert(c != NULL); assert(t != NULL);
 
-          AbsRTTask *t = getRunningTask(c);
-          assert(t != NULL);
+          AbsRTTask *tt = getRunningTask(c);
+          assert(tt != NULL && t == tt); // is there consistency still?
+
           removeFromQueue(c, t);
           makeReady(c);
         }
@@ -293,6 +302,18 @@ namespace RTSim {
                 insertTask(t, final);
                 onMigrationFinished(t,original, final);
             }
+        }
+
+      /**
+       * Function called only when RRScheduler is used. It informs
+       * the queues manager that a task has finished its round => remove from
+       * queue and take next task
+       */
+      void onRound(AbsRTTask *finishingTask, CPU *c) {
+        //CPU *c = getProcessor(finishingTask);
+            if (c == NULL) // task has just finished its WCET
+              return;
+            schedule(c);
         }
 
         /// Remove the first task of a core queue. Also removes its ctx evt
@@ -331,9 +352,9 @@ namespace RTSim {
       bool shouldSchedule(CPU* c, AbsRTTask *t) {
         if (dynamic_cast<RRScheduler*>(_queues[c])) {
           RRScheduler *s = dynamic_cast<RRScheduler*>(_queues[c]);
-        return t != NULL && (!s->isRoundExpired(t) || s->getSize() == 1);
-      }
-      else if (dynamic_cast<EDFScheduler*>(_queues[c])) {
+          return t != NULL && (!s->isRoundExpired(t) || s->getSize() == 1);
+        }
+        else if (dynamic_cast<EDFScheduler*>(_queues[c])) {
           return t != NULL;
         }
         assert(false); // add your choice

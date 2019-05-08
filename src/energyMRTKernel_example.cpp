@@ -522,8 +522,8 @@ int main(int argc, char *argv[]) {
             EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
 
-            int wcets[] = { 30  };
-            int deadl[] = { 500 };
+            int wcets[] = { 30, 30  };
+            int deadl[] = { 500, 500 };
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
                 cout << "Creating task: " << task_name;
@@ -536,9 +536,7 @@ int main(int argc, char *argv[]) {
                 tasks.push_back(t);
             }
 
-            SIMUL.initSingleRun();
-            SIMUL.run_to(500);
-            SIMUL.endSingleRun();
+            SIMUL.run(500);
             return 0;
         }
 

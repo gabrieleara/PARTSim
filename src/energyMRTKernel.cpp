@@ -302,7 +302,7 @@ namespace RTSim {
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
-        _queues->onEnd(p);
+        _queues->onEnd(t, p);
         _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
         if (!isDispatching(p) && getRunningTask(p) == NULL)
@@ -371,6 +371,11 @@ namespace RTSim {
          
     } // end EMRTK::migrate()
 
+    void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
+      cout << "t = " << SIMUL.getTime() << " " << __func__ << " for " << taskname(finishingTask) << endl;
+        finishingTask->deschedule();
+        _queues->onRound(finishingTask, getProcessor(finishingTask));
+    }
 
     // ----------------------------------------------------------- choosing cores for tasks
 
@@ -561,6 +566,7 @@ namespace RTSim {
         } while (num_newtasks > 0);
         setTryingTaskOnCPU_BL(false);
 
+        _sched->extr
         for (CPU_BL *c : getProcessors())
             _queues->schedule(c);
     }

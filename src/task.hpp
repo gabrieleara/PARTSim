@@ -35,6 +35,7 @@ namespace RTSim {
     /* Forward declaration... */
     class Instr;
     class InstrExc;
+    class EnergyMRTKernel;
 
     // Task states
     typedef enum { TSK_IDLE, TSK_READY, TSK_EXEC, TSK_BLOCKED } task_state;
