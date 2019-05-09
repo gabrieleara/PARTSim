@@ -107,23 +107,32 @@ namespace RTSim {
     /**
         \ingroup sched
 
-        An implementation of multi-scheduler.
+        An implementation of multi-scheduler, i.e. every core has a queue, implemented as scheduler.
         Notice it is not a scheduler, but an interface to
-        manage cores queues, which are implemented as schedulers.
+        manage cores queues, which are implemented as schedulers. This class is also named
+        Multi Cores Queues.
 
         The typical scenario is:
         you have N cores and you need a queue per core. Each queue can be
-        modelled as a scheduler. Schedulers are supposed to be equal.
+        modelled as a scheduler. Schedulers are supposed to be equal!
 
         This interface has been introduced for EnergyMRTkernel, managing
         big-littles, where for energetic reasons the scheduler (the kernel in RTSim)
-        might decide
+        might decide to dispatch many tasks to a certain core.
+
+        Notice that this layer (laid above a multicore kernel) does not de/schedule() tasks,
+        it only post begin and end context switches.
+        To enforce consistency between kernel and multi-scheduler, kernel needs to provide,
+        for each relevant function, task and core where it know that core is currently scheduled.
+
+        Before using this layer, please disable (disable()) the kernel scheduler. It will still
+        generate onArrival() => dispatch() events, but other callbacks will get disabled.
 
         This implementation is general and you can specialize it.
 
-        @see CPU, AbsRTTask
+        @see CPU, AbsRTTask, EnergyMultiCoresScheds
      */
-    class MultiScheduler : public MetaSim::Entity {
+    class MultiCoresScheds : public MetaSim::Entity {
     protected:
         /// cores queues, ordered according to a scheduling policy
         map<CPU*, Scheduler*> _queues;
@@ -187,11 +196,11 @@ namespace RTSim {
 
     public:
 
-        MultiScheduler() : Entity("trash multisched"){};
+        MultiCoresScheds() : Entity("trash multisched"){};
 
-        MultiScheduler(MRTKernel *k, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
+        MultiCoresScheds(MRTKernel *k, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
-        ~MultiScheduler() {
+        ~MultiCoresScheds() {
             for (auto c : _queues) {
                 vector<AbsRTTask*> tt = getAllTasksInQueue(c.first);
                 for (AbsRTTask* t : tt)

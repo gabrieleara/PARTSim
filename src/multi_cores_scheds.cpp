@@ -12,7 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <multi_cores_queues.hpp>
+#include <multi_cores_scheds.hpp>
 #include <mrtkernel.hpp>
 
 namespace RTSim {
@@ -45,7 +45,7 @@ namespace RTSim {
         return out << m.toString();
     }
 
-    MultiScheduler::MultiScheduler(MRTKernel* k, vector<CPU*>& cpus, vector<Scheduler*>& scheds, const string& name)
+    MultiCoresScheds::MultiCoresScheds(MRTKernel* k, vector<CPU*>& cpus, vector<Scheduler*>& scheds, const string& name)
             : Entity(name) {
         assert(cpus.size() == scheds.size());
         for (int i = 0; i < cpus.size(); i++) {
@@ -55,13 +55,13 @@ namespace RTSim {
         _kernel = k;
     }
 
-    void MultiScheduler::addTask(AbsRTTask* t, CPU* c, const string &params) {
+    void MultiCoresScheds::addTask(AbsRTTask* t, CPU* c, const string &params) {
         _queues[c]->addTask(t, params);
         if (dynamic_cast<RRScheduler*>(_queues[c]))
           dynamic_cast<RRScheduler*>(_queues[c])->notify(t);
     }
 
-    void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {
+    void MultiCoresScheds::insertTask(AbsRTTask* t, CPU* c) {
         try {
             _queues[c]->insert(t);
         } catch(RTSchedExc &e) {
@@ -72,23 +72,23 @@ namespace RTSim {
         }
     }
 
-    void MultiScheduler::removeFirstFromQueue(CPU* c) {
+    void MultiCoresScheds::removeFirstFromQueue(CPU* c) {
         AbsRTTask *t = getFirst(c);
         removeFromQueue(c, t);
     }
     
-    void MultiScheduler::removeFromQueue(CPU* c, AbsRTTask* t) {
+    void MultiCoresScheds::removeFromQueue(CPU* c, AbsRTTask* t) {
         assert(c != NULL); assert(t != NULL);
         _queues[c]->extract(t);
 	      dropEvt(c, t);
     }
 
-    AbsRTTask* MultiScheduler::getFirst(CPU* c) {
+    AbsRTTask* MultiCoresScheds::getFirst(CPU* c) {
         assert(c != NULL);
         return _queues[c]->getFirst();
     }
 
-    vector<AbsRTTask*> MultiScheduler::getAllTasksInQueue(CPU* c) {
+    vector<AbsRTTask*> MultiCoresScheds::getAllTasksInQueue(CPU* c) {
         vector<AbsRTTask*> tasks;
 
         Scheduler* s = _queues[c];
@@ -102,17 +102,17 @@ namespace RTSim {
         return tasks;
     }
 
-    void MultiScheduler::empty(CPU* c) {
+    void MultiCoresScheds::empty(CPU* c) {
         while (!isEmpty(c)) {
             removeFirstFromQueue(c);
         }
     }
 
-    bool MultiScheduler::isEmpty(CPU* c) {
+    bool MultiCoresScheds::isEmpty(CPU* c) {
         return countTasks(c) == 0;
     }
 
-    CPU* MultiScheduler::isInAnyQueue(const AbsRTTask* t) {
+    CPU* MultiCoresScheds::isInAnyQueue(const AbsRTTask* t) {
         for (const auto& q : _queues) {
             vector<AbsRTTask*> tasks = getAllTasksInQueue(q.first);
             for (AbsRTTask* tt : tasks)
@@ -122,14 +122,14 @@ namespace RTSim {
         return NULL;
     }
 
-    unsigned int MultiScheduler::countTasks(CPU* c) {
+    unsigned int MultiCoresScheds::countTasks(CPU* c) {
         int i = 0;
         while( _queues[c]->getTaskN(i) != NULL )
             i++;
         return i;
     }
 
-    void MultiScheduler::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
+    void MultiCoresScheds::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
         assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
 
             CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
@@ -148,7 +148,7 @@ namespace RTSim {
 
     }
 
-    void MultiScheduler::dropEvt(CPU* c, AbsRTTask* t) {
+    void MultiCoresScheds::dropEvt(CPU* c, AbsRTTask* t) {
         assert(c != NULL); assert(t != NULL);
 
         if (_beginEvts.find(c) != _beginEvts.end() && _beginEvts[c]->getTask() == t) {
@@ -162,8 +162,8 @@ namespace RTSim {
         }
     }
 
-    string MultiScheduler::toString() {
-        return "MultiScheduler toString().";
+    string MultiCoresScheds::toString() {
+        return "MultiCoresScheds toString().";
     }
 
 }

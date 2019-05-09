@@ -17,12 +17,12 @@
 #include "mrtkernel.hpp"
 #include "task.hpp"
 #include "rttask.hpp"
-#include "multi_cores_queues.hpp"
+#include "multi_cores_scheds.hpp"
 #include "rrsched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       1
+#define EMRTK_MIGRATE_ENABLED       0
 
 namespace RTSim {
 
@@ -202,13 +202,13 @@ namespace RTSim {
     /**
         \ingroup sched
 
-        Extension of MultiScheduler for Big-Little.
+        Extension of MultiCoresScheds for Big-Little.
         Tasks are also bound to the desired OPP.
 
         Notice this is not a scheduler, its a class to manage cores queues
         of ready and running tasks.
      */
-    class EnergyMultiScheduler : public MultiScheduler {
+    class EnergyMultiCoresScheds : public MultiCoresScheds {
     private:
         /// OPP needed by tasks
         map<AbsRTTask*, pair<CPU_BL*, unsigned int>> _opps;
@@ -216,9 +216,9 @@ namespace RTSim {
       //      multimap<AbsRTTask*, pair<Tick, CPU_BL*> > _tasks_history; // Tasks history: task tt run on core c at time t
 
     public:
-        EnergyMultiScheduler(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
+        EnergyMultiCoresScheds(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
-        ~EnergyMultiScheduler() { cout << __func__ << endl; }
+        ~EnergyMultiCoresScheds() { cout << __func__ << endl; }
 
         /**
          * Add a task to the queue of a core. Use instead
@@ -226,7 +226,7 @@ namespace RTSim {
          */
         virtual void insertTask(AbsRTTask* t, CPU_BL* c, int opp) {
             assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
-            MultiScheduler::insertTask(t, c);
+            MultiCoresScheds::insertTask(t, c);
             _opps[t] = make_pair(c, opp);
         }
 
@@ -238,7 +238,7 @@ namespace RTSim {
 
         /// Remove a specific task from a core queue
         virtual void removeFromQueue(CPU_BL* c, AbsRTTask* t) {
-            MultiScheduler::removeFirstFromQueue(c);
+            MultiCoresScheds::removeFirstFromQueue(c);
             _opps.erase(t);
             assert(_opps.find(t) == _opps.end());
         }
@@ -246,18 +246,18 @@ namespace RTSim {
         /// Empties a core queue
         virtual void empty(CPU_BL* c) {
             vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
-            MultiScheduler::empty(c);
+            MultiCoresScheds::empty(c);
             for (AbsRTTask* t : tasks)
                 _opps.erase(t);
         }
 
         virtual void makeRunning(AbsRTTask* t, CPU_BL* c) {
-            MultiScheduler::makeRunning(t, c);
+            MultiCoresScheds::makeRunning(t, c);
             c->setOPP(getOPP(c));
         }
 
         virtual void endRun() {
-            MultiScheduler::endRun();
+            MultiCoresScheds::endRun();
             _opps.clear();
         }
 
@@ -280,7 +280,7 @@ namespace RTSim {
 
         virtual string toString() {
             stringstream ss;
-            ss << "EnergyMultiScheduler:" << endl;
+            ss << "EnergyMultiCoresScheds:" << endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
@@ -343,7 +343,7 @@ namespace RTSim {
         EnergyMigrationManager _e_migration_manager;
 
         /// cores queues, containing ready and running tasks for each core
-        EnergyMultiScheduler *_queues;
+        EnergyMultiCoresScheds *_queues;
 
         /// for debug, if you want to force a certain choice of cores and frequencies
         map<AbsRTTask*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
@@ -393,9 +393,9 @@ namespace RTSim {
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
-          * qs are the schedulers you want for MultiScheduler, the queues of cores.
+          * qs are the schedulers you want for MultiCoresScheds, the queues of cores.
           *
-          * @see MultiScheduler
+          * @see MultiCoresScheds
           */
         EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 

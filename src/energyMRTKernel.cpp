@@ -42,11 +42,11 @@ namespace RTSim {
         for (CPU_BL* c : cpus)
             v.push_back((CPU*) c);
 
-        _queues = new EnergyMultiScheduler(this, v, qs, "energymultischeduler");
+        _queues = new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
     }
 
-    EnergyMultiScheduler::EnergyMultiScheduler(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
-      : MultiScheduler(kernel, cpus, s, kernel->getName() + name) { }
+    EnergyMultiCoresScheds::EnergyMultiCoresScheds(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
+      : MultiCoresScheds(kernel, cpus, s, kernel->getName() + name) { }
 
     AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
