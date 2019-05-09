@@ -23,7 +23,8 @@ class Requisite {
             : EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate) {}
 };
 
-int init_suite(EnergyMRTKernel** kern);
+void getCores(vector<CPU_BL*> &big, vector<CPU_BL*> &little, Island_BL **island_bl_little, Island_BL **island_bl_big);
+int  init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
 bool checkRequisites(Requisite reqs);
 
@@ -766,21 +767,109 @@ TEST_CASE("exp10") {
     cout << "End of Experiment #" << init_sequence << endl;
 }
 
-// Not finding an example with a call to a local function, I outed out for CUnit.
-// But I think it's duable to conform to framework TEST UNIT
-int init_suite(EnergyMRTKernel** kern) {
-    cout << "init_suite" << endl;
+TEST_CASE("exp11") {
+    /**
+      * Testing RRScheduler. 2 tasks on the same processors.
+      * At 500, they go into two different ones.
+      */
+    init_sequence = 11;
+    cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( Requisite(false, false) )) return;
 
-    #if LEAVE_LITTLE3_ENABLED
-        cout << "Error: tests thought for LEAVE_LITTLE3_ENABLED disabled" << endl;
-        abort();
-    #endif
-
-    unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
-    unsigned int OPP_big = 0;    // Index of OPP in big cores
-    vector<CPU_BL *> cpus_little, cpus_big;
     vector<Scheduler*> schedulers;
     vector<RTKernel*> kernels;
+    vector<CPU_BL *> cpus_little, cpus_big;
+    Island_BL *island_bl_little, *island_bl_big;
+    getCores(cpus_little, cpus_big, &island_bl_little, &island_bl_big);
+    
+    RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
+    rrsched->disable();
+    rrsched->setName("RRScheduler for arrival queue");
+    for (int i = 0; i < 8; i++) {
+        //delete schedulers[i];
+        Scheduler *s = new RRScheduler(100);
+        s->setName("RRScheduler #" + to_string(i));
+        schedulers.push_back(s);
+    }
+    EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, rrsched, island_bl_big, island_bl_little, "Round Robin");
+    kernels.push_back(kern);
+
+    int wcets[] = { 30, 30, 30  };
+    int deadl[] = { 500, 500, 500 };
+    vector<PeriodicTask*> tasks;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        t->insertCode(instr);
+        kern->addTask(*t, "");
+        //ttrace.attachToTask(*t);
+        tasks.push_back(t);
+    }
+    kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
+    kern->addForcedDispatch(tasks[1], cpus_little[0], 6);
+
+    CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
+
+    SIMUL.initSingleRun();
+    SIMUL.run_to(1);
+
+    REQUIRE(kern->getProcessor(tasks.at(0)) == cpus_little[0]);
+    REQUIRE(kern->getDispatchingProcessor(tasks.at(1)) == kern->getProcessor(tasks.at(0)));
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+
+    SIMUL.run_to(101);
+    REQUIRE(kern->getProcessor(tasks.at(1)) == cpus_little[0]);
+    REQUIRE(kern->getDispatchingProcessor(tasks.at(0)) == kern->getProcessor(tasks.at(1)));
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+
+    SIMUL.run_to(201);
+    REQUIRE(kern->getProcessor(tasks.at(0)) == cpus_little[0]);
+    REQUIRE(kern->getProcessor(tasks.at(0)) == kern->getDispatchingProcessor(tasks.at(1)));
+    REQUIRE(!tasks.at(2)->isActive());
+
+    SIMUL.run_to(232);
+    REQUIRE(kern->getProcessor(tasks.at(1)) == cpus_little[0]);
+    REQUIRE(!tasks.at(0)->isActive());
+
+    SIMUL.run_to(263);
+    REQUIRE(!tasks.at(1)->isActive());
+
+    SIMUL.run_to(501);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(0)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(1)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(1)));
+    REQUIRE(kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(2)));
+    REQUIRE(kern->getProcessor(tasks.at(1)) != kern->getProcessor(tasks.at(2)));
+
+    SIMUL.run_to(601);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(0)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(1)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+    REQUIRE(kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(1)));
+    REQUIRE(kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(2)));
+    REQUIRE(kern->getProcessor(tasks.at(1)) != kern->getProcessor(tasks.at(2)));
+
+    SIMUL.run_to(699);
+    REQUIRE(!tasks.at(0)->isActive());
+    REQUIRE(!tasks.at(1)->isActive());
+    REQUIRE(!tasks.at(2)->isActive());
+
+    SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete tasks[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl;
+}
+
+
+
+void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL **island_bl_little, Island_BL **island_bl_big) {
+    unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
+    unsigned int OPP_big = 0;    // Index of OPP in big cores
 
     vector<double> V_little = {
             0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
@@ -894,10 +983,29 @@ int init_suite(EnergyMRTKernel** kern) {
         cpus_big.push_back(c);
     }
 
+
     vector<struct OPP> opps_little = Island_BL::buildOPPs(V_little, F_little);
     vector<struct OPP> opps_big = Island_BL::buildOPPs(V_big, F_big);
-    Island_BL *island_bl_little = new Island_BL("little island", IslandType::LITTLE, cpus_little, opps_little);
-    Island_BL *island_bl_big = new Island_BL("big island", IslandType::BIG, cpus_big, opps_big);
+    *island_bl_little = new Island_BL("little island", IslandType::LITTLE, cpus_little, opps_little);
+    *island_bl_big = new Island_BL("big island", IslandType::BIG, cpus_big, opps_big);
+}
+
+int init_suite(EnergyMRTKernel** kern) {
+    cout << "init_suite" << endl;
+
+    #if LEAVE_LITTLE3_ENABLED
+        cout << "Error: tests thought for LEAVE_LITTLE3_ENABLED disabled" << endl;
+        abort();
+    #endif
+
+    Island_BL *island_bl_big = NULL, *island_bl_little = NULL;
+    vector<CPU_BL *> cpus_little, cpus_big;
+    vector<Scheduler*> schedulers;
+    vector<RTKernel*> kernels;
+
+    getCores(cpus_little, cpus_big, &island_bl_little, &island_bl_big);
+    assert(island_bl_big != NULL); assert(island_bl_little != NULL);
+    assert(cpus_big.size() == 4); assert(cpus_little.size() == 4);
 
     EDFScheduler *edfsched = new EDFScheduler;
     for (int i = 0; i < 8; i++)

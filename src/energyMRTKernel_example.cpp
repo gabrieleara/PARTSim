@@ -542,7 +542,7 @@ int main(int argc, char *argv[]) {
             kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
             kern->addForcedDispatch(tasks[1], cpus_little[0], 6);
 
-            SIMUL.run(501);
+            SIMUL.run(1001);
             return 0;
         }
 
