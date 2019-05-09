@@ -82,6 +82,11 @@ namespace RTSim {
     
         int defaultSlice;
 
+      /**
+         Introduced for the Multi Cores Queues, it prevents the scheduler
+         to send events to its kernel and to post round events, if enabled = false
+       */
+        bool _enabled = true;
     public:
 
         // events must be public, (part of the interface)
@@ -89,6 +94,12 @@ namespace RTSim {
         
         /** Constructor */
         RRScheduler(int defSlice);
+
+        void disable() {
+          _enabled = false;
+        }
+
+        bool isEnabled() { return _enabled; }
 
         /**
            This function returns true if the round has expired for the

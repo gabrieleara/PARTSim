@@ -49,7 +49,7 @@ namespace RTSim {
             : Entity(name) {
         assert(cpus.size() == scheds.size());
         for (int i = 0; i < cpus.size(); i++) {
-          //scheds.at(i)->setKernel(NULL);
+            scheds.at(i)->setKernel(k);
             _queues[cpus.at(i)] = scheds.at(i);
         }
         _kernel = k;
@@ -57,6 +57,8 @@ namespace RTSim {
 
     void MultiScheduler::addTask(AbsRTTask* t, CPU* c, const string &params) {
         _queues[c]->addTask(t, params);
+        if (dynamic_cast<RRScheduler*>(_queues[c]))
+          dynamic_cast<RRScheduler*>(_queues[c])->notify(t);
     }
 
     void MultiScheduler::insertTask(AbsRTTask* t, CPU* c) {

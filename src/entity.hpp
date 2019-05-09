@@ -168,6 +168,9 @@ namespace MetaSim {
         
         ///Get the Entity name
         inline std::string getName() const { return _name; }
+
+	///Set the Entity name (introduced for the Multi Cores Queues schedulers)
+	inline void setName(string name) { _name = name; }
         
         /** 
             Resets the entity status at the beginning of every

@@ -26,6 +26,8 @@ namespace RTSim {
     }
 
     bool RRScheduler::isRoundExpired(AbsRTTask *task) {
+        assert(isEnabled());
+
         RRModel *model = dynamic_cast<RRModel*>(find(task));
         if (model == 0) throw RRSchedExc("Cannot find task");
         bool res = model->isRoundExpired();
@@ -43,7 +45,7 @@ namespace RTSim {
     }
 
     RRScheduler::RRScheduler(int defSlice) : 
-        Scheduler(), defaultSlice(defSlice), _rrEvt(this, &RRScheduler::round)
+      Scheduler(), defaultSlice(defSlice), _rrEvt(this, &RRScheduler::round), _enabled(true)
     {
         DBGENTER(_RR_SCHED_DBG_LEV);
         DBGPRINT_2("DEFAULT SLICE = ", defaultSlice);
@@ -60,7 +62,8 @@ namespace RTSim {
 
     void RRScheduler::notify(AbsRTTask* task)
     {
-cout << __func__ << ":"<<endl;
+        cout << __func__ << "() " << getName() << ":"<<endl;
+        if (!isEnabled()) { cout << "\tdisabled, skip" << endl; return; }
         DBGENTER(_RR_SCHED_DBG_LEV);
         _rrEvt.drop();
 
@@ -80,7 +83,8 @@ cout << __func__ << ":"<<endl;
 
     void RRScheduler::round(Event *)
     {
-cout << __func__ << " t = " << SIMUL.getTime() << ":" << endl;
+      cout << __func__ << "() t = " << SIMUL.getTime() << " " << getName() << ":" << endl;
+        if (!isEnabled()) { cout << "\tdisabled, skip" << endl; return; }
 
         DBGENTER(_RR_SCHED_DBG_LEV);
         RRModel* model = dynamic_cast<RRModel *>(_queue.front());
@@ -116,10 +120,11 @@ cout << __func__ << " t = " << SIMUL.getTime() << ":" << endl;
             }
         }
 
-        cout << "RRScheduler queue: " << toString() << endl;
+        cout << "\tRRScheduler queue: " << toString() << endl;
 
         if (_kernel) {
             DBGPRINT("informing the kernel");
+            cout << "\tInforming the kernel" << endl;
             if (dynamic_cast<EnergyMRTKernel*>(_kernel))
                 dynamic_cast<EnergyMRTKernel*>(_kernel)->onRound(model->getTask());
             else // if you are not using EMRTKernel

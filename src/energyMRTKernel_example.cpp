@@ -515,9 +515,13 @@ int main(int argc, char *argv[]) {
             kernels.clear();
 
             RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
+            rrsched->disable();
+            rrsched->setName("RRScheduler for arrival queue");
             for (int i = 0; i < 8; i++) {
                 delete schedulers[i];
-                schedulers.push_back(new RRScheduler(100));
+                Scheduler *s = new RRScheduler(100);
+                s->setName("RRScheduler #" + to_string(i));
+                schedulers.push_back(s);
             }
             EnergyMRTKernel *kern = new EnergyMRTKernel(schedulers, rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
@@ -535,8 +539,10 @@ int main(int argc, char *argv[]) {
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
+            kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
+            kern->addForcedDispatch(tasks[1], cpus_little[0], 6);
 
-            SIMUL.run(500);
+            SIMUL.run(501);
             return 0;
         }
 

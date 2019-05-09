@@ -350,13 +350,14 @@ namespace RTSim {
         }
 
       bool shouldSchedule(CPU* c, AbsRTTask *t) {
-        if (dynamic_cast<RRScheduler*>(_queues[c])) {
+        /*if (dynamic_cast<RRScheduler*>(_queues[c])) {
           RRScheduler *s = dynamic_cast<RRScheduler*>(_queues[c]);
           return t != NULL && (!s->isRoundExpired(t) || s->getSize() == 1);
         }
         else if (dynamic_cast<EDFScheduler*>(_queues[c])) {
           return t != NULL;
-        }
+          }*/
+        return t!=NULL;
         assert(false); // add your choice
         return false;
       }

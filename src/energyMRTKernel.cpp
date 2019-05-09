@@ -372,7 +372,7 @@ namespace RTSim {
     } // end EMRTK::migrate()
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
-      cout << "t = " << SIMUL.getTime() << " " << __func__ << " for " << taskname(finishingTask) << endl;
+      cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
         finishingTask->deschedule();
         _queues->onRound(finishingTask, getProcessor(finishingTask));
     }
@@ -566,7 +566,6 @@ namespace RTSim {
         } while (num_newtasks > 0);
         setTryingTaskOnCPU_BL(false);
 
-        _sched->extr
         for (CPU_BL *c : getProcessors())
             _queues->schedule(c);
     }
