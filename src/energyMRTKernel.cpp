@@ -602,10 +602,6 @@ namespace RTSim {
                 int    nTaskIsland          = 0;
                 IslandType island;
 
-
-                if (t->toString().find("T4_task_LITTLE_1") != string::npos && c->toString().find("LITTLE_1") != string::npos)
-                    cout << "adsa";
-
                 // utilization on CPU c with the new frequency
                 utilization = getUtilization(c, newFreq, newCapacity);
 

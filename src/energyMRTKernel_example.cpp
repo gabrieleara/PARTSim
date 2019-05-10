@@ -545,6 +545,28 @@ int main(int argc, char *argv[]) {
             SIMUL.run(1001);
             return 0;
         }
+        else if (TEST_NO == 13) {
+            /*
+            Dealing with resources = buffers & wait&signal.
+
+            From task.hpp:
+            t1.insertCode("fixed(4);wait(Res1);delay(unif(4,10));
+            signal(Res1); delay(unif(10,20));");
+            */
+
+            int wcets[] = { 30 };
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T13_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "fixed(1);wait(Res1);signal(Res1);fixed(1);";
+                //sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+        }
 
 
         /*
