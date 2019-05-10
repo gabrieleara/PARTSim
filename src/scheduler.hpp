@@ -205,9 +205,11 @@ namespace RTSim {
         virtual void insert(AbsRTTask *) throw(RTSchedExc, BaseExc);
 
         /**
-          * Have you inserted the task t yet?
+          * Have you inserted the task yet? Notice that in the current
+          * implementation of Scheduler, if you insert task, then this method
+          * returns true; if you extract it afterwards, then false.
           */
-        bool isFound(AbsRTTask *t);
+        bool isFound(AbsRTTask *task);
 
         /**
          *  extract a task from the queue.

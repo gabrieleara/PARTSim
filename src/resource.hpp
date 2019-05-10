@@ -31,6 +31,7 @@
 
 namespace RTSim {
 
+    using namespace std;
     using namespace MetaSim;
 
     class AbsRTTask;
@@ -78,10 +79,18 @@ namespace RTSim {
         /// returns the resource owner
         AbsRTTask* getOwner() const;
 
+        /// resource to string
+        string toString() const {
+           string s = "Resource " + getName() + " " + to_string(available()) + " out of " + to_string(total());
+           return s;
+        }
+
         void newRun();
         void endRun();
 
     };
+    
+    static ostream& operator<<(ostream& out, const Resource& res);
 
 } // namespace RTSim
 

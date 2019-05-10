@@ -209,6 +209,15 @@ namespace RTSim {
             }
         }
 
+        /// Finds the scheduler dealing with the task t, or NULL if no scheduler is dealing with it
+        Scheduler* findTask(AbsRTTask *t) {
+          for (const auto& elem : _queues) {
+            if (elem.second->isFound(t))
+              return elem.second;
+          }
+          return NULL;
+        }
+
         /// Get scheduler of a core
         Scheduler* getScheduler(CPU* c) {
             return _queues[c];

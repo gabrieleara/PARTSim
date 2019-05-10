@@ -19,6 +19,7 @@
 #include "rttask.hpp"
 #include "multi_cores_scheds.hpp"
 #include "rrsched.hpp"
+#include "piresman_multi.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
@@ -544,7 +545,17 @@ namespace RTSim {
             _queues->endRun();
         }
 
-        /// to debug internal functions...
+        /// Creates a resource manager (PIPManagerMulti) and adds the resources
+        void setResources(vector<string> resources, vector<unsigned int> quantities) {
+            assert(resources.size() == quantities.size());
+            PIRManagerMulti *resManager = new PIRManagerMulti("The sole resource manager", _queues);
+            for (int i = 0; i < resources.size(); i++) {
+              resManager->addResource(resources.at(i), quantities.at(i));
+            }
+            setResManager(resManager);
+        }
+
+        /// ----------------------------------------------- to debug internal functions...
         void test();
 
         static double time();

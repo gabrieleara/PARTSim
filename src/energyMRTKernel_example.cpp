@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 12;
+    int TEST_NO = 13;
 
     dumpAllSpeeds();
     
@@ -559,13 +559,18 @@ int main(int argc, char *argv[]) {
                 task_name = "T13_task" + std::to_string(j);
                 cout << "Creating task: " << task_name;
                 PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-                char instr[60] = "fixed(1);wait(Res1);signal(Res1);fixed(1);";
-                //sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                char instr[60] = "fixed(1,bzip2);wait(Res1);signal(Res1);fixed(1,bzip2);";
                 t->insertCode(instr);
                 kernels[0]->addTask(*t, "");
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
+
+            //PIRManagerMulti resMan("The sole resource manager", queues);
+            //resMan.addResource("Res1", 1);
+            //kernels[0]->setResManager(&resMan);
+
+            dynamic_cast<EnergyMRTKernel*>(kernels[0])->setResources({ "Res1" }, { 1 });
         }
 
 
