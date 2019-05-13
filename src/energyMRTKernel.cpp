@@ -170,8 +170,8 @@ namespace RTSim {
       cout << endl;
     }
 
-    void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp) {
-        _m_forcedDispatch[t] = make_tuple(c, opp);
+  void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp, unsigned int repetitions) {
+      _m_forcedDispatch[t] = make_tuple(c, opp, repetitions);
     }
 
     // for gdb
@@ -179,7 +179,9 @@ namespace RTSim {
         if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end() ) { //&& get<2>(_m_forcedDispatch[t]) == SIMUL.getTime()) {
             cout << __func__ << endl;
             dispatch(get<0>(_m_forcedDispatch[t]), t, get<1>(_m_forcedDispatch[t]));
-            _m_forcedDispatch.erase(t);
+            get<2>(_m_forcedDispatch[t])--;
+            if (get<2>(_m_forcedDispatch[t]) == 0)
+              _m_forcedDispatch.erase(t);
             return true;
         }
         return false;
@@ -463,7 +465,7 @@ namespace RTSim {
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
-        cout << __func__ << " " << t->toString() << endl;
+      cout << __func__ << " " << t->toString() << " to " << p->getName() << " opp " << opp << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
         // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
         _queues->insertTask(t, pp, opp);
@@ -521,16 +523,17 @@ namespace RTSim {
             cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
             cout << "Dealing with task " << t->toString() << "." << endl;
 
-            // for testing
-            if (manageForcedDispatch(t)) {
-                num_newtasks--;
-                continue;
-            }
 
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
                 cout << "Task has already been dispatched, but dispatching is not complete => skip" << endl;
+                continue;
+            }
+            
+            // for testing
+            if (manageForcedDispatch(t)) {
+                num_newtasks--;
                 continue;
             }
 

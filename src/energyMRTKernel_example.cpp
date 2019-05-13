@@ -554,23 +554,56 @@ int main(int argc, char *argv[]) {
             signal(Res1); delay(unif(10,20));");
             */
 
-            int wcets[] = { 30 };
-            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-                task_name = "T13_task" + std::to_string(j);
-                cout << "Creating task: " << task_name;
-                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-                char instr[60] = "fixed(1,bzip2);wait(Res1);signal(Res1);fixed(1,bzip2);";
-                t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
-                ttrace.attachToTask(*t);
-                tasks.push_back(t);
-            }
+            unsigned int j = 0;
+            PeriodicTask* t;
+            char instr[120] = "";
+
+            task_name = "T13_task" + std::to_string(j);
+            cout << "Creating task: " << task_name;
+            t = new PeriodicTask(300, 300, 0, task_name);
+            sprintf(instr, "fixed(1,bzip2);wait(Res1);signal(Res1);fixed(1,bzip2);");
+            t->insertCode(instr);
+            kernels[0]->addTask(*t, "");
+            ttrace.attachToTask(*t);
+            tasks.push_back(t);
+
+            j = 1;
+            task_name = "T13_task" + std::to_string(j);
+            cout << "Creating task: " << task_name;
+            t = new PeriodicTask(400, 400, 0, task_name);
+            sprintf(instr, "fixed(2,bzip2);");
+            t->insertCode(instr);
+            kernels[0]->addTask(*t, "");
+            ttrace.attachToTask(*t);
+            tasks.push_back(t);
+
+            j = 2;
+            task_name = "T13_task" + std::to_string(j);
+            cout << "Creating task: " << task_name;
+            t = new PeriodicTask(500, 500, 0, task_name);
+            sprintf(instr, "fixed(1,bzip2);wait(Res1);fixed(2,bzip2);signal(Res1);fixed(1,bzip2);");
+            t->insertCode(instr);
+            kernels[0]->addTask(*t, "");
+            ttrace.attachToTask(*t);
+            tasks.push_back(t);
 
             //PIRManagerMulti resMan("The sole resource manager", queues);
             //resMan.addResource("Res1", 1);
             //kernels[0]->setResManager(&resMan);
 
-            dynamic_cast<EnergyMRTKernel*>(kernels[0])->setResources({ "Res1" }, { 1 });
+
+            EnergyMRTKernel *k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
+            k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+            k->addForcedDispatch(tasks[1], cpus_big[0], 18, 999);
+            k->addForcedDispatch(tasks[2], cpus_big[0], 18, 999);
+
+            k->setResources({ "Res1" }, { 1 });
+
+            SIMUL.initSingleRun();
+            dynamic_cast<Task*>(tasks[0])->activate(Tick(3));
+            dynamic_cast<Task*>(tasks[1])->activate(Tick(2));
+            SIMUL.run_to(12);
+            SIMUL.endSingleRun();
         }
 
 

@@ -15,6 +15,7 @@
 #define __PIRESMAN_MULTI_HPP__
 
 #include <piresman.hpp>
+#include <resource.hpp>
 
 #define _PIRESMAN_MULTI_DBG_LEV  "piresman_multi"
 
@@ -48,11 +49,11 @@ namespace RTSim {
          */
       virtual bool request(AbsRTTask *t, Resource *r, int n = 1) {
         assert(t != NULL); assert(r != NULL); assert(n >= 0);
-        cout << SIMUL.getTime() << " " << taskname(t) << " requests " << n << " x " << *r << endl;
+        cout << "t = " << SIMUL.getTime() << " " << taskname(t) << " requests " << n << " x " << r->toString() << endl;
 
         setSchedulerForTask(_scheds->findTask(t));
-        bool res = PIRManager::request(t, r, n);
-        return res;
+        bool acquired = PIRManager::request(t, r, n);
+        return acquired;
       }
         
         /**
@@ -60,7 +61,7 @@ namespace RTSim {
          */
       virtual void release(AbsRTTask *t, Resource *r, int n = 1) {
         assert(t != NULL); assert(r != NULL); assert(n >= 0);
-        cout << SIMUL.getTime() << " " << taskname(t) << " releases " << n << " x " << *r << endl;
+        cout << "t = " << SIMUL.getTime() << " " << taskname(t) << " releases " << n << " x " << r->toString() << endl;
 
         setSchedulerForTask(_scheds->findTask(t));
         PIRManager::release(t, r, n);
