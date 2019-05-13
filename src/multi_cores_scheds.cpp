@@ -129,6 +129,18 @@ namespace RTSim {
         return i;
     }
 
+    PIRManagerMulti* MultiCoresScheds::setResources(vector<string> resources, vector<unsigned int> quantities) {
+        assert(resources.size() == quantities.size());
+
+        vector<CPU*> cpus;
+        for (const auto& elem : _queues) {
+            cpus.push_back(elem.first);
+        }
+
+        PIRManagerMulti *resMan = new PIRManagerMulti("PIRManagerMulti", this, cpus);
+        return resMan;
+    }
+
     void MultiCoresScheds::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
         assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
 
@@ -161,6 +173,7 @@ namespace RTSim {
             _endEvts.erase(c);
         }
     }
+
 
     string MultiCoresScheds::toString() {
         return "MultiCoresScheds toString().";

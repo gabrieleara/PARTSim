@@ -12,8 +12,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SIMPLE_EXAMPLE_MULTI_SCHED_HPP
-#define SIMPLE_EXAMPLE_MULTI_SCHED_HPP
+#ifndef MULTI_CORES_SCHEDS_HPP
+#define MULTI_CORES_SCHEDS_HPP
 
 #include <string>
 #include "entity.hpp"
@@ -29,6 +29,8 @@ namespace RTSim {
 
     using namespace MetaSim;
     using namespace std;
+
+    class PIRManagerMulti;
 
   /**
      Manages tasks migration among cores, remembering what they executed and how long.
@@ -370,17 +372,20 @@ namespace RTSim {
       bool shouldSchedule(CPU* c, AbsRTTask *t) {
         return t!=NULL;
       }
+      
+      virtual PIRManagerMulti* setResources(vector<string> resources, vector<unsigned int> quantities);
 
-        virtual void newRun() {}
+      virtual void newRun() {}
 
-        virtual void endRun() {
-            for (auto& e : _queues)
-                empty(e.first);
-        }
+      virtual void endRun() {
+          for (auto& e : _queues)
+              empty(e.first);
+      }
 
-        virtual string toString();
-
+      virtual string toString();
+        
     };
 
+
 } // namespace RTSim
-#endif //SIMPLE_EXAMPLE_MULTI_SCHED_HPP
+#endif //MULTI_CORES_SCHEDS

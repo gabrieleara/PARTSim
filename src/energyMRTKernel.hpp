@@ -27,6 +27,8 @@
 
 namespace RTSim {
 
+    class PIRManagerMulti;
+
     /**
        Manages tasks migrations among cores and how islands frequency
        has changed over time.
@@ -548,11 +550,8 @@ namespace RTSim {
         /// Creates a resource manager (PIPManagerMulti) and adds the resources
         void setResources(vector<string> resources, vector<unsigned int> quantities) {
             assert(resources.size() == quantities.size());
-            PIRManagerMulti *resManager = new PIRManagerMulti("The sole resource manager", _queues);
-            for (int i = 0; i < resources.size(); i++) {
-              resManager->addResource(resources.at(i), quantities.at(i));
-            }
-            setResManager(resManager);
+            PIRManagerMulti *resMan = _queues->setResources(resources, quantities);
+            RTKernel::setResManager(resMan);
         }
 
         virtual void suspend(AbsRTTask *task) {

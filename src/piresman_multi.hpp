@@ -15,6 +15,7 @@
 #define __PIRESMAN_MULTI_HPP__
 
 #include <piresman.hpp>
+#include <multi_cores_scheds.hpp>
 #include <resource.hpp>
 
 #define _PIRESMAN_MULTI_DBG_LEV  "piresman_multi"
@@ -40,41 +41,31 @@ namespace RTSim {
     class PIRManagerMulti : public PIRManager {
     public:
         /// Constructor
-      PIRManagerMulti(const std::string &n, MultiCoresScheds* scheds) : PIRManager(n), _scheds(scheds) {}
+      PIRManagerMulti(const std::string &name, MultiCoresScheds* scheds, vector<CPU*> cpus);
 
-    protected:
         /**
            Returns true if the resource can be locked, false otherwise
            (in such a case, the task should be blocked)
          */
-      virtual bool request(AbsRTTask *t, Resource *r, int n = 1) {
-        assert(t != NULL); assert(r != NULL); assert(n >= 0);
-        cout << "t = " << SIMUL.getTime() << " " << taskname(t) << " requests " << n << " x " << r->toString() << endl;
-
-        setSchedulerForTask(_scheds->findTask(t));
-        bool acquired = PIRManager::request(t, r, n);
-        return acquired;
-      }
+      virtual bool request(AbsRTTask *t, Resource *r, int n = 1);
         
         /**
            Releases the resource.
          */
-      virtual void release(AbsRTTask *t, Resource *r, int n = 1) {
-        assert(t != NULL); assert(r != NULL); assert(n >= 0);
-        cout << "t = " << SIMUL.getTime() << " " << taskname(t) << " releases " << n << " x " << r->toString() << endl;
-
-        setSchedulerForTask(_scheds->findTask(t));
-        PIRManager::release(t, r, n);
-      }
+      virtual void release(AbsRTTask *t, Resource *r, int n = 1);
 
     private:
       /// The MultiCoresScheds where to take the task
       MultiCoresScheds* _scheds;
 
-      void setSchedulerForTask(Scheduler* s) {
-        assert(s != NULL);
-        _sched = s;
-      }
+      /// A PIRManager (priority inheritance) per core
+      map<CPU*, PIRManager*> _resManagers;
+
+      //void setSchedulerForTask(Scheduler* s) {
+        //assert(s != NULL);
+        //_sched = s;
+        //}
+
     };
 }
 

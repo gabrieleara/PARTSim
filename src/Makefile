@@ -59,7 +59,8 @@ cpu.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp ./kernevt.hpp ./task.hpp
 cpu.o: ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp ./feedback.hpp
 cpu.o: ./taskexc.hpp rttask.hpp ./regvar.hpp multi_cores_scheds.hpp
 cpu.o: ./scheduler.hpp ./exeinstr.hpp ./instr.hpp ./rrsched.hpp
-cpu.o: ./edfsched.hpp piresman_multi.hpp ./piresman.hpp resmanager.hpp
+cpu.o: ./edfsched.hpp ./piresman_multi.hpp ./piresman.hpp resmanager.hpp
+cpu.o: resource.hpp
 debugstream.o: ./debugstream.hpp ./basetype.hpp ./tick.hpp ./baseexc.hpp
 debugstream.o: ./strtoken.hpp ./simul.hpp ./basestat.hpp ./entity.hpp
 debugstream.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp
@@ -79,7 +80,8 @@ energyMRTKernel.o: ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
 energyMRTKernel.o: ./feedback.hpp ./taskexc.hpp rttask.hpp ./regvar.hpp
 energyMRTKernel.o: multi_cores_scheds.hpp ./scheduler.hpp ./exeinstr.hpp
 energyMRTKernel.o: ./instr.hpp ./rrsched.hpp ./edfsched.hpp
-energyMRTKernel.o: piresman_multi.hpp ./piresman.hpp resmanager.hpp
+energyMRTKernel.o: ./piresman_multi.hpp ./piresman.hpp resmanager.hpp
+energyMRTKernel.o: resource.hpp
 energyMRTKernel_example.o: mrtkernel.hpp ./kernel.hpp ./baseexc.hpp
 energyMRTKernel_example.o: ./entity.hpp ./basetype.hpp ./tick.hpp
 energyMRTKernel_example.o: ./strtoken.hpp ./abskernel.hpp ./abstask.hpp
@@ -93,8 +95,8 @@ energyMRTKernel_example.o: ./scheduler.hpp ./jtrace.hpp ./traceevent.hpp
 energyMRTKernel_example.o: ./texttrace.hpp rttask.hpp ./regvar.hpp
 energyMRTKernel_example.o: ./json_trace.hpp ./tracepower.hpp ./instr.hpp
 energyMRTKernel_example.o: ./energyMRTKernel.hpp multi_cores_scheds.hpp
-energyMRTKernel_example.o: ./exeinstr.hpp ./rrsched.hpp piresman_multi.hpp
-energyMRTKernel_example.o: ./piresman.hpp resmanager.hpp
+energyMRTKernel_example.o: ./exeinstr.hpp ./rrsched.hpp ./piresman_multi.hpp
+energyMRTKernel_example.o: ./piresman.hpp resmanager.hpp resource.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
 entity.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./event.hpp
 entity.o: ./particle.hpp ./plist.hpp ./trace.hpp
@@ -216,12 +218,24 @@ multi_cores_scheds.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp
 multi_cores_scheds.o: ./kernevt.hpp ./task.hpp ./randomvar.hpp
 multi_cores_scheds.o: ./cloneable.hpp ./feedback.hpp ./taskexc.hpp
 multi_cores_scheds.o: ./exeinstr.hpp ./instr.hpp ./rrsched.hpp ./edfsched.hpp
+multi_cores_scheds.o: ./piresman_multi.hpp ./piresman.hpp resmanager.hpp
+multi_cores_scheds.o: resource.hpp
 piresman.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 piresman.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 piresman.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp
 piresman.o: ./abskernel.hpp ./abstask.hpp ./cpu.hpp ./timer.hpp ./gevent.hpp
 piresman.o: ./powermodel.hpp ./piresman.hpp resmanager.hpp ./scheduler.hpp
 piresman.o: resource.hpp
+piresman_multi.o: ./piresman_multi.hpp ./piresman.hpp ./plist.hpp
+piresman_multi.o: ./baseexc.hpp resmanager.hpp ./entity.hpp ./basetype.hpp
+piresman_multi.o: ./tick.hpp ./strtoken.hpp ./scheduler.hpp ./simul.hpp
+piresman_multi.o: ./basestat.hpp ./debugstream.hpp ./event.hpp ./particle.hpp
+piresman_multi.o: ./trace.hpp ./abstask.hpp ./cpu.hpp ./timer.hpp
+piresman_multi.o: ./gevent.hpp ./powermodel.hpp multi_cores_scheds.hpp
+piresman_multi.o: ./taskevt.hpp mrtkernel.hpp ./kernel.hpp ./abskernel.hpp
+piresman_multi.o: ./kernevt.hpp ./task.hpp ./randomvar.hpp ./cloneable.hpp
+piresman_multi.o: ./feedback.hpp ./taskexc.hpp ./exeinstr.hpp ./instr.hpp
+piresman_multi.o: ./rrsched.hpp ./edfsched.hpp resource.hpp
 pollingserver.o: pollingserver.hpp server.hpp ./baseexc.hpp ./entity.hpp
 pollingserver.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp ./simul.hpp
 pollingserver.o: ./basestat.hpp ./debugstream.hpp ./event.hpp ./particle.hpp
@@ -286,8 +300,8 @@ rrsched.o: ./powermodel.hpp ./task.hpp ./randomvar.hpp ./cloneable.hpp
 rrsched.o: ./kernel.hpp ./abskernel.hpp ./kernevt.hpp ./taskevt.hpp
 rrsched.o: ./feedback.hpp ./taskexc.hpp ./energyMRTKernel.hpp mrtkernel.hpp
 rrsched.o: rttask.hpp ./regvar.hpp multi_cores_scheds.hpp ./exeinstr.hpp
-rrsched.o: ./instr.hpp ./edfsched.hpp piresman_multi.hpp ./piresman.hpp
-rrsched.o: resmanager.hpp
+rrsched.o: ./instr.hpp ./edfsched.hpp ./piresman_multi.hpp ./piresman.hpp
+rrsched.o: resmanager.hpp resource.hpp
 rttask.o: rttask.hpp ./regvar.hpp ./randomvar.hpp ./baseexc.hpp
 rttask.o: ./cloneable.hpp ./simul.hpp ./basestat.hpp ./basetype.hpp
 rttask.o: ./tick.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
