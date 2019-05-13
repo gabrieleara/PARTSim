@@ -15,7 +15,6 @@
 #define __PIRESMAN_MULTI_HPP__
 
 #include <piresman.hpp>
-#include <multi_cores_scheds.hpp>
 #include <resource.hpp>
 
 #define _PIRESMAN_MULTI_DBG_LEV  "piresman_multi"
@@ -23,6 +22,8 @@
 namespace RTSim {
     using namespace std;
     using namespace MetaSim;
+
+    class MultiCoresScheds;
 
     /**
        \ingroup resman
@@ -40,9 +41,9 @@ namespace RTSim {
     */
     class PIRManagerMulti : public PIRManager {
     public:
-        /// Constructor
+      /// Constructor
       PIRManagerMulti(const std::string &name, MultiCoresScheds* scheds, vector<CPU*> cpus);
-
+        
         /**
            Returns true if the resource can be locked, false otherwise
            (in such a case, the task should be blocked)

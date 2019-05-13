@@ -13,7 +13,9 @@
  ***************************************************************************/
 
 #include <multi_cores_scheds.hpp>
+#include <piresman_multi.hpp>
 #include <mrtkernel.hpp>
+
 
 namespace RTSim {
     using namespace MetaSim;

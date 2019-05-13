@@ -1,4 +1,5 @@
 #include <piresman_multi.hpp>
+#include <multi_cores_scheds.hpp>
 
 namespace RTSim {
 
