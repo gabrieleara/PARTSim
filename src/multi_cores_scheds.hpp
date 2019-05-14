@@ -12,8 +12,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef MULTI_CORES_SCHEDS_HPP
-#define MULTI_CORES_SCHEDS_HPP
+#ifndef SIMPLE_EXAMPLE_MULTI_SCHED_HPP
+#define SIMPLE_EXAMPLE_MULTI_SCHED_HPP
 
 #include <string>
 #include "entity.hpp"
@@ -29,8 +29,6 @@ namespace RTSim {
 
     using namespace MetaSim;
     using namespace std;
-
-    class PIRManagerMulti;
 
   /**
      Manages tasks migration among cores, remembering what they executed and how long.
@@ -185,7 +183,7 @@ namespace RTSim {
             dropEvt(c, oldTask);
 
             _running_tasks.erase(c);
-            oldTask->deschedule();
+            //oldTask->deschedule();
             //cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
         }
 
@@ -209,15 +207,6 @@ namespace RTSim {
                   delete t;
                 delete c.second;
             }
-        }
-
-        /// Finds the scheduler dealing with the task t, or NULL if no scheduler is dealing with it
-        Scheduler* findTask(AbsRTTask *t) {
-          for (const auto& elem : _queues) {
-            if (elem.second->isFound(t))
-              return elem.second;
-          }
-          return NULL;
         }
 
         /// Get scheduler of a core
@@ -372,20 +361,17 @@ namespace RTSim {
       bool shouldSchedule(CPU* c, AbsRTTask *t) {
         return t!=NULL;
       }
-      
-      virtual PIRManagerMulti* setResources(vector<string> resources, vector<unsigned int> quantities);
 
-      virtual void newRun() {}
+        virtual void newRun() {}
 
-      virtual void endRun() {
-          for (auto& e : _queues)
-              empty(e.first);
-      }
+        virtual void endRun() {
+            for (auto& e : _queues)
+                empty(e.first);
+        }
 
-      virtual string toString();
-        
+        virtual string toString();
+
     };
 
-
 } // namespace RTSim
-#endif //MULTI_CORES_SCHEDS
+#endif //SIMPLE_EXAMPLE_MULTI_SCHED_HPP

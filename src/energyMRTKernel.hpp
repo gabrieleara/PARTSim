@@ -19,15 +19,12 @@
 #include "rttask.hpp"
 #include "multi_cores_scheds.hpp"
 #include "rrsched.hpp"
-#include "piresman_multi.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
 #define EMRTK_MIGRATE_ENABLED       0
 
 namespace RTSim {
-
-    class PIRManagerMulti;
 
     /**
        Manages tasks migrations among cores and how islands frequency
@@ -348,8 +345,8 @@ namespace RTSim {
         /// cores queues, containing ready and running tasks for each core
         EnergyMultiCoresScheds *_queues;
 
-        /// for debug, if you want to force a certain choice of cores and frequencie and how many times
-      map<AbsRTTask*, tuple<CPU_BL*, unsigned int, unsigned int>> _m_forcedDispatch;
+        /// for debug, if you want to force a certain choice of cores and frequencies
+        map<AbsRTTask*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
@@ -547,30 +544,7 @@ namespace RTSim {
             _queues->endRun();
         }
 
-        /// Creates a resource manager (PIPManagerMulti) and adds the resources
-        void setResources(vector<string> resources, vector<unsigned int> quantities) {
-            assert(resources.size() == quantities.size());
-            PIRManagerMulti *resMan = _queues->setResources(resources, quantities);
-            RTKernel::setResManager(resMan);
-        }
-
-        virtual void suspend(AbsRTTask *task) {
-            DBGENTER(_MRTKERNEL_DBG_LEV);
-
-            _sched->extract(task);
-            CPU *p = getProcessor(task);
-            assert (p != NULL);
-            task->deschedule();
-            
-            _m_currExe[p] = NULL;
-            _m_oldExe[task] = p;
-            _m_dispatched[task] = NULL;
-            
-            migrate(dynamic_cast<CPU_BL*>(p));
-        }
-
-
-        /// ----------------------------------------------- to debug internal functions...
+        /// to debug internal functions...
         void test();
 
         static double time();
@@ -583,7 +557,7 @@ namespace RTSim {
 
         bool manageForcedDispatch(Task*);
 
-        void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int repetitions = 1);
+        void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp);
     };
 }
 

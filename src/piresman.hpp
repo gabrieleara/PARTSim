@@ -37,15 +37,18 @@ namespace RTSim {
        changing the priority of a task.
     */
     class PIRManager : public ResManager {
+//         Scheduler *_sched;
     public:
 
-        /// Constructor
+        /**
+         * Constructor
+         */
         PIRManager(const std::string &n = "");
   
         /**
-         * Sets the scheduler for this resource manager
+         * Sets the scheduler for this resmanager
          */
-        void setScheduler(Scheduler *s);
+//         void setScheduler(Scheduler *s);
 
         /**
          * @todo clear the maps!!
@@ -54,6 +57,7 @@ namespace RTSim {
 
         void endRun();
 
+    protected:
         /**
            Returns true if the resource can be locked, false otherwise
            (in such a case, the task should be blocked)
@@ -66,9 +70,6 @@ namespace RTSim {
         virtual void release(AbsRTTask *t, Resource *r, int n=1);
 
     private:
-        /// Scheduler dealing with the tasks. Needed to update tasks priorities
-        Scheduler *_sched;
-
         /// correspondence task / priority 
         typedef map<std::string, int> PRIORITY_MAP;
         

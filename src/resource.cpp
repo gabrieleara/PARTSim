@@ -91,8 +91,4 @@ namespace RTSim {
         return _owner;
     }
 
-    ostream& operator<<(ostream& out, const Resource& res) {
-        return out << res.toString();
-    }
-
 }

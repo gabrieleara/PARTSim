@@ -27,10 +27,10 @@ namespace RTSim {
     {
     }
 
-     void PIRManager::setScheduler(Scheduler *s)
-     {
-         _sched = s;
-     }
+//     void PIRManager::setScheduler(Scheduler *s)
+//     {
+//         _sched = s;
+//     }
 
     void PIRManager::newRun()
     {
