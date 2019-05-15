@@ -205,9 +205,18 @@ namespace RTSim {
         virtual void insert(AbsRTTask *) throw(RTSchedExc, BaseExc);
 
         /**
-          * Have you inserted the task t yet?
-          */
+         * Have you inserted the task t in the scheduler yet?
+         * I.e., has the scheduler had a first contact with the task,
+         * so that it can manipulate it without inserting/adding it 
+         * (or should you insert/add the task)?
+         */
         bool isFound(AbsRTTask *t);
+
+        /**
+	       * Is the scheduler in the queue of tasks to be dispatched to a CPU?
+	       * I.e., is the scheduler taking care of the task?
+         */
+        bool isInQueue(AbsRTTask *t);
 
         /**
          *  extract a task from the queue.

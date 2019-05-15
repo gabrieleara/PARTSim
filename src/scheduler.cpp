@@ -241,6 +241,17 @@ namespace RTSim {
         return model != NULL;
     }
 
+    bool Scheduler::isInQueue(AbsRTTask *t) {
+        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
+            _queue.begin();
+        for (unsigned int i = 0; i < _queue.size(); i++) {
+            if ((*it) != NULL && (*it)->getTask() == t)
+                return true;
+            it++;
+        }
+        return false;
+    }
+
     void Scheduler::notify(AbsRTTask* task)
     {
         DBGENTER(_SCHED_DBG_LEVEL);
@@ -279,8 +290,8 @@ namespace RTSim {
         for (unsigned int i = 0; i < _queue.size(); i++) {
             if ((*it) != NULL && (*it)->getTask() != NULL)
                 s += taskname((*it)->getTask()) + "\t";
-	    it++;
- 	}
+    	    it++;
+     	}
         
         return s; 
     }

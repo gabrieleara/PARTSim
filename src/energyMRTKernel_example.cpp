@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 13;
+    int TEST_NO = 14;
 
     dumpAllSpeeds();
     
@@ -583,53 +583,94 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(440);
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]) - 1; j++){
                 cout << "killing tasks" << endl;
-                dynamic_cast<Task*>(tasks[j])->killInstance();
+                Task *t = dynamic_cast<Task*>(tasks[j]);
+                t->killInstance();
+                assert(t->getState() == TSK_IDLE);
             }
+            SIMUL.run_to(501);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
+            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[4]))->getIslandType() == IslandType::BIG);
+
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
             return 0;
         }
         else if (TEST_NO == 14) {
+            /**
+                What happens if task is not schedulable?
 
-        }
+                @Mr. Cucinotta, Mr. Marinoni:
+                This example also demonstrates that a task is either on the queue/scheduler
+                of arrived tasks or in the one of the core selected for its dispatching.
+                Moreover, if a task cannot be scheduled in its current, it has another chance
+                on the next one.
+              */
+            cpus_little[0]->toggleDisabled();
+            cpus_little[1]->toggleDisabled();
+            cpus_little[2]->toggleDisabled();
+            cpus_little[3]->toggleDisabled();
+            cpus_big[1]->toggleDisabled();
+            cpus_big[2]->toggleDisabled();
+            cpus_big[3]->toggleDisabled();
 
+            int wcets[] = { 200, 300, 450, 450};
+            int deads[] = { 500, 500, 500, 500 };
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T14_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
 
-        /*
-         * Output execution time estimation for each workload on each OPP of
-         * big and LITTLE cpus.
-         */
-        /*
-        cout << "Dumping tasks' execution times" << endl;
-
-        map<string, double> min_C;
-        min_C["bzip2"] = 4.69799888;
-        min_C["cachekiller"] = 0.518917331;
-        min_C["hash"] = 0.656942014;
-        min_C["encrypt"] = 0.746811798;
-        min_C["decrypt"] = 0.754088207;
-
-        for (string cpu_type : {"big", "LITTLE"}) {
-            unsigned int cpu = cpu_type == "big" ? 5 : 1;
-            unsigned int old_opp;
-            auto opp_size = cpu_type == "big" ? F_big.size() : F_little.size();
-
-            for (string wl : {"bzip2", "hash", "encrypt", "decrypt", "cachekiller"}) {
-                cpus[cpu]->setWorkload(wl);
-
-                string filename = "exec_" + wl + "_" + cpu_type + ".txt";
-                ofstream computing_file(filename);
-
-                old_opp = cpus[cpu]->getOPP();
-                for (unsigned int opp=0; opp<opp_size; ++opp) {
-                    cpus[cpu]->setOPP(opp);
-                    computing_file << cpus[cpu]->getFrequency() * 1000 << " "
-                                   << cpus[cpu]->getSpeed() * min_C[wl]
-                                      << endl;
-                }
-                cpus[cpu]->setWorkload("idle");
-                cpus[cpu]->setOPP(old_opp);
+                t->killOnMiss(false);
             }
-        }*/
+
+            SIMUL.initSingleRun();
+
+            SIMUL.run_to(1);
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
+            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[1])) == cpus_big[0]);
+            assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
+            assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
+            assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
+            assert(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
+
+            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
+            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
+            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
+
+            SIMUL.run_to(501);
+            // same tests as above
+            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
+            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[1])) == cpus_big[0]);
+            assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
+            assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
+            assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
+            assert(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
+
+            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
+            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
+            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
+
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
+            return 0;
+        }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;
@@ -637,6 +678,8 @@ int main(int argc, char *argv[]) {
 
         SIMUL.run(1000); // 5000
         dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption(true, tasks);
+        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+        cout << "Simulation finished" << endl;
     } catch (BaseExc &e) {
         cout << e.what() << endl;
     }

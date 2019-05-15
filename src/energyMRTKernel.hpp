@@ -472,6 +472,11 @@ namespace RTSim {
             return getIsland(island)->getProcessors();
         }
 
+        /// For debug. Returns the layer managing CPUs queues/schedulers
+        EnergyMultiCoresScheds* getEnergyMultiCoresScheds() const {
+          return _queues;
+        }
+
         /**
            Returns island utilization given a capacity to scale up/down tasks WCET.
            It also returns the number of tasks being scheduled in the island
