@@ -140,7 +140,7 @@ namespace RTSim {
 
     void EnergyMRTKernel::test() {
         // PeriodicTask T7_task0 DL = T 500 WCET(abs) 63 in CPU LITTLE_0 freq 500 freq 3
-        Task *t = dynamic_cast<Task*>(_sched->getTaskN(0));
+        AbsRTTask *t = dynamic_cast<AbsRTTask*>(_sched->getTaskN(0));
         CPU_BL* p;
         dispatch(p, t, 3);
         p->setWorkload("bzip2");
@@ -175,7 +175,7 @@ namespace RTSim {
     }
 
     // for gdb
-    bool EnergyMRTKernel::manageForcedDispatch(Task* t) {
+    bool EnergyMRTKernel::manageForcedDispatch(AbsRTTask* t) {
         if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end() ) { //&& get<2>(_m_forcedDispatch[t]) == SIMUL.getTime()) {
             cout << __func__ << endl;
             dispatch(get<0>(_m_forcedDispatch[t]), t, get<1>(_m_forcedDispatch[t]));
@@ -519,7 +519,7 @@ namespace RTSim {
         i = 0;
         std::vector<CPU_BL*> cpus = getProcessors();
         do {
-            Task *t = dynamic_cast<Task*>(_sched->getTaskN(i++));
+            AbsRTTask *t = dynamic_cast<AbsRTTask*>(_sched->getTaskN(i++));
             if (t == NULL) break;
             cout << "Actual time = [" << SIMUL.getTime() << "]" << endl;
             cout << "Dealing with task " << t->toString() << "." << endl;
@@ -576,7 +576,9 @@ namespace RTSim {
         if (c->isDisabled()) return;
         int startingOPP = c->getOPP();
         string startingWL = c->getWorkload();
-        c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
+        if (dynamic_cast<Task*>(t))
+           c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
+        else if (true) {} // todo controllare se e' un server
         double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
              << " - it has already ntasks=" << getReadyTasks(c).size() << endl;

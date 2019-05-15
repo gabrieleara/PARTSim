@@ -560,7 +560,7 @@ namespace RTSim {
 
         virtual void printState();
 
-        bool manageForcedDispatch(Task*);
+        bool manageForcedDispatch(AbsRTTask*);
 
         void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp);
     };

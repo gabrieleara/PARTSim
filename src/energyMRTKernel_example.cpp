@@ -23,6 +23,7 @@
 #include "rrsched.hpp"
 #include "rttask.hpp"
 #include "cpu.hpp"
+#include "cbserver.hpp"
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -35,7 +36,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 14;
+    int TEST_NO = 15;
 
     dumpAllSpeeds();
     
@@ -670,6 +671,19 @@ int main(int argc, char *argv[]) {
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
             cout << "Simulation finished" << endl;
             return 0;
+        }
+        else if (TEST_NO = 15) {
+            /**
+                Towards servers...y màs allà!
+             */
+            PeriodicTask *t2 = new PeriodicTask(500, 500 , 0, "TaskA"); 
+            t2->insertCode("fixed(200);");
+            t2->setAbort(false);
+            ttrace.attachToTask(*t2);
+
+            CBServer *serv = new CBServer(200, 500, 500, "hard",  "server1", "FIFOSched");
+            serv->addTask(*t2);
+            kernels[0]->addTask(*serv, ""); 
         }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

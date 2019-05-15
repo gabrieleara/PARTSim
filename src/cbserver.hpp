@@ -25,7 +25,11 @@ namespace RTSim {
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();
-	Tick get_remaining_budget(); 
+	    Tick get_remaining_budget(); 
+
+        virtual double getRemainingWCET(double capacity = 1.0) const {
+            return double(const_cast<CBServer*>(this)->get_remaining_budget()) / capacity;
+        }
 
 	policy_t get_policy() const { return idle_policy; }
 	void set_policy(policy_t p) { idle_policy = p; }  
