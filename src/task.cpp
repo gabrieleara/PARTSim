@@ -349,7 +349,10 @@ namespace RTSim {
         }
         
         endEvt.drop();
-        
+        // todo right? otherwise at next task arrival, another deadEvt is posted => exception
+        deadEvt.drop();
+
+
         (*actInstr)->deschedule();
         execdTime += (*actInstr)->getExecTime();
         

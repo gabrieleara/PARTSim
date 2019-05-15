@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 12;
+    int TEST_NO = 13;
 
     dumpAllSpeeds();
     
@@ -544,6 +544,53 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run(1001);
             return 0;
+        }
+        else if (TEST_NO == 13) {
+            /**
+                Demostrating what happens when a task is killed.
+                It will come into play again in its next period and hopefully it can 
+                be scheduled.
+              */
+            int wcets[] = { 450, 450, 450, 450, 1 };
+            int deads[] = { 500, 500, 500, 500, 500 };
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T13_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                kernels[0]->addTask(*t, "");
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+
+                t->killOnMiss(true);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(tasks[0], cpus_big[0], 18);
+            k->addForcedDispatch(tasks[1], cpus_big[1], 18);
+            k->addForcedDispatch(tasks[2], cpus_big[2], 18);
+            k->addForcedDispatch(tasks[3], cpus_big[3], 18);
+
+            cpus_little[0]->toggleDisabled();
+            cpus_little[1]->toggleDisabled();
+            cpus_little[2]->toggleDisabled();
+            cpus_little[3]->toggleDisabled();
+
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(440);
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]) - 1; j++){
+                cout << "killing tasks" << endl;
+                dynamic_cast<Task*>(tasks[j])->killInstance();
+            }
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            return 0;
+        }
+        else if (TEST_NO == 14) {
+
         }
 
 

@@ -47,9 +47,7 @@ namespace RTSim {
     }
 
 
-    void EDFScheduler::removeTask(AbsRTTask* task)
-    {
-    }
+    void EDFScheduler::removeTask(AbsRTTask* task) { }
 
 
     EDFScheduler * EDFScheduler::createInstance(vector<string> &par)

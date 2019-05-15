@@ -862,7 +862,7 @@ TEST_CASE("exp11") {
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete tasks[j];
     delete kern;
-    cout << "End of Experiment #" << init_sequence << endl;
+    cout << "End of Experiment #" << init_sequence << " (RR)" << endl;
 }
 
 

@@ -299,6 +299,9 @@ namespace RTSim {
         vector<CPU_BL*> cp = getProcessors(p->getIslandType());
 
         _sched->extract(t);
+        // todo delete cout
+        cout << "State of external scheduler: " << endl << _sched->toString() << endl;
+
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
@@ -554,9 +557,8 @@ namespace RTSim {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
                 // todo not good, this makes the task arrive
-                _sched->extract(t);
-                _sched->removeTask(t);
             }
+            _sched->extract(t);
             num_newtasks--;
 
             cout << "Decisions 'til now:" << endl;
@@ -571,6 +573,7 @@ namespace RTSim {
     }
 
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
+        if (c->isDisabled()) return;
         int startingOPP = c->getOPP();
         string startingWL = c->getWorkload();
         c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());

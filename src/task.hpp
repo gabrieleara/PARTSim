@@ -465,6 +465,8 @@ namespace RTSim {
         */
         AbsKernel *getKernel() { return _kernel; }
 
+        task_state getState() { return state; }
+
         /** 
             Returns true if the task is active.
         */

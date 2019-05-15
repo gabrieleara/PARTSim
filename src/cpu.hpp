@@ -269,6 +269,9 @@ namespace RTSim
     // pm belongs to CPU_BL and not to Island_BL because CPUs may execute different workloads
     CPUModel* _pm;
 
+    /// for debug. CPU can be disabled, so that the scheduler won't dispatch new any task
+    bool _disabled;
+
     virtual void updateCPUModel();
 
   public:
@@ -280,6 +283,7 @@ namespace RTSim
         _isBusy = false;
         setWorkload(wl);
         _pm = powermodel;
+        _disabled = false;
         assert(_pm != nullptr);
     };
 
@@ -301,6 +305,12 @@ namespace RTSim
     bool isBusy() {
         return _isBusy;
     }
+
+    /// for debug. Tells if CPU is disabled, i.e. accepts new dispatched tasks
+    bool isDisabled() { return _disabled; }
+
+    /// Enables or disables CPU
+    void toggleDisabled() { _disabled = !_disabled; }
 
     Island_BL* getIsland() { 
         return _island;
