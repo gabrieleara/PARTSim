@@ -19,6 +19,8 @@
 #include "rttask.hpp"
 #include "exeinstr.hpp"
 #include "cpu.hpp"
+#include "cbserver.hpp"
+#include "utils.hpp"
 
 namespace RTSim {
     using namespace MetaSim;
@@ -58,14 +60,6 @@ namespace RTSim {
         return t;
     }
 
-    double EnergyMRTKernel::getUtilization(AbsRTTask* task, CPU_BL* c, double capacity) const {
-        double util = ceil(task->getRemainingWCET(capacity)) / double(task->getDeadline());
-
-#include <cstdio>
-        printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getDeadline()), capacity, util);
-        return util;
-    }
-
     CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) {
         CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->isInAnyQueue(t));
         if (_queues->getRunningTask(c) == t)
@@ -80,6 +74,14 @@ namespace RTSim {
 
     bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
       return !_queues->isEmpty(p);
+    }
+    
+    double EnergyMRTKernel::getUtilization(AbsRTTask* task, CPU_BL* c, double capacity) const {
+        double util = ceil(task->getRemainingWCET(capacity)) / double(task->getDeadline());
+
+#include <cstdio>
+        printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getDeadline()), capacity, util);
+        return util;
     }
 
     double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
@@ -277,6 +279,8 @@ namespace RTSim {
 
         _e_migration_manager.addSchedulingEvent(t, SIMUL.getTime(), cpu);
         _m_oldExe[t] = cpu;
+
+        cout << endl;
 
         // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
         // ExecInstr::schedule() is called after each task's onEndDispatchMulti()
@@ -575,11 +579,10 @@ namespace RTSim {
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
         if (c->isDisabled()) return;
         int startingOPP = c->getOPP();
+        double frequency = c->getFrequency();
         string startingWL = c->getWorkload();
-        if (dynamic_cast<Task*>(t))
-           c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload());
-        else if (true) {} // todo controllare se e' un server
-        double frequency = c->getFrequency(); //!c->isBusy() ? c->getStructOPP(c->getIslandCurOPP()).frequency : c->getFrequency();
+        c->setWorkload(Utils::getTaskWorkload(t));
+ 
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
              << " - it has already ntasks=" << getReadyTasks(c).size() << endl;
 

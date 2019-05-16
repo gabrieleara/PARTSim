@@ -677,13 +677,13 @@ int main(int argc, char *argv[]) {
                 Towards servers...y màs allà!
              */
             PeriodicTask *t2 = new PeriodicTask(500, 500 , 0, "TaskA"); 
-            t2->insertCode("fixed(200);");
+            t2->insertCode("fixed(200,bzip2);");
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
             CBServer *serv = new CBServer(200, 500, 500, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
-            kernels[0]->addTask(*serv, ""); 
+            kernels[0]->addTask(*serv, "");
         }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

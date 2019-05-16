@@ -21,6 +21,7 @@
 #include "taskevt.hpp"
 #include "mrtkernel.hpp"
 #include <exeinstr.hpp>
+#include "utils.hpp"
 
 #include <rrsched.hpp>
 #include <edfsched.hpp>
@@ -59,7 +60,7 @@ namespace RTSim {
 
     void addSchedulingEvent(AbsRTTask* tt, Tick when, CPU* c) {
       string wl = c->getWorkload();
-      c->setWorkload(dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(tt)->getInstrQueue().at(0).get())->getWorkload());
+      c->setWorkload(Utils::getTaskWorkload(tt));
       addTaskEvent(tt, when, SCHEDULE, c);
       c->setWorkload(wl);
     }
