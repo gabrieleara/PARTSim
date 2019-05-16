@@ -1,6 +1,8 @@
 .idea/
 cmake-build-debug/
 
+*.bak
+*.swp
 *.o
 *.txt
 t.txt.save

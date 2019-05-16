@@ -38,9 +38,13 @@ namespace RTSim {
 				<< tt->getArrival() << endl; 
 				*/
 			CPU* c = tt->getKernel()->getProcessor(tt);
-			if (c!= NULL)
-				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (c->getOPPs().empty() ? "" : "" + c->getFrequency()) << " abs WCET "
+			if (c!= NULL) {
+        unsigned int frequency = 0.0;
+        if (dynamic_cast<CPU_BL*>(c))
+          frequency = c->getFrequency();
+				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (frequency == -1.0 ? "" : "" + frequency) << " abs WCET "
 				<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
+      }
 		}
   
 		void TextTrace::probe(DeschedEvt& e)

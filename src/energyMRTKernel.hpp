@@ -22,7 +22,7 @@
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       1
+#define EMRTK_MIGRATE_ENABLED       0
 
 namespace RTSim {
 
