@@ -42,7 +42,7 @@ namespace RTSim {
         unsigned int frequency = 0.0;
         if (dynamic_cast<CPU_BL*>(c))
           frequency = c->getFrequency();
-				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (frequency == -1.0 ? "" : "" + frequency) << " abs WCET "
+				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (frequency == 0.0 ? "" : "" + frequency) << " abs WCET "
 				<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
       }
 		}
