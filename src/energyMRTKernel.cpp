@@ -172,8 +172,8 @@ namespace RTSim {
       cout << endl;
     }
 
-    void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp) {
-        _m_forcedDispatch[t] = make_tuple(c, opp);
+    void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp, unsigned int times) {
+        _m_forcedDispatch[t] = make_tuple(c, opp, times);
     }
 
     // for gdb
@@ -181,7 +181,10 @@ namespace RTSim {
         if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end() ) { //&& get<2>(_m_forcedDispatch[t]) == SIMUL.getTime()) {
             cout << __func__ << endl;
             dispatch(get<0>(_m_forcedDispatch[t]), t, get<1>(_m_forcedDispatch[t]));
-            _m_forcedDispatch.erase(t);
+
+	    get<2>(_m_forcedDispatch[t])--;
+	    if (get<2>(_m_forcedDispatch[t]) == 0)
+               _m_forcedDispatch.erase(t);
             return true;
         }
         return false;

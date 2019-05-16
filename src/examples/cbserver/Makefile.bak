@@ -1,0 +1,42 @@
+CXXFLAGS=-Wno-deprecated -Wno-deprecated-declarations --std=c++11 -I. -I../../ -g
+
+CPP_FILES=$(filter-out ../../energyMRTKernel_example.cpp, $(wildcard ../../*.cpp) $(wildcard cbs.cpp))
+HPP_FILES=$(wildcard ../*.hpp)
+OBJ_FILES=$(patsubst %.cpp,%.o,$(CPP_FILES))
+
+SOURCES=$(CPP_FILES) $(HPP_FILES)
+
+.PHONY: all build test clean execute build_cache
+
+all: test
+
+test:  build execute
+
+build: $(OBJ_FILES)
+	g++ -o $@ $^
+
+execute:
+	./build &> t.txt
+
+clean:
+	rm -f test *.o *~ *.bak *.txt *.xml
+
+build_cache:
+	g++ -c -DDEBUG TestMain.cpp -o TestMain.o
+	#ar rvs catch.a catch.o
+# DO NOT DELETE
+
+cbs.o: ../../kernel.hpp ../../baseexc.hpp ../../entity.hpp ../../basetype.hpp
+cbs.o: ../../tick.hpp /usr/include/limits.h ../../strtoken.hpp
+cbs.o: ../../abskernel.hpp ../../abstask.hpp ../../cpu.hpp ../../trace.hpp
+cbs.o: ../../timer.hpp ../../simul.hpp ../../basestat.hpp
+cbs.o: ../../debugstream.hpp ../../event.hpp ../../particle.hpp
+cbs.o: ../../plist.hpp ../../gevent.hpp ../../powermodel.hpp
+cbs.o: /usr/include/assert.h /usr/include/features.h
+cbs.o: /usr/include/stdc-predef.h ../../kernevt.hpp ../../edfsched.hpp
+cbs.o: ../../scheduler.hpp ../../fifosched.hpp ../../texttrace.hpp
+cbs.o: ../../rttask.hpp ../../regvar.hpp ../../randomvar.hpp
+cbs.o: ../../cloneable.hpp ../../task.hpp ../../taskevt.hpp
+cbs.o: ../../feedback.hpp ../../taskexc.hpp ../../cbserver.hpp
+cbs.o: ../../server.hpp ../../resmanager.hpp ../../capacitytimer.hpp
+cbs.o: ../../supercbs.hpp ../../supervisor.hpp ../../sporadicserver.hpp

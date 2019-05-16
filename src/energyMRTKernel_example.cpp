@@ -47,6 +47,8 @@ int main(int argc, char *argv[]) {
     }
    else if (argc == 2) { TEST_NO = stoi(argv[1]);  }
 
+   cout << "Performing experiment #" << TEST_NO << endl;
+
     cout << "current OPPs indices: [" << OPP_little << ", " << OPP_big << "]" << endl;
     cout << "Workload: [" << workload << "]" << endl;
 
@@ -676,14 +678,26 @@ int main(int argc, char *argv[]) {
             /**
                 Towards servers...y màs allà!
              */
-            PeriodicTask *t2 = new PeriodicTask(500, 500 , 0, "TaskA"); 
-            t2->insertCode("fixed(200,bzip2);");
-            t2->setAbort(false);
+            PeriodicTask *t2 = new PeriodicTask(15, 15 , 0, "TaskA"); 
+            t2->insertCode("fixed(4,bzip2);");
+            t2->setAbort(false); // aperiodic task
             ttrace.attachToTask(*t2);
 
-            CBServer *serv = new CBServer(200, 500, 500, "hard",  "server1", "FIFOSched");
+            CBServer *serv = new CBServer(4, 15, 15, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
+            tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Running simulation!" << endl;
+            SIMUL.run(50);
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
+
+            return 0;
         }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

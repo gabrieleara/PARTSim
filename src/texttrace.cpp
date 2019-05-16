@@ -39,7 +39,7 @@ namespace RTSim {
 				*/
 			CPU* c = tt->getKernel()->getProcessor(tt);
 			if (c!= NULL)
-				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << c->getFrequency() << " abs WCET "
+				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (c->getOPPs().empty() ? "" : "" + c->getFrequency()) << " abs WCET "
 				<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
 		}
   

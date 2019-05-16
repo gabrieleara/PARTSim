@@ -101,7 +101,9 @@ namespace RTSim
 
         virtual string toString() const {
             stringstream ss;
-            ss << "(CPU) " << getName() << " cur freq " << getFrequency();
+            ss << "(CPU) " << getName();
+	    if (OPPs.size() > 0)
+	       ss << " cur freq " << getFrequency();
             return ss.str();
         }
 
@@ -116,6 +118,8 @@ namespace RTSim
         {
             return index;
         }
+
+        vector<OPP> getOPPs() const { return OPPs; }
 
         /// Useful for debug
         virtual int getOPP();

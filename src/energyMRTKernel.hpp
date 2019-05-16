@@ -345,8 +345,8 @@ namespace RTSim {
         /// cores queues, containing ready and running tasks for each core
         EnergyMultiCoresScheds *_queues;
 
-        /// for debug, if you want to force a certain choice of cores and frequencies
-        map<AbsRTTask*, tuple<CPU_BL*, unsigned int>> _m_forcedDispatch;
+        /// for debug, if you want to force a certain choice of cores and frequencies and how many times to dispatch
+        map<AbsRTTask*, tuple<CPU_BL*, unsigned int, unsigned int>> _m_forcedDispatch;
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
@@ -562,7 +562,7 @@ namespace RTSim {
 
         bool manageForcedDispatch(AbsRTTask*);
 
-        void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp);
+        void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int times = 1);
     };
 }
 
