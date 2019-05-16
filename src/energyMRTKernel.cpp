@@ -222,11 +222,9 @@ namespace RTSim {
 
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onBeginDispatchMulti() for " << taskname(st) << " on " << p->toString() << endl;
         if ( st != NULL && dt == st ) {
-            stringstream ss;
-            ss << "Decided to dispatch " << st->toString() << " on its former CPU => skip context switch";
-            DBGPRINT(ss.str());
-            cout << ss.str() << endl; 
-            return;
+            string ss = "Decided to dispatch " + st->toString() + " on its former CPU => skip context switch";
+            DBGPRINT(ss);
+            cout << ss << endl; 
         }
         // if necessary, deschedule the task.
         if ( dt != NULL || isToBeDescheduled(p, dt) ) {
