@@ -26,6 +26,8 @@
 
 namespace RTSim {
 
+  class CBServer;
+
     /**
        Manages tasks migrations among cores and how islands frequency
        has changed over time.
@@ -517,6 +519,10 @@ namespace RTSim {
          * Invoked when a task ends
          */
         virtual void onEnd(AbsRTTask* t);
+
+      void onReleasingIdle(CBServer *cbs) {
+        _queues->onReleasingIdle(cbs);
+      }
 
       /**
        * Specifically called when RRScheduler is used, it informs the kernel that

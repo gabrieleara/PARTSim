@@ -1,4 +1,5 @@
 #include "cbserver.hpp"
+#include "energyMRTKernel.hpp"
 
 #include <cassert>
 
@@ -7,19 +8,19 @@ namespace RTSim {
     using namespace MetaSim;
 
     CBServer::CBServer(Tick q, Tick p,Tick d, bool HR, const std::string &name,
-		       const std::string &s) :
+               const std::string &s) :
         Server(name, s),
         Q(q),
         P(p),
-	d(d),
+    d(d),
         cap(0),
-	last_time(0),
-	HR(HR),
+    last_time(0),
+    HR(HR),
         _replEvt(this, &CBServer::onReplenishment, 
-		 Event::_DEFAULT_PRIORITY - 1),
-	_idleEvt(this, &CBServer::onIdle),
+         Event::_DEFAULT_PRIORITY - 1),
+    _idleEvt(this, &CBServer::onIdle),
         vtime(),
-	idle_policy(ORIGINAL)
+    idle_policy(ORIGINAL)
     {
         DBGENTER(_SERVER_DBG_LEV);
         DBGPRINT(s);
@@ -27,8 +28,8 @@ namespace RTSim {
 
     void CBServer::newRun()
     {
-	DBGENTER(_SERVER_DBG_LEV);
-	DBGPRINT_2("HR ", HR);
+    DBGENTER(_SERVER_DBG_LEV);
+    DBGPRINT_2("HR ", HR);
         cap = Q;
         last_time = 0;
         recharging_time = 0;
@@ -43,9 +44,9 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
         DBGPRINT("Status = " << status_string[status]);
         if (status == IDLE)
-	    return double(SIMUL.getTime());
+        return double(SIMUL.getTime());
         else 
-	    return vtime.get_value();
+        return vtime.get_value();
     }
 
     void CBServer::endRun()
@@ -58,23 +59,23 @@ namespace RTSim {
         assert (status == IDLE);
         status = READY;
 
-	cap = 0;
+    cap = 0;
 
-	if (idle_policy == REUSE_DLINE && SIMUL.getTime() < getDeadline()) {
-	    double diff = double(getDeadline() - SIMUL.getTime()) * 
-		double(Q) / double(P);
-	    cap = Tick(std::floor(diff));
-	}
+    if (idle_policy == REUSE_DLINE && SIMUL.getTime() < getDeadline()) {
+        double diff = double(getDeadline() - SIMUL.getTime()) * 
+        double(Q) / double(P);
+        cap = Tick(std::floor(diff));
+    }
 
-	if (cap == 0) {
-	    cap = Q;
-	    //added relative deadline
-	    d = SIMUL.getTime() + P;
-	    DBGPRINT_2("new deadline ",d);
-	    setAbsDead(d);
-	}
-	vtime.set_value(SIMUL.getTime());
-	DBGPRINT_2("Going to active contending ",SIMUL.getTime());
+    if (cap == 0) {
+        cap = Q;
+        //added relative deadline
+        d = SIMUL.getTime() + P;
+        DBGPRINT_2("new deadline ",d);
+        setAbsDead(d);
+    }
+    vtime.set_value(SIMUL.getTime());
+    DBGPRINT_2("Going to active contending ",SIMUL.getTime());
     }
     
     /*I should compare the actual bandwidth with the assignedserver Q
@@ -88,7 +89,7 @@ namespace RTSim {
     void CBServer::releasing_ready()
     {
         DBGENTER(_SERVER_DBG_LEV);
-	status = READY;
+    status = READY;
         _idleEvt.drop();
         DBGPRINT("FROM NON CONTENDING TO CONTENDING");
     }
@@ -119,16 +120,16 @@ namespace RTSim {
     void CBServer::executing_releasing()
     {
         DBGENTER(_SERVER_DBG_LEV);
-	
+    
         if (status == EXECUTING) {
             cap = cap - (SIMUL.getTime() - last_time);
-      	    vtime.stop();
+            vtime.stop();
             _bandExEvt.drop();
         }
         if (vtime.get_value() <= double(SIMUL.getTime())) 
             status = IDLE;
         else {
-	    _idleEvt.post(Tick::ceil(vtime.get_value()));
+        _idleEvt.post(Tick::ceil(vtime.get_value()));
             status = RELEASING;
         }        
         DBGPRINT("Status is now XXXYYY " << status_string[status]);
@@ -151,29 +152,29 @@ namespace RTSim {
         DBGPRINT_2("Capacity before: ", cap);
         DBGPRINT_2("Time is: ", SIMUL.getTime());
         DBGPRINT_2("Last time is: ", last_time);
-	DBGPRINT_2("HR: ", HR);
-	if (!HR) {
-	    cap=Q;
-	    d=d+P;
-	    setAbsDead(d);
-	    DBGPRINT_2("Capacity is now: ", cap);
-	    DBGPRINT_2("Capacity queue: ", capacity_queue.size());
+    DBGPRINT_2("HR: ", HR);
+    if (!HR) {
+        cap=Q;
+        d=d+P;
+        setAbsDead(d);
+        DBGPRINT_2("Capacity is now: ", cap);
+        DBGPRINT_2("Capacity queue: ", capacity_queue.size());
             DBGPRINT_2("new_deadline: ", d);
-	    status=READY;
-	    _replEvt.post(SIMUL.getTime());
+        status=READY;
+        _replEvt.post(SIMUL.getTime());
         }
-	else
-	  {
+    else
+      {
               cap=0;
               _replEvt.post(d);
               d=d+P;
               setAbsDead(d);
               status=RECHARGING;
-	  }
+      }
 
-	//inserted by rodrigo seems we do not stop the capacity_timer
+    //inserted by rodrigo seems we do not stop the capacity_timer
         // moved up
-	// vtime.stop();
+    // vtime.stop();
 
         DBGPRINT("The status is now " << status_string[status]);
     }
@@ -208,7 +209,7 @@ namespace RTSim {
         if (status == RECHARGING || 
             status == RELEASING || 
             status == IDLE) {
-	    cap = Q;//repl_queue.front().second;
+        cap = Q;//repl_queue.front().second;
             if (sched_->getFirst() != NULL) {
                 recharging_ready();
                 kernel->onArrival(this);
@@ -232,7 +233,7 @@ namespace RTSim {
             //capacity_queue.push_back(r);
             //if (repl_queue.size() > 1) check_repl();
             //me falta reinsertar el servidor con la prioridad adecuada
-	}
+    }
 
         DBGPRINT_2("Status is now: ", status_string[status]);
         DBGPRINT_2("Capacity is now: ", cap);
@@ -249,7 +250,7 @@ namespace RTSim {
             if (status == EXECUTING) {
                 DBGPRINT_3("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
-		_bandExEvt.drop();
+        _bandExEvt.drop();
                 vtime.stop();
                 last_time = SIMUL.getTime();
                 _bandExEvt.post(last_time + cap);
@@ -268,7 +269,7 @@ namespace RTSim {
             if (status == EXECUTING) {
                 DBGPRINT_3("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
-		last_time = SIMUL.getTime();
+        last_time = SIMUL.getTime();
                 DBGVAR(cap);
                 _bandExEvt.drop();
                 vtime.stop();
@@ -295,16 +296,23 @@ namespace RTSim {
 
     Tick CBServer::changeQ(const Tick &n)
     {
-	Q=n; 
-	return 0;
+    Q=n; 
+    return 0;
     }
 
     Tick CBServer::get_remaining_budget()
     {
-	double dist = (double(getDeadline()) - vtime.get_value()) * 
-	    double(Q) / double(P) + 0.00000000001;
-	
-	return Tick::floor(dist);
+    double dist = (double(getDeadline()) - vtime.get_value()) * 
+        double(Q) / double(P) + 0.00000000001;
+    
+    return Tick::floor(dist);
     }
-}
 
+    /// remember to call Server::setKernel(kern) before this
+    void CBServerCallingEMRTKernel::releasing_idle() {
+        CBServer::releasing_idle();
+
+        dynamic_cast<EnergyMRTKernel*>(kernel)->onReleasingIdle(this);
+    }
+
+}

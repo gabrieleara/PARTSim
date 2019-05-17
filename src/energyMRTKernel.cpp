@@ -96,8 +96,8 @@ namespace RTSim {
             cout << "\t\t\tUtilization task already in CPU, " << th->toString() << ", is "
                  << ceil(th->getWCET(capacity)) << "/" << th->getDeadline() << " = "
                  << ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline())
-                 <<  " - CPU capacity=" << capacity << endl;
-            cout << "\t\t\t\ttask WCET " << ceil(th->getRemainingWCET(capacity)) << " DL "
+                 <<  " - CPU capacity=" << capacity << endl
+                 << "\t\t\t\ttask WCET " << ceil(th->getRemainingWCET(capacity)) << " DL "
                  << th->getDeadline() << endl;
         }
 

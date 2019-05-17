@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 16;
+    int TEST_NO = 15;
 
     dumpAllSpeeds();
     
@@ -683,7 +683,7 @@ int main(int argc, char *argv[]) {
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
-            CBServer *serv = new CBServer(4, 15, 15, "hard",  "server1", "FIFOSched");
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(4, 15, 15, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
@@ -770,7 +770,7 @@ int main(int argc, char *argv[]) {
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
-            CBServer *serv = new CBServer(5, 10, 10, "hard",  "server1", "FIFOSched");
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");

@@ -289,8 +289,13 @@ namespace RTSim {
         void onEnd(AbsRTTask *t, CPU* c) {
           assert(c != NULL); assert(t != NULL);
 
+          if (dynamic_cast<CBServer*>(t)) {
+            
+          }
+
+          // check if there is consistency still
           AbsRTTask *tt = getRunningTask(c);
-          assert(tt != NULL && t == tt); // is there consistency still?
+          assert(tt != NULL && t == tt);
 
           removeFromQueue(c, t);
           makeReady(c);
@@ -314,6 +319,12 @@ namespace RTSim {
             }
         }
 
+      /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
+      static void onReleasingIdle(CBServer* cbs) {
+        cout << __func__ << "() for " << cbs->toString() << endl;
+
+      }
+      
       /**
        * Function called only when RRScheduler is used. It informs
        * the queues manager that a task has finished its round => remove from

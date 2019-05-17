@@ -10,10 +10,10 @@ namespace RTSim {
 
     class CBServer : public Server {
     public:
-	typedef enum {ORIGINAL, REUSE_DLINE } policy_t;
+  typedef enum {ORIGINAL, REUSE_DLINE } policy_t;
 
-	CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
-		 const std::string &sched = "FIFOSched");
+  CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
+     const std::string &sched = "FIFOSched");
 
         void newRun();
         void endRun();
@@ -25,14 +25,10 @@ namespace RTSim {
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();
-	    Tick get_remaining_budget(); 
+  Tick get_remaining_budget(); 
 
-        virtual double getRemainingWCET(double capacity = 1.0) const {
-            return double(const_cast<CBServer*>(this)->get_remaining_budget()) / capacity;
-        }
-
-	policy_t get_policy() const { return idle_policy; }
-	void set_policy(policy_t p) { idle_policy = p; }  
+  policy_t get_policy() const { return idle_policy; }
+  void set_policy(policy_t p) { idle_policy = p; }  
 
     protected:
                 
@@ -71,9 +67,6 @@ namespace RTSim {
         
         void check_repl();
 
-        // todo correct?
-        virtual double getWCET(double capacity) const { return Q; }
-
     private:
         Tick Q,P,d;
         Tick cap; 
@@ -87,7 +80,7 @@ namespace RTSim {
 
         /// queue of replenishments
         /// all times are in the future!
-	std::list<repl_t> repl_queue;
+  std::list<repl_t> repl_queue;
 
         /// at the replenishment time, the replenishment is moved
         /// from the repl_queue to the capacity_queue, so 
@@ -103,16 +96,40 @@ namespace RTSim {
 
         CapacityTimer vtime;
 
-	/** if the server is in IDLE, and idle_policy==true, the
-	    original CBS policy is used (that computes a new deadline
-	    as t + P) 
-
-	    If the server is IDLE and t < d and idle_policy==false, then 
-	    reuses the old deadline, and computes a new "safe" budget as 
-	    floor((d - vtime) * Q / P). 
-	*/
-	policy_t idle_policy; 
+  /** if the server is in IDLE, and idle_policy==true, the
+      original CBS policy is used (that computes a new deadline
+      as t + P) 
+      If the server is IDLE and t < d and idle_policy==false, then 
+      reuses the old deadline, and computes a new "safe" budget as 
+      floor((d - vtime) * Q / P). 
+  */
+  policy_t idle_policy; 
     };
+
+    class CBServerCallingEMRTKernel : public CBServer {
+    public:
+      CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
+     const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched){};
+
+      /// same as the parent releasing_idle() but also calls EMRTKernel
+      virtual void releasing_idle();
+
+      virtual double getWCET(double capacity) const {
+        double wcet = 0.0;
+
+        for (AbsRTTask* t : tasks)
+          wcet += double(dynamic_cast<Task*>(t)->getWCET());
+
+        wcet = wcet / capacity;
+        return wcet; 
+      }
+
+      virtual double getRemainingWCET(double capacity) const {
+        return getWCET(capacity);
+      }
+
+    };
+
 }
 
 
