@@ -343,8 +343,8 @@ namespace RTSim {
             printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
 
             // a better map is by cpu, but then cpus can collide
-            _active_utilizations[t] = make_tuple(cpu, Tick(cbs->getVirtualTime()), u_active);
-            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << endl;
+            _active_utilizations[t] = make_tuple(cpu, t->getLastArrival() + Tick(cbs->getVirtualTime()), u_active);
+            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
         }
 
         /// Callback for CBServer task going from releasing to idle => you can forget task active utilization

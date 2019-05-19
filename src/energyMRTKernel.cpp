@@ -105,7 +105,7 @@ namespace RTSim {
         }
 
         double u_active = _queues->getUtilization_active(c);
-        cout << "\t\t\tAlso adding U_active on core (for CBS server): " << u_active << endl;
+        cout << "\t\t\tU_active on core (for CBS server): " << u_active << endl;
         utilization += u_active;
 
         return utilization;
@@ -551,12 +551,12 @@ namespace RTSim {
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
-                cout << "Task has already been dispatched, but dispatching is not complete => skip" << endl;
+                cout << "\tTask has already been dispatched, but dispatching is not complete => skip" << endl;
                 continue;
             }
 
             if (getProcessor(t) != NULL) { // e.g., task ends => migrate() => dispatch()
-                cout << "Task is running on a CPU already => skip" << endl;
+                cout << "\tTask is running on a CPU already => skip" << endl;
                 continue;
             }
 
@@ -635,19 +635,20 @@ namespace RTSim {
                     cout << "\t\t\tCPU utilization is already >= 100% => skip OPP" << endl;
                     continue;
                 } else
-                    cout << "\t\t\tTotal utilization tasks already in CPU " << c->toString() << " = " << utilization << endl;
+                    cout << "\t\t\tTotal utilization (running+ready+active-new task) tasks already in CPU " << c->toString() << " = " << utilization << endl;
 
                 utilization_t = getUtilization(t, newCapacity);
-                cout << "\t\t\tUtilization cur task " << t->toString() << " would be " << utilization_t
+                cout << "\t\t\tUtilization cur/new task " << t->toString().substr(0, 25) << " would be " << utilization_t
                      << " - CPU capacity=" << newCapacity << endl;
                 cout << "\t\t\t\tScaled task WCET " << t->getRemainingWCET(newCapacity) << " DL "
                      << t->getDeadline() << endl;
 
                 if (utilization + utilization_t > 1.0) {
-                    cout << "\t\t\tTotal utilization + cur task utilization would be " << utilization << "+" <<
+                    cout << "\t\t\tTotal utilization + cur/new task utilization would be " << utilization << "+" <<
                          utilization_t << "=" << utilization + utilization_t << " >= 100% => skip OPP" << endl;
                     continue;
                 }
+                //cout << "Final core utilization running+ready+active+new task = " << utilization + utilization_t << endl;
 
                 // Ok, task can be placed on CPU c, compute power delta
 
@@ -663,10 +664,10 @@ namespace RTSim {
                 // todo remove after debug
 #include <cstdio>
 
-                printf("\t\t\tnew = (%f + %f)*%.17g=%f, old %f*%.17g=%f\n", newUtilizationIsland,
-                       utilization_t, c->getPowerConsumption(newFreq),
-                       iPowWithNewTask, oldUtilizationIsland,
-                       c->getPowerConsumption(frequency), iOldPow);
+                printf("\t\t\tnew = [(util_isl_newFreq) %f + (util_new_task) %f] * (pow_newFreq) %.17g=%f, old: (util_isl_curFreq) %f * (pow_curFreq) %.17g=%f\n", 
+                    newUtilizationIsland, utilization_t, c->getPowerConsumption(newFreq),
+                    iPowWithNewTask, oldUtilizationIsland,
+                    c->getPowerConsumption(frequency), iOldPow);
 
                 iDeltaPow = iPowWithNewTask - iOldPow;
                 assert(iPowWithNewTask >= 0.0); assert(iOldPow >= 0.0);

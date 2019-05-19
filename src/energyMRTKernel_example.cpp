@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 16;
+    int TEST_NO = 17;
 
     // dumpAllSpeeds();
     
@@ -774,21 +774,21 @@ int main(int argc, char *argv[]) {
             cpus_big[0]->setOPP(18);
             cpus_big[1]->setOPP(18);
 
-            PeriodicTask *t0_little = new PeriodicTask(10, 10 , 0, "Task0_little"); 
+            PeriodicTask *t0_little = new PeriodicTask(10, 10 , 0, "Task1_little0"); 
             t0_little->insertCode("fixed(5,bzip2);");
             t0_little->setAbort(false);
             ttrace.attachToTask(*t0_little);
             tasks.push_back(t0_little);
             kernels[0]->addTask(*t0_little, "");
 
-            PeriodicTask *t0_big0 = new PeriodicTask(10, 10 , 0, "Task0_Big0"); 
+            /*PeriodicTask *t0_big0 = new PeriodicTask(10, 10 , 0, "Task2_Big0"); 
             t0_big0->insertCode("fixed(5,bzip2);");
             t0_big0->setAbort(false);
             ttrace.attachToTask(*t0_big0);
             tasks.push_back(t0_big0);
-            kernels[0]->addTask(*t0_big0, "");
+            kernels[0]->addTask(*t0_big0, "");/*
 
-            PeriodicTask *t0_big1 = new PeriodicTask(10, 10 , 0, "Task0_Big1"); 
+            PeriodicTask *t0_big1 = new PeriodicTask(10, 10 , 0, "Task3_Big1"); 
             t0_big1->insertCode("fixed(5,bzip2);");
             t0_big1->setAbort(false);
             ttrace.attachToTask(*t0_big1);
@@ -798,8 +798,8 @@ int main(int argc, char *argv[]) {
 
 
 
-            PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskServer"); 
-            t2->insertCode("fixed(5,bzip2);");
+            PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskOnServer"); 
+            t2->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
@@ -811,6 +811,7 @@ int main(int argc, char *argv[]) {
 
 
 
+            /*
             PeriodicTask *t3 = new PeriodicTask(10, 10 , 0, "TaskBefore"); 
             t3->insertCode("fixed(1,bzip2);");
             t3->setAbort(false);
@@ -824,12 +825,14 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t4);
             tasks.push_back(t4);
             kernels[0]->addTask(*t4, "");
+            */
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 0, 999);
-            k->addForcedDispatch(tasks[1], cpus_big[0], 17, 999);
-            k->addForcedDispatch(tasks[2], cpus_big[1], 17, 999);
-            // want to find out utilization of server
+            k->addForcedDispatch(tasks[0], cpus_little[0], 0, 1);
+            k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
+            k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+            // server's free to go wherever.
+            // also, I want to find out utilization of server
             // and TaskBefore and TaskAfter
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

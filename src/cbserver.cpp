@@ -48,7 +48,6 @@ namespace RTSim {
            vt = double(SIMUL.getTime());
         else 
            vt = vtime.get_value();
-        cout << __func__ << "() vtime = " << vt << endl;
         return vt;
     }
 

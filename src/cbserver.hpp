@@ -32,8 +32,8 @@ namespace RTSim {
       
       /// Server to human-readable string
       virtual string toString() const { 
-        string s = "tasks: "; 
-        s += sched_->toString();
+        string s = "tasks: [ "; 
+        s += sched_->toString() + "]";
         return s;
       }
 
@@ -160,10 +160,6 @@ namespace RTSim {
       /// Object to human-readable string
       virtual string toString() const {
         string s = "CBServerCallingEMRTKernel. " + CBServer::toString();
-
-        AbsRTTask *firstTask = getFirstTask();
-        if (firstTask != NULL)
-          s += " with 1st task " + firstTask->toString();
 
         return s;
       } 
