@@ -25,10 +25,17 @@ namespace RTSim {
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();
-  Tick get_remaining_budget(); 
+      Tick get_remaining_budget(); 
 
-  policy_t get_policy() const { return idle_policy; }
-  void set_policy(policy_t p) { idle_policy = p; }  
+      policy_t get_policy() const { return idle_policy; }
+      void set_policy(policy_t p) { idle_policy = p; }
+      
+      /// Server to human-readable string
+      virtual string toString() const { 
+        string s = "tasks: "; 
+        s += sched_->toString();
+        return s;
+      }
 
     protected:
                 
@@ -66,6 +73,7 @@ namespace RTSim {
         void prepare_replenishment(const Tick &t);
         
         void check_repl();
+
 
     private:
         Tick Q,P,d;
@@ -106,14 +114,31 @@ namespace RTSim {
   policy_t idle_policy; 
     };
 
+
+
     class CBServerCallingEMRTKernel : public CBServer {
+    protected:
+      /// same as the parent releasing_idle() but also calls EMRTKernel
+      virtual void releasing_idle();
+
+      // same as parent, but also calls EMRTKernel
+      virtual void executing_releasing();
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
      const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched){};
 
-      /// same as the parent releasing_idle() but also calls EMRTKernel
-      virtual void releasing_idle();
 
+      AbsRTTask* getFirstTask() const {
+        AbsRTTask* t = sched_->getFirst();
+        return t;
+      }
+
+      bool isInServer(AbsRTTask* t) {
+        bool res = sched_->isFound(t);
+        return res;
+      }
+
+      /// Get WCET
       virtual double getWCET(double capacity) const {
         double wcet = 0.0;
 
@@ -124,9 +149,24 @@ namespace RTSim {
         return wcet; 
       }
 
+      /// Get remaining WCET - practically WCET
       virtual double getRemainingWCET(double capacity) const {
         return getWCET(capacity);
       }
+
+      /// Task of server ends, callback
+      virtual void onEnd(AbsRTTask *t);
+
+      /// Object to human-readable string
+      virtual string toString() const {
+        string s = "CBServerCallingEMRTKernel. " + CBServer::toString();
+
+        AbsRTTask *firstTask = getFirstTask();
+        if (firstTask != NULL)
+          s += " with 1st task " + firstTask->toString();
+
+        return s;
+      } 
 
     };
 

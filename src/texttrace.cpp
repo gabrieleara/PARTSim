@@ -39,11 +39,13 @@ namespace RTSim {
 				*/
 			CPU* c = tt->getKernel()->getProcessor(tt);
 			if (c!= NULL) {
-        unsigned int frequency = 0.0;
-        if (dynamic_cast<CPU_BL*>(c))
-          frequency = c->getFrequency();
-				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << " " << (frequency == 0.0 ? "" : "" + frequency) << " abs WCET "
-				<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
+		        string frequency_str = "";
+		      
+		        if (dynamic_cast<CPU_BL*>(c))
+		          	frequency_str = "freq " + to_string(dynamic_cast<CPU_BL*>(c)->getFrequency());
+
+				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << frequency_str << " abs WCET "
+					<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
       }
 		}
   

@@ -76,7 +76,7 @@ namespace RTSim {
       return !_queues->isEmpty(p);
     }
     
-    double EnergyMRTKernel::getUtilization(AbsRTTask* task, CPU_BL* c, double capacity) const {
+    double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getDeadline());
 
 #include <cstdio>
@@ -84,7 +84,7 @@ namespace RTSim {
         return util;
     }
 
-    double EnergyMRTKernel::getUtilization(CPU_BL* c, double freq, double capacity) const {
+    double EnergyMRTKernel::getUtilization(CPU_BL* c, double capacity) const {
         double utilization = 0.0;
         vector<AbsRTTask*> ths = getReadyTasks(c);
         AbsRTTask* runningTask = const_cast<EnergyMRTKernel*>(this)->getRunningTask(c);
@@ -92,6 +92,9 @@ namespace RTSim {
             ths.push_back(runningTask);
 
         for (AbsRTTask* th : ths) {
+            if (dynamic_cast<CBServer*>(th))
+                continue;
+
             utilization += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
             cout << "\t\t\tUtilization task already in CPU, " << th->toString() << ", is "
                  << ceil(th->getWCET(capacity)) << "/" << th->getDeadline() << " = "
@@ -100,6 +103,10 @@ namespace RTSim {
                  << "\t\t\t\ttask WCET " << ceil(th->getRemainingWCET(capacity)) << " DL "
                  << th->getDeadline() << endl;
         }
+
+        double u_active = _queues->getUtilization_active(c);
+        cout << "\t\t\tAlso adding U_active on core (for CBS server): " << u_active << endl;
+        utilization += u_active;
 
         return utilization;
     }
@@ -301,8 +308,6 @@ namespace RTSim {
         cout << ".............................." << endl;
         cout << t->toString() << " has just finished on " << p->toString() << ". Actual time = [" << SIMUL.getTime() << "]" << endl;
 
-        vector<CPU_BL*> cp = getProcessors(p->getIslandType());
-
         _sched->extract(t);
         // todo delete cout
         cout << "State of external scheduler: " << endl << _sched->toString() << endl;
@@ -383,6 +388,14 @@ namespace RTSim {
       cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
         finishingTask->deschedule();
         _queues->onRound(finishingTask, getProcessor(finishingTask));
+    }
+
+    // ---------------------------------------------------------- CBServer management
+    
+    /// Returns active utilization on CPU c. Only for debug
+    double EnergyMRTKernel::getUtilization_active(CPU_BL* c) const {
+        double u_act = _queues->getUtilization_active(c);
+        return u_act;
     }
 
     // ----------------------------------------------------------- choosing cores for tasks
@@ -616,7 +629,7 @@ namespace RTSim {
                     cout << "adsa";
 
                 // utilization on CPU c with the new frequency
-                utilization = getUtilization(c, newFreq, newCapacity);
+                utilization = getUtilization(c, newCapacity);
 
                 if (utilization > 1.0) {
                     cout << "\t\t\tCPU utilization is already >= 100% => skip OPP" << endl;
@@ -624,7 +637,7 @@ namespace RTSim {
                 } else
                     cout << "\t\t\tTotal utilization tasks already in CPU " << c->toString() << " = " << utilization << endl;
 
-                utilization_t = getUtilization(t, c, newCapacity);
+                utilization_t = getUtilization(t, newCapacity);
                 cout << "\t\t\tUtilization cur task " << t->toString() << " would be " << utilization_t
                      << " - CPU capacity=" << newCapacity << endl;
                 cout << "\t\t\t\tScaled task WCET " << t->getRemainingWCET(newCapacity) << " DL "

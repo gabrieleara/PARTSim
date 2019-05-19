@@ -196,11 +196,6 @@ namespace RTSim {
         */
         void addTask(AbsRTTask &task, const std::string &params = "");
 
-      /// temp method, am
-      AbsRTTask* getFirstTask() const {
-        return sched_->getFirst();
-      }
-
         /**  
              Inherited from AbsRTTask. This function is called
              when the server is selected to execute. 
@@ -379,11 +374,6 @@ namespace RTSim {
 
         virtual bool isContextSwitching() const { return false; }
 
-        virtual string toString() const {
-          string s;
-          s = "CBServer with 1st task: " + getFirstTask()->toString();
-          return s;
-        }
     };
 } // namespace RTSim
 

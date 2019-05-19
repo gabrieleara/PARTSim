@@ -148,6 +148,9 @@ namespace RTSim {
         /// MRTKernel this the queue are related to
         MRTKernel* _kernel;
 
+        // CBS: task -> cpu, virtual time (= time to forget its active utilization), u_active
+        map<AbsRTTask*, tuple<CPU*, Tick, double>> _active_utilizations;
+
 
         /// Post begin event for a task on a core
         void postBeginEvt(CPU* c, AbsRTTask* t, Tick when) {
@@ -210,10 +213,6 @@ namespace RTSim {
             }
         }
 
-        /// Get scheduler of a core
-        Scheduler* getScheduler(CPU* c) {
-            return _queues[c];
-        }
 
         /// Counts the tasks of a core queue
         unsigned int countTasks(CPU* c);
@@ -223,6 +222,11 @@ namespace RTSim {
 
         /// True if the core queue is empty
         bool isEmpty(CPU* c);
+        
+        /// Get scheduler of a core
+        Scheduler* getScheduler(CPU* c) {
+            return _queues[c];
+        }
 
         /// Get the task of a core queue
         virtual AbsRTTask* getFirst(CPU* c);
@@ -257,6 +261,19 @@ namespace RTSim {
             return tasks;
         }
 
+        /// Returns the U_active for tasks "releasing" on CBS server
+        double getUtilization_active(CPU* cpu) {
+          assert (cpu != NULL);
+          double u_active = 0.0;
+
+          for (const auto& elem : _active_utilizations)
+            if (get<0>(elem.second) == cpu)
+              u_active += get<2>(elem.second);
+
+          assert (u_active >= 0.0);
+          return u_active;
+        }
+
         /**
          * Add a task to the queue of a core.
          */
@@ -289,10 +306,6 @@ namespace RTSim {
         void onEnd(AbsRTTask *t, CPU* c) {
           assert(c != NULL); assert(t != NULL);
 
-          if (dynamic_cast<CBServer*>(t)) {
-            
-          }
-
           // check if there is consistency still
           AbsRTTask *tt = getRunningTask(c);
           assert(tt != NULL && t == tt);
@@ -319,11 +332,32 @@ namespace RTSim {
             }
         }
 
-      /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
-      static void onReleasingIdle(CBServer* cbs) {
-        cout << __func__ << "() for " << cbs->toString() << endl;
+        void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer *cbs) {
+            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
+            assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
 
-      }
+            Task *tt = dynamic_cast<Task*>(t);
+            // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
+            double u_active = double(tt->getWCET(cpu->getSpeed())) / (double) tt->getDeadline();
+            #include <cstdio>
+            printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
+
+            // a better map is by cpu, but then cpus can collide
+            _active_utilizations[t] = make_tuple(cpu, Tick(cbs->getVirtualTime()), u_active);
+            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << endl;
+        }
+
+        /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
+        void onReleasingIdle(CBServer* cbs) {
+            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
+            
+            for (auto& elem : _active_utilizations) {
+              if (get<1>(elem.second) == SIMUL.getTime()) {
+                cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
+                _active_utilizations.erase(elem.first);
+              }
+            }
+        }
       
       /**
        * Function called only when RRScheduler is used. It informs

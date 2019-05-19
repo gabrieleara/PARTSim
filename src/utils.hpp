@@ -21,7 +21,7 @@ namespace RTSim {
                 wl = dynamic_cast<ExecInstr*>(dynamic_cast<Task*>(t)->getInstrQueue().at(0).get())->getWorkload();
             else if (dynamic_cast<CBServer*>(t)) {
                 // get first task of server and thus its WL
-                Task *task = dynamic_cast<Task*>(dynamic_cast<CBServer*>(t)->getFirstTask());
+                Task *task = dynamic_cast<Task*>(dynamic_cast<CBServerCallingEMRTKernel*>(t)->getFirstTask());
                 cout << task->toString() << endl;
                 wl = dynamic_cast<ExecInstr*>(task->getInstrQueue().at(0).get())->getWorkload(); // this is for sure wrong. See /**
             }

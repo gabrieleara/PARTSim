@@ -43,10 +43,13 @@ namespace RTSim {
     {
         DBGENTER(_SERVER_DBG_LEV);
         DBGPRINT("Status = " << status_string[status]);
+        double vt;
         if (status == IDLE)
-        return double(SIMUL.getTime());
+           vt = double(SIMUL.getTime());
         else 
-        return vtime.get_value();
+           vt = vtime.get_value();
+        cout << __func__ << "() vtime = " << vt << endl;
+        return vt;
     }
 
     void CBServer::endRun()
@@ -55,6 +58,7 @@ namespace RTSim {
 
     void CBServer::idle_ready()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert (status == IDLE);
         status = READY;
@@ -88,6 +92,7 @@ namespace RTSim {
     // in other words, it should be possible to avoid the if.
     void CBServer::releasing_ready()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
     status = READY;
         _idleEvt.drop();
@@ -96,6 +101,7 @@ namespace RTSim {
 
     void CBServer::ready_executing()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         status = EXECUTING;
@@ -108,6 +114,7 @@ namespace RTSim {
     /*The server is preempted. */
     void CBServer::executing_ready()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         status = READY;
@@ -119,6 +126,7 @@ namespace RTSim {
     /*The sporadic task ends execution*/
     void CBServer::executing_releasing()
     {
+      cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
     
         if (status == EXECUTING) {
@@ -137,6 +145,7 @@ namespace RTSim {
 
     void CBServer::releasing_idle()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = IDLE;
     }
@@ -144,6 +153,7 @@ namespace RTSim {
     /*The server has no more bandwidth The server queue may be empty or not*/
     void CBServer::executing_recharging()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         _bandExEvt.drop();
@@ -182,23 +192,27 @@ namespace RTSim {
     /*The server has recovered its bandwidth and there is at least one task left in the queue*/
     void CBServer::recharging_ready()
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = READY;
     }
 
     void CBServer::recharging_idle()
     {
+        cout << __func__ << "()" << endl;
         assert(false);
     }
 
     void CBServer::onIdle(Event *e)
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         releasing_idle();
     }
 
     void CBServer::onReplenishment(Event *e)
     {
+        cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         
         _replEvt.drop();
@@ -308,8 +322,24 @@ namespace RTSim {
     return Tick::floor(dist);
     }
 
+    void CBServerCallingEMRTKernel::onEnd(AbsRTTask *t) {
+        cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__ << "() for " << t->toString() << endl;
+        CPU* cpu = dynamic_cast<Task*>(t)->getCPU();
+        Server::onEnd(t);
+        dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, cpu, this);
+    }
+
+    void CBServerCallingEMRTKernel::executing_releasing() {
+      CBServer::executing_releasing();
+      //cout << toString() << endl; PB: task is erased from sched_ before
+
+      //AbsRTTask* t = sched_->getFirst();
+      //dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, this);
+    }
+
     /// remember to call Server::setKernel(kern) before this
     void CBServerCallingEMRTKernel::releasing_idle() {
+      cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::releasing_idle();
 
         dynamic_cast<EnergyMRTKernel*>(kernel)->onReleasingIdle(this);

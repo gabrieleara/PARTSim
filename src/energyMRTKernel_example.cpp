@@ -36,9 +36,9 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 15;
+    int TEST_NO = 16;
 
-    dumpAllSpeeds();
+    // dumpAllSpeeds();
     
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -674,7 +674,7 @@ int main(int argc, char *argv[]) {
             cout << "Simulation finished" << endl;
             return 0;
         }
-        else if (TEST_NO = 15) {
+        else if (TEST_NO == 15) {
             /**
                 Towards servers...y màs allà!
              */
@@ -684,6 +684,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(4, 15, 15, "hard",  "server1", "FIFOSched");
+            serv->setKernel(kern);
             serv->addTask(*t2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
@@ -716,6 +717,38 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         else if (TEST_NO == 16) {
+            /**
+                Towards servers. Reproducing Mr.Cucinotta's example.
+                A server with (Q=5,T=10) and a task arriving at 0 and ending at 2, period 10.
+                Its active utilization is kept until 4.
+             */
+            cout << "blavla" << endl;
+            PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskA"); 
+            t2->insertCode("fixed(2,bzip2);");
+            t2->setAbort(false);
+            ttrace.attachToTask(*t2);
+
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
+            serv->addTask(*t2);
+            tasks.push_back(serv);
+            kernels[0]->addTask(*serv, "");
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Running simulation!" << endl;
+            SIMUL.initSingleRun();
+
+            SIMUL.run_to(20);
+
+            SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
+
+            return 0;
+        }
+        else if (TEST_NO == 17) {
             /**
                 The objective here is to find the time at which the task in the server
                 goes from releasing to idle (time_t). Also, I want to see how

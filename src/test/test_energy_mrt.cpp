@@ -1038,9 +1038,10 @@ TEST_CASE("exp15") {
     t2->insertCode("fixed(4,bzip2);");
     t2->setAbort(false);
 
-    CBServer *serv = new CBServer(4, 15, 15, "hard",  "server1", "FIFOSched");
+    CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(4, 15, 15, "hard",  "server1", "FIFOSched");
     serv->addTask(*t2);
     tasks.push_back(serv);
+    tasks.push_back(t2);
     kernels[0]->addTask(*serv, "");
 
     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
@@ -1064,6 +1065,61 @@ TEST_CASE("exp15") {
 
     SIMUL.endSingleRun();
     
+    for (int j = 0; j < tasks.size(); j++)
+        delete tasks[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+}
+
+TEST_CASE("Experiment 16") {
+    /**
+        Towards servers. Reproducing Mr.Cucinotta's example.
+        A server with (Q=5,T=10) and a task arriving at 0 and ending at 2, period 10.
+        Its active utilization is kept until 4.
+     */
+    init_sequence = 16;
+    cout << "Begin of experiment " << init_sequence << endl;
+    if (!checkRequisites( Requisite(false, false) )) return;
+
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
+    vector<RTKernel*> kernels = { kern };
+    vector<AbsRTTask*> tasks;
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+
+
+    PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskA"); 
+    t2->insertCode("fixed(2,bzip2);");
+    t2->setAbort(false);
+
+    CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
+    serv->addTask(*t2);
+    tasks.push_back(serv);
+    tasks.push_back(t2);
+    kernels[0]->addTask(*serv, "");
+
+    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+    k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+
+    SIMUL.initSingleRun();
+
+    SIMUL.run_to(3); // t=2: executing to releasing
+    REQUIRE (k->getUtilization_active(cpus_little.at(0)) == 0.0);
+    REQUIRE (k->getUtilization_active(cpus_big.at(1)) == 0.0);
+    REQUIRE (k->getUtilization_active(cpus_big.at(0)) == 0.2);
+    REQUIRE (k->getUtilization(cpus_big.at(0), 1.0) == 0.2);
+
+    SIMUL.run_to(5); // t=4: releasing to idle
+    for (CPU_BL* c : cpus_big) {
+        REQUIRE (k->getUtilization_active(c) == 0.0);
+        REQUIRE (k->getUtilization(c, 1.0) == 0.0);
+    }
+
+    SIMUL.run_to(20);
+
+    SIMUL.endSingleRun();
     for (int j = 0; j < tasks.size(); j++)
         delete tasks[j];
     delete kern;

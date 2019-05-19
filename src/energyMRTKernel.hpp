@@ -292,6 +292,7 @@ namespace RTSim {
             }
             return ss.str();
         }
+
     };
 
     /**
@@ -486,10 +487,12 @@ namespace RTSim {
         double getIslandUtilization(double capacity, IslandType  island, int *nTaskIsland);
 
         /// Returns utilization of task t on CPU_BL c. This method could be defined for tasks, but this way I can make this implementation private
-        double getUtilization(AbsRTTask* t, CPU_BL* c, double capacity) const;
+        double getUtilization(AbsRTTask* t, double capacity) const;
 
         /// Returns utilization of tasks on CPU_BL c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
-        double getUtilization(CPU_BL* c, double freq, double capacity) const;
+        double getUtilization(CPU_BL* c, double capacity) const;
+
+        double getUtilization_active(CPU_BL* c) const;
 
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
       void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
@@ -520,15 +523,22 @@ namespace RTSim {
          */
         virtual void onEnd(AbsRTTask* t);
 
-      void onReleasingIdle(CBServer *cbs) {
-        _queues->onReleasingIdle(cbs);
-      }
+        void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
+          cout << "EMRTK::" << __func__ << "()" << endl;
+          _queues->onExecutingReleasing(t, cpu, cbs);
+        }
+
+        void onReleasingIdle(CBServer *cbs) {
+          cout << "EMRTK::" << __func__ << "()" << endl;
+          _queues->onReleasingIdle(cbs);
+        }
 
       /**
        * Specifically called when RRScheduler is used, it informs the kernel that
        * finishingTask has just finished its round (slice)
        */
         void onRound(AbsRTTask* finishingTask);
+
 
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);
