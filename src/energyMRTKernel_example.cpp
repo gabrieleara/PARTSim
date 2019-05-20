@@ -722,13 +722,12 @@ int main(int argc, char *argv[]) {
                 A server with (Q=5,T=10) and a task arriving at 0 and ending at 2, period 10.
                 Its active utilization is kept until 4.
              */
-            cout << "blavla" << endl;
             PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskA"); 
             t2->insertCode("fixed(2,bzip2);");
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
-            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
@@ -775,7 +774,7 @@ int main(int argc, char *argv[]) {
             cpus_big[1]->setOPP(18);
 
             // Already-there tasks
-            PeriodicTask *t0_little = new PeriodicTask(10, 10 , 0, "Task1_little0"); 
+            PeriodicTask *t0_little = new PeriodicTask(20, 20 , 0, "Task1_little0"); 
             t0_little->insertCode("fixed(5,bzip2);");
             t0_little->setAbort(false);
             ttrace.attachToTask(*t0_little);
@@ -804,7 +803,7 @@ int main(int argc, char *argv[]) {
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
 
-            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
@@ -830,7 +829,7 @@ int main(int argc, char *argv[]) {
             */
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 0, 1); // note: normally it wouldn't fit this way
+            k->addForcedDispatch(tasks[0], cpus_little[0], 11, 1); // note: normally it wouldn't fit this way
             k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
             k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
             // server's free to go wherever.

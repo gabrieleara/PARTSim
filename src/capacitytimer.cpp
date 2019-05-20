@@ -21,6 +21,7 @@ namespace RTSim {
         assert(status == STOPPED);
         der = speed;
         last_time = SIMUL.getTime();
+	cout << "DER " << der << " LASTTIME " << last_time << endl; 
         status = RUNNING;
     }
 

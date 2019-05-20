@@ -84,10 +84,10 @@ namespace RTSim {
       }
 
       /**
-	 Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file.
+      	 Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file.
 
- 	 If you need tasks migrations, then pass also them.
-	*/
+       	 If you need tasks migrations, then pass also them.
+      	*/
       void dumpToFile(const bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string filename = "migrationManager.txt") {
         assert (alsoConsumptions && !tasks.empty());
 
@@ -492,10 +492,14 @@ namespace RTSim {
         /// Returns utilization of tasks on CPU_BL c, supposing it runs with given freq and capacity. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(CPU_BL* c, double capacity) const;
 
+        /// Returns the sum of utilization active of tasks on core c
         double getUtilization_active(CPU_BL* c) const;
 
+        /// If th is an executing CBS server, it increases utilization by the CBS server utilization and return true
+        bool getCBServer_CEMRTK_Utilization(AbsRTTask *th, double &utilization, const double capacity) const;
+
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
-      void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
+        void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
           if (filename == "")
             _e_migration_manager.dumpToFile(alsoConsumptions, tasks);
           else

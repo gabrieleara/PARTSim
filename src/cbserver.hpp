@@ -88,7 +88,7 @@ namespace RTSim {
 
         /// queue of replenishments
         /// all times are in the future!
-  std::list<repl_t> repl_queue;
+        std::list<repl_t> repl_queue;
 
         /// at the replenishment time, the replenishment is moved
         /// from the repl_queue to the capacity_queue, so 
@@ -104,14 +104,14 @@ namespace RTSim {
 
         CapacityTimer vtime;
 
-  /** if the server is in IDLE, and idle_policy==true, the
-      original CBS policy is used (that computes a new deadline
-      as t + P) 
-      If the server is IDLE and t < d and idle_policy==false, then 
-      reuses the old deadline, and computes a new "safe" budget as 
-      floor((d - vtime) * Q / P). 
-  */
-  policy_t idle_policy; 
+        /** if the server is in IDLE, and idle_policy==true, the
+            original CBS policy is used (that computes a new deadline
+            as t + P) 
+            If the server is IDLE and t < d and idle_policy==false, then 
+            reuses the old deadline, and computes a new "safe" budget as 
+            floor((d - vtime) * Q / P). 
+        */
+        policy_t idle_policy; 
     };
 
 
