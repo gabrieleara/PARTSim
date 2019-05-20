@@ -82,12 +82,18 @@ namespace RTSim {
       addTaskEvent(tt, when, WL_CHANGE, c);
     }
 
-    vector<MigrationTaskRow> getEventsForTask(AbsRTTask* tt) {
+    vector<MigrationTaskRow> getEventsForTask(AbsRTTask* tt) const {
       vector<MigrationTaskRow> rows;
       for (const auto& elem : _tasks_history)
         if (elem.task == tt)
           rows.push_back(elem);
       return rows;
+    }
+
+    /// Returns true if the task has some migrations
+    bool isMigrated(AbsRTTask* t) const {
+      vector<MigrationTaskRow> res = getEventsForTask(t);
+      return !res.empty();
     }
 
     string toString() const {
@@ -343,7 +349,12 @@ namespace RTSim {
             printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
 
             // a better map is by cpu, but then cpus can collide
-            _active_utilizations[t] = make_tuple(cpu, t->getLastArrival() + Tick(cbs->getVirtualTime()), u_active);
+            Tick vt = Tick(cbs->getVirtualTime());
+            if ( double(vt) < double(SIMUL.getTime()) ) {
+              cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << endl;
+              return;
+            }
+            _active_utilizations[t] = make_tuple(cpu, vt, u_active);
             cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
         }
 
@@ -398,15 +409,19 @@ namespace RTSim {
               return getRunningTask(c) != NULL;
             }
             else if (dynamic_cast<EDFScheduler*>(_queues[c])){
+                if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
+                    return false;
                 return getRunningTask(c) != NULL && getRunningTask(c) != t;
             }
             assert(false);  // add your choice
             return false;
         }
 
-      bool shouldSchedule(CPU* c, AbsRTTask *t) {
-        return t!=NULL;
-      }
+        bool shouldSchedule(CPU* c, AbsRTTask *t) {
+          if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
+            return false;          
+          return t!=NULL;
+        }
 
         virtual void newRun() {}
 

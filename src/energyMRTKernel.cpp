@@ -551,7 +551,7 @@ namespace RTSim {
             if (isDispatching(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
-                cout << "\tTask has already been dispatched, but dispatching is not complete => skip" << endl;
+                cout << "\tTask has already been dispatched, but dispatching is not complete => skip (you\'ll still see desched&sched evt, to trace tasks)" << endl;
                 continue;
             }
 
