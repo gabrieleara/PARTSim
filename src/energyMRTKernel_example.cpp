@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 17;
+    int TEST_NO = 18;
 
     // dumpAllSpeeds();
     
@@ -749,20 +749,11 @@ int main(int argc, char *argv[]) {
         }
         else if (TEST_NO == 17) {
             /**
-                The objective here is to find the time at which the task in the server
-                goes from releasing to idle (time_t). Also, I want to see how
-                cores utilization is computed (=> leave 2 bigs and 1 little enabled).
+                The objective is to understand if utilizations are 
+                computed correctly.
 
-                Given that time, 2 experiments are performed. In the first one, another
-                task comes before time_t. In the second one, it comes afterwards.
-                You should observe that, in the first case, the core utilization
-                considers the releasing task; in the other, the idle task is not considered.
-
-                In both cases, the task remains in the core queue until time_t. Later, it
-                goes back to the general scheduler.
-                TODO ADD A TASK ON BIG[0] AND SEE IF IT'S CONSIDERED
-
-                Server and tasks run on the same core, a big max freq for convenience.
+                Some tasks are placed on all available cores.
+                Let's see where the CBS is placed according to utilizations.
               */
             cpus_little[1]->toggleDisabled();
             cpus_little[2]->toggleDisabled();
@@ -810,37 +801,130 @@ int main(int argc, char *argv[]) {
 
 
 
-
-            /*
-            // Tasks coming freely: the dynamic situations
-            PeriodicTask *t3 = new PeriodicTask(10, 10 , 0, "TaskBefore"); 
-            t3->insertCode("fixed(1,bzip2);");
-            t3->setAbort(false);
-            ttrace.attachToTask(*t3);
-            tasks.push_back(t3);
-            kernels[0]->addTask(*t3, "");
-
-            PeriodicTask *t4 = new PeriodicTask(10, 10 , 0, "TaskAfter"); 
-            t4->insertCode("fixed(1,bzip2);");
-            t4->setAbort(false);
-            ttrace.attachToTask(*t4);
-            tasks.push_back(t4);
-            kernels[0]->addTask(*t4, "");
-            */
-
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 11, 1); // note: normally it wouldn't fit this way
+            k->addForcedDispatch(tasks[0], cpus_little[0], 11, 1); // note: normally they wouldn't fit this way
             k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
             k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
             // server's free to go wherever.
-            // also, I want to find out utilization of server
-            // and TaskBefore and TaskAfter
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
             cout << "Running simulation!" << endl;
             SIMUL.initSingleRun();
             
             SIMUL.run_to(50);
+
+            SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
+
+            return 0;
+        }
+        else if (TEST_NO == 18) {
+            /**
+                The objective here is to find the time at which the task in the server
+                goes from releasing to idle (time_t). Also, I want to see how
+                cores utilization is computed (=> leave 2 bigs and 1 little enabled).
+
+                Given that time, 3 experiments are performed. In the first one, another
+                task comes before the server task's over. In the second one, it comes before time_t.
+                In the third one, it comes afterwards.
+                You should observe that, in the first case, the core utilization
+                considers server task; in the second one, the releasing task; in the other,
+                the idle task is not considered.
+
+                In all cases, the server task remains in the core queue until time_t. Later, it
+                goes back to the general scheduler.
+
+                Server and tasks run on the same core, a big max freq for convenience.
+              */
+            cpus_little[0]->toggleDisabled();
+            cpus_little[1]->toggleDisabled();
+            cpus_little[2]->toggleDisabled();
+            cpus_little[3]->toggleDisabled();
+            cpus_big[2]->toggleDisabled();
+            cpus_big[3]->toggleDisabled();
+
+            cpus_big[0]->setOPP(18);
+            cpus_big[1]->setOPP(18);
+
+            vector<int> activ = { 6, 8, 12 };
+
+            // Already-there tasks
+            PeriodicTask *t0_little = new PeriodicTask(20, 20 , 0, "Task1_little0"); 
+            t0_little->insertCode("fixed(8,bzip2);");
+            t0_little->setAbort(false);
+            ttrace.attachToTask(*t0_little);
+            tasks.push_back(t0_little);
+            kernels[0]->addTask(*t0_little, "");
+
+            PeriodicTask *t0_big0 = new PeriodicTask(10, 10 , 0, "Task2_Big0"); 
+            t0_big0->insertCode("fixed(5,bzip2);");
+            t0_big0->setAbort(false);
+            ttrace.attachToTask(*t0_big0);
+            tasks.push_back(t0_big0);
+            kernels[0]->addTask(*t0_big0, "");
+
+            PeriodicTask *t0_big1 = new PeriodicTask(30, 30 , 0, "Task3_Big1"); 
+            t0_big1->insertCode("fixed(15,bzip2);");
+            t0_big1->setAbort(false);
+            ttrace.attachToTask(*t0_big1);
+            tasks.push_back(t0_big1);
+            kernels[0]->addTask(*t0_big1, "");
+            
+
+
+            // CBS server tasks
+            PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskOnServer"); 
+            t2->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
+            t2->setAbort(false);
+            ttrace.attachToTask(*t2);
+
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
+            serv->addTask(*t2);
+            tasks.push_back(serv);
+            kernels[0]->addTask(*serv, "");
+
+
+
+            // Tasks coming freely: the dynamic situations
+            PeriodicTask *t5 = new PeriodicTask(30, 30 , 0, "TaskDuring"); 
+            t5->insertCode("fixed(1,bzip2);");
+            t5->setAbort(false);
+            ttrace.attachToTask(*t5);
+            tasks.push_back(t5);
+            kernels[0]->addTask(*t5, "");
+
+            PeriodicTask *t3 = new PeriodicTask(30, 30 , 0, "TaskBefore"); 
+            t3->insertCode("fixed(1,bzip2);");
+            t3->setAbort(false);
+            ttrace.attachToTask(*t3);
+            tasks.push_back(t3);
+            kernels[0]->addTask(*t3, "");
+
+            PeriodicTask *t4 = new PeriodicTask(30, 30 , 0, "TaskAfter"); 
+            t4->insertCode("fixed(1,bzip2);");
+            t4->setAbort(false);
+            ttrace.attachToTask(*t4);
+            tasks.push_back(t4);
+            kernels[0]->addTask(*t4, "");
+            
+
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
+            k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
+            k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+            // server's free to go wherever.
+
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Running simulation!" << endl;
+            SIMUL.initSingleRun();
+
+            t5->activate(Tick(activ[0]));
+            t3->activate(Tick(activ[1]));
+            t4->activate(Tick(activ[2]));
+            
+            SIMUL.run_to(21);
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

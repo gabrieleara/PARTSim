@@ -117,12 +117,15 @@ namespace RTSim {
         double utilizationIsland = 0.0;
 
         for (CPU_BL* c1 : getProcessors(island)) {
+            cout << "\t\t\t\t" << c1->getName() << ":" << endl;
+
             vector<AbsRTTask*> tasks = getReadyTasks(c1);
             AbsRTTask* runningTask = getRunningTask(c1);
             if (runningTask != NULL) {
                 if (!getCBServer_CEMRTK_Utilization(runningTask, utilizationIsland, capacity)) {
                     utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
-                    cout << "\t\t\t\trunning task " << runningTask->toString() << endl;
+                    cout << ceil(runningTask->getRemainingWCET(capacity)) << " " << double(runningTask->getDeadline()) << endl;
+                    cout << "\t\t\t\trunning task " << runningTask->toString() << " -> isl util=" << utilizationIsland << endl;
                     if (nTasksIsland != NULL)
                         *nTasksIsland = *nTasksIsland + 1;
                 }
@@ -133,8 +136,8 @@ namespace RTSim {
 
                 if (getDispatchingProcessor(th)->getIslandType() == c1->getIslandType() ||
                     dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) { // todo maybe guard removable
-                    cout << "\t\t\t\tready task " << th->toString() << endl;
                     utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
+                    cout << "\t\t\t\tready task " << th->toString() << " -> isl util=" << utilizationIsland << endl;
                     if (nTasksIsland != NULL)
                         *nTasksIsland = *nTasksIsland + 1;
                 }
@@ -142,7 +145,7 @@ namespace RTSim {
 
             double u_active_c1 = _queues->getUtilization_active(c1);
             utilizationIsland += u_active_c1;
-            cout << "\t\t\t\tutil active=" << u_active_c1 << " (for over island cores)" << endl;
+            cout << "\t\t\t\tutil active=" << u_active_c1 << " (" << c1->getName() << ") -> isl util=" << utilizationIsland << endl;
         }
 
         cout << "\t\t\t\tisland utilization=" << utilizationIsland << endl;
@@ -159,7 +162,7 @@ namespace RTSim {
             return true;
 
         utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
-        cout << "\t\t\t\tCBS server is execting. utilization increased to " << utilization << endl;
+        cout << "\t\t\t\tCBS server is executing. utilization increased to " << utilization << endl;
         return true;
     }
 

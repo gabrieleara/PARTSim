@@ -273,7 +273,7 @@ namespace RTSim
     // pm belongs to CPU_BL and not to Island_BL because CPUs may execute different workloads
     CPUModel* _pm;
 
-    /// for debug. CPU can be disabled, so that the scheduler won't dispatch new any task
+    /// for debug. CPU can be disabled, so that the scheduler won't dispatch any new task (but the forced ones)
     bool _disabled;
 
     virtual void updateCPUModel();
