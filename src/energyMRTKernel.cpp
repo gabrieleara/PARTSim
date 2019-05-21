@@ -595,6 +595,7 @@ namespace RTSim {
             DBGPRINT("Trying to scale up CPUs");
             cout << endl << "Trying to scale up CPUs" << endl;
             vector<struct ConsumptionTable> iDeltaPows;
+            cout << endl << "\t------------" << endl << "\tCurrent situation: " << endl << "\t" << _queues->toString() << "\t------------" << endl;
 
             for (CPU_BL* c : cpus) {
                 tryTaskOnCPU_BL(t, c, iDeltaPows);

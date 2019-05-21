@@ -50,11 +50,13 @@ cbserver.o: ./trace.hpp ./gevent.hpp ./abskernel.hpp ./abstask.hpp ./cpu.hpp
 cbserver.o: ./timer.hpp ./powermodel.hpp ./task.hpp ./randomvar.hpp
 cbserver.o: ./cloneable.hpp ./kernel.hpp ./kernevt.hpp ./taskevt.hpp
 cbserver.o: ./feedback.hpp ./taskexc.hpp ./scheduler.hpp resmanager.hpp
-cbserver.o: ./capacitytimer.hpp
+cbserver.o: ./capacitytimer.hpp energyMRTKernel.hpp mrtkernel.hpp rttask.hpp
+cbserver.o: ./regvar.hpp multi_cores_scheds.hpp ./exeinstr.hpp ./instr.hpp
+cbserver.o: utils.hpp ./rrsched.hpp ./edfsched.hpp
 cpu.o: ./cpu.hpp ./trace.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp
 cpu.o: ./strtoken.hpp ./timer.hpp ./simul.hpp ./basestat.hpp
 cpu.o: ./debugstream.hpp ./entity.hpp ./event.hpp ./particle.hpp ./plist.hpp
-cpu.o: ./gevent.hpp ./powermodel.hpp ./abstask.hpp ./energyMRTKernel.hpp
+cpu.o: ./gevent.hpp ./powermodel.hpp ./abstask.hpp energyMRTKernel.hpp
 cpu.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp ./kernevt.hpp ./task.hpp
 cpu.o: ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp ./feedback.hpp
 cpu.o: ./taskexc.hpp rttask.hpp ./regvar.hpp multi_cores_scheds.hpp
@@ -70,7 +72,7 @@ edfsched.o: ./strtoken.hpp ./debugstream.hpp ./entity.hpp ./event.hpp
 edfsched.o: ./particle.hpp ./trace.hpp ./abstask.hpp ./cpu.hpp ./timer.hpp
 edfsched.o: ./gevent.hpp ./powermodel.hpp ./kernel.hpp ./abskernel.hpp
 edfsched.o: ./kernevt.hpp
-energyMRTKernel.o: ./energyMRTKernel.hpp mrtkernel.hpp ./kernel.hpp
+energyMRTKernel.o: energyMRTKernel.hpp mrtkernel.hpp ./kernel.hpp
 energyMRTKernel.o: ./baseexc.hpp ./entity.hpp ./basetype.hpp ./tick.hpp
 energyMRTKernel.o: ./strtoken.hpp ./abskernel.hpp ./abstask.hpp ./cpu.hpp
 energyMRTKernel.o: ./trace.hpp ./timer.hpp ./simul.hpp ./basestat.hpp
@@ -94,7 +96,7 @@ energyMRTKernel_example.o: ./feedback.hpp ./taskexc.hpp ./edfsched.hpp
 energyMRTKernel_example.o: ./scheduler.hpp ./jtrace.hpp ./traceevent.hpp
 energyMRTKernel_example.o: ./texttrace.hpp rttask.hpp ./regvar.hpp
 energyMRTKernel_example.o: ./json_trace.hpp ./tracepower.hpp ./instr.hpp
-energyMRTKernel_example.o: ./energyMRTKernel.hpp multi_cores_scheds.hpp
+energyMRTKernel_example.o: energyMRTKernel.hpp multi_cores_scheds.hpp
 energyMRTKernel_example.o: ./exeinstr.hpp utils.hpp cbserver.hpp server.hpp
 energyMRTKernel_example.o: resmanager.hpp ./capacitytimer.hpp ./rrsched.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
@@ -208,6 +210,7 @@ mrtkernel.o: ./timer.hpp ./gevent.hpp ./powermodel.hpp ./abstask.hpp
 mrtkernel.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp ./kernevt.hpp
 mrtkernel.o: ./task.hpp ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
 mrtkernel.o: ./feedback.hpp ./taskexc.hpp resmanager.hpp ./scheduler.hpp
+mrtkernel.o: cbserver.hpp server.hpp ./capacitytimer.hpp
 multi_cores_scheds.o: multi_cores_scheds.hpp ./entity.hpp ./baseexc.hpp
 multi_cores_scheds.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp
 multi_cores_scheds.o: ./scheduler.hpp ./plist.hpp ./simul.hpp ./basestat.hpp
@@ -288,7 +291,7 @@ rrsched.o: ./entity.hpp ./event.hpp ./particle.hpp ./trace.hpp ./gevent.hpp
 rrsched.o: ./scheduler.hpp ./abstask.hpp ./cpu.hpp ./timer.hpp
 rrsched.o: ./powermodel.hpp ./task.hpp ./randomvar.hpp ./cloneable.hpp
 rrsched.o: ./kernel.hpp ./abskernel.hpp ./kernevt.hpp ./taskevt.hpp
-rrsched.o: ./feedback.hpp ./taskexc.hpp ./energyMRTKernel.hpp mrtkernel.hpp
+rrsched.o: ./feedback.hpp ./taskexc.hpp energyMRTKernel.hpp mrtkernel.hpp
 rrsched.o: rttask.hpp ./regvar.hpp multi_cores_scheds.hpp ./exeinstr.hpp
 rrsched.o: ./instr.hpp utils.hpp cbserver.hpp server.hpp resmanager.hpp
 rrsched.o: ./capacitytimer.hpp ./edfsched.hpp

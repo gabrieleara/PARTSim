@@ -194,7 +194,7 @@ namespace RTSim {
 
            @see Scheduler
         */
-        void addTask(AbsRTTask &task, const std::string &params = "");
+        virtual void addTask(AbsRTTask &task, const std::string &params = "");
 
         /**  
              Inherited from AbsRTTask. This function is called
@@ -314,7 +314,7 @@ namespace RTSim {
 
         void onSched(Event *);
                 
-        void onDesched(Event *);
+        virtual void onDesched(Event *);
 
         /** 
             This function is invoked if the server deadline is

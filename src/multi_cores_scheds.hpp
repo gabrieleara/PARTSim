@@ -234,8 +234,11 @@ namespace RTSim {
             return _queues[c];
         }
 
-        /// Get the task of a core queue
+        /// Get the first (running or ready) task of a core queue
         virtual AbsRTTask* getFirst(CPU* c);
+
+        /// Get the first ready task of a core or NULL if no ready tasks are available
+        virtual AbsRTTask* getFirstReady(CPU* c);
 
         /// Get processor where task is running
         CPU *getProcessor(AbsRTTask *t) const {
@@ -323,7 +326,10 @@ namespace RTSim {
         /**
            To be called when migration finishes. 
            It deletes ctx switch events on the original core and
-           prepares for context switch on the final core (= chosen after migration)
+           prepares for context switch on the final core (= chosen after migration).
+
+           Migration is not specifically meant for big-littles, it can also be
+           a task movement between 2 cores. That's why function is here
         */
         void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) {
             assert(t != NULL); assert(original != NULL); assert(final != NULL);
@@ -358,16 +364,6 @@ namespace RTSim {
             cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
 
             cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() - 1 << endl;
-            /*if (cbs->getTasks().size() - 1 == 0) {
-              /**
-                Policy for CBS servers:
-                If the task on a CBS server ends and the server gets empty,
-                schedule ready tasks on the core (i.e., deschedule & schedule server)
-                /
-              cout << "\tServer's got empty. Yielding server (= schedule a ready of core)" << endl;
-              makeReady(cpu);
-              t->deschedule();
-            }*/
         }
 
         /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
@@ -404,10 +400,6 @@ namespace RTSim {
         void schedule(CPU* c) {
             assert(c != NULL);
             AbsRTTask *t = getFirst(c);
-            if (double(SIMUL.getTime()) == 100.0 && t!=NULL&&t->toString().find( "T12_task1") != string::npos) {
-              cout << "";
-              getFirst(c);
-            }
 
             if (shouldDeschedule(c, t))
                 makeReady(c);
@@ -419,9 +411,28 @@ namespace RTSim {
         bool shouldDeschedule(CPU *c, AbsRTTask *t);
 
         bool shouldSchedule(CPU* c, AbsRTTask *t) {
-          if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
+          CBServer *cbs = dynamic_cast<CBServer*>(t);
+          if ( cbs != NULL && (getRunningTask(c) == t || cbs->isYielding()) )
             return false;          
           return t!=NULL;
+        }
+
+        /// Executes next ready task on core c
+        void yield(CPU* c) {
+            assert(c != NULL); // running task might have already ended 
+
+            cout << "\tCore status: " << _queues[c]->toString() << endl;
+            AbsRTTask *nextReady = getFirstReady(c);
+            if (nextReady != NULL) {
+              //todo remove
+              cout << "\tYielding in favour of " << nextReady->toString() << endl;
+              AbsRTTask* runningTask = getRunningTask(c);
+              if (runningTask != NULL) {
+                makeReady(c);
+                runningTask->deschedule();
+              }
+              makeRunning(nextReady, c);
+            }
         }
 
         virtual void newRun() {}

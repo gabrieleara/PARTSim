@@ -858,7 +858,7 @@ int main(int argc, char *argv[]) {
             tasks.push_back(t0_little);
             kernels[0]->addTask(*t0_little, "");
 
-            PeriodicTask *t0_big0 = new PeriodicTask(10, 10 , 0, "Task2_Big0"); 
+            PeriodicTask *t0_big0 = new PeriodicTask(10, 10, 0, "Task2_Big0"); 
             t0_big0->insertCode("fixed(5,bzip2);");
             t0_big0->setAbort(false);
             ttrace.attachToTask(*t0_big0);
@@ -870,9 +870,17 @@ int main(int argc, char *argv[]) {
             t0_big1->insertCode("fixed(15,bzip2);");
             t0_big1->setAbort(false);
             ttrace.attachToTask(*t0_big1);
-            jtrace.attachToTask(*t0_little);
+            jtrace.attachToTask(*t0_big1);
             tasks.push_back(t0_big1);
             kernels[0]->addTask(*t0_big1, "");
+
+            PeriodicTask *t1_big1 = new PeriodicTask(31, 31 , 0, "TaskReady_Big1"); 
+            t1_big1->insertCode("fixed(1,bzip2);");
+            t1_big1->setAbort(false);
+            ttrace.attachToTask(*t1_big1);
+            jtrace.attachToTask(*t1_big1);
+            tasks.push_back(t1_big1);
+            kernels[0]->addTask(*t1_big1, "");
             
 
 
@@ -892,7 +900,7 @@ int main(int argc, char *argv[]) {
 
             // Tasks coming freely: the dynamic situations
             PeriodicTask *t5 = new PeriodicTask(30, 30 , 0, "TaskDuring"); 
-            t5->insertCode("fixed(1,bzip2);");
+            t5->insertCode("fixed(2,bzip2);");
             t5->setAbort(false);
             ttrace.attachToTask(*t5);
             tasks.push_back(t5);
@@ -921,6 +929,7 @@ int main(int argc, char *argv[]) {
             k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
             k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
             k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+            k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);
             // server's free to go wherever.
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -931,7 +940,9 @@ int main(int argc, char *argv[]) {
             t3->activate(Tick(activ[1]));
             t4->activate(Tick(activ[2]));
             
-            SIMUL.run_to(21);
+            SIMUL.run_to(8);//21);
+            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
+            k->print();
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

@@ -21,8 +21,10 @@
 #include "rrsched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
+#define EMRTK_BALANCE_ENABLED       1 /* Can't imagine disabling it, but so policy is in the list :) */
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
 #define EMRTK_MIGRATE_ENABLED       0
+#define EMRTK_CBS_YIELD_ENABLED     1
 
 namespace RTSim {
 
@@ -234,14 +236,14 @@ namespace RTSim {
         }
 
         /// Remove the first task of a core queue
-        virtual void removeFirstFromQueue(CPU_BL* c) {
-            AbsRTTask *t = getFirst(c);
+        virtual void removeFirstReadyFromQueue(CPU_BL* c) {
+            AbsRTTask *t = getFirstReady(c);
             removeFromQueue(c, t);
         }
 
         /// Remove a specific task from a core queue
         virtual void removeFromQueue(CPU_BL* c, AbsRTTask* t) {
-            MultiCoresScheds::removeFirstFromQueue(c);
+            MultiCoresScheds::removeFirstFromQueue(c); //todo bug? first...
             _opps.erase(t);
             assert(_opps.find(t) == _opps.end());
         }
@@ -495,7 +497,7 @@ namespace RTSim {
         /// Returns the sum of utilization active of tasks on core c
         double getUtilization_active(CPU_BL* c) const;
 
-        /// If th is an executing CBS server, it increases utilization by the CBS server utilization and return true
+        /// If th is an executing CBS server CEMRTK., it increases utilization by the CBS server utilization and return true
         bool getCBServer_CEMRTK_Utilization(AbsRTTask *th, double &utilization, const double capacity) const;
 
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
@@ -522,27 +524,43 @@ namespace RTSim {
         /// called when OPP changes on an island
         void onOppChanged(unsigned int curropp, Island_BL* island);
 
-        /**
-         * Invoked when a task ends
-         */
+        ///Invoked when a task ends
         virtual void onEnd(AbsRTTask* t);
 
+        /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
           _queues->onExecutingReleasing(t, cpu, cbs);
+
+
+          if (cbs->getTasks().size() - 1 == 0) {
+            /**
+              Policy for CBS servers:
+              If the task on a CBS server ends and the server gets empty,
+              schedule ready tasks on the core (i.e., deschedule & schedule server)
+              */
+            if (!EMRTK_CBS_YIELD_ENABLED) {
+              cout << "CBS server yielding policy disabled => yeilding skip";
+              return;
+            }
+
+            cout << "\tServer's got empty. Server yeilds (= schedule a ready task of core)" << endl;
+            _queues->yield(cpu);
+            cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
+          }
         }
 
+        /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
           _queues->onReleasingIdle(cbs);
         }
 
-      /**
-       * Specifically called when RRScheduler is used, it informs the kernel that
-       * finishingTask has just finished its round (slice)
-       */
+        /**
+         * Specifically called when RRScheduler is used, it informs the kernel that
+         * finishingTask has just finished its round (slice)
+         */
         void onRound(AbsRTTask* finishingTask);
-
 
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);

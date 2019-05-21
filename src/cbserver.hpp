@@ -30,11 +30,34 @@ namespace RTSim {
         policy_t get_policy() const { return idle_policy; }
         void set_policy(policy_t p) { idle_policy = p; }
 
+// ------------------------------------ functions added by me todo
+
+      /**
+       Add a new task to this server, with parameters
+       specified in params.
+               
+       @params task the task to be added
+       @params the scheduling parameters
+
+       @see Scheduler
+      */
+      virtual void addTask(AbsRTTask &task, const std::string &params = "") {
+        Server::addTask(task, params);
+
+        _yielding = false;
+      }
+
         /// Returns all tasks currently in the scheduler
         vector<AbsRTTask*> getTasks() const { return sched_->getTasks(); }
 
         /// Tells if scheduler currently holds any task.
-        bool isEmpty() const { return sched_->isEmpty(); }
+        bool isEmpty() const {
+          // todo check if it works in the general case. I haven't checked APIs..
+          unsigned int numTasks = getTasks().size();
+          if (getStatus() == ServerStatus::EXECUTING || getStatus() == ServerStatus::RELEASING)
+            numTasks--;
+          return numTasks == 0;
+        }
         
         /// Tells if task is in scheduler
         bool isInServer(AbsRTTask* t) {
@@ -45,12 +68,21 @@ namespace RTSim {
             return res;
         }
 
+        bool isYielding() const { return _yielding; }
+
+        /// The server yield the core where it's running
+        void yield() {
+          _yielding = true;
+        }
+
         /// Server to human-readable string
         virtual string toString() const { 
           string s = "tasks: [ "; 
           s += sched_->toString() + "]";
           return s;
         }
+
+// ------------------------------------- end fabm todo
 
     protected:
                 
@@ -127,10 +159,19 @@ namespace RTSim {
             floor((d - vtime) * Q / P). 
         */
         policy_t idle_policy; 
+
+        /// True if CBS server has decided to yield core (= to leave it to ready tasks)
+        bool _yielding;
     };
 
 
+    /**
+      CBS server augmented specifically for EnergyMRTKernel.
+      EMRTK. needs to know WCET to compute utilizations, and some callbacks to
+      make decisions.
 
+      Acronym: CBServer CEMRTK.
+      */
     class CBServerCallingEMRTKernel : public CBServer {
     protected:
       /// same as the parent releasing_idle() but also calls EMRTKernel
@@ -140,8 +181,7 @@ namespace RTSim {
       virtual void executing_releasing();
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
-     const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched){};
-
+        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched){ };
 
       AbsRTTask* getFirstTask() const {
         AbsRTTask* t = sched_->getFirst();
@@ -156,7 +196,7 @@ namespace RTSim {
           wcet += double(dynamic_cast<Task*>(t)->getWCET());
 
         wcet = wcet / capacity;
-        return wcet; 
+        return wcet;
       }
 
       /// Get remaining WCET - practically WCET
@@ -166,6 +206,9 @@ namespace RTSim {
 
       /// Task of server ends, callback
       virtual void onEnd(AbsRTTask *t);
+
+      /// On deschedule event (of server - and of tasks in it?)
+      virtual void onDesched(Event *e);
 
       /// Object to human-readable string
       virtual string toString() const {

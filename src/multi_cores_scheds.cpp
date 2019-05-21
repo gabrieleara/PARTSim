@@ -90,6 +90,13 @@ namespace RTSim {
         return _queues[c]->getFirst();
     }
 
+    AbsRTTask* MultiCoresScheds::getFirstReady(CPU* c) {
+        assert(c != NULL);
+
+        AbsRTTask *t = _queues[c]->getTaskN(1);
+        return t;
+    }
+
     vector<AbsRTTask*> MultiCoresScheds::getAllTasksInQueue(CPU* c) {
         vector<AbsRTTask*> tasks;
 
