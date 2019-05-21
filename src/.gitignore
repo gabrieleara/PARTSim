@@ -5,6 +5,8 @@ cmake-build-debug/
 *.swp
 *.o
 *.txt
+*.json
+*.trc
 t.txt.save
 *#*
 example
