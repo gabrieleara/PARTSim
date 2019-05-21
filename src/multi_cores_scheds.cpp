@@ -131,6 +131,19 @@ namespace RTSim {
         return i;
     }
 
+    bool MultiCoresScheds::shouldDeschedule(CPU *c, AbsRTTask *t) {
+        if (dynamic_cast<RRScheduler*>(_queues[c])) {
+            return getRunningTask(c) != NULL;
+        }
+        else if (dynamic_cast<EDFScheduler*>(_queues[c])){
+            if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
+                return false;
+            return getRunningTask(c) != NULL && getRunningTask(c) != t;
+        }
+        assert(false);  // add your choice
+        return false;
+    }
+
     void MultiCoresScheds::postEvt(CPU* c, AbsRTTask* t, Tick when, bool endevt) {
         assert(c != NULL); assert(t != NULL); assert(when >= SIMUL.getTime());
 

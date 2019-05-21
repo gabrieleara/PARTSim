@@ -20,6 +20,7 @@
 #include <resmanager.hpp>
 #include <scheduler.hpp>
 #include <task.hpp>
+#include <cbserver.hpp>
 
 namespace RTSim {
 
@@ -165,6 +166,10 @@ namespace RTSim {
         RTKernel::addTask(t, param);
         _m_oldExe[&t] = NULL;
         _m_dispatched[&t] = NULL;
+
+        CBServer* cbs = dynamic_cast<CBServer*>(&t);
+        if (cbs != nullptr)
+            _servers.push_back(cbs);
     }
 
     CPU *MRTKernel::getProcessor(const AbsRTTask *t) const

@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
 
         string task_name;
         TextTrace ttrace("trace" + to_string(TEST_NO) + ".txt");
-        //JSONTrace jtrace("trace.json");
+        JSONTrace jtrace("trace" + to_string(TEST_NO) + ".json");
         cout << "Test to perform is " << TEST_NO << endl;
 
         if (TEST_NO == 0) {
@@ -854,6 +854,7 @@ int main(int argc, char *argv[]) {
             t0_little->insertCode("fixed(8,bzip2);");
             t0_little->setAbort(false);
             ttrace.attachToTask(*t0_little);
+            jtrace.attachToTask(*t0_little);
             tasks.push_back(t0_little);
             kernels[0]->addTask(*t0_little, "");
 
@@ -861,6 +862,7 @@ int main(int argc, char *argv[]) {
             t0_big0->insertCode("fixed(5,bzip2);");
             t0_big0->setAbort(false);
             ttrace.attachToTask(*t0_big0);
+            jtrace.attachToTask(*t0_big0);
             tasks.push_back(t0_big0);
             kernels[0]->addTask(*t0_big0, "");
 
@@ -868,6 +870,7 @@ int main(int argc, char *argv[]) {
             t0_big1->insertCode("fixed(15,bzip2);");
             t0_big1->setAbort(false);
             ttrace.attachToTask(*t0_big1);
+            jtrace.attachToTask(*t0_little);
             tasks.push_back(t0_big1);
             kernels[0]->addTask(*t0_big1, "");
             
@@ -878,6 +881,7 @@ int main(int argc, char *argv[]) {
             t2->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
             t2->setAbort(false);
             ttrace.attachToTask(*t2);
+            jtrace.attachToTask(*t2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
@@ -892,12 +896,14 @@ int main(int argc, char *argv[]) {
             t5->setAbort(false);
             ttrace.attachToTask(*t5);
             tasks.push_back(t5);
+            jtrace.attachToTask(*t5);
             kernels[0]->addTask(*t5, "");
 
             PeriodicTask *t3 = new PeriodicTask(30, 30 , 0, "TaskBefore"); 
             t3->insertCode("fixed(1,bzip2);");
             t3->setAbort(false);
             ttrace.attachToTask(*t3);
+            jtrace.attachToTask(*t3);
             tasks.push_back(t3);
             kernels[0]->addTask(*t3, "");
 
@@ -905,6 +911,7 @@ int main(int argc, char *argv[]) {
             t4->insertCode("fixed(1,bzip2);");
             t4->setAbort(false);
             ttrace.attachToTask(*t4);
+            jtrace.attachToTask(*t4);
             tasks.push_back(t4);
             kernels[0]->addTask(*t4, "");
             

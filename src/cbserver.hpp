@@ -25,17 +25,32 @@ namespace RTSim {
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();
-      Tick get_remaining_budget(); 
+        Tick get_remaining_budget(); 
 
-      policy_t get_policy() const { return idle_policy; }
-      void set_policy(policy_t p) { idle_policy = p; }
-      
-      /// Server to human-readable string
-      virtual string toString() const { 
-        string s = "tasks: [ "; 
-        s += sched_->toString() + "]";
-        return s;
-      }
+        policy_t get_policy() const { return idle_policy; }
+        void set_policy(policy_t p) { idle_policy = p; }
+
+        /// Returns all tasks currently in the scheduler
+        vector<AbsRTTask*> getTasks() const { return sched_->getTasks(); }
+
+        /// Tells if scheduler currently holds any task.
+        bool isEmpty() const { return sched_->isEmpty(); }
+        
+        /// Tells if task is in scheduler
+        bool isInServer(AbsRTTask* t) {
+            if (dynamic_cast<Server*>(t))
+              return false;
+
+            bool res = sched_->isFound(t);
+            return res;
+        }
+
+        /// Server to human-readable string
+        virtual string toString() const { 
+          string s = "tasks: [ "; 
+          s += sched_->toString() + "]";
+          return s;
+        }
 
     protected:
                 
@@ -131,11 +146,6 @@ namespace RTSim {
       AbsRTTask* getFirstTask() const {
         AbsRTTask* t = sched_->getFirst();
         return t;
-      }
-
-      bool isInServer(AbsRTTask* t) {
-        bool res = sched_->isFound(t);
-        return res;
       }
 
       /// Get WCET

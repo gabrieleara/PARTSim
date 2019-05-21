@@ -264,6 +264,14 @@ namespace RTSim {
          */ 
         virtual AbsRTTask * getTaskN(unsigned int);
 
+	/// Returns all tasks in the scheduler
+	virtual vector<AbsRTTask*> getTasks() const { 
+		vector<AbsRTTask*> tt;
+		for (auto& elem : _tasks)
+			tt.push_back(elem.first);
+		return tt; 
+	}
+
         /**
          * Returns the number of elements in queue.
          */
@@ -285,6 +293,8 @@ namespace RTSim {
          */
         virtual bool isAdmissible(CPU* c, vector<AbsRTTask*> tasks, AbsRTTask* t) { return true; }
 
+	/// Tells if scheduler has any task in queue
+	bool isEmpty() const { return _tasks.empty(); }
 
         /** 
          * Discards all tasks from the scheduler.

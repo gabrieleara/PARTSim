@@ -27,6 +27,7 @@ namespace RTSim {
     class absCPUFactory;
 
     class MRTKernel;
+    class CBServer;
 
     // Interface
     class DispatchMultiEvt : public Event {
@@ -155,6 +156,9 @@ namespace RTSim {
         /// RandomVar eventually).
         Tick  _migrationDelay;
 
+        /// set of servers. todo can be moved to mrtkernel
+        vector<CBServer*> _servers;
+
         void internalConstructor(int n);
 
         /**
@@ -243,6 +247,8 @@ namespace RTSim {
         virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
         virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
 
+        /// Returns used CBS servers
+        vector<CBServer*> getServers() const { return _servers; }
 
         /**
          * Returns a pointer to the CPU on which t is running (NULL if

@@ -27,6 +27,7 @@
 namespace RTSim {
 
   class CBServer;
+  class CBServerCallingEMRTKernel;
 
     /**
        Manages tasks migrations among cores and how islands frequency
@@ -379,7 +380,6 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
-
         /**
            Tries to schedule a task on a CPU_BL, for all valid OPPs,
            remembering power consumption
@@ -414,7 +414,7 @@ namespace RTSim {
         Island_BL* getIslandBig() const { return _islands[1]; }
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
-	Scheduler* getScheduler() { return _sched; }
+      	Scheduler* getScheduler() { return _sched; }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a

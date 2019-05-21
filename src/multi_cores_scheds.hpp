@@ -356,6 +356,18 @@ namespace RTSim {
             }
             _active_utilizations[t] = make_tuple(cpu, vt, u_active);
             cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
+
+            cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() - 1 << endl;
+            /*if (cbs->getTasks().size() - 1 == 0) {
+              /**
+                Policy for CBS servers:
+                If the task on a CBS server ends and the server gets empty,
+                schedule ready tasks on the core (i.e., deschedule & schedule server)
+                /
+              cout << "\tServer's got empty. Yielding server (= schedule a ready of core)" << endl;
+              makeReady(cpu);
+              t->deschedule();
+            }*/
         }
 
         /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
@@ -404,18 +416,7 @@ namespace RTSim {
             
         }
 
-        bool shouldDeschedule(CPU *c, AbsRTTask *t) {
-            if (dynamic_cast<RRScheduler*>(_queues[c])) {
-              return getRunningTask(c) != NULL;
-            }
-            else if (dynamic_cast<EDFScheduler*>(_queues[c])){
-                if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
-                    return false;
-                return getRunningTask(c) != NULL && getRunningTask(c) != t;
-            }
-            assert(false);  // add your choice
-            return false;
-        }
+        bool shouldDeschedule(CPU *c, AbsRTTask *t);
 
         bool shouldSchedule(CPU* c, AbsRTTask *t) {
           if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
