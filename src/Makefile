@@ -95,10 +95,11 @@ energyMRTKernel_example.o: ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
 energyMRTKernel_example.o: ./feedback.hpp ./taskexc.hpp ./edfsched.hpp
 energyMRTKernel_example.o: ./scheduler.hpp ./jtrace.hpp ./traceevent.hpp
 energyMRTKernel_example.o: ./texttrace.hpp rttask.hpp ./regvar.hpp
-energyMRTKernel_example.o: ./json_trace.hpp ./tracepower.hpp ./instr.hpp
-energyMRTKernel_example.o: energyMRTKernel.hpp multi_cores_scheds.hpp
-energyMRTKernel_example.o: ./exeinstr.hpp utils.hpp cbserver.hpp server.hpp
-energyMRTKernel_example.o: resmanager.hpp ./capacitytimer.hpp ./rrsched.hpp
+energyMRTKernel_example.o: ./json_trace.hpp ./ps_trace.hpp ./tracepower.hpp
+energyMRTKernel_example.o: ./instr.hpp energyMRTKernel.hpp
+energyMRTKernel_example.o: multi_cores_scheds.hpp ./exeinstr.hpp utils.hpp
+energyMRTKernel_example.o: cbserver.hpp server.hpp resmanager.hpp
+energyMRTKernel_example.o: ./capacitytimer.hpp ./rrsched.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
 entity.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./event.hpp
 entity.o: ./particle.hpp ./plist.hpp ./trace.hpp
@@ -242,6 +243,13 @@ powermodel.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp ./timer.hpp
 powermodel.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./entity.hpp
 powermodel.o: ./event.hpp ./particle.hpp ./plist.hpp ./gevent.hpp
 powermodel.o: ./abstask.hpp
+ps_trace.o: ./ps_trace.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp
+ps_trace.o: ./strtoken.hpp ./event.hpp ./simul.hpp ./basestat.hpp
+ps_trace.o: ./debugstream.hpp ./entity.hpp ./particle.hpp ./plist.hpp
+ps_trace.o: ./trace.hpp rttask.hpp ./regvar.hpp ./randomvar.hpp
+ps_trace.o: ./cloneable.hpp ./task.hpp ./gevent.hpp ./abstask.hpp ./cpu.hpp
+ps_trace.o: ./timer.hpp ./powermodel.hpp ./kernel.hpp ./abskernel.hpp
+ps_trace.o: ./kernevt.hpp ./taskevt.hpp ./feedback.hpp ./taskexc.hpp
 randomvar.o: ./randomvar.hpp ./baseexc.hpp ./cloneable.hpp ./simul.hpp
 randomvar.o: ./basestat.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
 randomvar.o: ./debugstream.hpp ./entity.hpp ./event.hpp ./particle.hpp
