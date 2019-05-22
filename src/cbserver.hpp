@@ -113,9 +113,9 @@ namespace RTSim {
         /// from recharging to active contending (budget recharged)
         virtual void recharging_idle();
 
-        void onReplenishment(Event *e);
+        virtual void onReplenishment(Event *e);
 
-        void onIdle(Event *e);
+        virtual void onIdle(Event *e);
 
         void prepare_replenishment(const Tick &t);
         
@@ -181,7 +181,7 @@ namespace RTSim {
       virtual void executing_releasing();
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
-        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched){ };
+        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
 
       AbsRTTask* getFirstTask() const {
         AbsRTTask* t = sched_->getFirst();
@@ -209,6 +209,8 @@ namespace RTSim {
 
       /// On deschedule event (of server - and of tasks in it?)
       virtual void onDesched(Event *e);
+
+      virtual void onReplenishment(Event *e);
 
       /// Object to human-readable string
       virtual string toString() const {

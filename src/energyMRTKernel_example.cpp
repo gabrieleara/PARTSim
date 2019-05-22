@@ -858,7 +858,7 @@ int main(int argc, char *argv[]) {
             tasks.push_back(t0_little);
             kernels[0]->addTask(*t0_little, "");
 
-            PeriodicTask *t0_big0 = new PeriodicTask(10, 10, 0, "Task2_Big0"); 
+            NonPeriodicTask *t0_big0 = new NonPeriodicTask(10, 10, 0, "Task2_Big0"); 
             t0_big0->insertCode("fixed(5,bzip2);");
             t0_big0->setAbort(false);
             ttrace.attachToTask(*t0_big0);
@@ -885,14 +885,14 @@ int main(int argc, char *argv[]) {
 
 
             // CBS server tasks
-            PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskOnServer"); 
-            t2->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
-            t2->setAbort(false);
-            ttrace.attachToTask(*t2);
-            jtrace.attachToTask(*t2);
+            NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
+            tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
+            tos->setAbort(false);
+            ttrace.attachToTask(*tos);
+            jtrace.attachToTask(*tos);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
-            serv->addTask(*t2);
+            serv->addTask(*tos);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
 
@@ -916,7 +916,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t3, "");
 
             PeriodicTask *t4 = new PeriodicTask(30, 30 , 0, "TaskAfter"); 
-            t4->insertCode("fixed(1,bzip2);");
+            t4->insertCode("fixed(5,bzip2);");
             t4->setAbort(false);
             ttrace.attachToTask(*t4);
             jtrace.attachToTask(*t4);
@@ -929,7 +929,7 @@ int main(int argc, char *argv[]) {
             k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
             k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
             k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
-            k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);
+            k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);  // it should preempt the executing task on big 0
             // server's free to go wherever.
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -939,8 +939,14 @@ int main(int argc, char *argv[]) {
             t5->activate(Tick(activ[0]));
             t3->activate(Tick(activ[1]));
             t4->activate(Tick(activ[2]));
-            
-            SIMUL.run_to(8);//21);
+
+            SIMUL.run_to(10);
+            cout << "t=10" << endl;
+            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
+            k->print();
+            cout << "server state " << serv->getStatusString() << endl;
+
+            SIMUL.run_to(13);
             cout << k->getEnergyMultiCoresScheds()->toString() << endl;
             k->print();
 

@@ -81,26 +81,34 @@ namespace RTSim {
     
     void MultiCoresScheds::removeFromQueue(CPU* c, AbsRTTask* t) {
         assert(c != NULL); assert(t != NULL);
-        _queues[c]->extract(t);
-	      dropEvt(c, t);
+        if (_queues[c]->isFound(t))
+            _queues[c]->extract(t);
+        dropEvt(c, t);
     }
 
     AbsRTTask* MultiCoresScheds::getFirst(CPU* c) {
         assert(c != NULL);
-        return _queues[c]->getFirst();
+        AbsRTTask *t = _queues[c]->getFirst();
+
+        CBServer* cbs = dynamic_cast<CBServer*>(t);
+        if (cbs != NULL && cbs->isYielding())
+            t = getFirstReady(c);
+
+        return t;
     }
 
     AbsRTTask* MultiCoresScheds::getFirstReady(CPU* c) {
         assert(c != NULL);
+        // assumes there is only 1 CBS server per core
 
         AbsRTTask *t = _queues[c]->getTaskN(1);
         return t;
     }
 
-    vector<AbsRTTask*> MultiCoresScheds::getAllTasksInQueue(CPU* c) {
+    vector<AbsRTTask*> MultiCoresScheds::getAllTasksInQueue(CPU* c) const {
         vector<AbsRTTask*> tasks;
 
-        Scheduler* s = _queues[c];
+        Scheduler* s = _queues.at(c);
         AbsRTTask *t;
         int i = 0;
         while( (t = s->getTaskN(i)) != NULL) {
@@ -112,6 +120,9 @@ namespace RTSim {
     }
 
     void MultiCoresScheds::empty(CPU* c) {
+        for (CBServer* s : _kernel->getServers())
+            removeFromQueue(c, s);
+
         while (!isEmpty(c)) {
             removeFirstFromQueue(c);
         }
@@ -145,9 +156,10 @@ namespace RTSim {
         else if (dynamic_cast<EDFScheduler*>(_queues[c])){
             if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
                 return false;
-            return getRunningTask(c) != NULL && getRunningTask(c) != t;
+            bool isNotSameTask = getRunningTask(c) != NULL && getRunningTask(c) != t;
+            return isNotSameTask;
         }
-        assert(false);  // add your choice
+        assert(false);  // add your choice/branch
         return false;
     }
 

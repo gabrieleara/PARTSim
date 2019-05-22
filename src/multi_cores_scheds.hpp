@@ -241,11 +241,26 @@ namespace RTSim {
         virtual AbsRTTask* getFirstReady(CPU* c);
 
         /// Get processor where task is running
-        CPU *getProcessor(AbsRTTask *t) const {
+        CPU *getProcessorRunning(AbsRTTask *t) const {
           for (const auto& elem : _running_tasks)
             if (elem.second == t)
               return elem.first;
           return NULL;
+        }
+
+        /// get core where task is dispatched (either running and ready). Code used only in debug practically...
+        CPU* getProcessor(AbsRTTask *t) const {
+          CPU *cpu = getProcessorRunning(t);
+          if (cpu == NULL)
+            for (auto& elem : _queues) {
+              vector<AbsRTTask*> tasks = getAllTasksInQueue(elem.first);
+              for (AbsRTTask* task : tasks)
+                if (task == t) {
+                  cpu = elem.first;
+                  return cpu;
+                }
+            }
+          return cpu;
         }
 
         /// Get running task for core c
@@ -255,7 +270,7 @@ namespace RTSim {
         }
 
         /// Get all tasks of a core queue
-        vector<AbsRTTask*> getAllTasksInQueue(CPU* c);
+        vector<AbsRTTask*> getAllTasksInQueue(CPU* c) const;
 
         vector<AbsRTTask*> getReadyTasks(CPU* c) {
             assert(c != NULL);
@@ -367,7 +382,7 @@ namespace RTSim {
         }
 
         /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
-        void onReleasingIdle(CBServer* cbs) {
+        void onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
             
             for (auto& elem : _active_utilizations) {
@@ -400,11 +415,13 @@ namespace RTSim {
         void schedule(CPU* c) {
             assert(c != NULL);
             AbsRTTask *t = getFirst(c);
+            // todo rem 
+            cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
 
             if (shouldDeschedule(c, t))
                 makeReady(c);
             if (shouldSchedule(c, t))  // request to schedule on core with no assigned tasks
-                 makeRunning(t, c);
+                makeRunning(t, c);
             
         }
 
@@ -414,7 +431,7 @@ namespace RTSim {
           CBServer *cbs = dynamic_cast<CBServer*>(t);
           if ( cbs != NULL && (getRunningTask(c) == t || cbs->isYielding()) )
             return false;          
-          return t!=NULL;
+          return t != NULL;
         }
 
         /// Executes next ready task on core c

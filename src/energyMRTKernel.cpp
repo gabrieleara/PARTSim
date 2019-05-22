@@ -158,6 +158,7 @@ namespace RTSim {
 
         if (cbs == NULL)
             return false;
+        cout << cbs->getStatusString() << endl;
         if (cbs->getStatus() != ServerStatus::EXECUTING)
             return true;
 
@@ -220,8 +221,8 @@ namespace RTSim {
             cout << __func__ << endl;
             dispatch(get<0>(_m_forcedDispatch[t]), t, get<1>(_m_forcedDispatch[t]));
 
-	    get<2>(_m_forcedDispatch[t])--;
-	    if (get<2>(_m_forcedDispatch[t]) == 0)
+            get<2>(_m_forcedDispatch[t])--;
+            if (get<2>(_m_forcedDispatch[t]) == 0)
                _m_forcedDispatch.erase(t);
             return true;
         }
@@ -574,7 +575,7 @@ namespace RTSim {
             cout << "Dealing with task " << t->toString() << "." << endl;
 
             // for testing
-            if (manageForcedDispatch(t)) {
+            if (manageForcedDispatch(t) || manageDiscartedTask(t)) {
                 num_newtasks--;
                 continue;
             }

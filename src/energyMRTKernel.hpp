@@ -354,6 +354,9 @@ namespace RTSim {
         /// for debug, if you want to force a certain choice of cores and frequencies and how many times to dispatch
         map<AbsRTTask*, tuple<CPU_BL*, unsigned int, unsigned int>> _m_forcedDispatch;
 
+        /// for debug, list of discarded tasks and how many times to discard them
+        map<AbsRTTask*, tuple<unsigned int>> _discardedTasks;
+
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
 
@@ -556,6 +559,11 @@ namespace RTSim {
           _queues->onReleasingIdle(cbs);
         }
 
+        void onReplenishment(CBServer *cbs) {
+          cout << "EMRTK::" << __func__ << "()" << endl;
+          _queues->onReleasingIdle(cbs); // todo right in general?
+        }
+
         /**
          * Specifically called when RRScheduler is used, it informs the kernel that
          * finishingTask has just finished its round (slice)
@@ -601,6 +609,34 @@ namespace RTSim {
         bool manageForcedDispatch(AbsRTTask*);
 
         void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int times = 1);
+
+        /// You'll never see the task anymore scheduled. if onlyAfterEnds is false, it means kill now
+        // todo delete if never used
+        void discardTask(AbsRTTask *t, bool onlyAfterEnds = false, unsigned int times = 1) {
+          assert (t != NULL);
+
+          if (onlyAfterEnds) {
+            CPU_BL *cpu = dynamic_cast<CPU_BL*>(getProcessor(t));
+            if (cpu != NULL)
+              _queues->removeFromQueue(cpu, t);
+          }
+
+          _discardedTasks[t] = make_tuple(times);
+        }
+
+        bool manageDiscartedTask(AbsRTTask *t) {
+          assert (t != NULL);
+
+          if (_discardedTasks.find(t) != _discardedTasks.end()) {
+            get<0>(_discardedTasks[t])--;
+            if (get<0>(_discardedTasks[t]) == 0)
+              _discardedTasks.erase(t);
+            return true;
+          }
+
+          return false;
+        }
+
     };
 }
 

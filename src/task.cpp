@@ -647,9 +647,9 @@ namespace RTSim {
     }
 
     /// to string operator
-  ostream& operator<<(ostream &strm, Task &a) {
-	strm << a.toString();
-	return strm;
+    ostream& operator<<(ostream &strm, Task &a) {
+        strm << a.toString();
+        return strm;
     }
     
 }

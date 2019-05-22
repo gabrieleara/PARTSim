@@ -77,6 +77,38 @@ namespace RTSim {
         virtual double getMaxExecutionCycles() const { return getWCET(1.0); }
     };
 
+
+
+
+    /**
+       Models a simple non periodic task. Once the task finishes, it dies. 
+       It's a simpler interface to Task.
+    */
+    class NonPeriodicTask: public PeriodicTask
+    {
+        // period kept only for computing utilization
+    public:
+        NonPeriodicTask(Tick iat) : PeriodicTask(iat) {};
+    
+        NonPeriodicTask(Tick iat, Tick rdl, Tick ph = 0,
+                     const std::string &name = "", long qs = 100) : PeriodicTask(iat, rdl, ph, name, qs) {};
+    
+        virtual void onEndInstance(Event *e) {
+            Task::onEndInstance(e);
+
+            cout << __func__ << "(): endrun for " << toString() << endl;
+            endRun();
+        }
+
+        virtual void onKill(Event *e) {
+            Task::onKill(e);
+
+            cout << __func__ << "(): endrun for " << toString() << endl;
+            endRun();
+        }
+
+    };
+
 } // namespace RTSim 
 
 #endif

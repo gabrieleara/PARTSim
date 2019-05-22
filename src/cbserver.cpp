@@ -328,7 +328,14 @@ namespace RTSim {
         dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, cpu, this);
     }
 
+    void CBServerCallingEMRTKernel::onReplenishment(Event *e) {
+        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
+
+        dynamic_cast<EnergyMRTKernel*>(kernel)->onReplenishment(this);
+    }
+
     void CBServerCallingEMRTKernel::executing_releasing() {
+        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::executing_releasing();
         //cout << toString() << endl; PB: task is erased from sched_ before
 

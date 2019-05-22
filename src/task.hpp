@@ -159,13 +159,13 @@ namespace RTSim {
 	   
            @todo change its name into onInstanceEnd().
         */
-        void onEndInstance(MetaSim::Event *);
+        virtual void onEndInstance(MetaSim::Event *);
         
         /**
            This event handler is invoked when a task instance has been killed.
            Similar to onEndInstance, but the endEvt is not processed. 
         */
-        void onKill(MetaSim::Event *);
+        virtual void onKill(MetaSim::Event *);
 
         /**
            This event handler is invoked everytime the task is scheduled (i.e. 
