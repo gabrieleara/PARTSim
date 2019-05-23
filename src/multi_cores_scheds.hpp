@@ -226,6 +226,16 @@ namespace RTSim {
         /// Empties a core queue
         virtual void empty(CPU* c);
 
+        /// Removes Utilization active that must end at SIMUL.getTime()
+        void forgetU_active() {
+          for (auto& elem : _active_utilizations) {
+            if (get<1>(elem.second) == SIMUL.getTime()) {
+              cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
+              _active_utilizations.erase(elem.first);
+            }
+          }
+        }
+
         /// True if the core queue is empty
         bool isEmpty(CPU* c);
         
@@ -241,15 +251,15 @@ namespace RTSim {
         virtual AbsRTTask* getFirstReady(CPU* c);
 
         /// Get processor where task is running
-        CPU *getProcessorRunning(AbsRTTask *t) const {
+        CPU *getProcessorRunning(const AbsRTTask *t) const {
           for (const auto& elem : _running_tasks)
             if (elem.second == t)
               return elem.first;
           return NULL;
         }
 
-        /// get core where task is dispatched (either running and ready). Code used only in debug practically...
-        CPU* getProcessor(AbsRTTask *t) const {
+        /// get core where task is dispatched (either running and ready)
+        CPU* getProcessor(const AbsRTTask *t) const {
           CPU *cpu = getProcessorRunning(t);
           if (cpu == NULL)
             for (auto& elem : _queues) {
@@ -385,12 +395,14 @@ namespace RTSim {
         void onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
             
-            for (auto& elem : _active_utilizations) {
-              if (get<1>(elem.second) == SIMUL.getTime()) {
-                cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
-                _active_utilizations.erase(elem.first);
-              }
-            }
+            forgetU_active();
+        }
+
+        void onReplenishment(CBServer *cbs) {
+            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
+
+            forgetU_active();
+            makeReady(getProcessor(cbs));
         }
       
       /**
@@ -414,7 +426,7 @@ namespace RTSim {
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
             assert(c != NULL);
-            if (SIMUL.getTime() == 14)
+            if (SIMUL.getTime() == 15)
               cout << "";
             AbsRTTask *t = getFirst(c);
             // todo rem 

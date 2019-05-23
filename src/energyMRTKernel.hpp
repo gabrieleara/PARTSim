@@ -24,7 +24,7 @@
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 #define EMRTK_BALANCE_ENABLED       1 /* Can't imagine disabling it, but so policy is in the list :) */
 #define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       0
+#define EMRTK_MIGRATE_ENABLED       1
 #define EMRTK_CBS_YIELD_ENABLED     1
 
 namespace RTSim {
@@ -463,6 +463,11 @@ namespace RTSim {
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
         CPU_BL* getDispatchingProcessor(const AbsRTTask* t);
 
+        /// Get core where task is dispatched (either running and ready)
+        virtual CPU *getProcessor(const AbsRTTask *t) const {
+          return _queues->getProcessor(t);
+        }
+
         /// Returns tasks to be dispatched for the used scheduler
         void getNewTasks(vector<AbsRTTask*> tasks, int& num_newtasks);
 
@@ -562,7 +567,8 @@ namespace RTSim {
 
         void onReplenishment(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
-          _queues->onReleasingIdle(cbs); // todo right in general?
+          _queues->onReplenishment(cbs);
+          dispatch();
         }
 
         /**

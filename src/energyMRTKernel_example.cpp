@@ -37,9 +37,9 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 18;
+    int TEST_NO = 15;
 
-    // dumpAllSpeeds();
+    // 15();
     
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -689,25 +689,28 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*serv, "");
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+            k->addForcedDispatch(serv, cpus_big[0], 18, 999);
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
             cout << "Running simulation!" << endl;
             SIMUL.initSingleRun();
-            
+
             SIMUL.run_to(1);
             assert (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(5);
+            cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
             assert (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
 
             SIMUL.run_to(16);
+            cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
             assert (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
 
-            SIMUL.run_to(20);
+            SIMUL.run_to(21);
+            cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
             assert (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
 
-            SIMUL.run_to(50);
+            SIMUL.run_to(26);
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -966,7 +969,7 @@ int main(int argc, char *argv[]) {
             k->print();
             cout << "server state " << serv->getStatusString() << endl;
 
-            SIMUL.run_to(15);
+            SIMUL.run_to(16);
             cout << k->getEnergyMultiCoresScheds()->toString() << endl;
             k->print();
 
@@ -975,39 +978,6 @@ int main(int argc, char *argv[]) {
             cout << "Simulation finished" << endl;
 
             return 0;
-        }
-        else if (TEST_NO == 19) {
-            // CBS server tasks
-            NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
-            tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
-            tos->setAbort(false);
-            ttrace.attachToTask(*tos);
-            jtrace.attachToTask(*tos);
-            pstrace.attachToTask(*tos);
-
-            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
-            serv->addTask(*tos);
-            tasks.push_back(serv);
-            kernels[0]->addTask(*serv, "");
-
-            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(serv, cpus_big[0], 18, 1); // note: normally it wouldn't fit this way
-
-            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-            cout << "Running simulation!" << endl;
-            SIMUL.initSingleRun();
-
-            tos->activate(Tick(12));
-
-            SIMUL.run_to(20);
-            cout << "t=10" << endl;
-            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
-            k->print();
-            cout << "server state " << serv->getStatusString() << endl;
-
-            SIMUL.endSingleRun();
-            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-            cout << "Simulation finished" << endl;
         }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

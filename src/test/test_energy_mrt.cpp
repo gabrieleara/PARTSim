@@ -26,6 +26,7 @@ class Requisite {
 void getCores(vector<CPU_BL*> &big, vector<CPU_BL*> &little, Island_BL **island_bl_little, Island_BL **island_bl_big);
 int  init_suite(EnergyMRTKernel** kern);
 bool inRange(int,int);
+bool inRangeMinMax(double eval, const double min, const double max);
 bool checkRequisites(Requisite reqs);
 
 TEST_CASE("exp0") {
@@ -1074,8 +1075,8 @@ TEST_CASE("exp15") {
 TEST_CASE("Experiment 16") {
     /**
         Towards servers. Reproducing Mr.Cucinotta's example.
-        A server with (Q=5,T=10) and a task arriving at 0 and ending at 2, period 10.
-        Its active utilization is kept until 4.
+        A server with (Q=2,T=10) and a task arriving at 0 and ending at 2, period 10.
+        Its active utilization is kept until 10.
      */
     init_sequence = 16;
     cout << "Begin of experiment " << init_sequence << endl;
@@ -1094,7 +1095,7 @@ TEST_CASE("Experiment 16") {
     t2->insertCode("fixed(2,bzip2);");
     t2->setAbort(false);
 
-    CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(5, 10, 10, "hard",  "server1", "FIFOSched");
+    CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
     serv->addTask(*t2);
     tasks.push_back(serv);
     tasks.push_back(t2);
@@ -1106,18 +1107,23 @@ TEST_CASE("Experiment 16") {
     SIMUL.initSingleRun();
 
     SIMUL.run_to(3); // t=2: executing to releasing
+    cout << "time = " << SIMUL.getTime() << endl;
     REQUIRE (k->getUtilization_active(cpus_little.at(0)) == 0.0);
-    REQUIRE (k->getUtilization_active(cpus_big.at(1)) == 0.0);
     REQUIRE (k->getUtilization_active(cpus_big.at(0)) == 0.2);
-    REQUIRE (k->getUtilization(cpus_big.at(0), 1.0) == 0.2);
+    k->print();
+    REQUIRE (k->getIslandUtilization(1.0, cpus_big[0]->getIslandType(), NULL) == 0.2);
+    REQUIRE (k->getUtilization(cpus_big.at(0), 1.0) == 0.2); // float repr. precision
 
     SIMUL.run_to(5); // t=4: releasing to idle
+    cout << "time = " << SIMUL.getTime() << endl;
     for (CPU_BL* c : cpus_big) {
+        if (c == cpus_big.at(0)) continue;
         REQUIRE (k->getUtilization_active(c) == 0.0);
         REQUIRE (k->getUtilization(c, 1.0) == 0.0);
     }
 
     SIMUL.run_to(20);
+    cout << "time = " << SIMUL.getTime() << endl;
 
     SIMUL.endSingleRun();
     for (int j = 0; j < tasks.size(); j++)
@@ -1281,13 +1287,19 @@ int init_suite(EnergyMRTKernel** kern) {
     return 0;
 }
 
+/// Returns true if the value 'eval' and 'expected' are distant 'error'%
 bool inRange(int eval, int expected) {
-    const int error = 5;
+    const unsigned int error = 5;
 
     int min = int(eval - eval * error/100);
     int max = int(eval + eval * error/100);
 
     return expected >= min && expected <= max; 
+}
+
+/// True if min <= eval <= max
+bool inRangeMinMax(double eval, const double min, const double max) {
+    return min <= eval <= max;
 }
 
 bool checkRequisites(Requisite reqs) {

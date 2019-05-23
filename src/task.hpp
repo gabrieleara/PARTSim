@@ -467,6 +467,9 @@ namespace RTSim {
 
         task_state getState() { return state; }
 
+    	/// for debug
+    	virtual string getStateString();
+
         /** 
             Returns true if the task is active.
         */

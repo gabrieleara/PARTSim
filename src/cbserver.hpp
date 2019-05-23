@@ -228,7 +228,6 @@ namespace RTSim {
         cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
         _yielding = false;
         Server::onArrival(t);
-
       }
 
       virtual void onReplenishment(Event *e);

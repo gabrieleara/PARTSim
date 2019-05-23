@@ -63,6 +63,28 @@ namespace RTSim {
           deadEvt(this, false, false)
     {
     }
+
+    string Task::getStateString() {
+        string s = to_string(double(SIMUL.getTime())) + " ";
+        switch (getState()) {
+            case TSK_IDLE:
+            s += "idle";
+            break;
+            case TSK_READY:
+            s += "ready";
+            break;
+            case TSK_EXEC:
+            s += "executing";
+            break;
+            case TSK_BLOCKED:
+            s += "blocked";
+            break;
+            default:
+            assert(false);
+            break; 
+        }
+        return s;
+    }
     
     void Task::newRun(void)
     {

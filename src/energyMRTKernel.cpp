@@ -160,7 +160,13 @@ namespace RTSim {
             cout << "\t\t\t\t\tnot a CBServerCallingEMRTKernel => skip" << endl;
             return false;
         }
+
+        //todo rem
         cout << cbs->getStatusString() << endl;
+        if (cbs->isEmpty()) {
+            cout << "\t\t\t\t\tServer's empty => skip, you consider Util_actives" << endl;
+            return true;
+        }
         
         // server utilization (its WCET/period) considered only if it's releasing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
