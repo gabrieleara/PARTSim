@@ -85,7 +85,7 @@ namespace RTSim {
         /// Server to human-readable string
         virtual string toString() const { 
           string s = "tasks: [ "; 
-          s += sched_->toString() + "]";
+          s += sched_->toString() + "]" + (isYielding() ? " yielding":"");
           return s;
         }
 
@@ -223,12 +223,12 @@ namespace RTSim {
         }
       }
 
-      /// On deschedule event (of server - and of tasks in it)
-      virtual void onSched(Event *e) {
-        cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
-        Server::onSched(e);
-
+      /// Arrival event of task of server
+      virtual void onArrival(AbsRTTask *t) {
+        cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
         _yielding = false;
+        Server::onArrival(t);
+
       }
 
       virtual void onReplenishment(Event *e);

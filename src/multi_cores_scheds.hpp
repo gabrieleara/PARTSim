@@ -398,7 +398,7 @@ namespace RTSim {
        * the queues manager that a task has finished its round => remove from
        * queue and take next task
        */
-      void onRound(AbsRTTask *finishingTask, CPU *c) {
+        void onRound(AbsRTTask *finishingTask, CPU *c) {
         //CPU *c = getProcessor(finishingTask);
             if (c == NULL) // task has just finished its WCET
               return;
@@ -414,6 +414,8 @@ namespace RTSim {
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
             assert(c != NULL);
+            if (SIMUL.getTime() == 14)
+              cout << "";
             AbsRTTask *t = getFirst(c);
             // todo rem 
             cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;

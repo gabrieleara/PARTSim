@@ -61,6 +61,10 @@ namespace RTSim {
         TaskModel(AbsRTTask *t);
         virtual ~TaskModel();
 
+	string toString() const {
+		return _rtTask->toString();
+	}
+
         /// Returns a pointer to the task
         AbsRTTask *getTask() { return _rtTask; }
 

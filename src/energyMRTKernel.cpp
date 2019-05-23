@@ -212,6 +212,8 @@ namespace RTSim {
     void EnergyMRTKernel::printState() {
       for (CPU_BL *c : getProcessors()) {
           AbsRTTask *t = _queues->getRunningTask(c);
+          if (dynamic_cast<CBServer*>(t) && dynamic_cast<CBServer*>(t)->isYielding())
+            t = _queues->getFirstReady(c);
           cout << c->getName() << ": " << (t == NULL ? "0" : taskname(t)) << "\t";
       }
       cout << endl;
@@ -339,6 +341,9 @@ namespace RTSim {
 
     void EnergyMRTKernel::onEnd(AbsRTTask* t) {
         DBGENTER(_KERNEL_DBG_LEV);
+
+        if (SIMUL.getTime()  == 14)
+            cout << "";
 
         // only on big-little: update the state of the CPUs island
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));

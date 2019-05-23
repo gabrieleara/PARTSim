@@ -934,7 +934,7 @@ int main(int argc, char *argv[]) {
             kernels[0]->addTask(*t3, "");
 
             PeriodicTask *t4 = new PeriodicTask(30, 30 , 0, "TaskAfter"); 
-            t4->insertCode("fixed(5,bzip2);");
+            t4->insertCode("fixed(1,bzip2);");
             t4->setAbort(false);
             ttrace.attachToTask(*t4);
             jtrace.attachToTask(*t4);

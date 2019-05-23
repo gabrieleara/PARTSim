@@ -325,12 +325,19 @@ namespace RTSim {
         cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__ << "() for " << t->toString() << endl;
         CPU* cpu = dynamic_cast<Task*>(t)->getCPU();
         Server::onEnd(t);
+
+        if (isEmpty())
+            yield();
+
+        // todo move to executing_releasing()?
         dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, cpu, this);
     }
 
     void CBServerCallingEMRTKernel::onReplenishment(Event *e) {
         cout << "CBSCEMRTK::" << __func__ << "()" << endl;
+        CBServer::onReplenishment(e);
 
+        // todo useless?
         dynamic_cast<EnergyMRTKernel*>(kernel)->onReplenishment(this);
     }
 
