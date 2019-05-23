@@ -899,8 +899,16 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*tos);
             pstrace.attachToTask(*tos);
 
+            NonPeriodicTask *tos2 = new NonPeriodicTask(10, 10 , 0, "AfterTaskOnServer"); 
+            tos2->insertCode("fixed(2,bzip2);");
+            tos2->setAbort(false);
+            ttrace.attachToTask(*tos2);
+            jtrace.attachToTask(*tos2);
+            pstrace.attachToTask(*tos2);
+
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*tos);
+            serv->addTask(*tos2);
             tasks.push_back(serv);
             kernels[0]->addTask(*serv, "");
 
@@ -950,6 +958,7 @@ int main(int argc, char *argv[]) {
             t5->activate(Tick(activ[0]));
             t3->activate(Tick(activ[1]));
             t4->activate(Tick(activ[2]));
+            tos2->activate(Tick(11));
 
             SIMUL.run_to(10);
             cout << "t=10" << endl;
@@ -957,7 +966,7 @@ int main(int argc, char *argv[]) {
             k->print();
             cout << "server state " << serv->getStatusString() << endl;
 
-            SIMUL.run_to(13);
+            SIMUL.run_to(15);
             cout << k->getEnergyMultiCoresScheds()->toString() << endl;
             k->print();
 
@@ -966,6 +975,39 @@ int main(int argc, char *argv[]) {
             cout << "Simulation finished" << endl;
 
             return 0;
+        }
+        else if (TEST_NO == 19) {
+            // CBS server tasks
+            NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
+            tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
+            tos->setAbort(false);
+            ttrace.attachToTask(*tos);
+            jtrace.attachToTask(*tos);
+            pstrace.attachToTask(*tos);
+
+            CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
+            serv->addTask(*tos);
+            tasks.push_back(serv);
+            kernels[0]->addTask(*serv, "");
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(serv, cpus_big[0], 18, 1); // note: normally it wouldn't fit this way
+
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Running simulation!" << endl;
+            SIMUL.initSingleRun();
+
+            tos->activate(Tick(12));
+
+            SIMUL.run_to(20);
+            cout << "t=10" << endl;
+            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
+            k->print();
+            cout << "server state " << serv->getStatusString() << endl;
+
+            SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
         }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

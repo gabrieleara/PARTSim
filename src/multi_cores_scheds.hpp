@@ -378,7 +378,7 @@ namespace RTSim {
             _active_utilizations[t] = make_tuple(cpu, vt, u_active);
             cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
 
-            cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() - 1 << endl;
+            cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() - 1 << " - first one: " << cbs->getTasks().at(0)->toString() << endl;
         }
 
         /// Callback for CBServer task going from releasing to idle => you can forget task active utilization

@@ -50,12 +50,19 @@ namespace RTSim {
         /// Returns all tasks currently in the scheduler
         vector<AbsRTTask*> getTasks() const { return sched_->getTasks(); }
 
-        /// Tells if scheduler currently holds any task.
+        /// Tells if scheduler currently holds any task. Function not that much tested!
         bool isEmpty() const {
           // todo check if it works in the general case. I haven't checked APIs..
-          unsigned int numTasks = getTasks().size();
-          if (getStatus() == ServerStatus::EXECUTING || getStatus() == ServerStatus::RELEASING)
-            numTasks--;
+          // unsigned int numTasks = getTasks().size();
+          // if (getStatus() == ServerStatus::EXECUTING || getStatus() == ServerStatus::RELEASING)
+          //   numTasks--;
+          vector<AbsRTTask*> tasks = getTasks();
+          unsigned int numTasks = tasks.size();
+          for (AbsRTTask* t : tasks) {
+            Task *tt = dynamic_cast<Task*>(t);
+            if (tt->arrEvt.getTime() > SIMUL.getTime() || tt->endEvt.getTime() <= SIMUL.getTime())
+              numTasks--;
+          }
           return numTasks == 0;
         }
         
@@ -121,6 +128,8 @@ namespace RTSim {
         
         void check_repl();
 
+        /// True if CBS server has decided to yield core (= to leave it to ready tasks)
+        bool _yielding;
 
     private:
         Tick Q,P,d;
@@ -158,10 +167,7 @@ namespace RTSim {
             reuses the old deadline, and computes a new "safe" budget as 
             floor((d - vtime) * Q / P). 
         */
-        policy_t idle_policy; 
-
-        /// True if CBS server has decided to yield core (= to leave it to ready tasks)
-        bool _yielding;
+        policy_t idle_policy;
     };
 
 
@@ -207,8 +213,23 @@ namespace RTSim {
       /// Task of server ends, callback
       virtual void onEnd(AbsRTTask *t);
 
-      /// On deschedule event (of server - and of tasks in it?)
-      virtual void onDesched(Event *e);
+      /// On deschedule event (of server - and of tasks in it)
+      virtual void onDesched(Event *e) {
+        cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << endl;
+        // if (!isEmpty())
+        if (isEmpty()) {
+            yield();
+            Server::onDesched(e);
+        }
+      }
+
+      /// On deschedule event (of server - and of tasks in it)
+      virtual void onSched(Event *e) {
+        cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
+        Server::onSched(e);
+
+        _yielding = false;
+      }
 
       virtual void onReplenishment(Event *e);
 

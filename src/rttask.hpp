@@ -96,14 +96,14 @@ namespace RTSim {
         virtual void onEndInstance(Event *e) {
             Task::onEndInstance(e);
 
-            cout << __func__ << "(): endrun for " << toString() << endl;
+            cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
             endRun();
         }
 
         virtual void onKill(Event *e) {
             Task::onKill(e);
 
-            cout << __func__ << "(): endrun for " << toString() << endl;
+            cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
             endRun();
         }
 

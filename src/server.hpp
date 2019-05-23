@@ -312,7 +312,7 @@ namespace RTSim {
         */
         virtual void onBudgetExhausted(Event *);
 
-        void onSched(Event *);
+        virtual void onSched(Event *);
                 
         virtual void onDesched(Event *);
 

@@ -351,11 +351,4 @@ namespace RTSim {
         dynamic_cast<EnergyMRTKernel*>(kernel)->onReleasingIdle(this);
     }
 
-    void CBServerCallingEMRTKernel::onDesched(Event *e)
-    {
-        cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << endl;
-        if (!isEmpty())
-            Server::onDesched(e);
-    }
-
 }

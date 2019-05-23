@@ -156,15 +156,21 @@ namespace RTSim {
         cout << "\t\t\t\t" << __func__ << "(). init util=" << utilization << endl;
         CBServerCallingEMRTKernel *cbs = dynamic_cast<CBServerCallingEMRTKernel*>(th);
 
-        if (cbs == NULL)
+        if (cbs == NULL) {
+            cout << "\t\t\t\t\tnot a CBServerCallingEMRTKernel => skip" << endl;
             return false;
+        }
         cout << cbs->getStatusString() << endl;
-        if (cbs->getStatus() != ServerStatus::EXECUTING)
+        
+        // server utilization (its WCET/period) considered only if it's releasing or recharging
+        if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
+            utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
+            cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << utilization << endl;
             return true;
+        }
 
-        utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
-        cout << "\t\t\t\tCBS server is executing. utilization increased to " << utilization << endl;
-        return true;
+        cout << "\t\t\t\t\tCBS server not executing or recharging => skip" << endl;
+        return false;
     }
 
     void EnergyMRTKernel::onOppChanged(unsigned int curropp, Island_BL* island) {
