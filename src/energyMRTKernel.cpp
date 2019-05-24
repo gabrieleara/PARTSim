@@ -25,6 +25,11 @@
 namespace RTSim {
     using namespace MetaSim;
 
+    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
+    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 1;
+
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
         setIslandBig(big); setIslandLittle(little);
@@ -60,7 +65,7 @@ namespace RTSim {
         return t;
     }
 
-    CPU_BL *EnergyMRTKernel::getDispatchingProcessor(const AbsRTTask *t) {
+    CPU_BL *EnergyMRTKernel::getProcessorReady(const AbsRTTask *t) {
         CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->isInAnyQueue(t));
         if (_queues->getRunningTask(c) == t)
             c = NULL;
@@ -134,7 +139,7 @@ namespace RTSim {
                 if (getCBServer_CEMRTK_Utilization(th, utilizationIsland, capacity))
                     continue;
 
-                if (getDispatchingProcessor(th)->getIslandType() == c1->getIslandType() ||
+                if (getProcessorReady(th)->getIslandType() == c1->getIslandType() ||
                     dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) { // todo maybe guard removable
                     utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
                     cout << "\t\t\t\tready task " << th->toString() << " -> isl util=" << utilizationIsland << endl;

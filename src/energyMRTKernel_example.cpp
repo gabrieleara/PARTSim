@@ -37,10 +37,8 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 15;
+    int TEST_NO = 18;
 
-    // 15();
-    
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
         OPP_big = stoi(argv[2]);
@@ -500,7 +498,7 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(17);
 
             assert(k->getProcessor(tasks[1]) == cpus_little[0]);
-            assert(k->getDispatchingProcessor(tasks[0]) == cpus_little[0]);
+            assert(k->getProcessorReady(tasks[0]) == cpus_little[0]);
 
             SIMUL.run_to(156);
 
@@ -594,7 +592,7 @@ int main(int argc, char *argv[]) {
             assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
             assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
             assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
-            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[4]))->getIslandType() == IslandType::BIG);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[4]))->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -642,7 +640,7 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(1);
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
             assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
-            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[1])) == cpus_big[0]);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
             assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
             assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
             assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
@@ -656,7 +654,7 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(501);
             // same tests as above
             assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
-            assert(dynamic_cast<CPU_BL*>(k->getDispatchingProcessor(tasks[1])) == cpus_big[0]);
+            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
             assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
             assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
             assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
@@ -721,8 +719,8 @@ int main(int argc, char *argv[]) {
         else if (TEST_NO == 16) {
             /**
                 Towards servers. Reproducing Mr.Cucinotta's example.
-                A server with (Q=5,T=10) and a task arriving at 0 and ending at 2, period 10.
-                Its active utilization is kept until 4.
+                A server with (Q=2,T=10) and a task arriving at 0 and ending at 2, period 10.
+                Its active utilization is kept until 10.
              */
             PeriodicTask *t2 = new PeriodicTask(10, 10 , 0, "TaskA"); 
             t2->insertCode("fixed(2,bzip2);");

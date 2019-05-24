@@ -22,15 +22,11 @@
 #include "rrsched.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
-#define EMRTK_BALANCE_ENABLED       1 /* Can't imagine disabling it, but so policy is in the list :) */
-#define EMRTK_LEAVE_LITTLE3_ENABLED 0
-#define EMRTK_MIGRATE_ENABLED       1
-#define EMRTK_CBS_YIELD_ENABLED     1
 
 namespace RTSim {
 
   class CBServer;
-  class CBServerCallingEMRTKernel;
+  class CBServerCallingEMRTKernel;  
 
     /**
        Manages tasks migrations among cores and how islands frequency
@@ -399,6 +395,10 @@ namespace RTSim {
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
 
     public:
+        static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
+        static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
+        static bool EMRTK_MIGRATE_ENABLED       ;
+        static bool EMRTK_CBS_YIELD_ENABLED     ;
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
@@ -460,8 +460,15 @@ namespace RTSim {
         virtual void dispatch(CPU* c) {}
 
         /// Tells where a task has been dispatched (when it's in the limbo
-        /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor()
-        CPU_BL* getDispatchingProcessor(const AbsRTTask* t);
+        /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor() not anymore
+
+        /// Tells on what core queue a task is ready (and not running)
+        CPU_BL* getProcessorReady(const AbsRTTask* t);
+
+        /// Get core where task is running
+        virtual CPU *getProcessorRunning(const AbsRTTask *t) const {
+          return _queues->getProcessorRunning(t);
+        }
 
         /// Get core where task is dispatched (either running and ready)
         virtual CPU *getProcessor(const AbsRTTask *t) const {
@@ -548,7 +555,7 @@ namespace RTSim {
               If the task on a CBS server ends and the server gets empty,
               schedule ready tasks on the core (i.e., deschedule & schedule server)
               */
-            if (!EMRTK_CBS_YIELD_ENABLED) {
+            if (!EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED) {
               cout << "CBS server yielding policy disabled => yeilding skip";
               return;
             }

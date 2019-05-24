@@ -11,17 +11,21 @@ using namespace MetaSim;
 using namespace RTSim;
 using namespace std;
 
+#define FORCE_REQUISITES    0 /* 1 if you want to try all experiments */
+
 string workload = "bzip2";
 string task_name = "";
 int init_sequence = 0;
 
 class Requisite { 
     public:
-        bool EMRTK_leave_little3, EMRTK_migrate;
-        // in the default case, you don't want neither leave_little3 and migrate
-        Requisite(bool leave_little3 = false, bool migrate = false)
-            : EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate) {}
+        bool EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield;
+        // in the default case, you don't want neither leave_little3 and migrate and CBS servers yielding
+        Requisite(bool leave_little3 = false, bool migrate = false, bool cbs_yield = false)
+            : EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate), EMRTK_cbs_yield(cbs_yield) {}
 };
+
+map<int, Requisite> performedTests;
 
 void getCores(vector<CPU_BL*> &big, vector<CPU_BL*> &little, Island_BL **island_bl_little, Island_BL **island_bl_big);
 int  init_suite(EnergyMRTKernel** kern);
@@ -32,7 +36,9 @@ bool checkRequisites(Requisite reqs);
 TEST_CASE("exp0") {
     init_sequence = 0;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) ))  return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -63,7 +69,9 @@ TEST_CASE("exp0") {
 TEST_CASE("exp1") {
     init_sequence = 1;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -106,7 +114,9 @@ TEST_CASE("exp1") {
 TEST_CASE("exp2") {
     init_sequence = 2;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -152,7 +162,9 @@ TEST_CASE("exp2") {
 TEST_CASE("exp3") {
     init_sequence = 3;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -183,7 +195,9 @@ TEST_CASE("exp3") {
 TEST_CASE("exp4") {
     init_sequence = 4;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     PeriodicTask* task[5]; // to be cleared after each test
     EnergyMRTKernel *kern;
@@ -240,7 +254,9 @@ TEST_CASE("exp4") {
 TEST_CASE("exp5") {
     init_sequence = 5;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -314,7 +330,9 @@ TEST_CASE("exp5") {
 TEST_CASE("exp6") {
     init_sequence = 6;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     CPU_BL* cpu_task[5]; // to be cleared after each test
@@ -404,7 +422,9 @@ TEST_CASE("exp6") {
 TEST_CASE("exp7") {
     init_sequence = 7;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -494,7 +514,9 @@ TEST_CASE("exp7") {
 TEST_CASE("exp8") {
     init_sequence = 8;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false,false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[9]; // to be cleared after each test
@@ -617,7 +639,9 @@ TEST_CASE("exp8") {
 TEST_CASE("exp9") {
     init_sequence = 9;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, true) )) return;
+    Requisite req(false, true);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -719,7 +743,9 @@ TEST_CASE("exp10") {
 	  */
 	init_sequence = 10;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -772,7 +798,9 @@ TEST_CASE("exp12") {
       */
     init_sequence = 12;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     vector<Scheduler*> schedulers;
     vector<RTKernel*> kernels;
@@ -870,7 +898,9 @@ TEST_CASE("exp13") {
       */
     init_sequence = 13;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -944,7 +974,9 @@ TEST_CASE("exp14") {
       */
     init_sequence = 14;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -1024,7 +1056,9 @@ TEST_CASE("exp15") {
      */
     init_sequence = 15;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -1080,7 +1114,9 @@ TEST_CASE("Experiment 16") {
      */
     init_sequence = 16;
     cout << "Begin of experiment " << init_sequence << endl;
-    if (!checkRequisites( Requisite(false, false) )) return;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -1132,7 +1168,153 @@ TEST_CASE("Experiment 16") {
     cout << "End of Experiment #" << init_sequence << endl << endl;
 }
 
+TEST_CASE("Experiment 18") {
+    /**
+        The objective here is to find the time at which the task in the server
+        goes from releasing to idle (time_t). Also, I want to see how
+        cores utilization is computed (=> leave 2 bigs and 1 little enabled).
 
+        Given that time, 3 experiments are performed. In the first one, another
+        task comes before the server task's over. In the second one, it comes before time_t.
+        In the third one, it comes afterwards.
+        You should observe that, in the first case, the core utilization
+        considers server task; in the second one, the releasing task; in the other,
+        the idle task is not considered.
+
+        In all cases, the server task remains in the core queue until time_t. Later, it
+        goes back to the general scheduler.
+
+        Server and tasks run on the same core, a big max freq for convenience.
+      */
+    init_sequence = 18;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false, true);
+    if (!checkRequisites( req ))  return;
+    performedTests[init_sequence] = req;
+
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    assert(kern != NULL);
+    vector<RTKernel*> kernels = { kern };
+    vector<AbsRTTask*> tasks;
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+
+    cpus_little[0]->toggleDisabled();
+    cpus_little[1]->toggleDisabled();
+    cpus_little[2]->toggleDisabled();
+    cpus_little[3]->toggleDisabled();
+    cpus_big[2]->toggleDisabled();
+    cpus_big[3]->toggleDisabled();
+
+    cpus_big[0]->setOPP(18);
+    cpus_big[1]->setOPP(18);
+
+    vector<int> activ = { 6, 8, 12 };
+
+    // Already-there tasks
+    PeriodicTask *t0_little = new PeriodicTask(20, 20 , 0, "Task1_little0"); 
+    t0_little->insertCode("fixed(8,bzip2);");
+    t0_little->setAbort(false);
+    tasks.push_back(t0_little);
+    kernels[0]->addTask(*t0_little, "");
+
+    NonPeriodicTask *t0_big0 = new NonPeriodicTask(10, 10, 0, "Task2_Big0"); 
+    t0_big0->insertCode("fixed(5,bzip2);");
+    t0_big0->setAbort(false);
+    tasks.push_back(t0_big0);
+    kernels[0]->addTask(*t0_big0, "");
+
+    PeriodicTask *t0_big1 = new PeriodicTask(30, 30 , 0, "Task3_Big1"); 
+    t0_big1->insertCode("fixed(15,bzip2);");
+    t0_big1->setAbort(false);
+    tasks.push_back(t0_big1);
+    kernels[0]->addTask(*t0_big1, "");
+
+    PeriodicTask *t1_big1 = new PeriodicTask(31, 31 , 0, "TaskReady_Big1"); 
+    t1_big1->insertCode("fixed(1,bzip2);");
+    t1_big1->setAbort(false);
+    tasks.push_back(t1_big1);
+    kernels[0]->addTask(*t1_big1, "");
+    
+
+
+    // CBS server tasks
+    NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
+    tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
+    tos->setAbort(false);
+
+    NonPeriodicTask *tos2 = new NonPeriodicTask(10, 10 , 0, "AfterTaskOnServer"); 
+    tos2->insertCode("fixed(2,bzip2);");
+    tos2->setAbort(false);
+
+    CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
+    serv->addTask(*tos);
+    serv->addTask(*tos2);
+    tasks.push_back(serv);
+    kernels[0]->addTask(*serv, "");
+
+
+
+    // Tasks coming freely: the dynamic situations
+    PeriodicTask *t5 = new PeriodicTask(30, 30 , 0, "TaskDuring"); 
+    t5->insertCode("fixed(2,bzip2);");
+    t5->setAbort(false);
+    tasks.push_back(t5);
+    kernels[0]->addTask(*t5, "");
+
+    PeriodicTask *t3 = new PeriodicTask(30, 30 , 0, "TaskBefore"); 
+    t3->insertCode("fixed(1,bzip2);");
+    t3->setAbort(false);
+    tasks.push_back(t3);
+    kernels[0]->addTask(*t3, "");
+
+    PeriodicTask *t4 = new PeriodicTask(30, 30 , 0, "TaskAfter"); 
+    t4->insertCode("fixed(1,bzip2);");
+    t4->setAbort(false);
+    tasks.push_back(t4);
+    kernels[0]->addTask(*t4, "");
+    
+
+
+    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+    k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
+    k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
+    k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+    k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);  // it should preempt the executing task on big 0
+    // server's free to go wherever.
+
+    cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+    cout << "Running simulation!" << endl;
+    SIMUL.initSingleRun();
+
+    t5->activate(Tick(activ[0]));
+    t3->activate(Tick(activ[1]));
+    t4->activate(Tick(activ[2]));
+    tos2->activate(Tick(11));
+
+    MultiCoresQueues* queues = k->getEnergyMultiCoresScheds();
+
+    SIMUL.run_to(5);
+    REQUIRE (k->getProcessorRunning(t0_little) == cpus_little[0]);
+    REQUIRE (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+    REQUIRE (queues->getProcessorReady(t0_big1) == cpus_big[1]);
+    
+
+    SIMUL.run_to(10);
+    
+
+    SIMUL.run_to(16);
+    cout << queues->toString() << endl;
+    k->print();
+
+    SIMUL.endSingleRun();
+    for (int j = 0; j < tasks.size(); j++)
+        delete tasks[j];
+    delete tos; delete tos2;
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+}
 
 void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL **island_bl_little, Island_BL **island_bl_big) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
@@ -1303,14 +1485,34 @@ bool inRangeMinMax(double eval, const double min, const double max) {
 }
 
 bool checkRequisites(Requisite reqs) {
-    cout << "Experiments requires EMRTK_leave_little3: " << reqs.EMRTK_leave_little3 << " and EMRTK_migrate: " << reqs.EMRTK_migrate << endl;
-    cout << "Current settings: EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << ", EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << endl; 
-    if ( reqs.EMRTK_leave_little3 != EMRTK_LEAVE_LITTLE3_ENABLED ) {
-        cout << "Test requires EMRTK_LEAVE_LITTLE3_ENABLED = 1, but it's disabled: " << EMRTK_LEAVE_LITTLE3_ENABLED << ". Skip" << endl;
+    cout << "Experiments requires EMRTK_leave_little3: " << reqs.EMRTK_leave_little3 << " and EMRTK_migrate: " << reqs.EMRTK_migrate << " and EMRTK_cbs_yield: " << reqs.EMRTK_cbs_yield << endl;
+    cout << "Current settings: EMRTK_LEAVE_LITTLE3_ENABLED: " << EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED << ", EMRTK_MIGRATE_ENABLED: " << EnergyMRTKernel::EMRTK_MIGRATE_ENABLED << ", EMRTK_CBS_YIELD_ENABLED: " << EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED << endl; 
+
+    if (FORCE_REQUISITES) {
+        cout << "Changing EMRTK policies settings as needed" << endl;
+
+        cout << "\tSetting Leave Little 3 free policy to " << reqs.EMRTK_leave_little3 << endl;
+        EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = reqs.EMRTK_leave_little3;
+
+        cout << "\tSetting migration policy to " << reqs.EMRTK_migrate << endl;
+        EnergyMRTKernel::EMRTK_MIGRATE_ENABLED = reqs.EMRTK_migrate;
+
+        cout << "\tSetting CBS Server yielding policy to " << reqs.EMRTK_cbs_yield << endl;
+        EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED = reqs.EMRTK_cbs_yield;
+
+        return true;
+    }
+
+    if ( reqs.EMRTK_leave_little3 != EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED ) {
+        cout << "Test requires EMRTK_LEAVE_LITTLE3_ENABLED = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED << ". Skip" << endl;
         return false;
     }
-    if ( reqs.EMRTK_migrate != EMRTK_MIGRATE_ENABLED ) {
-        cout << "Test requires EMRTK_MIGRATE_ENABLED = 1, but it's disabled: " << EMRTK_MIGRATE_ENABLED << ". Skip" << endl;
+    if ( reqs.EMRTK_migrate != EnergyMRTKernel::EMRTK_MIGRATE_ENABLED ) {
+        cout << "Test requires EMRTK_MIGRATE_ENABLED = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_MIGRATE_ENABLED << ". Skip" << endl;
+        return false;
+    }
+    if (reqs.EMRTK_cbs_yield != EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED) {
+        cout << "Test requires EMRTK_CBS_YIELD_ENABLED = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED << ". Skip" << endl;
         return false;
     }
     return true;
