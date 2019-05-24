@@ -251,10 +251,23 @@ namespace RTSim {
         virtual AbsRTTask* getFirstReady(CPU* c);
 
         /// Get processor where task is running
-        CPU *getProcessorRunning(const AbsRTTask *t) const {
+        CPU* getProcessorRunning(const AbsRTTask *t) const {
           for (const auto& elem : _running_tasks)
             if (elem.second == t)
               return elem.first;
+          return NULL;
+        }
+
+        /// Get processor where task is ready
+        CPU* getProcessorReady(const AbsRTTask *t) const {
+          for (auto& elem : _queues) {
+              vector<AbsRTTask*> tasks = getAllTasksInQueue(elem.first);
+              for (AbsRTTask* task : tasks)
+                if (task == t) {
+                  CPU* cpu = elem.first;
+                  return cpu;
+                }
+          }
           return NULL;
         }
 
@@ -262,14 +275,7 @@ namespace RTSim {
         CPU* getProcessor(const AbsRTTask *t) const {
           CPU *cpu = getProcessorRunning(t);
           if (cpu == NULL)
-            for (auto& elem : _queues) {
-              vector<AbsRTTask*> tasks = getAllTasksInQueue(elem.first);
-              for (AbsRTTask* task : tasks)
-                if (task == t) {
-                  cpu = elem.first;
-                  return cpu;
-                }
-            }
+            cpu = getProcessorReady(t);  
           return cpu;
         }
 
@@ -402,7 +408,9 @@ namespace RTSim {
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
 
             forgetU_active();
-            makeReady(getProcessor(cbs));
+            CPU *cpu = getProcessorRunning(cbs);
+            if (cpu != NULL) // server might be with no task => already ready
+              makeReady(cpu);
         }
       
       /**

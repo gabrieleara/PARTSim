@@ -956,20 +956,81 @@ int main(int argc, char *argv[]) {
             cout << "Running simulation!" << endl;
             SIMUL.initSingleRun();
 
+            double init_util = 0.0;
+
             t5->activate(Tick(activ[0]));
             t3->activate(Tick(activ[1]));
             t4->activate(Tick(activ[2]));
             tos2->activate(Tick(11));
 
-            SIMUL.run_to(10);
-            cout << "t=10" << endl;
-            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
-            k->print();
-            cout << "server state " << serv->getStatusString() << endl;
+            SIMUL.run_to(1); // init setup
+            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            assert (k->getProcessorRunning(t0_big0) == cpus_big[0]);
+            assert (k->getProcessorReady(serv) == cpus_big[0]);
+            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            // assert (double(t0_big0->deadEvt.getTime()) == 5.0); todo
 
-            SIMUL.run_to(16);
-            cout << k->getEnergyMultiCoresScheds()->toString() << endl;
-            k->print();
+            SIMUL.run_to(5); // t0_big0 ends and tos (serv) starts
+            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            assert (k->getProcessorRunning(serv) == cpus_big[0]);
+            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            assert (serv->getTasks().size() == 1);
+            assert (serv->getTasks().at(0) == tos);
+            cout << " wcet " << tos->getWCET(1.0) << endl;
+            assert (tos->getWCET(1.0) + double(SIMUL.getTime()) == 7.0);
+            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 10.0 / 30.0 + 1.0 / 31.0);
+            
+            SIMUL.run_to(6); // taskDuring comes and goes ready on big0. Island util considers server util and tasks on big1
+            assert (k->getProcessorRunning(serv) == cpus_big[0]);
+            assert (k->getProcessorReady(t5) == cpus_big[0]);
+
+            SIMUL.run_to(7); // tos ends, yields, goes ready and taskDuring starts
+            assert (serv->isEmpty());
+            assert (k->getProcessorReady(serv) == cpus_big[0]);
+            assert (k->getProcessorRunning(t5) == cpus_big[0]);
+            assert (t5->getWCET(1.0) + double(SIMUL.getTime()) == 9.0);
+            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
+            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
+            
+            SIMUL.run_to(8); // taskBefore (the server DL) comes and goes ready on big0. Island util considers u_active of big0 and tasks on big1
+            assert (k->getProcessorRunning(t5) == cpus_big[0]);
+            assert (k->getProcessorReady(serv) == cpus_big[0]);
+            assert (k->getProcessorReady(t3) == cpus_big[0]);
+
+            SIMUL.run_to(9); // taskDuring ends, serv yields and is ready, taskBefore starts
+            assert (serv->isEmpty());
+            assert (k->getProcessorReady(serv) == cpus_big[0]);
+            assert (k->getProcessorRunning(t3) == cpus_big[0]);
+            assert (t3->getWCET(1.0) + double(SIMUL.getTime()) == 10.0);
+
+            SIMUL.run_to(10); // server deadline, it recharges itself
+            assert (serv->isEmpty());
+            for (CPU* c : cpus_big)
+                assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
+
+            SIMUL.run_to(11); // tos2 comes, server gets running
+            assert (serv->getTasks().size() == 1);
+            assert (serv->getTasks().at(0) == tos2);
+            assert (serv->getStatus() == ServerStatus::EXECUTING);
+            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 15.0/30.0 + 1.0 / 31.0);
+            assert (!k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            assert (tos2->getWCET(1.0) + double(SIMUL.getTime()) == 13.0);
+
+            SIMUL.run_to(12); // taskAfter comes. Island utilization considers server and tasks on big1
+            assert (k->getProcessorRunning(serv) == cpus_big[0]);
+            assert (k->getProcessorReady(t4) == cpus_big[0]);
+
+            SIMUL.run_to(13); // tos2 ends, task after starts
+            assert (k->getProcessorRunning(t4) == cpus_big[0]);
+            assert (k->getProcessorReady(serv) == cpus_big[0]);
+            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
+            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            assert (t4->getWCET(1.0) + double(SIMUL.getTime()) == 14.0);
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

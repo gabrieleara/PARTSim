@@ -513,8 +513,10 @@ namespace RTSim {
         /// Returns the sum of utilization active of tasks on core c
         double getUtilization_active(CPU_BL* c) const;
 
-        /// If th is an executing CBS server CEMRTK., it increases utilization by the CBS server utilization and return true
-        bool getCBServer_CEMRTK_Utilization(AbsRTTask *th, double &utilization, const double capacity) const;
+        /**
+          If it's an executing CBS server CEMRTK., it increases utilization by the CBS server utilization and return true.
+          */
+        bool getCBServer_CEMRTK_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
 
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
         void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {

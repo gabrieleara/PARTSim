@@ -48,7 +48,27 @@ namespace RTSim {
       }
 
         /// Returns all tasks currently in the scheduler
-        vector<AbsRTTask*> getTasks() const { return sched_->getTasks(); }
+        vector<AbsRTTask*> getAllTasks() const { return sched_->getTasks(); }
+
+        /// Returns all tasks active in the server TODO IT'S WRONG!!
+        vector<AbsRTTask*> getTasks() const {
+          vector<AbsRTTask*> res;
+          vector<AbsRTTask*> tasks = getAllTasks();
+          for (int i = 0; i < tasks.size(); i++) {
+            Task *tt = dynamic_cast<Task*>(tasks.at(i));
+            cout << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
+            if (tt->arrEvt.getTime() > getPeriod())
+              continue;
+            res.push_back(tt);
+          }
+
+          cout << endl<<"t=" << SIMUL.getTime() << endl;
+          for (AbsRTTask* t:res)
+            cout << t->toString() << endl;
+          cout << "end tasks"<<endl;
+
+          return res;
+        }
 
         /// Tells if scheduler currently holds any task. Function not that much tested!
         bool isEmpty() const {
@@ -58,11 +78,6 @@ namespace RTSim {
           //   numTasks--;
           vector<AbsRTTask*> tasks = getTasks();
           unsigned int numTasks = tasks.size();
-          for (AbsRTTask* t : tasks) {
-            Task *tt = dynamic_cast<Task*>(t);
-            if (tt->arrEvt.getTime() > SIMUL.getTime() || tt->endEvt.getTime() <= SIMUL.getTime())
-              numTasks--;
-          }
           return numTasks == 0;
         }
         
@@ -198,7 +213,7 @@ namespace RTSim {
       virtual double getWCET(double capacity) const {
         double wcet = 0.0;
 
-        for (AbsRTTask* t : tasks)
+        for (AbsRTTask* t : getTasks())
           wcet += double(dynamic_cast<Task*>(t)->getWCET());
 
         wcet = wcet / capacity;

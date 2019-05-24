@@ -176,7 +176,7 @@ namespace RTSim {
         // server utilization (its WCET/period) considered only if it's releasing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
             utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
-            cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << utilization << endl;
+            cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << cbs->getRemainingWCET(capacity) << "/" << double(cbs->getDeadline()) << "=" << utilization << " capacity=" << capacity << endl;
             return true;
         }
 
