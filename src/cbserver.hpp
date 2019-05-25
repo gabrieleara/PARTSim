@@ -4,6 +4,7 @@
 #include <server.hpp>
 #include <capacitytimer.hpp>
 #include <list>
+#include "rttask.hpp"
 
 namespace RTSim {
     using namespace MetaSim;
@@ -52,20 +53,26 @@ namespace RTSim {
 
         /// Returns all tasks active in the server TODO IT'S WRONG!!
         vector<AbsRTTask*> getTasks() const {
+          cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
           vector<AbsRTTask*> res;
           vector<AbsRTTask*> tasks = getAllTasks();
           for (int i = 0; i < tasks.size(); i++) {
             Task *tt = dynamic_cast<Task*>(tasks.at(i));
-            cout << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
-            if (tt->arrEvt.getTime() > getPeriod())
+            cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
+            //if (tt->arrEvt.getTime() > getPeriod())
+            if (SIMUL.getTime() == 11)
+              cout <<"sad";
+            NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask*>(tt);
+            if ( (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isExecuting()) || tt->endEvt.getTime() == SIMUL.getTime()
+              || (ntt != NULL && (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime() || !tt->isActive())) ) // todo make easier?
               continue;
             res.push_back(tt);
           }
 
-          cout << endl<<"t=" << SIMUL.getTime() << endl;
+          cout << "\t-----------\n\tCBS::gettasks() t=" << SIMUL.getTime() << endl;
           for (AbsRTTask* t:res)
-            cout << t->toString() << endl;
-          cout << "end tasks"<<endl;
+            cout << "\t\t" << t->toString() << endl;
+          cout << "\tend tasks"<<endl;
 
           return res;
         }
@@ -231,11 +238,10 @@ namespace RTSim {
       /// On deschedule event (of server - and of tasks in it)
       virtual void onDesched(Event *e) {
         cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << endl;
-        // if (!isEmpty())
-        if (isEmpty()) {
+        if (isEmpty())
             yield();
+        else // could happend with non-periodic tasks
             Server::onDesched(e);
-        }
       }
 
       /// Arrival event of task of server

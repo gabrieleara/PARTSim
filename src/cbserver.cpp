@@ -115,6 +115,7 @@ namespace RTSim {
     {
         cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
+        assert(isEmpty());
 
         status = READY;
         cap = cap - (SIMUL.getTime() - last_time);
@@ -127,6 +128,7 @@ namespace RTSim {
     {
         cout << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
+        assert(isEmpty());
     
         if (status == EXECUTING) {
             cap = cap - (SIMUL.getTime() - last_time);
@@ -325,6 +327,7 @@ namespace RTSim {
         cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__ << "() for " << t->toString() << endl;
         CPU* cpu = dynamic_cast<Task*>(t)->getCPU();
         Server::onEnd(t);
+        cout << "End of Server::onEnd() in CBSCEMRTK::onEnd()" << endl;
 
         if (isEmpty())
             yield();

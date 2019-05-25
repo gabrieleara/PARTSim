@@ -69,7 +69,7 @@ namespace RTSim {
         /**
            Object to string. you should override this function in derived classes
          */
-        virtual std::string toString() const;
+        virtual string toString() const;
 
         /// Returns deadline. Assumption is DL = period
         virtual Tick getDeadline() const { return getPeriod(); }
@@ -106,6 +106,8 @@ namespace RTSim {
             cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
             endRun();
         }
+
+        virtual string toString() const;
 
     };
 

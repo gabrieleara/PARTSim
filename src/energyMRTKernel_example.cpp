@@ -979,7 +979,7 @@ int main(int argc, char *argv[]) {
             assert (serv->getTasks().size() == 1);
             assert (serv->getTasks().at(0) == tos);
             cout << " wcet " << tos->getWCET(1.0) << endl;
-            assert (tos->getWCET(1.0) + double(SIMUL.getTime()) == 7.0);
+            assert ((tos->getWCET(1.0) + double(SIMUL.getTime())) == 7.0);
             assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
             assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 10.0 / 30.0 + 1.0 / 31.0);
             
@@ -991,7 +991,7 @@ int main(int argc, char *argv[]) {
             assert (serv->isEmpty());
             assert (k->getProcessorReady(serv) == cpus_big[0]);
             assert (k->getProcessorRunning(t5) == cpus_big[0]);
-            assert (t5->getWCET(1.0) + double(SIMUL.getTime()) == 9.0);
+            assert ((t5->getWCET(1.0) + double(SIMUL.getTime())) == 9.0);
             assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
             assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
             
@@ -1004,7 +1004,7 @@ int main(int argc, char *argv[]) {
             assert (serv->isEmpty());
             assert (k->getProcessorReady(serv) == cpus_big[0]);
             assert (k->getProcessorRunning(t3) == cpus_big[0]);
-            assert (t3->getWCET(1.0) + double(SIMUL.getTime()) == 10.0);
+            assert ((t3->getWCET(1.0) + double(SIMUL.getTime())) == 10.0);
 
             SIMUL.run_to(10); // server deadline, it recharges itself
             assert (serv->isEmpty());
@@ -1015,9 +1015,9 @@ int main(int argc, char *argv[]) {
             assert (serv->getTasks().size() == 1);
             assert (serv->getTasks().at(0) == tos2);
             assert (serv->getStatus() == ServerStatus::EXECUTING);
-            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 15.0/30.0 + 1.0 / 31.0);
-            assert (!k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
-            assert (tos2->getWCET(1.0) + double(SIMUL.getTime()) == 13.0);
+            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 2.0 / 21.0 + 4.0/30.0 + 1.0 / 31.0);
+            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            assert ((tos2->getWCET(1.0) + double(SIMUL.getTime())) == 13.0);
 
             SIMUL.run_to(12); // taskAfter comes. Island utilization considers server and tasks on big1
             assert (k->getProcessorRunning(serv) == cpus_big[0]);
@@ -1030,7 +1030,7 @@ int main(int argc, char *argv[]) {
             assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
             assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
             assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
-            assert (t4->getWCET(1.0) + double(SIMUL.getTime()) == 14.0);
+            assert ((t4->getWCET(1.0) + double(SIMUL.getTime())) == 14.0);
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;

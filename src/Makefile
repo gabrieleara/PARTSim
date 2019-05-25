@@ -50,8 +50,8 @@ cbserver.o: ./trace.hpp ./gevent.hpp ./abskernel.hpp ./abstask.hpp ./cpu.hpp
 cbserver.o: ./timer.hpp ./powermodel.hpp ./task.hpp ./randomvar.hpp
 cbserver.o: ./cloneable.hpp ./kernel.hpp ./kernevt.hpp ./taskevt.hpp
 cbserver.o: ./feedback.hpp ./taskexc.hpp ./scheduler.hpp resmanager.hpp
-cbserver.o: ./capacitytimer.hpp energyMRTKernel.hpp mrtkernel.hpp rttask.hpp
-cbserver.o: ./regvar.hpp multi_cores_scheds.hpp ./exeinstr.hpp ./instr.hpp
+cbserver.o: ./capacitytimer.hpp rttask.hpp ./regvar.hpp energyMRTKernel.hpp
+cbserver.o: mrtkernel.hpp multi_cores_scheds.hpp ./exeinstr.hpp ./instr.hpp
 cbserver.o: utils.hpp ./rrsched.hpp ./edfsched.hpp
 cpu.o: ./cpu.hpp ./trace.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp
 cpu.o: ./strtoken.hpp ./timer.hpp ./simul.hpp ./basestat.hpp
@@ -211,7 +211,8 @@ mrtkernel.o: ./timer.hpp ./gevent.hpp ./powermodel.hpp ./abstask.hpp
 mrtkernel.o: mrtkernel.hpp ./kernel.hpp ./abskernel.hpp ./kernevt.hpp
 mrtkernel.o: ./task.hpp ./randomvar.hpp ./cloneable.hpp ./taskevt.hpp
 mrtkernel.o: ./feedback.hpp ./taskexc.hpp resmanager.hpp ./scheduler.hpp
-mrtkernel.o: cbserver.hpp server.hpp ./capacitytimer.hpp
+mrtkernel.o: cbserver.hpp server.hpp ./capacitytimer.hpp rttask.hpp
+mrtkernel.o: ./regvar.hpp
 multi_cores_scheds.o: multi_cores_scheds.hpp ./entity.hpp ./baseexc.hpp
 multi_cores_scheds.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp
 multi_cores_scheds.o: ./scheduler.hpp ./plist.hpp ./simul.hpp ./basestat.hpp
@@ -223,7 +224,7 @@ multi_cores_scheds.o: ./kernevt.hpp ./task.hpp ./randomvar.hpp
 multi_cores_scheds.o: ./cloneable.hpp ./feedback.hpp ./taskexc.hpp
 multi_cores_scheds.o: ./exeinstr.hpp ./instr.hpp utils.hpp cbserver.hpp
 multi_cores_scheds.o: server.hpp resmanager.hpp ./capacitytimer.hpp
-multi_cores_scheds.o: ./rrsched.hpp ./edfsched.hpp
+multi_cores_scheds.o: rttask.hpp ./regvar.hpp ./rrsched.hpp ./edfsched.hpp
 piresman.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 piresman.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 piresman.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp
@@ -376,7 +377,7 @@ supercbs.o: ./abstask.hpp ./cpu.hpp ./timer.hpp ./powermodel.hpp ./task.hpp
 supercbs.o: ./randomvar.hpp ./cloneable.hpp ./kernel.hpp ./kernevt.hpp
 supercbs.o: ./taskevt.hpp ./feedback.hpp ./taskexc.hpp ./scheduler.hpp
 supercbs.o: resmanager.hpp ./sporadicserver.hpp ./capacitytimer.hpp
-supercbs.o: cbserver.hpp
+supercbs.o: cbserver.hpp rttask.hpp ./regvar.hpp
 suspend_instr.o: ./kernel.hpp ./baseexc.hpp ./entity.hpp ./basetype.hpp
 suspend_instr.o: ./tick.hpp ./strtoken.hpp ./abskernel.hpp ./abstask.hpp
 suspend_instr.o: ./cpu.hpp ./trace.hpp ./timer.hpp ./simul.hpp ./basestat.hpp
