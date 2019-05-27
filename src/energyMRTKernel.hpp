@@ -337,8 +337,6 @@ namespace RTSim {
             int opp;
         };
 
-        vector<AbsRTTask*> _aperiodicTasks;
-
         // little, big (order matters for speed)
         Island_BL* _islands[2];
 
@@ -389,9 +387,6 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
-        /// Implements migration mechanism when a task in a server ends
-        void migrateAmongServer(CPU_BL* endingCPU_BL, CBServer* cbs);
-
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
         
@@ -404,32 +399,10 @@ namespace RTSim {
         /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
-
-        /// Dis-/Enable CBS Servers support. todo add code to remove it
-        void setServersSupport(const bool withServers = true) { 
-          static bool serversSupport = false;
-          _withCBServers = withServers;
-
-          if (_withCBServers && !serversSupport) {
-            serversSupport = true;
-
-            _serverBig      = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverBIG", "FIFOSched");
-            _serverLittle   = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverLITTLE", "FIFOSched");
-  
-            addTask(*_serverBig, "");
-            addTask(*_serverLittle, "");
-            addForcedDispatch(_serverLittle, getProcessors(IslandType::LITTLE)[0], 0, 999);
-            addForcedDispatch(_serverBig, getProcessors(IslandType::BIG)[0], 0, 999);
-            manageForcedDispatch(_serverLittle);
-            manageForcedDispatch(_serverBig);
-          }
-        }
-
     public:
         static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
         static bool EMRTK_MIGRATE_ENABLED       ;
-        static bool EMRTK_MIGRATE_SERVER_ENABLED;
         static bool EMRTK_CBS_YIELD_ENABLED     ;
 
         /**
@@ -438,7 +411,7 @@ namespace RTSim {
           *
           * @see MultiCoresScheds
           */
-        EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "", const bool withServers = false);
+        EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
         virtual ~EnergyMRTKernel() {
           cout << "~EnergyMRTKernel" << endl;
@@ -453,11 +426,6 @@ namespace RTSim {
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
       	Scheduler* getScheduler() { return _sched; }
-
-        /**
-          Adds the task t to the CBS server of the island
-          */
-        void addAperiodicTask(AbsRTTask* t, const string &params);
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
@@ -588,12 +556,6 @@ namespace RTSim {
           return all;
         }
 
-        /// Tells if task is aperiodic
-        bool isAperiodic(AbsRTTask *t) const {
-          bool a = ( find(_aperiodicTasks.begin(), _aperiodicTasks.end(), t) != _aperiodicTasks.end() );
-          return a;
-        }
-
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
         bool isDispatching(AbsRTTask*);
 
@@ -658,8 +620,6 @@ namespace RTSim {
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
 
           _queues->onTaskInServerEnd(t, cpu, cbs);
-
-          migrateAmongServer(dynamic_cast<CPU_BL*>(cpu), cbs);
         }
 
         /**

@@ -1052,55 +1052,6 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
-        TEST_NO = 19;
-
-        if (TEST_NO == 19) {
-            /**
-                Does OPP selection work with CBS servers?
-                I.e., if you add a task to a server, does island freq increase? (exp.d yes)
-                When a task in the CBS server of big island ends, the other one is moved 
-                to the CBS in little island? (exp.d yes)
-
-                When a task arrives into a CBS server, it is supposed to check
-                if it's admissible and to choose OPP.
-              */
-            vector<int> activ = { 1 };  
-
-            // CBS server tasks
-            NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
-            tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
-            tos->setAbort(false);
-            ttrace.attachToTask(*tos);
-            jtrace.attachToTask(*tos);
-            pstrace.attachToTask(*tos);
-
-            NonPeriodicTask *tos2 = new NonPeriodicTask(10, 10 , 0, "AfterTaskOnServer"); 
-            tos2->insertCode("fixed(2,bzip2);");
-            tos2->setAbort(false);
-            ttrace.attachToTask(*tos2);
-            jtrace.attachToTask(*tos2);
-            pstrace.attachToTask(*tos2);
-
-            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addAperiodicTask(tos, "");
-            k->addAperiodicTask(tos2, "");
-
-            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-            cout << "Running simulation!" << endl;
-            SIMUL.initSingleRun();
-
-            double init_util = 0.0;
-            tos2->activate(Tick(activ[0]));
-
-            SIMUL.run_to(1); // init setup
-            
-
-            SIMUL.endSingleRun();
-            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-            cout << "Simulation finished" << endl;
-
-            return 0;
-        }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;

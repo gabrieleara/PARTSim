@@ -28,10 +28,9 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_SERVER_ENABLED= 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 1;
 
-    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name, const bool withServers)
+    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
         setIslandBig(big); setIslandLittle(little);
         big->setKernel(this); little->setKernel(this);
@@ -51,9 +50,6 @@ namespace RTSim {
             v.push_back((CPU*) c);
 
         _queues = new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
-
-        // one CBS server per island
-        setServersSupport(withServers);
     }
 
     EnergyMultiCoresScheds::EnergyMultiCoresScheds(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
@@ -449,31 +445,6 @@ namespace RTSim {
          
     } // end EMRTK::migrate()
 
-    void EnergyMRTKernel::migrateAmongServer(CPU_BL* endingCPU, CBServer* cbs) {
-        /**
-            Migration mechanism: a task finishes on CPU c, leaving it idle.
-            If the task ends on CBS in big, do nothing.
-            If the task ends on CBS in little, try to migrate from CBS in little (with admission control).
-
-            It is basically the same policy of periodic tasks (see migrate).
-            It is assumed that CBS servers don't move among cores.
-        */
-        if (!EMRTK_MIGRATE_SERVER_ENABLED) { cout << "Server migration policy disabled => skip" << endl; return; }
-        cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
-
-        if (cbs->isEmpty()) { cout << "\tServer is empty => skip migration" << endl; return; } // it'll go yielding, thus not disturbing periodic tasks
-        
-        if (endingCPU->getIslandType() == IslandType::LITTLE) {
-            cout << "\tA task in CBS server of LITTLE  island has just finished. Trying to pull from bigs to littles" << endl;
-            if (getReadyTasks(endingCPU).empty())
-                cout << "\t\tNo ready tasks on " << endingCPU->getName() << " detected. skip" << endl;
-
-            // find consumption on the other CBS. If less, migrate.
-            
-        }
-
-    }
-
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
       cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
         finishingTask->deschedule();
@@ -481,44 +452,6 @@ namespace RTSim {
     }
 
     // ---------------------------------------------------------- CBServer management
-    
-    /**
-        At the beginning of experiments, you need to decide one of the 2 servers.
-        The server choice cannot be deferred because servers are kernels too,
-        thus both would handle task t
-      */
-    void EnergyMRTKernel::addAperiodicTask(AbsRTTask* t, const string &params) {
-        cout << "EMRTK::" << __func__ << "()" << endl;
-        vector<struct ConsumptionTable> iDeltaPows;
-
-        setServersSupport(true);
-        _aperiodicTasks.push_back(t);
-
-        setTryingTaskOnCPU_BL(true);
-        tryTaskOnCPU_BL(t, getProcessors(IslandType::LITTLE).at(0), iDeltaPows); // todo not rebust
-        cout << endl;
-        tryTaskOnCPU_BL(t, getProcessors(IslandType::BIG).at(0), iDeltaPows); // todo not rebust
-        setTryingTaskOnCPU_BL(false);
-
-        if (!iDeltaPows.empty()) {
-            sort(iDeltaPows.begin(), iDeltaPows.end(),
-             [] (struct ConsumptionTable const& e1, struct ConsumptionTable const& e2) { return e1.cons < e2.cons; });
-
-            struct ConsumptionTable chosen = iDeltaPows.at(0);
-            CPU_BL* chosenCPU = chosen.cpu;
-            unsigned int chosenOPP = chosen.opp;
-
-            // todo delete after debug
-            for (auto elem: iDeltaPows) {
-                cout << elem.cons << " " << elem.cpu->toString() << " " << elem.cpu->getFrequency(elem.opp) << endl;
-            }
-
-            CBServer* cbs = getServer(chosenCPU->getIslandType());
-            cbs->addTask(*t, params);
-            cout << "Dispatched task " << t->toString() << " to " << cbs->toString() << ", " << chosenCPU->getName() << " freq " << chosenCPU->getFrequency(chosenOPP) << endl << endl;
-        } else
-            cout << "Cannot schedule " << t->toString() << " on any server" << endl;
-    }
 
     /// Returns active utilization on CPU c. Only for debug
     double EnergyMRTKernel::getUtilization_active(CPU_BL* c) const {
@@ -716,7 +649,7 @@ namespace RTSim {
             printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
             // check whether task is admissible with the new frequency and where
-            if ( isAperiodic(t) || _sched->isAdmissible(c, getReadyTasks(c), t)) {
+            if (_sched->isAdmissible(c, getReadyTasks(c), t)) {
                 cout << "\t\t\tHere task would be admissible" << endl;
 
                 double utilization          = 0.0; // utilization on the CPU c (without new task)
