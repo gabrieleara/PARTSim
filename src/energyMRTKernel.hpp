@@ -354,6 +354,11 @@ namespace RTSim {
         /// for debug, list of discarded tasks and how many times to discard them
         map<AbsRTTask*, tuple<unsigned int>> _discardedTasks;
 
+        /// CBServers. Each island has its server
+        bool _withCBServers;
+        CBServer* _serverBig;
+        CBServer* _serverLittle;
+
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
 
@@ -382,6 +387,9 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
+        /// Implements migration mechanism when a task in a server ends
+        void migrateServer(CPU_BL* endingCPU_BL, CBServer* cbs);
+
         /**
            Tries to schedule a task on a CPU_BL, for all valid OPPs,
            remembering power consumption
@@ -398,6 +406,7 @@ namespace RTSim {
         static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
         static bool EMRTK_MIGRATE_ENABLED       ;
+        static bool EMRTK_MIGRATE_SERVER_ENABLED;
         static bool EMRTK_CBS_YIELD_ENABLED     ;
 
         /**
@@ -406,7 +415,7 @@ namespace RTSim {
           *
           * @see MultiCoresScheds
           */
-        EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
+        EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "", const bool withServers = false);
 
         virtual ~EnergyMRTKernel() {
           cout << "~EnergyMRTKernel" << endl;
@@ -421,6 +430,17 @@ namespace RTSim {
         void       setIslandLittle(Island_BL* island) { _islands[0] = island; }
         void       setIslandBig(Island_BL* island) { _islands[1] = island; }
       	Scheduler* getScheduler() { return _sched; }
+
+        /**
+          Adds the task t to the CBS server of the island
+          */
+        void addAperiodicTask(IslandType island, AbsRTTask* t) {
+          assert (_withCBServers);
+          if (island == IslandType::BIG)
+            _serverBig->addTask(*t);
+          else
+            _serverLittle->addTask(*t);
+        }
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
@@ -518,6 +538,20 @@ namespace RTSim {
           */
         bool getCBServer_CEMRTK_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
 
+        CBServer* getServers(IslandType island) const {
+          if (island == IslandType::BIG)
+            return _serverBig;
+          else
+            return _serverLittle;
+        }
+
+        vector<CBServer*> getServers() const { 
+          vector<CBServer*> all;
+          all.push_back(getServers(IslandType::LITTLE));
+          all.push_back(getServers(IslandType::BIG));
+          return all;
+        }
+
         /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
         void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
           if (filename == "")
@@ -551,7 +585,7 @@ namespace RTSim {
           _queues->onExecutingReleasing(t, cpu, cbs);
 
 
-          if (cbs->getTasks().size() - 1 == 0) {
+          if (cbs->isEmpty()) {
             /**
               Policy for CBS servers:
               If the task on a CBS server ends and the server gets empty,
@@ -578,6 +612,14 @@ namespace RTSim {
           cout << "EMRTK::" << __func__ << "()" << endl;
           _queues->onReplenishment(cbs);
           dispatch();
+        }
+
+        void onTaskInServerEnd(AbsRTTask* t, CPU* cpu, CBServer* cbs) {
+          assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
+
+          _queues->onTaskInServerEnd(t, cpu, cbs);
+
+          migrateServer(dynamic_cast<CPU_BL*>(cpu), cbs);
         }
 
         /**
@@ -625,6 +667,8 @@ namespace RTSim {
         bool manageForcedDispatch(AbsRTTask*);
 
         void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int times = 1);
+
+        void addForcedDispatchOnServer(AbsRTTask* t, IslandType island, unsigned int opp, unsigned int times = 1);
 
         /// You'll never see the task anymore scheduled. if onlyAfterEnds is false, it means kill now
         // todo delete if never used

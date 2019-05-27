@@ -11,7 +11,7 @@ using namespace MetaSim;
 using namespace RTSim;
 using namespace std;
 
-#define FORCE_REQUISITES    0 /* 1 if you want to try all experiments */
+#define FORCE_REQUISITES    1 /* 1 if you want to try all experiments */
 
 string workload = "bzip2";
 string task_name = "";

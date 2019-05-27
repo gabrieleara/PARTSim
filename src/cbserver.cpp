@@ -332,8 +332,7 @@ namespace RTSim {
         if (isEmpty())
             yield();
 
-        // todo move to executing_releasing()?
-        dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, cpu, this);
+        dynamic_cast<EnergyMRTKernel*>(kernel)->onTaskInServerEnd(t, cpu, this);
     }
 
     void CBServerCallingEMRTKernel::onReplenishment(Event *e) {
@@ -347,10 +346,6 @@ namespace RTSim {
     void CBServerCallingEMRTKernel::executing_releasing() {
         cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::executing_releasing();
-        //cout << toString() << endl; PB: task is erased from sched_ before
-
-        //AbsRTTask* t = sched_->getFirst();
-        //dynamic_cast<EnergyMRTKernel*>(kernel)->onExecutingReleasing(t, this);
     }
 
     /// remember to call Server::setKernel(kern) before this

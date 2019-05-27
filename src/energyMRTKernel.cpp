@@ -27,10 +27,11 @@ namespace RTSim {
 
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_SERVER_ENABLED= 0;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 1;
 
-    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
+    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name, const bool withServers)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
         setIslandBig(big); setIslandLittle(little);
         big->setKernel(this); little->setKernel(this);
@@ -50,6 +51,18 @@ namespace RTSim {
             v.push_back((CPU*) c);
 
         _queues = new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
+
+        // one CBS server per island
+        _withCBServers = withServers;
+        if (withServers) {
+            _serverBig      = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverBIG", "FIFOSched");
+            _serverLittle   = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverLITTLE", "FIFOSched");
+
+            addTask(*_serverBig, "");
+            addTask(*_serverLittle, "");
+            addForcedDispatch(_serverLittle, getProcessors(IslandType::LITTLE)[0], 0, 1);
+            addForcedDispatch(_serverBig, getProcessors(IslandType::BIG)[0], 0, 1);
+        }
     }
 
     EnergyMultiCoresScheds::EnergyMultiCoresScheds(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
@@ -232,6 +245,10 @@ namespace RTSim {
 
     void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp, unsigned int times) {
         _m_forcedDispatch[t] = make_tuple(c, opp, times);
+    }
+
+    void addForcedDispatchOnServer(AbsRTTask* t, IslandType island, unsigned int opp, unsigned int times = 1) {
+        //todo
     }
 
     // for gdb
@@ -438,6 +455,31 @@ namespace RTSim {
          
     } // end EMRTK::migrate()
 
+    void EnergyMRTKernel::migrateServer(CPU_BL* endingCPU, CBServer* cbs) {
+        /**
+            Migration mechanism: a task finishes on CPU c, leaving it idle.
+            If the task ends on CBS in big, do nothing.
+            If the task ends on CBS in little, try to migrate from CBS in little (with admission control).
+
+            It is basically the same policy of periodic tasks (see migrate).
+            It is assumed that CBS servers don't move among cores.
+        */
+        if (!EMRTK_MIGRATE_SERVER_ENABLED) { cout << "Server migration policy disabled => skip" << endl; return; }
+        cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
+
+        if (cbs->isEmpty()) { cout << "\tServer is empty => skip migration" << endl; return; } // it'll go yielding, thus not disturbing periodic tasks
+        
+        if (endingCPU->getIslandType() == IslandType::LITTLE) {
+            cout << "\tA task in CBS server of LITTLE  island has just finished. Trying to pull from bigs to littles" << endl;
+            if (getReadyTasks(endingCPU).empty())
+                cout << "\t\tNo ready tasks on " << endingCPU->getName() << " detected. skip" << endl;
+
+            // find consumption on the other CBS. If less, migrate.
+            // todo
+        }
+
+    }
+
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
       cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
         finishingTask->deschedule();
@@ -618,15 +660,15 @@ namespace RTSim {
             DBGPRINT("Trying to scale up CPUs");
             cout << endl << "Trying to scale up CPUs" << endl;
             vector<struct ConsumptionTable> iDeltaPows;
-            cout << endl << "\t------------" << endl << "\tCurrent situation: " << endl << "\t" << _queues->toString() << "\t------------" << endl;
+            cout << endl << "\t------------\n\tCurrent situation:\n\t" << _queues->toString() << "\t------------" << endl;
 
             for (CPU_BL* c : cpus) {
                 tryTaskOnCPU_BL(t, c, iDeltaPows);
             }
 
-            if (!iDeltaPows.empty()) {
+            if (!iDeltaPows.empty())
                 chooseCPU_BL(t, iDeltaPows);
-            } else {
+            else {
                 // TODO possibly move something
                 cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
                 // todo not good, this makes the task arrive

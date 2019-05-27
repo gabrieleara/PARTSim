@@ -379,20 +379,7 @@ namespace RTSim {
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
             assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
 
-            Task *tt = dynamic_cast<Task*>(t);
-            // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
-            double u_active = double(tt->getWCET(cpu->getSpeed())) / (double) tt->getDeadline();
-            #include <cstdio>
-            printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
-
-            // a better map is by cpu, but then cpus can collide
-            Tick vt = Tick(cbs->getVirtualTime());
-            if ( double(vt) < double(SIMUL.getTime()) ) {
-              cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << endl;
-              return;
-            }
-            _active_utilizations[t] = make_tuple(cpu, vt, u_active);
-            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
+            saveU_active(t, cpu, cbs);
 
             cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() << (cbs->getTasks().size() > 0 ? " - first one: " + cbs->getTasks().at(0)->toString() : "") << endl;
         }
@@ -407,7 +394,9 @@ namespace RTSim {
         void onReplenishment(CBServer *cbs) {
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
 
-            forgetU_active();
+            if (SIMUL.getTime() == cbs->getPeriod())
+              forgetU_active();
+
             CPU *cpu = getProcessorRunning(cbs);
             if (cpu != NULL) // server might be with no task => already ready
               makeReady(cpu);
@@ -419,10 +408,17 @@ namespace RTSim {
        * queue and take next task
        */
         void onRound(AbsRTTask *finishingTask, CPU *c) {
-        //CPU *c = getProcessor(finishingTask);
             if (c == NULL) // task has just finished its WCET
               return;
             schedule(c);
+        }
+
+        /// When task in CBS server ends
+        void onTaskInServerEnd(AbsRTTask* t, CPU* cpu, CBServer* cbs) {
+          cout << "MCS::" << __func__ << "()" << endl;
+          assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
+
+          saveU_active (t, cpu, cbs);
         }
 
         /// Remove the first task of a core queue. Also removes its ctx evt
@@ -430,6 +426,26 @@ namespace RTSim {
 
         /// Remove a specific task from a core queue. Also removes its ctx evt
         virtual void removeFromQueue(CPU* c, AbsRTTask* t);
+
+        void saveU_active(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
+            cout << __func__ << "()" << endl;
+            assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
+
+            Task *tt = dynamic_cast<Task*>(t);
+            // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
+            double u_active = double(tt->getWCET(cpu->getSpeed())) / (double) tt->getDeadline();
+            #include <cstdio>
+            printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
+
+            // a better map is by cpu, but then cpus can collide
+            Tick vt = Tick(cbs->getVirtualTime());
+            if ( double(vt) < double(SIMUL.getTime()) ) {
+              cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << endl;
+              return;
+            }
+            _active_utilizations[t] = make_tuple(cpu, vt, u_active);
+            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
+        }
 
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {

@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 18;
+    int TEST_NO = 16;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -739,7 +739,21 @@ int main(int argc, char *argv[]) {
             cout << "Running simulation!" << endl;
             SIMUL.initSingleRun();
 
-            SIMUL.run_to(20);
+            SIMUL.run_to(3); // t=2: executing to releasing
+            cout << "time = " << SIMUL.getTime() << endl;
+            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_little.at(0))) == 0.0);
+            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big.at(0))) == 0.2);
+            k->print();
+            assert (k->getIslandUtilization(1.0, cpus_big[0]->getIslandType(), NULL) == 0.2);
+            assert (k->getUtilization(cpus_big.at(0), 1.0) == 0.2); // float repr. precision
+
+            SIMUL.run_to(5); // t=4: releasing to idle
+            cout << "time = " << SIMUL.getTime() << endl;
+            for (CPU_BL* c : cpus_big) {
+                if (c == cpus_big.at(0)) continue;
+                assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
+                assert (k->getUtilization(c, 1.0) == 0.0);
+            }
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -1031,6 +1045,54 @@ int main(int argc, char *argv[]) {
             assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
             assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
             assert ((t4->getWCET(1.0) + double(SIMUL.getTime())) == 14.0);
+
+            SIMUL.endSingleRun();
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Simulation finished" << endl;
+
+            return 0;
+        }
+        else if (TEST_NO == 19) {
+            /**
+                Does OPP selection work with CBS servers?
+                I.e., if you add a task to a server, does island freq increase? (yes)
+                When a task in the CBS server of big island ends, the other one is moved 
+                to the CBS in little island? (yes)
+
+                When a task arrives into a CBS server, it is supposed to check
+                if it's admissible and to choose OPP.
+              */
+            vector<int> activ = { 1 };  
+
+
+            // CBS server tasks
+            NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
+            tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
+            tos->setAbort(false);
+            ttrace.attachToTask(*tos);
+            jtrace.attachToTask(*tos);
+            pstrace.attachToTask(*tos);
+
+            NonPeriodicTask *tos2 = new NonPeriodicTask(10, 10 , 0, "AfterTaskOnServer"); 
+            tos2->insertCode("fixed(2,bzip2);");
+            tos2->setAbort(false);
+            ttrace.attachToTask(*tos2);
+            jtrace.attachToTask(*tos2);
+            pstrace.attachToTask(*tos2);
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addAperiodicTask(IslandType::BIG, tos);
+            k->addAperiodicTask(IslandType::BIG, tos2);
+
+            cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
+            cout << "Running simulation!" << endl;
+            SIMUL.initSingleRun();
+
+            double init_util = 0.0;
+            tos2->activate(Tick(activ[0]));
+
+            SIMUL.run_to(1); // init setup
+            
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
