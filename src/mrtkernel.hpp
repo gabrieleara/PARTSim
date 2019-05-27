@@ -215,7 +215,7 @@ namespace RTSim {
            
            Spcify the scheduling parameters in param.
          */
-        void addTask(AbsRTTask &t, const std::string &param = "");
+        virtual void addTask(AbsRTTask &t, const std::string &param = "");
 
         // inherited from RTKernel
         virtual void onArrival(AbsRTTask *);

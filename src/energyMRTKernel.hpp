@@ -224,9 +224,12 @@ namespace RTSim {
 
         /**
          * Add a task to the queue of a core. Use instead
-         * of addTask if you don't need specific task parameters
+         * of addTask if you don't need specific task parameters.
+         *
+         * In this kernel, periodic tasks are incapsulated in a 
+         * specific CBS server.
          */
-        virtual void insertTask(AbsRTTask* t, CPU_BL* c, int opp) {
+        virtual void insertTask(AbsRTTask* t, CPU_BL* c, unsigned int opp) {
             assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
             MultiCoresScheds::insertTask(t, c);
             _opps[t] = make_pair(c, opp);
@@ -282,7 +285,7 @@ namespace RTSim {
 
         virtual string toString() {
             stringstream ss;
-            ss << "EnergyMultiCoresScheds::toString() (servers are hidden):" << endl;
+            ss << "EnergyMultiCoresScheds::toString():" << endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
@@ -399,6 +402,57 @@ namespace RTSim {
         /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
+        /// A task envoleped inside a server
+        class EnvelopedTask : public AbsRTTask {
+        private:
+          CBServer  *_server;
+          AbsRTTask *_task;
+        public:
+          EnvelopedTask* setServer(CBServer *s) { _server = s; return this; }
+
+          EnvelopedTask* setTask(AbsRTTask *t) { _task = t; return this; }
+
+          EnvelopedTask() {}
+
+          ~EnvelopedTask() { delete _task, _server; }
+
+          void donothing () {}
+
+          void schedule() { _server->schedule(); }
+
+          void deschedule() { _server->deschedule(); }
+
+          void activate() { _server->activate(); } 
+
+          bool isActive(void) const { _server->isActive(); }
+
+          bool isExecuting(void) const { _server->isExecuting(); }
+
+          Tick getArrival(void) const { _server->getArrival(); }
+
+          Tick getLastArrival(void) const { _server->getLastArrival(); }
+
+          void setKernel(AbsKernel* k) { _server->setKernel(k); }
+
+          AbsKernel * getKernel() { return _server->getKernel(); }
+
+          void refreshExec(double oldSpeed, double newSpeed) { _task->refreshExec(oldSpeed, newSpeed); }
+
+          double getMaxExecutionCycles() const { return _server->getMaxExecutionCycles(); }
+
+          string toString() const { return _server->toString(); }
+
+          Tick getDeadline() const { return _server->getDeadline(); }
+
+          Tick getRelDline() const { return _server->getRelDline(); }
+
+          int getTaskNumber() const { return _server->getTaskNumber(); }
+
+          double getWCET(double capacity) const { return _server->getWCET(capacity); }
+
+          double getRemainingWCET(double capacity = 1.0) const { return _server->getRemainingWCET(capacity); }
+        };
+
     public:
         static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
@@ -419,6 +473,24 @@ namespace RTSim {
           delete _islands[1];
 
           delete _queues;
+        }
+
+        /// Adds a task into kernel
+        virtual void addTask(AbsRTTask &t, const string &param) {
+            cout << "EMRTK::" << __func__ << "() incapsulating task " << t.toString() << endl;
+            CBServerCallingEMRTKernel *serv = dynamic_cast<CBServerCallingEMRTKernel*>(&t);
+
+            if (serv == NULL) {
+              //cout << "wcet " << Tick(t.getWCET(1.0)) << " dl " << t.getDeadline() << endl;
+              serv = new CBServerCallingEMRTKernel(Tick(t.getWCET(1.0)), t.getDeadline(), t.getDeadline(), "hard", t.toString(), "FIFOSched");
+              t.setKernel(0);
+              serv->addTask(t);
+            }
+            assert (serv != NULL);
+
+            EnvelopedTask *et = new EnvelopedTask(); et->setServer(serv)->setTask(&t);
+            t = *et;
+            MRTKernel::addTask(*et, param);
         }
 
         Island_BL* getIslandLittle() const { return _islands[0]; }

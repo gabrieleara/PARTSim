@@ -28,7 +28,7 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 0;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -558,7 +558,6 @@ namespace RTSim {
 
     /* Decide a CPU for each ready task */
     void EnergyMRTKernel::dispatch() {
-        // test();
         DBGENTER(_KERNEL_DBG_LEV);
         setTryingTaskOnCPU_BL(true);
 
@@ -605,7 +604,6 @@ namespace RTSim {
             vector<struct ConsumptionTable> iDeltaPows;
             cout << endl << "\t------------\n\tCurrent situation:\n\t" << _queues->toString() << "\t------------" << endl;
 
-            // for non-/periodic tasks
             for (CPU_BL* c : cpus)
                 tryTaskOnCPU_BL(t, c, iDeltaPows);
 

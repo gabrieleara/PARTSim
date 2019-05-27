@@ -332,15 +332,16 @@ namespace RTSim {
         if (isEmpty())
             yield();
 
-        dynamic_cast<EnergyMRTKernel*>(kernel)->onTaskInServerEnd(t, cpu, this);
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this);
     }
 
     void CBServerCallingEMRTKernel::onReplenishment(Event *e) {
         cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::onReplenishment(e);
 
-        // todo useless?
-        dynamic_cast<EnergyMRTKernel*>(kernel)->onReplenishment(this);
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        if (emrtk != NULL) emrtk->onReplenishment(this);
     }
 
     void CBServerCallingEMRTKernel::executing_releasing() {
@@ -353,7 +354,8 @@ namespace RTSim {
         cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::releasing_idle();
 
-        dynamic_cast<EnergyMRTKernel*>(kernel)->onReleasingIdle(this);
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        if (emrtk != NULL) emrtk->onReleasingIdle(this);
     }
 
 }

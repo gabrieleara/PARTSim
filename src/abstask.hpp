@@ -72,7 +72,7 @@ namespace RTSim {
 	virtual Tick getLastArrival(void) const = 0;
 
 	/// set the kernel for this task
-  virtual void setKernel(AbsKernel*) = 0;
+        virtual void setKernel(AbsKernel*) = 0;
 
 	/// get the kernel for this task
 	virtual AbsKernel * getKernel() = 0;
