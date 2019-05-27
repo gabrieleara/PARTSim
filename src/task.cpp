@@ -143,7 +143,7 @@ namespace RTSim {
         deschedEvt.process();
     }
     
-    void Task::setKernel(AbsKernel *k) throw(KernAlreadySet)
+  void Task::setKernel(AbsKernel *k) throw(KernAlreadySet)
     {
         DBGENTER(_TASK_DBG_LEV);
         

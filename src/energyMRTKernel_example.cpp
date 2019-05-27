@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
         OPP_big = stoi(argv[2]);
         workload = argv[3];
     }
-   else if (argc == 2) { TEST_NO = stoi(argv[1]);  }
+   if (argc == 2) { TEST_NO = stoi(argv[1]);  }
 
    cout << "Performing experiment #" << TEST_NO << endl;
 
@@ -213,7 +213,7 @@ int main(int argc, char *argv[]) {
 
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
         }
-        else if (TEST_NO == 1) {
+        if (TEST_NO == 1) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -233,7 +233,7 @@ int main(int argc, char *argv[]) {
 
             // task1 (500,500) => BIG_3 max freq, task2 (500,500) => BIG_2 max freq
         }
-        else if (TEST_NO == 2) {
+        if (TEST_NO == 2) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -253,7 +253,7 @@ int main(int argc, char *argv[]) {
 
             // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
-        else if (TEST_NO == 3) {
+        if (TEST_NO == 3) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
 
             // little freq 500
         }
-        else if (TEST_NO == 4) {
+        if (TEST_NO == 4) {
             for (int j = 0; j < 4; j++) {
                 task_name = "T4_task_LITTLE_" + std::to_string(j);
                 cout << "Creating task: " << task_name;
@@ -335,7 +335,7 @@ int main(int argc, char *argv[]) {
              next one in bigs, it shall increase littles frequency so to make
              space to it too and save energy */
         }
-        else if (TEST_NO == 8) {
+        if (TEST_NO == 8) {
             int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T8_task" + std::to_string(j);
@@ -350,7 +350,7 @@ int main(int argc, char *argv[]) {
             }
             // towards random workloads...
         }
-        else if (TEST_NO == 9) {
+        if (TEST_NO == 9) {
             // random variables
             int taskNO = 3;
             int task_period = 500;
@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
             // random workloads...delay(unif,PDF).
             // todo above code not tested
         }
-        else if (TEST_NO == 10) {
+        if (TEST_NO == 10) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
             // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
             int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
@@ -467,7 +467,7 @@ int main(int argc, char *argv[]) {
             SIMUL.endSingleRun();
             return 0;
         }
-        else if (TEST_NO == 11) {
+        if (TEST_NO == 11) {
             /**
                 At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
                 Then, another task, more important, arrives at time 6. Would this last task begin its
@@ -508,7 +508,7 @@ int main(int argc, char *argv[]) {
             SIMUL.endSingleRun();
             return 0;
         }
-        else if (TEST_NO == 12) {
+        if (TEST_NO == 12) {
 	    // does RR work as expected with EMRTK?
 
             schedulers.clear();
@@ -545,7 +545,7 @@ int main(int argc, char *argv[]) {
             SIMUL.run(1001);
             return 0;
         }
-        else if (TEST_NO == 13) {
+        if (TEST_NO == 13) {
             /**
                 Demostrating what happens when a task is killed.
                 It will come into play again in its next period and hopefully it can 
@@ -600,7 +600,7 @@ int main(int argc, char *argv[]) {
             cout << "Simulation finished" << endl;
             return 0;
         }
-        else if (TEST_NO == 14) {
+        if (TEST_NO == 14) {
             /**
                 What happens if task is not schedulable?
 
@@ -671,7 +671,7 @@ int main(int argc, char *argv[]) {
             cout << "Simulation finished" << endl;
             return 0;
         }
-        else if (TEST_NO == 15) {
+        if (TEST_NO == 15) {
             /**
                 Towards servers...y màs allà!
              */
@@ -716,7 +716,7 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
-        else if (TEST_NO == 16) {
+        if (TEST_NO == 16) {
             /**
                 Towards servers. Reproducing Mr.Cucinotta's example.
                 A server with (Q=2,T=10) and a task arriving at 0 and ending at 2, period 10.
@@ -761,7 +761,7 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
-        else if (TEST_NO == 17) {
+        if (TEST_NO == 17) {
             /**
                 The objective is to understand if utilizations are 
                 computed correctly.
@@ -837,7 +837,7 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
-        else if (TEST_NO == 18) {
+        if (TEST_NO == 18) {
             /**
                 The objective here is to find the time at which the task in the server
                 goes from releasing to idle (time_t). Also, I want to see how
@@ -1052,12 +1052,14 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
-        else if (TEST_NO == 19) {
+        TEST_NO = 19;
+
+        if (TEST_NO == 19) {
             /**
                 Does OPP selection work with CBS servers?
-                I.e., if you add a task to a server, does island freq increase? (yes)
+                I.e., if you add a task to a server, does island freq increase? (exp.d yes)
                 When a task in the CBS server of big island ends, the other one is moved 
-                to the CBS in little island? (yes)
+                to the CBS in little island? (exp.d yes)
 
                 When a task arrives into a CBS server, it is supposed to check
                 if it's admissible and to choose OPP.

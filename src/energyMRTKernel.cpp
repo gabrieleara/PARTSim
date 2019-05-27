@@ -28,7 +28,7 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_SERVER_ENABLED= 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_SERVER_ENABLED= 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name, const bool withServers)
@@ -53,20 +53,14 @@ namespace RTSim {
         _queues = new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
 
         // one CBS server per island
-        _withCBServers = withServers;
-        if (withServers) {
-            _serverBig      = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverBIG", "FIFOSched");
-            _serverLittle   = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverLITTLE", "FIFOSched");
-
-            addTask(*_serverBig, "");
-            addTask(*_serverLittle, "");
-            addForcedDispatch(_serverLittle, getProcessors(IslandType::LITTLE)[0], 0, 1);
-            addForcedDispatch(_serverBig, getProcessors(IslandType::BIG)[0], 0, 1);
-        }
+        setServersSupport(withServers);
     }
 
     EnergyMultiCoresScheds::EnergyMultiCoresScheds(MRTKernel *kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name)
       : MultiCoresScheds(kernel, cpus, s, kernel->getName() + name) { }
+
+
+
 
     AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
@@ -488,6 +482,44 @@ namespace RTSim {
 
     // ---------------------------------------------------------- CBServer management
     
+    /**
+        At the beginning of experiments, you need to decide one of the 2 servers.
+        The server choice cannot be deferred because servers are kernels too,
+        thus both would handle task t
+      */
+    void EnergyMRTKernel::addAperiodicTask(AbsRTTask* t, const string &params) {
+        cout << "EMRTK::" << __func__ << "()" << endl;
+        vector<struct ConsumptionTable> iDeltaPows;
+
+        setServersSupport(true);
+        _aperiodicTasks.push_back(t);
+
+        setTryingTaskOnCPU_BL(true);
+        tryTaskOnCPU_BL(t, getProcessors(IslandType::LITTLE).at(0), iDeltaPows); // todo not rebust
+        cout << endl;
+        tryTaskOnCPU_BL(t, getProcessors(IslandType::BIG).at(0), iDeltaPows); // todo not rebust
+        setTryingTaskOnCPU_BL(false);
+
+        if (!iDeltaPows.empty()) {
+            sort(iDeltaPows.begin(), iDeltaPows.end(),
+             [] (struct ConsumptionTable const& e1, struct ConsumptionTable const& e2) { return e1.cons < e2.cons; });
+
+            struct ConsumptionTable chosen = iDeltaPows.at(0);
+            CPU_BL* chosenCPU = chosen.cpu;
+            unsigned int chosenOPP = chosen.opp;
+
+            // todo delete after debug
+            for (auto elem: iDeltaPows) {
+                cout << elem.cons << " " << elem.cpu->toString() << " " << elem.cpu->getFrequency(elem.opp) << endl;
+            }
+
+            CBServer* cbs = getServer(chosenCPU->getIslandType());
+            cbs->addTask(*t, params);
+            cout << "Dispatched task " << t->toString() << " to " << cbs->toString() << ", " << chosenCPU->getName() << " freq " << chosenCPU->getFrequency(chosenOPP) << endl << endl;
+        } else
+            cout << "Cannot schedule " << t->toString() << " on any server" << endl;
+    }
+
     /// Returns active utilization on CPU c. Only for debug
     double EnergyMRTKernel::getUtilization_active(CPU_BL* c) const {
         double u_act = _queues->getUtilization_active(c);
@@ -591,25 +623,6 @@ namespace RTSim {
         pp->setBusy(true);
     }
 
-  /*void EnergyMRTKernel::getNewTasks(vector<Task*> tasks, int& new_tasks) {
-        if (dynamic_cast<EDFScheduler*>(_sched)) {
-           while (_sched->getTaskN(num_newtasks) != NULL) {
-              tasks.push_back(_sched->getTaskN(num_newtasks));
-              num_newtasks++;
-           }
-        }
-        else if (dynamic_cast<RRScheduler*>(_sched)) {
-          for (CPU_BL *c : getProcessors()) {
-              AbsRTTask *t = _queues->getFirst(c);
-              if (t != NULL) {
-                tasks.push_back(t);
-                new_tasks++;
-              }
-          }
-        }
-        tasks.push_back(NULL);
-    }*/
-
     /* Decide a CPU for each ready task */
     void EnergyMRTKernel::dispatch() {
         // test();
@@ -618,10 +631,7 @@ namespace RTSim {
 
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
-        //vector<AbsRTTask*> tasks;
-
-        // how many "new" tasks in the ready queue?
-        //getNewTasks(tasks, num_newtasks);
+        
         while (_sched->getTaskN(num_newtasks) != NULL)
             num_newtasks++;
 
@@ -662,27 +672,14 @@ namespace RTSim {
             vector<struct ConsumptionTable> iDeltaPows;
             cout << endl << "\t------------\n\tCurrent situation:\n\t" << _queues->toString() << "\t------------" << endl;
 
-            // for aperiodic tasks - i.e., the ones for servers
-            if (find(_aperiodicTasks.begin(), _aperiodicTasks.end(), t) != _aperiodicTasks.end()) {
-                
-                tryTaskOnCPU_BL(t, getProcessors(IslandType::LITTLE).at(0), iDeltaPows); // todo not rebust
-                tryTaskOnCPU_BL(t, getProcessors(IslandType::BIG).at(0), iDeltaPows); // todo not rebust
-                
-                if (!iDeltaPows.empty()) {
-                    CBServer* cbs = getServer(iDeltaPows.at(0).cpu->getIslandType());
-                    cbs->addTask(*t, "");
-                } else
-                    cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
-            } else {
-                // for non-/periodic tasks
-                for (CPU_BL* c : cpus)
-                    tryTaskOnCPU_BL(t, c, iDeltaPows);
+            // for non-/periodic tasks
+            for (CPU_BL* c : cpus)
+                tryTaskOnCPU_BL(t, c, iDeltaPows);
 
-                if (!iDeltaPows.empty())
-                    chooseCPU_BL(t, iDeltaPows);
-                else
-                    cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
-            }
+            if (!iDeltaPows.empty())
+                chooseCPU_BL(t, iDeltaPows);
+            else
+                cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
 
             _sched->extract(t);
             num_newtasks--;
@@ -719,7 +716,7 @@ namespace RTSim {
             printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int) newFreq, (int) frequency, newCapacity);
 
             // check whether task is admissible with the new frequency and where
-            if (_sched->isAdmissible(c, getReadyTasks(c), t)) {
+            if ( isAperiodic(t) || _sched->isAdmissible(c, getReadyTasks(c), t)) {
                 cout << "\t\t\tHere task would be admissible" << endl;
 
                 double utilization          = 0.0; // utilization on the CPU c (without new task)

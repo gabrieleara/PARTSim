@@ -282,7 +282,7 @@ namespace RTSim {
 
         virtual string toString() {
             stringstream ss;
-            ss << "EnergyMultiCoresScheds:" << endl;
+            ss << "EnergyMultiCoresScheds::toString() (servers are hidden):" << endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
@@ -392,6 +392,9 @@ namespace RTSim {
         /// Implements migration mechanism when a task in a server ends
         void migrateAmongServer(CPU_BL* endingCPU_BL, CBServer* cbs);
 
+        /// needed for onOPPChanged()
+        bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
+        
         /**
            Tries to schedule a task on a CPU_BL, for all valid OPPs,
            remembering power consumption
@@ -401,8 +404,26 @@ namespace RTSim {
         /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
-        /// needed for onOPPChanged()
-        bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
+
+        /// Dis-/Enable CBS Servers support. todo add code to remove it
+        void setServersSupport(const bool withServers = true) { 
+          static bool serversSupport = false;
+          _withCBServers = withServers;
+
+          if (_withCBServers && !serversSupport) {
+            serversSupport = true;
+
+            _serverBig      = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverBIG", "FIFOSched");
+            _serverLittle   = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "serverLITTLE", "FIFOSched");
+  
+            addTask(*_serverBig, "");
+            addTask(*_serverLittle, "");
+            addForcedDispatch(_serverLittle, getProcessors(IslandType::LITTLE)[0], 0, 999);
+            addForcedDispatch(_serverBig, getProcessors(IslandType::BIG)[0], 0, 999);
+            manageForcedDispatch(_serverLittle);
+            manageForcedDispatch(_serverBig);
+          }
+        }
 
     public:
         static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
@@ -436,11 +457,7 @@ namespace RTSim {
         /**
           Adds the task t to the CBS server of the island
           */
-        void addAperiodicTask(AbsRTTask* t, const std::string &params) {
-          assert (_withCBServers);
-          _aperiodicTasks.push_back(t);
-          addTask(*t, params);
-        }
+        void addAperiodicTask(AbsRTTask* t, const string &params);
 
         /**
            This is different from the version we have in MRTKernel: here you decide a
@@ -478,6 +495,14 @@ namespace RTSim {
             of tasks. Info about task is needed
          */
         virtual void dispatch(CPU* c) {}
+
+        /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
+        void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
+          if (filename == "")
+            _e_migration_manager.dumpToFile(alsoConsumptions, tasks);
+          else
+            _e_migration_manager.dumpToFile(alsoConsumptions, tasks, filename);
+        }
 
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor() not anymore
@@ -538,27 +563,42 @@ namespace RTSim {
           */
         bool getCBServer_CEMRTK_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
 
-        CBServer* getServer(IslandType island) const {
+        /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
+        virtual vector<AbsRTTask*> getReadyTasks(CPU_BL* c) const;
+
+        /**
+         *  Returns a pointer to the task which is executing on given
+         *  CPU_BL (NULL if given CPU_BL is idle)
+         */
+        virtual AbsRTTask* getRunningTask(CPU* c);
+
+        /// Get server running on the given island
+        virtual CBServer* getServer(IslandType island) const {
           if (island == IslandType::BIG)
             return _serverBig;
           else
             return _serverLittle;
         }
 
-        vector<CBServer*> getServers() const { 
+        /// Returns all available servers
+        virtual vector<CBServer*> getServers() const { 
           vector<CBServer*> all;
           all.push_back(getServer(IslandType::LITTLE));
           all.push_back(getServer(IslandType::BIG));
           return all;
         }
 
-        /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
-        void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
-          if (filename == "")
-            _e_migration_manager.dumpToFile(alsoConsumptions, tasks);
-          else
-            _e_migration_manager.dumpToFile(alsoConsumptions, tasks, filename);
+        /// Tells if task is aperiodic
+        bool isAperiodic(AbsRTTask *t) const {
+          bool a = ( find(_aperiodicTasks.begin(), _aperiodicTasks.end(), t) != _aperiodicTasks.end() );
+          return a;
         }
+
+        /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
+        bool isDispatching(AbsRTTask*);
+
+        /// is any task dispatched on CPU_BL p?
+        bool isDispatching(CPU_BL* p);
 
         /**
          * Begins the dispatch process (context switch). The task is dispatched, but not
@@ -627,21 +667,6 @@ namespace RTSim {
          * finishingTask has just finished its round (slice)
          */
         void onRound(AbsRTTask* finishingTask);
-
-        /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
-        bool isDispatching(AbsRTTask*);
-
-        /// is any task dispatched on CPU_BL p?
-        bool isDispatching(CPU_BL* p);
-
-        /**
-         *  Returns a pointer to the task which is executing on given
-         *  CPU_BL (NULL if given CPU_BL is idle)
-         */
-        virtual AbsRTTask* getRunningTask(CPU* c);
-
-         /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
-        virtual vector<AbsRTTask*> getReadyTasks(CPU_BL* c) const;
 
         virtual void newRun() {
             MRTKernel::newRun();

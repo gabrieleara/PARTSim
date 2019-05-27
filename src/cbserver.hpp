@@ -53,7 +53,7 @@ namespace RTSim {
 
         /// Returns all tasks active in the server TODO IT'S WRONG!!
         vector<AbsRTTask*> getTasks() const {
-          cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
+          //cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
           vector<AbsRTTask*> res;
           vector<AbsRTTask*> tasks = getAllTasks();
           for (int i = 0; i < tasks.size(); i++) {
@@ -230,6 +230,13 @@ namespace RTSim {
         return getWCET(capacity);
       }
 
+      /// Arrival event of task of server
+      virtual void onArrival(AbsRTTask *t) {
+        cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
+        _yielding = false;
+        Server::onArrival(t);
+      }
+
       /// Task of server ends, callback
       virtual void onEnd(AbsRTTask *t);
 
@@ -242,19 +249,12 @@ namespace RTSim {
             Server::onDesched(e);
       }
 
-      /// Arrival event of task of server
-      virtual void onArrival(AbsRTTask *t) {
-        cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
-        _yielding = false;
-        Server::onArrival(t);
-      }
 
       virtual void onReplenishment(Event *e);
 
       /// Object to human-readable string
       virtual string toString() const {
         string s = "CBServerCallingEMRTKernel. " + CBServer::toString();
-
         return s;
       } 
 

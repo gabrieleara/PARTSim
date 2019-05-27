@@ -45,7 +45,6 @@ TEST_CASE("exp0") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -71,6 +70,7 @@ TEST_CASE("exp0") {
     delete t0;
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp1") {
@@ -78,7 +78,6 @@ TEST_CASE("exp1") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -116,6 +115,7 @@ TEST_CASE("exp1") {
     delete t1; delete t0;
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp2") {
@@ -123,7 +123,6 @@ TEST_CASE("exp2") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -164,6 +163,7 @@ TEST_CASE("exp2") {
     delete t0; delete t1;
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp3") {
@@ -171,7 +171,6 @@ TEST_CASE("exp3") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -197,6 +196,7 @@ TEST_CASE("exp3") {
     delete t0;
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp4") {
@@ -204,7 +204,6 @@ TEST_CASE("exp4") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     PeriodicTask* task[5]; // to be cleared after each test
     EnergyMRTKernel *kern;
@@ -256,6 +255,7 @@ TEST_CASE("exp4") {
         delete task[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp5") {
@@ -263,7 +263,6 @@ TEST_CASE("exp5") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -331,6 +330,7 @@ TEST_CASE("exp5") {
         delete task[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 // test showing that frequency of little/big island may be raised
@@ -339,7 +339,6 @@ TEST_CASE("exp6") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     CPU_BL* cpu_task[5]; // to be cleared after each test
@@ -424,6 +423,7 @@ TEST_CASE("exp6") {
         delete task[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp7") {
@@ -431,7 +431,6 @@ TEST_CASE("exp7") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[5]; // to be cleared after each test
@@ -516,6 +515,7 @@ TEST_CASE("exp7") {
         delete task[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp8") {
@@ -523,7 +523,6 @@ TEST_CASE("exp8") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     vector<CPU_BL*> cpus;
     PeriodicTask* task[9]; // to be cleared after each test
@@ -641,6 +640,7 @@ TEST_CASE("exp8") {
         delete task[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp9") {
@@ -648,7 +648,6 @@ TEST_CASE("exp9") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, true);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -739,6 +738,7 @@ TEST_CASE("exp9") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp10") {
@@ -752,7 +752,6 @@ TEST_CASE("exp10") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     EnergyMRTKernel *kern;
     init_suite(&kern);
@@ -796,6 +795,7 @@ TEST_CASE("exp10") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp12") {
@@ -807,7 +807,6 @@ TEST_CASE("exp12") {
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
-    performedTests[init_sequence] = req;
 
     vector<Scheduler*> schedulers;
     vector<RTKernel*> kernels;
@@ -967,6 +966,7 @@ TEST_CASE("exp13") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp14") {
@@ -1055,6 +1055,7 @@ TEST_CASE("exp14") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("exp15, starting with CBS") {
@@ -1111,6 +1112,7 @@ TEST_CASE("exp15, starting with CBS") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("Experiment 16") {
@@ -1173,6 +1175,7 @@ TEST_CASE("Experiment 16") {
         delete tasks[j];
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 TEST_CASE("Experiment 18") {
@@ -1380,6 +1383,7 @@ TEST_CASE("Experiment 18") {
     delete tos; delete tos2;
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
 }
 
 

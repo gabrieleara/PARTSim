@@ -232,7 +232,7 @@ namespace RTSim {
 
         /** 
             Inherited from AbsRTTask. Set the kernel for this
-            server
+            server.
         */
         virtual void setKernel(AbsKernel *k);
 
