@@ -455,7 +455,7 @@ namespace RTSim {
          
     } // end EMRTK::migrate()
 
-    void EnergyMRTKernel::migrateServer(CPU_BL* endingCPU, CBServer* cbs) {
+    void EnergyMRTKernel::migrateAmongServer(CPU_BL* endingCPU, CBServer* cbs) {
         /**
             Migration mechanism: a task finishes on CPU c, leaving it idle.
             If the task ends on CBS in big, do nothing.
@@ -475,7 +475,7 @@ namespace RTSim {
                 cout << "\t\tNo ready tasks on " << endingCPU->getName() << " detected. skip" << endl;
 
             // find consumption on the other CBS. If less, migrate.
-            // todo
+            
         }
 
     }
@@ -662,17 +662,28 @@ namespace RTSim {
             vector<struct ConsumptionTable> iDeltaPows;
             cout << endl << "\t------------\n\tCurrent situation:\n\t" << _queues->toString() << "\t------------" << endl;
 
-            for (CPU_BL* c : cpus) {
-                tryTaskOnCPU_BL(t, c, iDeltaPows);
+            // for aperiodic tasks - i.e., the ones for servers
+            if (find(_aperiodicTasks.begin(), _aperiodicTasks.end(), t) != _aperiodicTasks.end()) {
+                
+                tryTaskOnCPU_BL(t, getProcessors(IslandType::LITTLE).at(0), iDeltaPows); // todo not rebust
+                tryTaskOnCPU_BL(t, getProcessors(IslandType::BIG).at(0), iDeltaPows); // todo not rebust
+                
+                if (!iDeltaPows.empty()) {
+                    CBServer* cbs = getServer(iDeltaPows.at(0).cpu->getIslandType());
+                    cbs->addTask(*t, "");
+                } else
+                    cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
+            } else {
+                // for non-/periodic tasks
+                for (CPU_BL* c : cpus)
+                    tryTaskOnCPU_BL(t, c, iDeltaPows);
+
+                if (!iDeltaPows.empty())
+                    chooseCPU_BL(t, iDeltaPows);
+                else
+                    cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
             }
 
-            if (!iDeltaPows.empty())
-                chooseCPU_BL(t, iDeltaPows);
-            else {
-                // TODO possibly move something
-                cout << "Cannot schedule " << t->toString() << " anywhere" << endl;
-                // todo not good, this makes the task arrive
-            }
             _sched->extract(t);
             num_newtasks--;
 

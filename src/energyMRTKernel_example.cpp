@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 16;
+    int TEST_NO = 19;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -1064,7 +1064,6 @@ int main(int argc, char *argv[]) {
               */
             vector<int> activ = { 1 };  
 
-
             // CBS server tasks
             NonPeriodicTask *tos = new NonPeriodicTask(10, 10 , 0, "TaskOnServer"); 
             tos->insertCode("fixed(2,bzip2);"); // => its releasing_idle will be at t=4
@@ -1081,8 +1080,8 @@ int main(int argc, char *argv[]) {
             pstrace.attachToTask(*tos2);
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addAperiodicTask(IslandType::BIG, tos);
-            k->addAperiodicTask(IslandType::BIG, tos2);
+            k->addAperiodicTask(tos, "");
+            k->addAperiodicTask(tos2, "");
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
             cout << "Running simulation!" << endl;

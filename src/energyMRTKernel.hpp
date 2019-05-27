@@ -337,6 +337,8 @@ namespace RTSim {
             int opp;
         };
 
+        vector<AbsRTTask*> _aperiodicTasks;
+
         // little, big (order matters for speed)
         Island_BL* _islands[2];
 
@@ -388,7 +390,7 @@ namespace RTSim {
         void migrate(CPU_BL* endingCPU_BL);
 
         /// Implements migration mechanism when a task in a server ends
-        void migrateServer(CPU_BL* endingCPU_BL, CBServer* cbs);
+        void migrateAmongServer(CPU_BL* endingCPU_BL, CBServer* cbs);
 
         /**
            Tries to schedule a task on a CPU_BL, for all valid OPPs,
@@ -434,12 +436,10 @@ namespace RTSim {
         /**
           Adds the task t to the CBS server of the island
           */
-        void addAperiodicTask(IslandType island, AbsRTTask* t) {
+        void addAperiodicTask(AbsRTTask* t, const std::string &params) {
           assert (_withCBServers);
-          if (island == IslandType::BIG)
-            _serverBig->addTask(*t);
-          else
-            _serverLittle->addTask(*t);
+          _aperiodicTasks.push_back(t);
+          addTask(*t, params);
         }
 
         /**
@@ -538,7 +538,7 @@ namespace RTSim {
           */
         bool getCBServer_CEMRTK_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
 
-        CBServer* getServers(IslandType island) const {
+        CBServer* getServer(IslandType island) const {
           if (island == IslandType::BIG)
             return _serverBig;
           else
@@ -547,8 +547,8 @@ namespace RTSim {
 
         vector<CBServer*> getServers() const { 
           vector<CBServer*> all;
-          all.push_back(getServers(IslandType::LITTLE));
-          all.push_back(getServers(IslandType::BIG));
+          all.push_back(getServer(IslandType::LITTLE));
+          all.push_back(getServer(IslandType::BIG));
           return all;
         }
 
@@ -619,7 +619,7 @@ namespace RTSim {
 
           _queues->onTaskInServerEnd(t, cpu, cbs);
 
-          migrateServer(dynamic_cast<CPU_BL*>(cpu), cbs);
+          migrateAmongServer(dynamic_cast<CPU_BL*>(cpu), cbs);
         }
 
         /**
