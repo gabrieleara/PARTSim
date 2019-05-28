@@ -206,16 +206,17 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            kernels[0]->addTask(*t, "");
-            ttrace.attachToTask(*t);
+            EnvelopedTask* et = kern->addTaskAndEnvelope(*t, "");
+            //ttrace.attachToTask(*et);
             //jtrace.attachToTask(*t);
-            tasks.push_back(t);
+            tasks.push_back(et);
 
             SIMUL.initSingleRun();
             SIMUL.run_to(1);
-            CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(t)));
+            cout << "t is now DSIADAS " << et->toString() << endl;
+            CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
 
-            assert (t->getName() == "T0_task1");
+            //assert (t->getName() == "T0_task1");
             assert (c0->getFrequency() == 2000);
             cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
             assert (c0->getIslandType() == IslandType::BIG);

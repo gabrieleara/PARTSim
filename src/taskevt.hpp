@@ -43,6 +43,7 @@ namespace RTSim {
 
         int getCPU() {return _cpu;}
         void setCPU(int cpu) {_cpu = cpu;}
+        virtual string toString() const { return " at " + to_string(double(getTime())) + "\n"; }
     };
 
     /// arrival event for a task
@@ -52,7 +53,7 @@ namespace RTSim {
     public:
         ArrEvt(Task* t) :TaskEvt(t) {}
         virtual void doit();
-
+        virtual string toString() const { return "arrEvt " + TaskEvt::toString(); }
     };
 
     /// end of instance event

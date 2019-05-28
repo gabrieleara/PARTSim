@@ -298,6 +298,57 @@ namespace RTSim {
 
     };
 
+    /// A task envoleped inside a server
+        class EnvelopedTask : public AbsRTTask {
+        private:
+          CBServer  *_server;
+          AbsRTTask *_task;
+        public:
+          EnvelopedTask* setServer(CBServer *s) { _server = s; return this; }
+
+          EnvelopedTask* setTask(AbsRTTask *t) { _task = t; return this; }
+
+          EnvelopedTask() {}
+
+          ~EnvelopedTask() { delete _task, _server; }
+
+          void donothing () {}
+
+          void schedule() { _server->schedule(); }
+
+          void deschedule() { _server->deschedule(); }
+
+          void activate() { _server->activate(); } 
+
+          bool isActive(void) const { _server->isActive(); }
+
+          bool isExecuting(void) const { _server->isExecuting(); }
+
+          Tick getArrival(void) const { _server->getArrival(); }
+
+          Tick getLastArrival(void) const { _server->getLastArrival(); }
+
+          void setKernel(AbsKernel* k) { _server->setKernel(k); }
+
+          AbsKernel * getKernel() { return _server->getKernel(); }
+
+          void refreshExec(double oldSpeed, double newSpeed) { _task->refreshExec(oldSpeed, newSpeed); }
+
+          double getMaxExecutionCycles() const { return _server->getMaxExecutionCycles(); }
+
+          string toString() const { return _server->toString(); }
+
+          Tick getDeadline() const { return _server->getDeadline(); }
+
+          Tick getRelDline() const { return _server->getRelDline(); }
+
+          int getTaskNumber() const { return _server->getTaskNumber(); }
+
+          double getWCET(double capacity) const { return _server->getWCET(capacity); }
+
+          double getRemainingWCET(double capacity = 1.0) const { return _server->getRemainingWCET(capacity); }
+        };
+
     /**
         \ingroup kernel
 
@@ -402,57 +453,6 @@ namespace RTSim {
         /// needed for onOPPChanged()
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
-        /// A task envoleped inside a server
-        class EnvelopedTask : public AbsRTTask {
-        private:
-          CBServer  *_server;
-          AbsRTTask *_task;
-        public:
-          EnvelopedTask* setServer(CBServer *s) { _server = s; return this; }
-
-          EnvelopedTask* setTask(AbsRTTask *t) { _task = t; return this; }
-
-          EnvelopedTask() {}
-
-          ~EnvelopedTask() { delete _task, _server; }
-
-          void donothing () {}
-
-          void schedule() { _server->schedule(); }
-
-          void deschedule() { _server->deschedule(); }
-
-          void activate() { _server->activate(); } 
-
-          bool isActive(void) const { _server->isActive(); }
-
-          bool isExecuting(void) const { _server->isExecuting(); }
-
-          Tick getArrival(void) const { _server->getArrival(); }
-
-          Tick getLastArrival(void) const { _server->getLastArrival(); }
-
-          void setKernel(AbsKernel* k) { _server->setKernel(k); }
-
-          AbsKernel * getKernel() { return _server->getKernel(); }
-
-          void refreshExec(double oldSpeed, double newSpeed) { _task->refreshExec(oldSpeed, newSpeed); }
-
-          double getMaxExecutionCycles() const { return _server->getMaxExecutionCycles(); }
-
-          string toString() const { return _server->toString(); }
-
-          Tick getDeadline() const { return _server->getDeadline(); }
-
-          Tick getRelDline() const { return _server->getRelDline(); }
-
-          int getTaskNumber() const { return _server->getTaskNumber(); }
-
-          double getWCET(double capacity) const { return _server->getWCET(capacity); }
-
-          double getRemainingWCET(double capacity = 1.0) const { return _server->getRemainingWCET(capacity); }
-        };
-
     public:
         static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
@@ -475,22 +475,32 @@ namespace RTSim {
           delete _queues;
         }
 
-        /// Adds a task into kernel
-        virtual void addTask(AbsRTTask &t, const string &param) {
-            cout << "EMRTK::" << __func__ << "() incapsulating task " << t.toString() << endl;
+        /**
+          Adds a periodic task into scheduler and returns the periodic task enveloped inside a CBS server.
+          Call this function instead of addTask() for periodic tasks
+          */
+        EnvelopedTask* addTaskAndEnvelope(AbsRTTask &t, const string &param) { 
             CBServerCallingEMRTKernel *serv = dynamic_cast<CBServerCallingEMRTKernel*>(&t);
+            EnvelopedTask *et = NULL;
 
-            if (serv == NULL) {
+            if (serv == NULL) { // periodic task
               //cout << "wcet " << Tick(t.getWCET(1.0)) << " dl " << t.getDeadline() << endl;
-              serv = new CBServerCallingEMRTKernel(Tick(t.getWCET(1.0)), t.getDeadline(), t.getDeadline(), "hard", t.toString(), "FIFOSched");
-              t.setKernel(0);
-              serv->addTask(t);
-            }
-            assert (serv != NULL);
+              Task *tt = dynamic_cast<PeriodicTask*>(&t);
+              cout << tt->arrEvt.toString() << endl;
+              tt->arrEvt.drop();
+              cout << tt->arrEvt.toString() << endl;
+              tt->endEvt.drop();
+              t.setKernel(NULL);
 
-            EnvelopedTask *et = new EnvelopedTask(); et->setServer(serv)->setTask(&t);
-            t = *et;
-            MRTKernel::addTask(*et, param);
+              serv = new CBServerCallingEMRTKernel(Tick(t.getWCET(1.0)), t.getDeadline(), t.getDeadline(), "hard", t.toString(), "FIFOSched");
+              //serv->setKernel(this);
+              serv->addTask(t);
+
+              et = new EnvelopedTask(); et->setServer(serv)->setTask(&t);
+              MRTKernel::addTask(*et, param);
+            }
+
+            return et;
         }
 
         Island_BL* getIslandLittle() const { return _islands[0]; }
