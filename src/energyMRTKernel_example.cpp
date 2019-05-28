@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 0;
+    int TEST_NO = 1;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -216,8 +216,9 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(1);
             CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
-
-            assert (t->getName() == "T0_task1");
+            cout << c0->toString() << endl;
+            //cout << t->getName() << endl;
+            //assert (t->getName() == "T0_task1");
             assert (c0->getFrequency() == 2000);
             assert (c0->getIslandType() == IslandType::BIG);
 

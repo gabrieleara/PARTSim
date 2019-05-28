@@ -380,6 +380,15 @@ namespace RTSim {
         */
         void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
+        /// Returns the CBS server envelopingf task t
+        AbsRTTask* getEnveloper(AbsRTTask* t) const {
+          for (auto &elem : _envelopes)
+            if (elem.first == t)
+              return elem.second;
+
+          return NULL;
+        }
+
         /// Get island big/little
         Island_BL* getIsland(IslandType island) const { return _islands[island]; }
 
@@ -511,17 +520,24 @@ namespace RTSim {
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor() not anymore
 
         /// Tells on what core queue a task is ready (and not running)
-        CPU_BL* getProcessorReady(const AbsRTTask* t);
+        CPU_BL* getProcessorReady(AbsRTTask* t) const;
 
         /// Get core where task is running
-        virtual CPU *getProcessorRunning(const AbsRTTask *t) const {
+        virtual CPU *getProcessorRunning(AbsRTTask *t) const {
+          if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
+
           return _queues->getProcessorRunning(t);
         }
 
         /// Get core where task is dispatched (either running and ready)
         virtual CPU_BL *getProcessor(AbsRTTask *t) const {
-          CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->getProcessor(t));
-          return c;
+          if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
+
+          CPU *c = _queues->getProcessor(t);
+          CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
+          return cc;
         }
 
         /// Returns tasks to be dispatched for the used scheduler
@@ -678,6 +694,11 @@ namespace RTSim {
         void test();
 
         static double time();
+
+        void printEnvelopes() const {
+          for (auto& elem : _envelopes)
+            cout << elem.first->toString() << " -> " << elem.second->toString() << endl;
+        }
 
         void printMap();
 

@@ -66,7 +66,10 @@ namespace RTSim {
         return t;
     }
 
-    CPU_BL *EnergyMRTKernel::getProcessorReady(const AbsRTTask *t) {
+    CPU_BL *EnergyMRTKernel::getProcessorReady(AbsRTTask *t) const {
+        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
+
         CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->isInAnyQueue(t));
         if (_queues->getRunningTask(c) == t)
             c = NULL;
@@ -189,12 +192,20 @@ namespace RTSim {
         if (isTryngTaskOnCPU_BL())
             return;
 
-        cout << __func__ << endl;
+        cout << __func__ << "(). envelopes: " << endl;
+        printEnvelopes();
         _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
         
-        for (auto &elem : _envelopes)
-            if (getProcessor(elem.first)->getIslandType() == island->getIslandType())
-                elem.second->changeQ(Tick(elem.first->getWCET(curropp)));
+        // update budget of servers (enveloping periodic tasks) in the island
+        for (auto &elem : _envelopes) {
+            cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
+            CPU_BL *c = getProcessor(elem.first);
+            cout << __func__ << "(). cpu of elem is " << c->toString() << endl;
+            if (c->getIslandType() == island->getIslandType()) {
+                cout << __func__ << "(). changing Q to " << elem.second->toString() << " to " << Tick(elem.first->getWCET(c->getSpeed())) << endl;
+                elem.second->changeQ(Tick(elem.first->getWCET(c->getSpeed())));
+            }
+        }
 
         // scale wcets of tasks on the island
     }
@@ -541,16 +552,16 @@ namespace RTSim {
         cout << "Temporarily chosenCPU: " << chosenCPU->toString() << " with freq " << chosenCPU->getFrequency(chosenOPP) << endl;
         leaveLittle3(t, iDeltaPows, chosenCPU);
 
+        dispatch(chosenCPU, t, chosenOPP);
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
              " with freq " << chosenCPU->getFrequency(chosenOPP) << " speed=" << chosenCPU->getSpeed(chosenOPP) <<
              " chosenOPP " << chosenOPP << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
-        dispatch(chosenCPU, t, chosenOPP);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
-        cout << __func__ << " " << t->toString() << endl;
+        cout << "EMRTK::" << __func__ << "(p, t, opp) task:" << t->toString() << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
-        // This variable is only needed before the scheduling finishes (onBegin/onEndDispatchMulti())
+
         _queues->insertTask(t, pp, opp);
 
         // This is meant to be a virtual assignment of CPU OPP.
@@ -562,7 +573,7 @@ namespace RTSim {
     /* Decide a CPU for each ready task */
     void EnergyMRTKernel::dispatch() {
         DBGENTER(_KERNEL_DBG_LEV);
-        setTryingTaskOnCPU_BL(true);
+        //setTryingTaskOnCPU_BL(true);
 
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
@@ -627,8 +638,9 @@ namespace RTSim {
         } while (num_newtasks > 0);
         //setTryingTaskOnCPU_BL(false);
 
-        for (CPU_BL *c : getProcessors())
+        for (CPU_BL *c : getProcessors()) {
             _queues->schedule(c);
+        }
     }
 
     void EnergyMRTKernel::tryTaskOnCPU_BL(AbsRTTask* t, CPU_BL* c, vector<struct ConsumptionTable>& iDeltaPows) {
