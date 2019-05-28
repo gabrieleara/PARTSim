@@ -25,10 +25,11 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED       = 1; /* Can't imagine disabling it, but so policy is in the list :) */
-    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED     = 0;
+    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED             = 1; /* Can't imagine disabling it, but so policy is in the list :) */
+    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED       = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED             = 0;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED           = 0;
+    bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED   = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -190,6 +191,11 @@ namespace RTSim {
 
         cout << __func__ << endl;
         _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
+        
+        for (auto &elem : _envelopes)
+            if (getProcessor(elem.first)->getIslandType() == island->getIslandType())
+                elem.second->changeQ(Tick(elem.first->getWCET(curropp)));
+
         // scale wcets of tasks on the island
     }
 
@@ -601,8 +607,10 @@ namespace RTSim {
             vector<struct ConsumptionTable> iDeltaPows;
             cout << endl << "\t------------\n\tCurrent situation:\n\t" << _queues->toString() << "\t------------" << endl;
 
+            setTryingTaskOnCPU_BL(true);
             for (CPU_BL* c : cpus)
                 tryTaskOnCPU_BL(t, c, iDeltaPows);
+            setTryingTaskOnCPU_BL(false);
 
             if (!iDeltaPows.empty())
                 chooseCPU_BL(t, iDeltaPows);
@@ -617,7 +625,7 @@ namespace RTSim {
 
             // if you get here, task is not schedulable in real-time
         } while (num_newtasks > 0);
-        setTryingTaskOnCPU_BL(false);
+        //setTryingTaskOnCPU_BL(false);
 
         for (CPU_BL *c : getProcessors())
             _queues->schedule(c);

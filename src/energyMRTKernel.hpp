@@ -298,57 +298,6 @@ namespace RTSim {
 
     };
 
-    /// A task envoleped inside a server
-        class EnvelopedTask : public AbsRTTask {
-        private:
-          CBServer  *_server;
-          AbsRTTask *_task;
-        public:
-          EnvelopedTask* setServer(CBServer *s) { _server = s; return this; }
-
-          EnvelopedTask* setTask(AbsRTTask *t) { _task = t; return this; }
-
-          EnvelopedTask() {}
-
-          ~EnvelopedTask() { delete _task, _server; }
-
-          void donothing () {}
-
-          void schedule() { _server->schedule(); }
-
-          void deschedule() { _server->deschedule(); }
-
-          void activate() { _server->activate(); } 
-
-          bool isActive(void) const { _server->isActive(); }
-
-          bool isExecuting(void) const { _server->isExecuting(); }
-
-          Tick getArrival(void) const { _server->getArrival(); }
-
-          Tick getLastArrival(void) const { _server->getLastArrival(); }
-
-          void setKernel(AbsKernel* k) { _server->setKernel(k); }
-
-          AbsKernel * getKernel() { return _server->getKernel(); }
-
-          void refreshExec(double oldSpeed, double newSpeed) { _task->refreshExec(oldSpeed, newSpeed); }
-
-          double getMaxExecutionCycles() const { return _server->getMaxExecutionCycles(); }
-
-          string toString() const { return _server->toString(); }
-
-          Tick getDeadline() const { return _server->getDeadline(); }
-
-          Tick getRelDline() const { return _server->getRelDline(); }
-
-          int getTaskNumber() const { return _server->getTaskNumber(); }
-
-          double getWCET(double capacity) const { return _server->getWCET(capacity); }
-
-          double getRemainingWCET(double capacity = 1.0) const { return _server->getRemainingWCET(capacity); }
-        };
-
     /**
         \ingroup kernel
 
@@ -391,6 +340,12 @@ namespace RTSim {
             int opp;
         };
 
+        /// A task envoleped inside a server
+        struct EnvelopedTask {
+          AbsRTTask *_task;
+          CBServerCallingEMRTKernel  *_server;
+        };
+
         // little, big (order matters for speed)
         Island_BL* _islands[2];
 
@@ -398,6 +353,9 @@ namespace RTSim {
 
         /// The energy migration manager/recorder, recording tasks movements and cpu frequencies over time
         EnergyMigrationManager _e_migration_manager;
+
+        /// Map of tasks and their own server, where they are enveloped
+        map<AbsRTTask*, CBServerCallingEMRTKernel*> _envelopes; 
 
         /// cores queues, containing ready and running tasks for each core
         EnergyMultiCoresScheds *_queues;
@@ -422,6 +380,7 @@ namespace RTSim {
         */
         void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
+        /// Get island big/little
         Island_BL* getIsland(IslandType island) const { return _islands[island]; }
 
         /**
@@ -454,10 +413,11 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
     public:
-        static bool EMRTK_BALANCE_ENABLED       ; /* Can't imagine disabling it, but so policy is in the list :) */
-        static bool EMRTK_LEAVE_LITTLE3_ENABLED ;
-        static bool EMRTK_MIGRATE_ENABLED       ;
-        static bool EMRTK_CBS_YIELD_ENABLED     ;
+        static bool EMRTK_BALANCE_ENABLED           ; /* Can't imagine disabling it, but so policy is in the list :) */
+        static bool EMRTK_LEAVE_LITTLE3_ENABLED     ;
+        static bool EMRTK_MIGRATE_ENABLED           ;
+        static bool EMRTK_CBS_YIELD_ENABLED         ;
+        static bool CBS_ENVELOPING_PER_TASK_ENABLED ; /// CBS server enveloping periodic tasks?
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
@@ -476,31 +436,24 @@ namespace RTSim {
         }
 
         /**
-          Adds a periodic task into scheduler and returns the periodic task enveloped inside a CBS server.
-          Call this function instead of addTask() for periodic tasks
+          Adds a periodic task into scheduler and returns the CBS server enveloping it.
+          Call this function instead of addTask() for periodic tasks.
+          It also supports CBS servers, which don't get enveloped.
           */
-        EnvelopedTask* addTaskAndEnvelope(AbsRTTask &t, const string &param) { 
-            CBServerCallingEMRTKernel *serv = dynamic_cast<CBServerCallingEMRTKernel*>(&t);
-            EnvelopedTask *et = NULL;
+        CBServerCallingEMRTKernel* addTaskAndEnvelope(AbsRTTask *t, const string &param = "") { 
+            CBServerCallingEMRTKernel *serv = dynamic_cast<CBServerCallingEMRTKernel*>(t);
 
             if (serv == NULL) { // periodic task
-              //cout << "wcet " << Tick(t.getWCET(1.0)) << " dl " << t.getDeadline() << endl;
-              Task *tt = dynamic_cast<PeriodicTask*>(&t);
-              cout << tt->arrEvt.toString() << endl;
-              tt->arrEvt.drop();
-              cout << tt->arrEvt.toString() << endl;
-              tt->endEvt.drop();
-              t.setKernel(NULL);
+              serv = new CBServerCallingEMRTKernel(Tick(t->getWCET(1.0)), t->getDeadline(), t->getDeadline(), "hard", t->toString(), "FIFOSched");
+              serv->addTask(*t);
 
-              serv = new CBServerCallingEMRTKernel(Tick(t.getWCET(1.0)), t.getDeadline(), t.getDeadline(), "hard", t.toString(), "FIFOSched");
-              //serv->setKernel(this);
-              serv->addTask(t);
+              addTask(*serv, param);
 
-              et = new EnvelopedTask(); et->setServer(serv)->setTask(&t);
-              MRTKernel::addTask(*et, param);
+              assert ( _envelopes.find(t) == _envelopes.end() );
+              _envelopes[t] = serv;
             }
 
-            return et;
+            return serv;
         }
 
         Island_BL* getIslandLittle() const { return _islands[0]; }
@@ -566,8 +519,9 @@ namespace RTSim {
         }
 
         /// Get core where task is dispatched (either running and ready)
-        virtual CPU *getProcessor(const AbsRTTask *t) const {
-          return _queues->getProcessor(t);
+        virtual CPU_BL *getProcessor(AbsRTTask *t) const {
+          CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->getProcessor(t));
+          return c;
         }
 
         /// Returns tasks to be dispatched for the used scheduler

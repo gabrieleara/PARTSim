@@ -5,6 +5,7 @@
 #include <capacitytimer.hpp>
 #include <list>
 #include "rttask.hpp"
+#include <sstream>
 
 namespace RTSim {
     using namespace MetaSim;
@@ -26,7 +27,7 @@ namespace RTSim {
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();
-        Tick get_remaining_budget(); 
+        Tick get_remaining_budget() const; 
 
         policy_t get_policy() const { return idle_policy; }
         void set_policy(policy_t p) { idle_policy = p; }
@@ -104,9 +105,10 @@ namespace RTSim {
 
         /// Server to human-readable string
         virtual string toString() const { 
-          string s = "tasks: [ "; 
-          s += sched_->toString() + "]" + (isYielding() ? " yielding":"");
-          return s;
+          stringstream s; 
+          s << "tasks: [ " << sched_->toString() << "]" << (isYielding() ? " yielding":"") <<
+            " (Q:" << getBudget() << ", P:" << getPeriod() << ")";
+          return s.str();
         }
 
 // ------------------------------------- end fabm todo

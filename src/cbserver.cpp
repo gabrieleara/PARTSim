@@ -315,7 +315,7 @@ namespace RTSim {
         return 0;
     }
 
-    Tick CBServer::get_remaining_budget()
+    Tick CBServer::get_remaining_budget() const
     {
         double dist = (double(getDeadline()) - vtime.get_value()) * 
         double(Q) / double(P) + 0.00000000001;

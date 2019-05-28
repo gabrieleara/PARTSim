@@ -105,7 +105,7 @@ namespace RTSim {
 	//AVRTasks update their instruction queue at runtime only after they are activated (there are different possibles instruction queues)
 	//NO CHECK FOR EMPTY INSTR QUEUE IN NEW RUN
 	void AVRTask::newRun(void)
-	{
+  {
 		state = TSK_IDLE;
 		while (chkBuffArrival()) unbuffArrival();
 

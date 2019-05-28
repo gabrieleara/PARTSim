@@ -54,15 +54,14 @@ TEST_CASE("exp0") {
     cout << "Creating task: " << task_name << endl;
     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
     t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-    kern->addTask(*t0, "");
+    CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
     SIMUL.initSingleRun();
     SIMUL.run_to(1);
-    CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(t0)));
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0)));
 
     REQUIRE (t0->getName() == "T0_task1");
     REQUIRE (c0->getFrequency() == 2000);
-cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
     REQUIRE (c0->getIslandType() == IslandType::BIG);
     REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
@@ -73,131 +72,135 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
     performedTests[init_sequence] = req;
 }
 
-// TEST_CASE("exp1") {
-//     init_sequence = 1;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp1") {
+    init_sequence = 1;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
 
-//     task_name = "T1_task1";
-//     cout << "Creating task: " << task_name << endl;
-//     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
-//     t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-//     kern->addTask(*t0, "");
+    task_name = "T1_task1";
+    cout << "Creating task: " << task_name << endl;
+    PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+    t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+    CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
-//     task_name = "T1_task2";
-//     cout << "Creating task: " << task_name << endl;
-//     PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
-//     t1->insertCode("fixed(500," + workload + ");");
-//     kern->addTask(*t1, "");
+    task_name = "T1_task2";
+    cout << "Creating task: " << task_name << endl;
+    PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
+    t1->insertCode("fixed(500," + workload + ");");
+    CBServerCallingEMRTKernel* et_t1 = kern->addTaskAndEnvelope(t1, "");
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(1);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(1);
 
-//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
-//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(t1));
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t1));
 
-//     REQUIRE (t0->getName() == "T1_task1");
-//     REQUIRE (c0->getFrequency() == 2000);
-//     REQUIRE (c0->getIslandType() == IslandType::BIG);
-//     REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (t0->getName() == "T1_task1");
+    REQUIRE (c0->getFrequency() == 2000);
+    REQUIRE (c0->getIslandType() == IslandType::BIG);
+    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
-//     REQUIRE (t1->getName() == "T1_task2");
-//     REQUIRE (c1->getFrequency() == 2000);
-//     REQUIRE (c1->getIslandType() == IslandType::BIG);
-//     REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 497));
+    REQUIRE (t1->getName() == "T1_task2");
+    REQUIRE (c1->getFrequency() == 2000);
+    REQUIRE (c1->getIslandType() == IslandType::BIG);
+    REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 497));
 
-//     SIMUL.endSingleRun();
-//     delete t1; delete t0;
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.endSingleRun();
+    delete t1; delete t0;
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
-// TEST_CASE("exp2") {
-//     init_sequence = 2;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp2") {
+    init_sequence = 2;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
 
-//     task_name = "T2_task1";
-//     cout << "Creating task: " << task_name << endl;
-//     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
-//     t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-//     kern->addTask(*t0, "");
+    task_name = "T2_task1";
+    cout << "Creating task: " << task_name << endl;
+    PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+    t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+    CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
-//     task_name = "T2_task2";
-//     cout << "Creating task: " << task_name << endl;
-//     PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
-//     t1->insertCode("fixed(250," + workload + ");");
-//     kern->addTask(*t1, "");
+    task_name = "T2_task2";
+    cout << "Creating task: " << task_name << endl;
+    PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
+    t1->insertCode("fixed(250," + workload + ");");
+    CBServerCallingEMRTKernel* et_t1 = kern->addTaskAndEnvelope(t1, "");
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(1);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(1);
 
-//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
-//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(t1));
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
+    CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t1));
 
-//     for(string s : kern->getRunningTasks())
-//       cout << "running :" << s<<endl;
+    for(string s : kern->getRunningTasks())
+      cout << "running :" << s<<endl;
 
-//     REQUIRE (t0->getName() == "T2_task1");
-//     REQUIRE (c0->getFrequency() == 2000);
-//     REQUIRE (c0->getIslandType() == IslandType::BIG);
-//     REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (t0->getName() == "T2_task1");
+    REQUIRE (c0->getFrequency() == 2000);
+    REQUIRE (c0->getIslandType() == IslandType::BIG);
+    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
 
-//     REQUIRE (t1->getName() == "T2_task2");
-//     REQUIRE (c1->getFrequency() == 2000);
-//     REQUIRE (c1->getIslandType() == IslandType::BIG);
-//     REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 248));
+    REQUIRE (t1->getName() == "T2_task2");
+    REQUIRE (c1->getFrequency() == 2000);
+    REQUIRE (c1->getIslandType() == IslandType::BIG);
+    REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 248));
 
-//     SIMUL.endSingleRun();
-//     delete t0; delete t1;
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.endSingleRun();
+    delete t0; delete t1;
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
-// TEST_CASE("exp3") {
-//     init_sequence = 3;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp3") {
+    init_sequence = 3;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
 
-//     task_name = "T3_task1";
-//     cout << "Creating task: " << task_name << endl;
-//     PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
-//     t0->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
-//     kern->addTask(*t0, "");
+    task_name = "T3_task1";
+    cout << "Creating task: " << task_name << endl;
+    PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+    t0->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
+    CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(10);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(10);
 
-//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(t0));
+    cout << "t=" << SIMUL.getTime() << endl;
+    CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
 
-//     REQUIRE (t0->getName() == "T3_task1");
-//     REQUIRE (c0->getFrequency() == 500);
-//     REQUIRE (c0->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 65));
+    REQUIRE (t0->getName() == "T3_task1");
+    REQUIRE (c0->getFrequency() == 500);
+    REQUIRE (c0->getIslandType() == IslandType::LITTLE);
+    cout << "qua " << int(t0->getWCET(c0->getSpeed())) << endl;
+    cout << "qua " << int(et_t0->getWCET(c0->getSpeed())) << endl;
+    cout << "qua " << et_t0->toString() << endl;
+    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 65));
 
-//     SIMUL.endSingleRun();
-//     delete t0;
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.endSingleRun();
+    delete t0;
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
 // TEST_CASE("exp4") {
 //     init_sequence = 4;
@@ -217,7 +220,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         char instr[60] = "";
 //         sprintf(instr, "fixed(100, %s);", workload.c_str());
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 
 //         task[j] = t;
 //     }
@@ -225,10 +228,10 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //     SIMUL.initSingleRun();
 //     SIMUL.run_to(1);
 
-//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[0]));
-//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[1]));
-//     CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[2]));
-//     CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[3]));
+//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[0]));
+//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[1]));
+//     CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[2]));
+//     CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[3]));
 
 //     REQUIRE (task[0]->getName() == "T4_Task_LITTLE_0");
 //     REQUIRE (c0->getFrequency() == 700);
@@ -279,7 +282,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
 //         cout << " with abs. WCET " << wcet << endl;
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 
 //         task[j] = t;
 //         // LITTLE_0, _1, _2, _3 freq 1400.
@@ -288,10 +291,10 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //     SIMUL.initSingleRun();
 //     SIMUL.run_to(1);
 
-//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[0]));
-//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[1]));
-//     CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[2]));
-//     CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(task[3]));
+//     CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[0]));
+//     CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[1]));
+//     CPU_BL *c2 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[2]));
+//     CPU_BL *c3 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[3]));
 //     cout << c0->toString() << endl;
 //     cout << c1->toString() << endl;
 //     cout << c2->toString() << endl;
@@ -358,7 +361,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
 //         cout << " with abs. WCET " << wcet << endl;
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 
 //         task[j] = t;
 //     }
@@ -368,7 +371,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 
 //     for (int j = 0; j < 5; j++) {
 //     	cout << j << endl;
-//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
+//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[j]));
 //     	if (j == 4)
 //     		cpu_task[j] = kern->getProcessorReady(task[j]);
 //     }
@@ -448,7 +451,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         char instr[60] = "";
 //         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 
 //         task[j] = t;
 //     }
@@ -462,7 +465,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //     SIMUL.run_to(1);
 
 //     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
+//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[j]));
 //     }
 
 //     i = 0;
@@ -539,7 +542,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         char instr[60] = "";
 //         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 //         task[j] = t;
 //     }
 //     // towards random workloads...
@@ -548,7 +551,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //     SIMUL.run_to(1);
 
 //     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(task[j]));
+//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_task[j]));
 //     }
 
 //     int i = 0;
@@ -664,7 +667,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         char instr[60] = "";
 //         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 //         tasks.push_back(t);
 //     }
 //     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
@@ -770,7 +773,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 // 	    char instr[60] = "";
 // 	    sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
 // 	    t->insertCode(instr);
-// 	    kern->addTask(*t, "");
+// 	    CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 // 	    tasks.push_back(t);
 // 	}
 // 	EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
@@ -836,7 +839,7 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //         char instr[60] = "";
 //         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
 //         t->insertCode(instr);
-//         kern->addTask(*t, "");
+//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 //         tasks.push_back(t);
 //     }
 //     kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
@@ -847,42 +850,42 @@ cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
 //     SIMUL.initSingleRun();
 //     SIMUL.run_to(1);
 
-//     REQUIRE (kern->getProcessor(tasks.at(0)) == cpus_little[0]);
-//     REQUIRE (kern->getProcessorReady(tasks.at(1)) == kern->getProcessor(tasks.at(0)));
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) == cpus_little[0]);
+//     REQUIRE (kern->getProcessorReady(tasks.at(1)) == kern->getProcessor(et_tasks.at(0)));
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(2)))->getIslandType() == IslandType::LITTLE);
 
 //     SIMUL.run_to(101);
-//     REQUIRE (kern->getProcessor(tasks.at(1)) == cpus_little[0]);
-//     REQUIRE (kern->getProcessorReady(tasks.at(0)) == kern->getProcessor(tasks.at(1)));
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (kern->getProcessor(et_tasks.at(1)) == cpus_little[0]);
+//     REQUIRE (kern->getProcessorReady(tasks.at(0)) == kern->getProcessor(et_tasks.at(1)));
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(2)))->getIslandType() == IslandType::LITTLE);
 
 //     SIMUL.run_to(201);
-//     REQUIRE (kern->getProcessor(tasks.at(0)) == cpus_little[0]);
-//     REQUIRE (kern->getProcessor(tasks.at(0)) == kern->getProcessorReady(tasks.at(1)));
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) == cpus_little[0]);
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) == kern->getProcessorReady(tasks.at(1)));
 //     REQUIRE (!tasks.at(2)->isActive());
 
 //     SIMUL.run_to(232);
-//     REQUIRE (kern->getProcessor(tasks.at(1)) == cpus_little[0]);
+//     REQUIRE (kern->getProcessor(et_tasks.at(1)) == cpus_little[0]);
 //     REQUIRE (!tasks.at(0)->isActive());
 
 //     SIMUL.run_to(263);
 //     REQUIRE (!tasks.at(1)->isActive());
 
 //     SIMUL.run_to(501);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(0)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(1)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(1)));
-//     REQUIRE (kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(2)));
-//     REQUIRE (kern->getProcessor(tasks.at(1)) != kern->getProcessor(tasks.at(2)));
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(0)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(1)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) != kern->getProcessor(tasks.at(1)));
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) != kern->getProcessor(tasks.at(2)));
+//     REQUIRE (kern->getProcessor(et_tasks.at(1)) != kern->getProcessor(tasks.at(2)));
 
 //     SIMUL.run_to(601);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(0)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(1)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(tasks.at(2)))->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(1)));
-//     REQUIRE (kern->getProcessor(tasks.at(0)) != kern->getProcessor(tasks.at(2)));
-//     REQUIRE (kern->getProcessor(tasks.at(1)) != kern->getProcessor(tasks.at(2)));
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(0)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(1)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(2)))->getIslandType() == IslandType::LITTLE);
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) != kern->getProcessor(tasks.at(1)));
+//     REQUIRE (kern->getProcessor(et_tasks.at(0)) != kern->getProcessor(tasks.at(2)));
+//     REQUIRE (kern->getProcessor(et_tasks.at(1)) != kern->getProcessor(tasks.at(2)));
 
 //     SIMUL.run_to(699);
 //     REQUIRE (!tasks.at(0)->isActive());

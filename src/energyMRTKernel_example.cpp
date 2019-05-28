@@ -192,6 +192,7 @@ int main(int argc, char *argv[]) {
          */
 
         PeriodicTask *t;
+        vector<CBServerCallingEMRTKernel*> ets;
 
         /* LITTLE */
 
@@ -206,19 +207,18 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            EnvelopedTask* et = kern->addTaskAndEnvelope(*t, "");
-            //ttrace.attachToTask(*et);
-            //jtrace.attachToTask(*t);
-            tasks.push_back(et);
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
+            ttrace.attachToTask(*t);
+            jtrace.attachToTask(*t);
+            tasks.push_back(t);
 
             SIMUL.initSingleRun();
+
             SIMUL.run_to(1);
-            cout << "t is now DSIADAS " << et->toString() << endl;
             CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
 
-            //assert (t->getName() == "T0_task1");
+            assert (t->getName() == "T0_task1");
             assert (c0->getFrequency() == 2000);
-            cout << "quiDSASODJASIOJDASIOJDASIO" << endl;
             assert (c0->getIslandType() == IslandType::BIG);
 
             SIMUL.endSingleRun();
@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            kernels[0]->addTask(*t, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
             tasks.push_back(t);
@@ -239,7 +239,7 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");");
-            kernels[0]->addTask(*t, "");
+            CBServerCallingEMRTKernel* et1 = kern->addTaskAndEnvelope(t, "");
             ttrace.attachToTask(*t);
             tasks.push_back(t);
 
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            kernels[0]->addTask(*t, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
             tasks.push_back(t);
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(250," + workload + ");");
-            kernels[0]->addTask(*t, "");
+            CBServerCallingEMRTKernel* et1 = kern->addTaskAndEnvelope(t, "");
             ttrace.attachToTask(*t);
             tasks.push_back(t);
 
@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
-            kernels[0]->addTask(*t, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
             ttrace.attachToTask(*t);
             //jtrace.attachToTask(*t);
             tasks.push_back(t);
@@ -285,7 +285,7 @@ int main(int argc, char *argv[]) {
                 char instr[60] = "";
                 sprintf(instr, "fixed(100, %s);", workload.c_str());
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
@@ -300,7 +300,7 @@ int main(int argc, char *argv[]) {
                 sprintf(instr, "fixed(%d, bzip2);", wcet);
                 cout << " with abs. WCET " << wcet << endl;
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
                 sprintf(instr, "fixed(%d, %s);", wcet, workload.c_str());
                 cout << " with abs. WCET " << wcet << endl;
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
 
                 tasks.push_back(t);
@@ -337,7 +337,7 @@ int main(int argc, char *argv[]) {
             char instr[60] = "";
             sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
             t->insertCode(instr);
-            kernels[0]->addTask(*t, "");
+            ets.push_back(kern->addTaskAndEnvelope(t, ""));
             ttrace.attachToTask(*t);
             tasks.push_back(t);
           }
@@ -356,7 +356,7 @@ int main(int argc, char *argv[]) {
                 char instr[60] = "";
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
@@ -391,7 +391,7 @@ int main(int argc, char *argv[]) {
                 t->insertCode(instr);
                 tasks.push_back(t);
                 ttrace.attachToTask(*t);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
             }
 
             SIMUL.initSingleRun();
@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
             //EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
             kernels.push_back(kern);
             for (AbsRTTask* t : tasks)
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
 
             SIMUL.initSingleRun();
             SIMUL.run_to(1000);
@@ -426,7 +426,7 @@ int main(int argc, char *argv[]) {
                 char instr[60] = "";
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
@@ -447,33 +447,33 @@ int main(int argc, char *argv[]) {
             SIMUL.initSingleRun();
             SIMUL.run_to(36);
 
-            assert(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-            assert(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-            assert(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+            assert(k->getProcessor(ets[0])->getName() == cpus_little[0]->getName());
+            assert(k->getProcessor(ets[1])->getName() == cpus_little[1]->getName());
+            assert(k->getProcessor(ets[2])->getName() == cpus_little[2]->getName());
+            //assert(k->getProcessor(ets[3])->getName() == cpus_little[3]->getName()); has ended already
 
-            assert(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
-            assert(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-            assert(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-            assert(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+            assert(k->getProcessor(ets[4])->getName() == cpus_big[0]->getName());
+            assert(k->getProcessor(ets[5])->getName() == cpus_big[1]->getName());
+            assert(k->getProcessor(ets[6])->getName() == cpus_big[2]->getName());
+            assert(k->getProcessor(ets[7])->getName() == cpus_big[3]->getName());
 
             // task8 comes in place of task3
-            assert(k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+            assert(k->getProcessor(ets[8])->getName() == cpus_little[3]->getName());
 
             SIMUL.run_to(199);
 
-            assert(k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-            assert(k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-            assert(k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-            //assert(k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+            assert(k->getProcessor(ets[0])->getName() == cpus_little[0]->getName());
+            assert(k->getProcessor(ets[1])->getName() == cpus_little[1]->getName());
+            assert(k->getProcessor(ets[2])->getName() == cpus_little[2]->getName());
+            //assert(k->getProcessor(ets[3])->getName() == cpus_little[3]->getName()); has ended already
 
-            //assert(k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
-            assert(k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-            assert(k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-            assert(k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+            //assert(k->getProcessor(ets[4])->getName() == cpus_big[0]->getName()); has ended already
+            assert(k->getProcessor(ets[5])->getName() == cpus_big[1]->getName());
+            assert(k->getProcessor(ets[6])->getName() == cpus_big[2]->getName());
+            assert(k->getProcessor(ets[7])->getName() == cpus_big[3]->getName());
 
             // task9 comes in place of task4
-            assert(k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
+            assert(k->getProcessor(ets[9])->getName() == cpus_big[0]->getName());
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -496,7 +496,7 @@ int main(int argc, char *argv[]) {
                 char instr[60] = "";
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 t->insertCode(instr);
-                kern->addTask(*t, "");
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
@@ -509,12 +509,12 @@ int main(int argc, char *argv[]) {
             dynamic_cast<Task*>(tasks[1])->activate(Tick(activ[1]));
             SIMUL.run_to(17);
 
-            assert(k->getProcessor(tasks[1]) == cpus_little[0]);
+            assert(k->getProcessor(ets[1]) == cpus_little[0]);
             assert(k->getProcessorReady(tasks[0]) == cpus_little[0]);
 
             SIMUL.run_to(156);
 
-            assert(k->getProcessor(tasks[0]) == cpus_little[0]);
+            assert(k->getProcessor(ets[0]) == cpus_little[0]);
             assert(tasks[1]->isActive() == false);
 
             SIMUL.endSingleRun();
@@ -573,7 +573,7 @@ int main(int argc, char *argv[]) {
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 cout << instr << endl;
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
 
@@ -640,7 +640,7 @@ int main(int argc, char *argv[]) {
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 cout << instr << endl;
                 t->insertCode(instr);
-                kernels[0]->addTask(*t, "");
+                CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
 
@@ -696,7 +696,7 @@ int main(int argc, char *argv[]) {
             serv->setKernel(kern);
             serv->addTask(*t2);
             tasks.push_back(serv);
-            kernels[0]->addTask(*serv, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(serv, "");
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
             k->addForcedDispatch(serv, cpus_big[0], 18, 999);
@@ -742,7 +742,7 @@ int main(int argc, char *argv[]) {
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
-            kernels[0]->addTask(*serv, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(serv, "");
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
             k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
@@ -797,7 +797,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t0_little);
             pstrace.attachToTask(*t0_little);
             tasks.push_back(t0_little);
-            kernels[0]->addTask(*t0_little, "");
+            CBServerCallingEMRTKernel* et_t0_little = kern->addTaskAndEnvelope(t0_little, "");
 
             PeriodicTask *t0_big0 = new PeriodicTask(10, 10 , 0, "Task2_Big0"); 
             t0_big0->insertCode("fixed(5,bzip2);");
@@ -805,7 +805,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t0_big0);
             pstrace.attachToTask(*t0_big0);
             tasks.push_back(t0_big0);
-            kernels[0]->addTask(*t0_big0, "");
+            CBServerCallingEMRTKernel* et_t0_big0 = kern->addTaskAndEnvelope(t0_big0, "");
 
             PeriodicTask *t0_big1 = new PeriodicTask(10, 10 , 0, "Task3_Big1"); 
             t0_big1->insertCode("fixed(5,bzip2);");
@@ -813,7 +813,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t0_big1);
             pstrace.attachToTask(*t0_big1);
             tasks.push_back(t0_big1);
-            kernels[0]->addTask(*t0_big1, "");
+            CBServerCallingEMRTKernel* et_t0_big1 = kern->addTaskAndEnvelope(t0_big1, "");
             
 
 
@@ -827,7 +827,7 @@ int main(int argc, char *argv[]) {
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(2, 10, 10, "hard",  "server1", "FIFOSched");
             serv->addTask(*t2);
             tasks.push_back(serv);
-            kernels[0]->addTask(*serv, "");
+            CBServerCallingEMRTKernel* et_serv = kern->addTaskAndEnvelope(serv, "");
 
 
 
@@ -887,7 +887,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t0_little);
             pstrace.attachToTask(*t0_little);
             tasks.push_back(t0_little);
-            kernels[0]->addTask(*t0_little, "");
+            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t0_little, "");
 
             NonPeriodicTask *t0_big0 = new NonPeriodicTask(10, 10, 0, "Task2_Big0"); 
             t0_big0->insertCode("fixed(5,bzip2);");
@@ -896,7 +896,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t0_big0);
             pstrace.attachToTask(*t0_big0);
             tasks.push_back(t0_big0);
-            kernels[0]->addTask(*t0_big0, "");
+            CBServerCallingEMRTKernel* et_t0_big0 = kern->addTaskAndEnvelope(t0_big0, "");
 
             PeriodicTask *t0_big1 = new PeriodicTask(30, 30 , 0, "Task3_Big1"); 
             t0_big1->insertCode("fixed(15,bzip2);");
@@ -905,7 +905,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t0_big1);
             pstrace.attachToTask(*t0_big1);
             tasks.push_back(t0_big1);
-            kernels[0]->addTask(*t0_big1, "");
+            CBServerCallingEMRTKernel* et_t0_big1 = kern->addTaskAndEnvelope(t0_big1, "");
 
             PeriodicTask *t1_big1 = new PeriodicTask(31, 31 , 0, "TaskReady_Big1"); 
             t1_big1->insertCode("fixed(1,bzip2);");
@@ -914,7 +914,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t1_big1);
             pstrace.attachToTask(*t0_big1);
             tasks.push_back(t1_big1);
-            kernels[0]->addTask(*t1_big1, "");
+            CBServerCallingEMRTKernel* et_t1_big1 = kern->addTaskAndEnvelope(t1_big1, "");
             
 
 
@@ -937,7 +937,7 @@ int main(int argc, char *argv[]) {
             serv->addTask(*tos);
             serv->addTask(*tos2);
             tasks.push_back(serv);
-            kernels[0]->addTask(*serv, "");
+            CBServerCallingEMRTKernel* et_serv = kern->addTaskAndEnvelope(serv, "");
 
 
 
@@ -949,7 +949,7 @@ int main(int argc, char *argv[]) {
             tasks.push_back(t5);
             jtrace.attachToTask(*t5);
             pstrace.attachToTask(*t5);
-            kernels[0]->addTask(*t5, "");
+            CBServerCallingEMRTKernel* et_t5 = kern->addTaskAndEnvelope(t5, "");
 
             PeriodicTask *t3 = new PeriodicTask(30, 30 , 0, "TaskBefore"); 
             t3->insertCode("fixed(1,bzip2);");
@@ -958,7 +958,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t3);
             pstrace.attachToTask(*t3);
             tasks.push_back(t3);
-            kernels[0]->addTask(*t3, "");
+            CBServerCallingEMRTKernel* et_t3 = kern->addTaskAndEnvelope(t3, "");
 
             PeriodicTask *t4 = new PeriodicTask(30, 30 , 0, "TaskAfter"); 
             t4->insertCode("fixed(1,bzip2);");
@@ -967,7 +967,7 @@ int main(int argc, char *argv[]) {
             jtrace.attachToTask(*t4);
             pstrace.attachToTask(*t4);
             tasks.push_back(t4);
-            kernels[0]->addTask(*t4, "");
+            CBServerCallingEMRTKernel* et_t4 = kern->addTaskAndEnvelope(t4, "");
             
 
 

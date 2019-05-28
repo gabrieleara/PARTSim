@@ -520,8 +520,7 @@ namespace RTSim {
     
     void Task::activate()
     {
-        arrEvt.drop();
-        arrEvt.post(SIMUL.getTime());
+        activate(SIMUL.getTime());
     }
     
     void Task::activate(Tick t)
