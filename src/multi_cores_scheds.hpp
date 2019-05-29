@@ -346,6 +346,8 @@ namespace RTSim {
         void onEnd(AbsRTTask *t, CPU* c) {
           assert(c != NULL); assert(t != NULL);
 
+          cout << "\t" << c->getName() << " has now wl: " << c->getWorkload() << ", speed: " << c->getSpeed() << endl << endl;
+
           // check if there is consistency still
           AbsRTTask *tt = getRunningTask(c);
           assert(tt != NULL && t == tt);
@@ -428,14 +430,14 @@ namespace RTSim {
         virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
         void saveU_active(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
-            cout << __func__ << "()" << endl;
+            cout << __func__ << "() " << endl;
             assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
 
             Task *tt = dynamic_cast<Task*>(t);
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
             double u_active = double(tt->getWCET(cpu->getSpeed())) / (double) tt->getDeadline();
             #include <cstdio>
-            printf("\tu_active = %f/%f\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline());
+            printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
 
             // a better map is by cpu, but then cpus can collide
             Tick vt = Tick(cbs->getVirtualTime());

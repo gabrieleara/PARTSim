@@ -285,13 +285,13 @@ namespace RTSim {
 
         virtual string toString() {
             stringstream ss;
-            ss << "EnergyMultiCoresScheds::toString():" << endl;
+            ss << "EnergyMultiCoresScheds::toString(), t=" << SIMUL.getTime() << ":" << endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
                     ss << "\tEmpty queue for " << q.first->getName() << endl;
                 else
-                    ss << "\t" << q.first->getName() << ":" << endl << qs << endl;
+                    ss << "\t" << q.first->getName() << "(freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ":" << endl << qs << endl;
             }
             return ss.str();
         }
@@ -380,8 +380,10 @@ namespace RTSim {
         */
         void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
-        /// Returns the CBS server envelopingf task t
+        /// Returns the CBS server enveloping the periodic task t
         AbsRTTask* getEnveloper(AbsRTTask* t) const {
+          if (!CBS_ENVELOPING_PER_TASK_ENABLED || isCBServer(t)) return t;
+
           for (auto &elem : _envelopes)
             if (elem.first == t)
               return elem.second;
@@ -389,8 +391,24 @@ namespace RTSim {
           return NULL;
         }
 
+        /// Returns the CBS servers enveloping the periodic tasks
+        vector<AbsRTTask*> getEnvelopers(vector<AbsRTTask*> ptasks) const {
+          if (!CBS_ENVELOPING_PER_TASK_ENABLED) return ptasks;
+
+          vector<AbsRTTask*> envelopes;
+          for (AbsRTTask *t : ptasks)
+            if (isCBServer(t))
+              envelopes.push_back(t);
+            else
+              envelopes.push_back(getEnveloper(t));
+          return envelopes;
+        }
+
         /// Get island big/little
         Island_BL* getIsland(IslandType island) const { return _islands[island]; }
+
+        bool isCBServer(AbsRTTask* t) const { return dynamic_cast<CBServerCallingEMRTKernel*>(t) != NULL; }
+        bool isPeriodicTask(AbsRTTask* t) const { return dynamic_cast<PeriodicTask*>(t) != NULL; }
 
         /**
            Tells if a task is to be descheduled on a CPU
@@ -650,7 +668,7 @@ namespace RTSim {
               return;
             }
 
-            cout << "\tServer's got empty. Server yeilds (= schedule a ready task of core)" << endl;
+            cout << "\tServer's got empty. Server yields (= schedule a ready task of core)" << endl;
             _queues->yield(cpu);
             cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
           }
@@ -668,10 +686,35 @@ namespace RTSim {
           dispatch();
         }
 
-        void onTaskInServerEnd(AbsRTTask* t, CPU* cpu, CBServer* cbs) {
+        /// Callback, when a CBS server ends a task
+        void onTaskInServerEnd(AbsRTTask* t, CPU_BL* cpu, CBServer* cbs) {
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
+          cout << "\tEMRTK::" << __func__ << "()" << endl;
+
+          // for some reason, here task has wl idle, wrongly (should be kept until the end of this function). reset:
+          cpu->setWorkload(Utils::getTaskWorkload(t));
+          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
 
           _queues->onTaskInServerEnd(t, cpu, cbs);
+          onTaskGetsDescheduled(cbs, cpu);
+        }
+
+        /// Callback, when a task gets running on a core
+        void onTaskGetsRunning(AbsRTTask *t, CPU_BL* cpu) {
+          assert (t != NULL); assert (cpu != NULL);
+          cout << "EMRTK::" << __func__ << "() " << taskname(t) << " on " << cpu->getName() << endl;
+
+          cout << "\t" << cpu->getName() << " had wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl;
+          cpu->setWorkload(Utils::getTaskWorkload(t));
+          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl << endl;
+        }
+
+        /// Callback, when a task gets descheduled on a core 
+        void onTaskGetsDescheduled(AbsRTTask *t, CPU_BL* cpu) {
+          assert (t != NULL); assert (cpu != NULL);
+          cout << "\tEMRTK::" << __func__ << "() " << taskname(t) << " on " << cpu->getName() << endl;
+          
+          cpu->setWorkload("idle");
         }
 
         /**
@@ -709,8 +752,6 @@ namespace RTSim {
         bool manageForcedDispatch(AbsRTTask*);
 
         void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int times = 1);
-
-        void addForcedDispatchOnServer(AbsRTTask* t, IslandType island, unsigned int opp, unsigned int times = 1);
 
         /// You'll never see the task anymore scheduled. if onlyAfterEnds is false, it means kill now
         // todo delete if never used

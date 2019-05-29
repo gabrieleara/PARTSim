@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 3;
+    int TEST_NO = 1;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
         cout << "Test to perform is " << TEST_NO << endl;
 
         if (TEST_NO == 0) {
-            task_name = "task1";
+            task_name = "T0_task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
@@ -225,8 +225,6 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(1);
             CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
             cout << c0->toString() << endl;
-            //cout << t->getName() << endl;
-            //assert (t->getName() == "T0_task1");
             assert (c0->getFrequency() == 2000);
             assert (c0->getIslandType() == IslandType::BIG);
 
@@ -235,7 +233,7 @@ int main(int argc, char *argv[]) {
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
         }
         if (TEST_NO == 1) {
-            task_name = "task1";
+            task_name = "T1_task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
@@ -244,7 +242,7 @@ int main(int argc, char *argv[]) {
             //jtrace.attachToTask(*t);
             tasks.push_back(t);
 
-            task_name = "task2";
+            task_name = "T1_task2";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");");
@@ -252,10 +250,16 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t);
             tasks.push_back(t);
 
+            SIMUL.initSingleRun();
+            SIMUL.run_to(500);
+            cout << "\n\n---------------------------------- t = " << SIMUL.getTime() << endl << endl;
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun(); 
+            return 0;
             // task1 (500,500) => BIG_3 max freq, task2 (500,500) => BIG_2 max freq
         }
         if (TEST_NO == 2) {
-            task_name = "task1";
+            task_name = "T2_task1";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
@@ -264,7 +268,7 @@ int main(int argc, char *argv[]) {
             //jtrace.attachToTask(*t);
             tasks.push_back(t);
 
-            task_name = "task2";
+            task_name = "T2_task2";
             cout << "Creating task: " << task_name << endl;
             t = new PeriodicTask(500, 500, 0, task_name);
             t->insertCode("fixed(250," + workload + ");");
@@ -275,7 +279,7 @@ int main(int argc, char *argv[]) {
             // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
         if (TEST_NO == 3) {
-            task_name = "task1";
+            task_name = "T3_task1";
             cout << "Creating task: " << task_name << endl;
             PeriodicTask *t0 = new PeriodicTask(500, 500, 0, task_name);
             t0->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
@@ -318,7 +322,7 @@ int main(int argc, char *argv[]) {
         else if(TEST_NO == 5) {
             for (int j = 0; j < 4; j++) {
                 int wcet = 5; //* (j+1);
-                task_name = "task" + std::to_string(j);
+                task_name = "T5_task" + std::to_string(j);
                 cout << "Creating task: " << task_name;
                 t = new PeriodicTask(500, 500, 0, task_name);
                 char instr[60] = "";
@@ -334,7 +338,7 @@ int main(int argc, char *argv[]) {
         }
         else if(TEST_NO == 6) {
           /* This experiment shows that other CPUs frequencies are increased for the
-             entire island after a decision for other tasks has already been made*/
+             entire island after a decision for other tasks has already been made */
             vector<CPU*> cpu_task;
             int i, wcet = 300;
             for (int j = 0; j < 5; j++) {
@@ -352,6 +356,11 @@ int main(int argc, char *argv[]) {
 
                 tasks.push_back(t);
             }
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1);
+            SIMUL.endSingleRun();
+            return 0;
         }
         else if(TEST_NO == 7) {
           int wcets[] = { 63, 63, 63, 63, 30 };

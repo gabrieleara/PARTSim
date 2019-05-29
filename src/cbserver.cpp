@@ -325,15 +325,18 @@ namespace RTSim {
 
     void CBServerCallingEMRTKernel::onEnd(AbsRTTask *t) {
         cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__ << "() for " << t->toString() << endl;
-        CPU* cpu = dynamic_cast<Task*>(t)->getCPU();
+        CPU_BL* cpu = dynamic_cast<CPU_BL*>(dynamic_cast<Task*>(t)->getCPU());
         Server::onEnd(t);
-        cout << "End of Server::onEnd() in CBSCEMRTK::onEnd()" << endl;
+        // todo del cout
+        cout << "\tEnd of Server::onEnd() in CBSCEMRTK::onEnd()" << endl;
 
         if (isEmpty())
             yield();
 
         EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
         if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this);
+
+        cout << endl;
     }
 
     void CBServerCallingEMRTKernel::onReplenishment(Event *e) {

@@ -58,12 +58,26 @@ namespace RTSim {
 
     AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
+
+        if (CBS_ENVELOPING_PER_TASK_ENABLED)
+            t = getEnveloper(t);
+
         return t;
     }
 
     vector<AbsRTTask*> EnergyMRTKernel::getReadyTasks(CPU_BL* c) const {
         vector<AbsRTTask*> t = _queues->getReadyTasks(c);
-        return t;
+        vector<AbsRTTask*> tt;
+
+        if (CBS_ENVELOPING_PER_TASK_ENABLED)
+            tt = getEnvelopers(t);
+        else
+            tt = t;
+
+        for (AbsRTTask *a : tt)
+            assert (NULL != dynamic_cast<CBServerCallingEMRTKernel*>(a));
+
+        return tt;
     }
 
     CPU_BL *EnergyMRTKernel::getProcessorReady(AbsRTTask *t) const {
@@ -78,6 +92,9 @@ namespace RTSim {
     }
 
     bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
+        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
+
         return _queues->isInAnyQueue(t) != NULL;
     }
 
@@ -171,7 +188,7 @@ namespace RTSim {
         }
 
         //todo rem
-        cout << cbs->getStatusString() << endl;
+        //cout << cbs->getStatusString() << endl;
         if (cbs->isEmpty()) {
             cout << "\t\t\t\t\tServer's empty => skip, you consider Util_actives" << endl;
             return true;
@@ -192,7 +209,6 @@ namespace RTSim {
         if (isTryngTaskOnCPU_BL())
             return;
 
-
         cout << __func__ << "(). envelopes: " << endl;
         printEnvelopes();
         _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
@@ -212,7 +228,7 @@ namespace RTSim {
                 
                 string startingWL = c->getWorkload();
                 c->setWorkload(Utils::getTaskWorkload(elem.first));
-                elem.second->changeQ(Tick(elem.first->getWCET(c->getSpeed())));
+                elem.second->changeBudget(Tick(elem.first->getWCET(c->getSpeed())));
                 c->setWorkload(startingWL);
             }
         }
@@ -262,10 +278,6 @@ namespace RTSim {
         _m_forcedDispatch[t] = make_tuple(c, opp, times);
     }
 
-    void addForcedDispatchOnServer(AbsRTTask* t, IslandType island, unsigned int opp, unsigned int times = 1) {
-        //todo
-    }
-
     // for gdb
     bool EnergyMRTKernel::manageForcedDispatch(AbsRTTask* t) {
         if (_m_forcedDispatch.find(t) != _m_forcedDispatch.end() ) { //&& get<2>(_m_forcedDispatch[t]) == SIMUL.getTime()) {
@@ -288,6 +300,9 @@ namespace RTSim {
 
     bool EnergyMRTKernel::isToBeDescheduled(CPU_BL *p, AbsRTTask *t) {
       assert(p != NULL);
+
+      if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
 
       if (dynamic_cast<RRScheduler*>(_sched) && t != NULL) { // t is null at time == 0
         bool res = false;
@@ -343,15 +358,14 @@ namespace RTSim {
 
     }
 
-    // Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
-    // Also called when a periodic task ends its WCET
+    /**
+        Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
+        Here task begins executing in its core.
+      */
     void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e) {
         AbsRTTask* t      = e->getTask();
         CPU_BL* cpu       = dynamic_cast<CPU_BL*>(e->getCPU());
         assert (t != NULL); assert(cpu != NULL);
-
-        if (SIMUL.getTime() == 100)
-          cout <<"";
 
         cout << endl << "time =" << SIMUL.getTime() << " EnergyMRTKernel::onEndDispatchMulti() for " << taskname(t) << " on " << cpu->toString() << endl;
         _queues->onEndDispatchMultiFinished(cpu,t);
@@ -362,7 +376,7 @@ namespace RTSim {
         // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
         unsigned int opp = _queues->getOPP(cpu);
         if (opp > cpu->getOPP()) {
-          cout << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
+          cout << "\t" << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
           cpu->setOPP(opp);
         }
         else // otherwise you have to same freq change events
@@ -373,9 +387,7 @@ namespace RTSim {
 
         cout << endl;
 
-        // If you exit(0) here, trace.txt arrives 'til [Time:0]	T6_task4 arrived at 0.
-        // ExecInstr::schedule() is called after each task's onEndDispatchMulti()
-        // exit(0);
+        onTaskGetsRunning(t, cpu);
     }
 
 
@@ -384,9 +396,6 @@ namespace RTSim {
 
     void EnergyMRTKernel::onEnd(AbsRTTask* t) {
         DBGENTER(_KERNEL_DBG_LEV);
-
-        if (SIMUL.getTime()  == 14)
-            cout << "";
 
         // only on big-little: update the state of the CPUs island
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
@@ -471,7 +480,7 @@ namespace RTSim {
     } // end EMRTK::migrate()
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
-      cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
+        cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
         finishingTask->deschedule();
         _queues->onRound(finishingTask, getProcessor(finishingTask));
     }
@@ -500,6 +509,9 @@ namespace RTSim {
             cout << "chosenCPU in big island or is not little_3 => skip" << endl;
             return;
         }
+
+        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+            t = getEnveloper(t);
 
         bool fitsInOtherCore = true; // if it only fits on little 3 and in bigs
 
