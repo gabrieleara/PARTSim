@@ -100,11 +100,8 @@ namespace RTSim
         }
 
         virtual string toString() const {
-            stringstream ss;
-            ss << "(CPU) " << getName();
-	    if (OPPs.size() > 0)
-	       ss << " cur freq " << getFrequency();
-            return ss.str();
+            double freq = getFrequency();
+            return getName() + " freq " + to_string(freq);
         }
 
         /// set the processor index

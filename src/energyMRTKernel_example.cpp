@@ -29,15 +29,23 @@
 using namespace MetaSim;
 using namespace RTSim;
 
+#define REQUIRE assert
+
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params);
 
 void dumpAllSpeeds();
+
+/// Returns true if the value 'eval' and 'expected' are distant 'error'%
+bool inRange(int eval, int expected);
+
+/// True if min <= eval <= max
+bool inRangeMinMax(double eval, const double min, const double max);
 
 int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 1;
+    int TEST_NO = 3;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -269,12 +277,28 @@ int main(int argc, char *argv[]) {
         if (TEST_NO == 3) {
             task_name = "task1";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
-            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
+            PeriodicTask *t0 = new PeriodicTask(500, 500, 0, task_name);
+            t0->insertCode("fixed(10," + workload + ");"); // WCET 10 at max frequency on big cores
+            CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
+            ttrace.attachToTask(*t0);
             //jtrace.attachToTask(*t);
-            tasks.push_back(t);
+            tasks.push_back(t0);
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(10);
+
+            cout << "t=" << SIMUL.getTime() << endl;
+            CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
+
+            //assert (t0->getName() == "T3_task1");
+            assert (c0->getFrequency() == 500);
+            assert (c0->getIslandType() == IslandType::LITTLE);
+            cout << "qua " << int(t0->getWCET(c0->getSpeed())) << endl;
+            cout << "qua " << int(et_t0->getWCET(c0->getSpeed())) << endl;
+            cout << "qua " << et_t0->toString() << endl;
+            assert (inRange(int(t0->getWCET(c0->getSpeed())), 65));
+
+            SIMUL.endSingleRun();
 
             // little freq 500
         }
@@ -1092,4 +1116,19 @@ void dumpAllSpeeds() {
   std::cout << "BIG:" << std::endl;
   bzip2_cp = {0.17833, 1.63265e+6, 1.62033, 118803};
   dumpSpeeds(bzip2_cp);
+}
+
+/// Returns true if the value 'eval' and 'expected' are distant 'error'%
+bool inRange(int eval, int expected) {
+    const unsigned int error = 5;
+
+    int min = int(eval - eval * error/100);
+    int max = int(eval + eval * error/100);
+
+    return expected >= min && expected <= max; 
+}
+
+/// True if min <= eval <= max
+bool inRangeMinMax(double eval, const double min, const double max) {
+    return min <= eval <= max;
 }

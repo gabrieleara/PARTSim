@@ -192,6 +192,7 @@ namespace RTSim {
         if (isTryngTaskOnCPU_BL())
             return;
 
+
         cout << __func__ << "(). envelopes: " << endl;
         printEnvelopes();
         _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
@@ -200,12 +201,22 @@ namespace RTSim {
         for (auto &elem : _envelopes) {
             cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
             CPU_BL *c = getProcessor(elem.first);
+
+            // dispatch() dispatches a task per time, setting CPU OPP => some tasks don't have core yet
+            if (c == NULL)
+                continue;
+
             cout << __func__ << "(). cpu of elem is " << c->toString() << endl;
             if (c->getIslandType() == island->getIslandType()) {
-                cout << __func__ << "(). changing Q to " << elem.second->toString() << " to " << Tick(elem.first->getWCET(c->getSpeed())) << endl;
+                cout << __func__ << "(). changing Q to " << elem.second->toString() << " to " << Tick(elem.first->getWCET(c->getSpeed())) << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
+                
+                string startingWL = c->getWorkload();
+                c->setWorkload(Utils::getTaskWorkload(elem.first));
                 elem.second->changeQ(Tick(elem.first->getWCET(c->getSpeed())));
+                c->setWorkload(startingWL);
             }
         }
+
 
         // scale wcets of tasks on the island
     }
