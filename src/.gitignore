@@ -7,6 +7,7 @@ cmake-build-debug/
 *.txt
 *.json
 *.trc
+*.pst
 t.txt.save
 *#*
 example
