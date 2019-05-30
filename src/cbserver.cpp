@@ -18,7 +18,7 @@ namespace RTSim {
         HR(HR),
         _replEvt(this, &CBServer::onReplenishment, 
          Event::_DEFAULT_PRIORITY - 1),
-        _idleEvt(this, &CBServer::onIdle),
+        _idleEvt(this, &CBServer::onIdle, Event::_DEFAULT_PRIORITY - 1), // standard version of RTSim uses _DEFAULT_PRIORITY
         vtime(),
         idle_policy(ORIGINAL)
     {

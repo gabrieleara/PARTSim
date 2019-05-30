@@ -671,6 +671,7 @@ TEST_CASE("exp9") {
 
     int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
     vector<PeriodicTask*> tasks;
+    vector<CBServerCallingEMRTKernel*> et_tasks;
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
         task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
         cout << "Creating task: " << task_name;
@@ -678,22 +679,22 @@ TEST_CASE("exp9") {
         char instr[60] = "";
         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
         t->insertCode(instr);
-        CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
+        et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
         tasks.push_back(t);
     }
     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-    k->addForcedDispatch(ets[0], cpus_little[0], 6);
-    k->addForcedDispatch(ets[1], cpus_little[1], 6);
-    k->addForcedDispatch(ets[2], cpus_little[2], 6);
-    k->addForcedDispatch(ets[3], cpus_little[3], 6);
+    k->addForcedDispatch(et_tasks[0], cpus_little[0], 6);
+    k->addForcedDispatch(et_tasks[1], cpus_little[1], 6);
+    k->addForcedDispatch(et_tasks[2], cpus_little[2], 6);
+    k->addForcedDispatch(et_tasks[3], cpus_little[3], 6);
 
-    k->addForcedDispatch(ets[4], cpus_big[0], 18);
-    k->addForcedDispatch(ets[5], cpus_big[1], 18);
-    k->addForcedDispatch(ets[6], cpus_big[2], 18);
-    k->addForcedDispatch(ets[7], cpus_big[3], 18);
+    k->addForcedDispatch(et_tasks[4], cpus_big[0], 18);
+    k->addForcedDispatch(et_tasks[5], cpus_big[1], 18);
+    k->addForcedDispatch(et_tasks[6], cpus_big[2], 18);
+    k->addForcedDispatch(et_tasks[7], cpus_big[3], 18);
 
-    k->addForcedDispatch(ets[8], cpus_big[3], 18);
-    k->addForcedDispatch(ets[9], cpus_big[3], 18);
+    k->addForcedDispatch(et_tasks[8], cpus_big[3], 18);
+    k->addForcedDispatch(et_tasks[9], cpus_big[3], 18);
 
     SIMUL.initSingleRun();
     SIMUL.run_to(36);
@@ -755,62 +756,63 @@ TEST_CASE("exp9") {
     performedTests[init_sequence] = req;
 }
 
-// TEST_CASE("exp10") {
-// 	/**
-// 	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
-// 	    Then, another task, more important, arrives at time 6. Would this last task begin its
-// 	    context switch at time 8, thus being scheduled at time 8+8=16?
-// 	    Experiment requires EDF scheduler.
-//	  */
-// 	   init_sequence = 10;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp10") {
+	/**
+	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
+	    Then, another task, more important, arrives at time 6. Would this last task begin its
+	    context switch at time 8, thus being scheduled at time 8+8=16?
+	    Experiment requires EDF scheduler.
+	  */
+	   init_sequence = 10;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
-//     vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
-//     vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
 
-// 	int wcets[] = { 30,  30  };
-// 	int deadl[] = { 500, 400 };
-// 	int activ[] = { 0,   6   };
-// 	vector<PeriodicTask*> tasks;
-// 	for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-// 	    task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
-// 	    cout << "Creating task: " << task_name;
-// 	    PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
-// 	    char instr[60] = "";
-// 	    sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-// 	    t->insertCode(instr);
-// 	    CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
-// 	    tasks.push_back(t);
-// 	}
-// 	EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-// 	k->setContextSwitchDelay(Tick(8));
-// 	k->addForcedDispatch(ets[0], cpus_little[0], 6);
-// 	k->addForcedDispatch(ets[1], cpus_little[0], 6);
+	int wcets[] = { 30,  30  };
+	int deadl[] = { 500, 400 };
+	int activ[] = { 0,   6   };
+	vector<PeriodicTask*> tasks;
+ vector<CBServerCallingEMRTKernel*> et_tasks;
+	for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+	    task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
+	    cout << "Creating task: " << task_name;
+	    PeriodicTask* t = new PeriodicTask(deadl[j], deadl[j], 0, task_name);
+	    char instr[60] = "";
+	    sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+	    t->insertCode(instr);
+	    et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
+	    tasks.push_back(t);
+	}
+	EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+	k->setContextSwitchDelay(Tick(8));
+	k->addForcedDispatch(et_tasks[0], cpus_little[0], 6);
+	k->addForcedDispatch(et_tasks[1], cpus_little[0], 6);
 
-// 	SIMUL.initSingleRun();
-// 	tasks[1]->activate(Tick(activ[1]));
-// 	SIMUL.run_to(17);
+	SIMUL.initSingleRun();
+	tasks[1]->activate(Tick(activ[1]));
+	SIMUL.run_to(17);
 
-// 	REQUIRE(k->getProcessor(tasks[1]) == cpus_little[0]);
-// 	REQUIRE(k->getProcessorReady(tasks[0]) == cpus_little[0]);
+	REQUIRE(k->getProcessor(tasks[1]) == cpus_little[0]);
+	REQUIRE(k->getProcessorReady(tasks[0]) == cpus_little[0]);
 
-// 	SIMUL.run_to(156);
+	SIMUL.run_to(156);
 
-// 	REQUIRE(k->getProcessor(tasks[0]) == cpus_little[0]);
-// 	REQUIRE(tasks[1]->isActive() == false);
+	REQUIRE(k->getProcessor(tasks[0]) == cpus_little[0]);
+	REQUIRE(tasks[1]->isActive() == false);
 
-// 	SIMUL.endSingleRun();
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
-//         delete tasks[j];
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+	SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete tasks[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
 // TEST_CASE("exp12, RRSched") {
 //     /**
@@ -1194,7 +1196,7 @@ TEST_CASE("exp9") {
 //     performedTests[init_sequence] = req;
 // }
 
-// TEST_CASE("Experiment 18") {
+// TEST_CASE("Experiment 18, again CBS servers") {
 //     /**
 //         The objective here is to find the time at which the task in the server
 //         goes from releasing to idle (time_t). Also, I want to see how

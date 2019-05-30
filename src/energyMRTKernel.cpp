@@ -103,10 +103,10 @@ namespace RTSim {
     }
     
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
-        double util = ceil(task->getRemainingWCET(capacity)) / double(task->getDeadline());
+        double util = ceil(task->getRemainingWCET(capacity)) / double(task->getPeriod());
 
 #include <cstdio>
-        printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getDeadline()), capacity, util);
+        printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getPeriod()), capacity, util);
         return util;
     }
 
@@ -121,13 +121,13 @@ namespace RTSim {
             if (getCBServer_CEMRTK_Utilization(th, utilization, capacity))
                 continue;
 
-            utilization += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
+            utilization += ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod());
             cout << "\t\t\tUtilization task already in CPU, " << th->toString() << ", is "
-                 << ceil(th->getWCET(capacity)) << "/" << th->getDeadline() << " = "
-                 << ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline())
+                 << ceil(th->getWCET(capacity)) << "/" << th->getPeriod() << " = "
+                 << ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod())
                  <<  " - CPU capacity=" << capacity << endl
                  << "\t\t\t\ttask WCET " << ceil(th->getRemainingWCET(capacity)) << " DL "
-                 << th->getDeadline() << endl;
+                 << th->getPeriod() << endl;
         }
 
         double u_active = _queues->getUtilization_active(c);
@@ -149,8 +149,8 @@ namespace RTSim {
             AbsRTTask* runningTask = getRunningTask(c1);
             if (runningTask != NULL) {
                 if (!getCBServer_CEMRTK_Utilization(runningTask, utilizationIsland, capacity)) {
-                    utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getDeadline());
-                    cout << ceil(runningTask->getRemainingWCET(capacity)) << " " << double(runningTask->getDeadline()) << endl;
+                    utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getPeriod());
+                    cout << ceil(runningTask->getRemainingWCET(capacity)) << " " << double(runningTask->getPeriod()) << endl;
                     cout << "\t\t\t\trunning task " << runningTask->toString() << " -> isl util=" << utilizationIsland << endl;
                     if (nTasksIsland != NULL)
                         *nTasksIsland = *nTasksIsland + 1;
@@ -163,7 +163,7 @@ namespace RTSim {
 
                 if (getProcessorReady(th)->getIslandType() == c1->getIslandType() ||
                     dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) { // todo maybe guard removable
-                    utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getDeadline());
+                    utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod());
                     cout << "\t\t\t\tready task " << th->toString() << " -> isl util=" << utilizationIsland << endl;
                     if (nTasksIsland != NULL)
                         *nTasksIsland = *nTasksIsland + 1;
@@ -197,8 +197,8 @@ namespace RTSim {
         cout << "\t\t\t\t\tserver status: " << cbs->getStatusString() << endl;
         // server utilization (its WCET/period) considered only if it's releasing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
-            utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
-            cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << cbs->getRemainingWCET(capacity) << "/" << double(cbs->getDeadline()) << "=" << utilization << " capacity=" << capacity << endl;
+            utilization += cbs->getRemainingWCET(capacity) / double(cbs->getPeriod());
+            cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << cbs->getRemainingWCET(capacity) << "/" << double(cbs->getPeriod()) << "=" << utilization << " capacity=" << capacity << endl;
             return true;
         }
 
@@ -229,7 +229,7 @@ namespace RTSim {
 
             if (c->getIslandType() == island->getIslandType()) {
                 Tick taskWCET = Tick(ceil(elem.first->getWCET(c->getSpeed())));
-                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
+                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
                 
                 elem.second->changeBudget(taskWCET);
                 elem.second->changeQ(taskWCET);
@@ -415,8 +415,9 @@ namespace RTSim {
 
         _sched->extract(t);
         // todo delete cout
-        string state = _sched->toString(); if (state == "") state = "(empty)";
-        cout << "State of external scheduler: " << endl << state << endl;
+        string state = _sched->toString();
+        if (state == "") cout << "(External scheduler is empty)" << endl;
+        else cout << "State of external scheduler: " << endl << state << endl;
 
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
@@ -594,9 +595,11 @@ namespace RTSim {
         leaveLittle3(t, iDeltaPows, chosenCPU);
 
         dispatch(chosenCPU, t, chosenOPP);
+        setTryingTaskOnCPU_BL(true);
         cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
              " with freq " << chosenCPU->getFrequency(chosenOPP) << " speed=" << chosenCPU->getSpeed(chosenOPP) <<
              " chosenOPP " << chosenOPP << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
+        setTryingTaskOnCPU_BL(false);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
@@ -731,7 +734,7 @@ namespace RTSim {
                 cout << "\t\t\tUtilization cur/new task " << t->toString().substr(0, 25) << "... would be " << utilization_t
                      << " - CPU capacity=" << newCapacity << endl;
                 cout << "\t\t\t\tScaled task WCET " << t->getRemainingWCET(newCapacity) << " DL "
-                     << t->getDeadline() << endl;
+                     << t->getPeriod() << endl;
 
                 if (utilization + utilization_t > 1.0) {
                     cout << "\t\t\tTotal utilization + cur/new task utilization would be " << utilization << "+" <<

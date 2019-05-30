@@ -113,6 +113,11 @@ namespace RTSim {
      */
     virtual Tick getRelDline() const = 0;
 
+    /**
+      returns the task period
+      */
+    virtual Tick getPeriod() const { return Tick(0.0); };
+
     /**  
       returns the Task ID.
      */ 

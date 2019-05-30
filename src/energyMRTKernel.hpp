@@ -534,6 +534,17 @@ namespace RTSim {
             _e_migration_manager.dumpToFile(alsoConsumptions, tasks, filename);
         }
 
+        /// Returns the enveloped RTask of CBS server
+        AbsRTTask* getEnveloped(AbsRTTask* cbs) const {
+          assert (dynamic_cast<CBServer*>(cbs)); assert (CBS_ENVELOPING_PER_TASK_ENABLED);
+
+          for (const auto& elem : _envelopes)
+            if (elem.second == cbs)
+              return elem.first;
+          return NULL;
+        }
+
+
         /// Tells where a task has been dispatched (when it's in the limbo
         /// between onBeginDispatchMulti and onEndDispatchMulti). Similar to getProcessor() not anymore
 
@@ -654,7 +665,7 @@ namespace RTSim {
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
-          _queues->onExecutingReleasing(t, cpu, cbs);
+          _queues->onExecutingReleasing(getEnveloper(t), cpu, cbs);
 
 
           if (cbs->isEmpty()) {

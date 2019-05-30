@@ -226,15 +226,8 @@ namespace RTSim {
         /// Empties a core queue
         virtual void empty(CPU* c);
 
-        /// Removes Utilization active that must end at SIMUL.getTime()
-        void forgetU_active() {
-          for (auto& elem : _active_utilizations) {
-            if (get<1>(elem.second) == SIMUL.getTime()) {
-              cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
-              _active_utilizations.erase(elem.first);
-            }
-          }
-        }
+        /// Removes Utilization active that must end CBS server t
+        void forgetU_active(AbsRTTask* t);
 
         /// True if the core queue is empty
         bool isEmpty(CPU* c);
@@ -390,14 +383,14 @@ namespace RTSim {
         void onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
             
-            forgetU_active();
+            forgetU_active(cbs);
         }
 
         void onReplenishment(CBServer *cbs) {
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "()" << endl;
 
             if (SIMUL.getTime() == cbs->getPeriod())
-              forgetU_active();
+              forgetU_active(cbs);
 
             CPU *cpu = getProcessorRunning(cbs);
             if (cpu != NULL) // server might be with no task => already ready
@@ -429,6 +422,7 @@ namespace RTSim {
         /// Remove a specific task from a core queue. Also removes its ctx evt
         virtual void removeFromQueue(CPU* c, AbsRTTask* t);
 
+        /// Save U_active of an ending task t
         void saveU_active(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
             cout << __func__ << "() " << endl;
             assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);

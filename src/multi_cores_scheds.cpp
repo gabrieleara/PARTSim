@@ -14,7 +14,7 @@
 
 #include <multi_cores_scheds.hpp>
 #include <mrtkernel.hpp>
-
+#include <energyMRTKernel.hpp>
 
 
 namespace RTSim {
@@ -117,6 +117,20 @@ namespace RTSim {
         }
 
         return tasks;
+    }
+
+    void MultiCoresScheds::forgetU_active(AbsRTTask* t) {
+      cout << "\tMSC::" << __func__ << "() for " << t->toString() << endl;
+
+        if (EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED)
+            t = dynamic_cast<EnergyMRTKernel*>(_kernel)->getEnveloped(t);
+
+        for (auto& elem : _active_utilizations) {
+            if (elem.first == t) {
+                cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
+                _active_utilizations.erase(elem.first);
+            }
+        }
     }
 
     void MultiCoresScheds::empty(CPU* c) {

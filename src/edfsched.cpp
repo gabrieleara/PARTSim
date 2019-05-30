@@ -13,6 +13,7 @@
  ***************************************************************************/
 #include <edfsched.hpp>
 #include <kernel.hpp>
+#include <rttask.hpp>
 
 namespace RTSim {
 
@@ -65,9 +66,9 @@ namespace RTSim {
         printf("\t\t\tEDFSched::isAdmissible WCET %.17g cap %f speed %f\n", toBeAdmitted->getWCET(capacity), capacity, double(c->getSpeed()));
 
         for (AbsRTTask* t : tasks) {
-            utilization += t->getWCET(capacity) / double(t->getDeadline());
+            utilization += t->getWCET(capacity) / double(t->getPeriod());
         }
-        utilization += toBeAdmitted->getWCET(capacity) / double(toBeAdmitted->getDeadline());
+        utilization += toBeAdmitted->getWCET(capacity) / double(toBeAdmitted->getPeriod());
 
         return utilization <= 1.0;
     }

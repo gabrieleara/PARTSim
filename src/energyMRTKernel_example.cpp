@@ -210,6 +210,7 @@ int main(int argc, char *argv[]) {
         PSTrace  pstrace("trace" + to_string(TEST_NO) + ".pst");
         cout << "Test to perform is " << TEST_NO << endl;
 
+        TEST_NO =0;
         if (TEST_NO == 0) {
             task_name = "T0_task1";
             cout << "Creating task: " << task_name << endl;
@@ -228,7 +229,17 @@ int main(int argc, char *argv[]) {
             assert (c0->getFrequency() == 2000);
             assert (c0->getIslandType() == IslandType::BIG);
 
+            SIMUL.run_to(499);
+            kern->printState();
+
+            SIMUL.run_to(500);
+            kern->printState();
+
+            SIMUL.run_to(999);
+            kern->printState();
+
             SIMUL.endSingleRun();
+            return 0;
 
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
         }
@@ -519,7 +530,13 @@ int main(int argc, char *argv[]) {
             // task9 comes in place of task4
             assert(k->getProcessor(ets[9]) == cpus_big[0]);
 
+            SIMUL.run_to(499);
+            k->printState(true);
+            exit(0);
+
             SIMUL.run_to(500);
+
+            k->printState(true);
 
             REQUIRE (k->getProcessor(tasks[0]) == cpus_little[0]);
             REQUIRE (k->getProcessor(tasks[1]) == cpus_little[1]);
