@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 6;
+    int TEST_NO = 9;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -396,6 +396,8 @@ int main(int argc, char *argv[]) {
             }
             // towards random workloads...
         }
+        /*
+        // Useless test. Keeping it just to remember how to use delay, unif, delta.
         if (TEST_NO == 9) {
             // random variables
             int taskNO = 3;
@@ -418,7 +420,7 @@ int main(int argc, char *argv[]) {
                   sprintf(instr, "delay(delta(%d));", task_period * rand() / (RAND_MAX + 1u));
                   break;
                 case 2:
-                  sprintf(instr, "fixed(%d);", task_period * rand() / (RAND_MAX + 1u));
+                  sprintf(instr, "fixed(%d, %s);", task_period * rand() / (RAND_MAX + 1u), workload.c_str());
                   break;
                 default: break;
                 }
@@ -448,10 +450,12 @@ int main(int argc, char *argv[]) {
 
             // random workloads...delay(unif,PDF).
             // todo above code not tested
-        }
-        if (TEST_NO == 10) {
+        }*/
+        if (TEST_NO == 9) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
-            // 100 will finish before, making the task in big (101, the last one in the list) migrate to little.
+            // 100 will finish before, making the task in big (101, the last one in the list) migrate to little
+
+            // needs migrations?
             int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task" + to_string(j);
@@ -465,49 +469,75 @@ int main(int argc, char *argv[]) {
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kernels[0]);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 6);
-            k->addForcedDispatch(tasks[1], cpus_little[1], 6);
-            k->addForcedDispatch(tasks[2], cpus_little[2], 6);
-            k->addForcedDispatch(tasks[3], cpus_little[3], 6);
+            k->addForcedDispatch(ets[0], cpus_little[0], 6);
+            k->addForcedDispatch(ets[1], cpus_little[1], 6);
+            k->addForcedDispatch(ets[2], cpus_little[2], 6);
+            k->addForcedDispatch(ets[3], cpus_little[3], 6);
 
-            k->addForcedDispatch(tasks[4], cpus_big[0], 18);
-            k->addForcedDispatch(tasks[5], cpus_big[1], 18);
-            k->addForcedDispatch(tasks[6], cpus_big[2], 18);
-            k->addForcedDispatch(tasks[7], cpus_big[3], 18);
+            k->addForcedDispatch(ets[4], cpus_big[0], 18);
+            k->addForcedDispatch(ets[5], cpus_big[1], 18);
+            k->addForcedDispatch(ets[6], cpus_big[2], 18);
+            k->addForcedDispatch(ets[7], cpus_big[3], 18);
 
-            k->addForcedDispatch(tasks[8], cpus_big[3], 18);
-            k->addForcedDispatch(tasks[9], cpus_big[3], 18);
+            k->addForcedDispatch(ets[8], cpus_big[3], 18);
+            k->addForcedDispatch(ets[9], cpus_big[3], 18);
 
             SIMUL.initSingleRun();
+            SIMUL.run_to(1);
+            k->printState(true);
+
+            SIMUL.run_to(34);
+            k->printState(true);
+
             SIMUL.run_to(36);
 
-            assert(k->getProcessor(ets[0])->getName() == cpus_little[0]->getName());
-            assert(k->getProcessor(ets[1])->getName() == cpus_little[1]->getName());
-            assert(k->getProcessor(ets[2])->getName() == cpus_little[2]->getName());
-            //assert(k->getProcessor(ets[3])->getName() == cpus_little[3]->getName()); has ended already
+            assert(k->getProcessor(ets[0]) == cpus_little[0]);
+            assert(k->getProcessor(ets[1]) == cpus_little[1]);
+            assert(k->getProcessor(ets[2]) == cpus_little[2]);
+            //assert(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
 
-            assert(k->getProcessor(ets[4])->getName() == cpus_big[0]->getName());
-            assert(k->getProcessor(ets[5])->getName() == cpus_big[1]->getName());
-            assert(k->getProcessor(ets[6])->getName() == cpus_big[2]->getName());
-            assert(k->getProcessor(ets[7])->getName() == cpus_big[3]->getName());
+            assert(k->getProcessor(ets[4]) == cpus_big[0]);
+            assert(k->getProcessor(ets[5]) == cpus_big[1]);
+            assert(k->getProcessor(ets[6]) == cpus_big[2]);
+            assert(k->getProcessor(ets[7]) == cpus_big[3]);
 
             // task8 comes in place of task3
-            assert(k->getProcessor(ets[8])->getName() == cpus_little[3]->getName());
+            assert(k->getProcessor(ets[8]) == cpus_little[3]);
 
             SIMUL.run_to(199);
 
-            assert(k->getProcessor(ets[0])->getName() == cpus_little[0]->getName());
-            assert(k->getProcessor(ets[1])->getName() == cpus_little[1]->getName());
-            assert(k->getProcessor(ets[2])->getName() == cpus_little[2]->getName());
-            //assert(k->getProcessor(ets[3])->getName() == cpus_little[3]->getName()); has ended already
+            assert(k->getProcessor(ets[0]) == cpus_little[0]);
+            assert(k->getProcessor(ets[1]) == cpus_little[1]);
+            assert(k->getProcessor(ets[2]) == cpus_little[2]);
+            //assert(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
 
-            //assert(k->getProcessor(ets[4])->getName() == cpus_big[0]->getName()); has ended already
-            assert(k->getProcessor(ets[5])->getName() == cpus_big[1]->getName());
-            assert(k->getProcessor(ets[6])->getName() == cpus_big[2]->getName());
-            assert(k->getProcessor(ets[7])->getName() == cpus_big[3]->getName());
+            //assert(k->getProcessor(ets[4]) == cpus_big[0]); has ended already
+            assert(k->getProcessor(ets[5]) == cpus_big[1]);
+            assert(k->getProcessor(ets[6]) == cpus_big[2]);
+            assert(k->getProcessor(ets[7]) == cpus_big[3]);
 
             // task9 comes in place of task4
-            assert(k->getProcessor(ets[9])->getName() == cpus_big[0]->getName());
+            assert(k->getProcessor(ets[9]) == cpus_big[0]);
+
+            SIMUL.run_to(500);
+
+            REQUIRE (k->getProcessor(tasks[0]) == cpus_little[0]);
+            REQUIRE (k->getProcessor(tasks[1]) == cpus_little[1]);
+            REQUIRE (k->getProcessor(tasks[2]) == cpus_little[2]);
+            REQUIRE (k->getProcessor(tasks[3]) == cpus_little[3]); // has ended already
+
+            REQUIRE (k->getProcessor(tasks[4]) == cpus_big[0]); // has ended already
+            REQUIRE (k->getProcessor(tasks[5]) == cpus_big[1]);
+            REQUIRE (k->getProcessor(tasks[6]) == cpus_big[2]);
+            REQUIRE (k->getProcessor(tasks[7]) == cpus_big[3]);
+
+            SIMUL.run_to(536);
+
+            REQUIRE (k->getProcessor(tasks[8]) == cpus_little[3]);
+
+            SIMUL.run_to(941);
+
+            REQUIRE (k->getProcessor(tasks[9]) == cpus_little[0]);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -536,8 +566,8 @@ int main(int argc, char *argv[]) {
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
             k->setContextSwitchDelay(Tick(8));
-            k->addForcedDispatch(tasks[0], cpus_little[0], 6);
-            k->addForcedDispatch(tasks[1], cpus_little[0], 6);
+            k->addForcedDispatch(ets[0], cpus_little[0], 6);
+            k->addForcedDispatch(ets[1], cpus_little[0], 6);
 
             SIMUL.initSingleRun();
             dynamic_cast<Task*>(tasks[1])->activate(Tick(activ[1]));
@@ -585,8 +615,8 @@ int main(int argc, char *argv[]) {
                 ttrace.attachToTask(*t);
                 tasks.push_back(t);
             }
-            kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
-            kern->addForcedDispatch(tasks[1], cpus_little[0], 6);
+            kern->addForcedDispatch(ets[0], cpus_little[0], 6);
+            kern->addForcedDispatch(ets[1], cpus_little[0], 6);
 
             SIMUL.run(1001);
             return 0;
@@ -614,10 +644,10 @@ int main(int argc, char *argv[]) {
                 t->killOnMiss(true);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_big[0], 18);
-            k->addForcedDispatch(tasks[1], cpus_big[1], 18);
-            k->addForcedDispatch(tasks[2], cpus_big[2], 18);
-            k->addForcedDispatch(tasks[3], cpus_big[3], 18);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+            k->addForcedDispatch(ets[1], cpus_big[1], 18);
+            k->addForcedDispatch(ets[2], cpus_big[2], 18);
+            k->addForcedDispatch(ets[3], cpus_big[3], 18);
 
             cpus_little[0]->toggleDisabled();
             cpus_little[1]->toggleDisabled();
@@ -779,7 +809,7 @@ int main(int argc, char *argv[]) {
             CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(serv, "");
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18, 999);
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
             cout << "Running simulation!" << endl;
@@ -866,9 +896,9 @@ int main(int argc, char *argv[]) {
 
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 11, 1); // note: normally they wouldn't fit this way
-            k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
-            k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+            k->addForcedDispatch(ets[0], cpus_little[0], 11, 1); // note: normally they wouldn't fit this way
+            k->addForcedDispatch(ets[1], cpus_big[0], 18, 1);
+            k->addForcedDispatch(ets[2], cpus_big[1], 18, 1);
             // server's free to go wherever.
 
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
@@ -1006,9 +1036,9 @@ int main(int argc, char *argv[]) {
 
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
-            k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
-            k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+            k->addForcedDispatch(ets[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
+            k->addForcedDispatch(ets[1], cpus_big[0], 18, 1);
+            k->addForcedDispatch(ets[2], cpus_big[1], 18, 1);
             k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);  // it should preempt the executing task on big 0
             // server's free to go wherever.
 

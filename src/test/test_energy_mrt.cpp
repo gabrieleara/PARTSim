@@ -682,18 +682,18 @@ TEST_CASE("exp9") {
         tasks.push_back(t);
     }
     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-    k->addForcedDispatch(tasks[0], cpus_little[0], 6);
-    k->addForcedDispatch(tasks[1], cpus_little[1], 6);
-    k->addForcedDispatch(tasks[2], cpus_little[2], 6);
-    k->addForcedDispatch(tasks[3], cpus_little[3], 6);
+    k->addForcedDispatch(ets[0], cpus_little[0], 6);
+    k->addForcedDispatch(ets[1], cpus_little[1], 6);
+    k->addForcedDispatch(ets[2], cpus_little[2], 6);
+    k->addForcedDispatch(ets[3], cpus_little[3], 6);
 
-    k->addForcedDispatch(tasks[4], cpus_big[0], 18);
-    k->addForcedDispatch(tasks[5], cpus_big[1], 18);
-    k->addForcedDispatch(tasks[6], cpus_big[2], 18);
-    k->addForcedDispatch(tasks[7], cpus_big[3], 18);
+    k->addForcedDispatch(ets[4], cpus_big[0], 18);
+    k->addForcedDispatch(ets[5], cpus_big[1], 18);
+    k->addForcedDispatch(ets[6], cpus_big[2], 18);
+    k->addForcedDispatch(ets[7], cpus_big[3], 18);
 
-    k->addForcedDispatch(tasks[8], cpus_big[3], 18);
-    k->addForcedDispatch(tasks[9], cpus_big[3], 18);
+    k->addForcedDispatch(ets[8], cpus_big[3], 18);
+    k->addForcedDispatch(ets[9], cpus_big[3], 18);
 
     SIMUL.initSingleRun();
     SIMUL.run_to(36);
@@ -744,7 +744,7 @@ TEST_CASE("exp9") {
 
     SIMUL.run_to(941);
 
-    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());    
+    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());
 
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
@@ -756,13 +756,13 @@ TEST_CASE("exp9") {
 }
 
 // TEST_CASE("exp10") {
-// 	*
+// 	/**
 // 	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
 // 	    Then, another task, more important, arrives at time 6. Would this last task begin its
 // 	    context switch at time 8, thus being scheduled at time 8+8=16?
 // 	    Experiment requires EDF scheduler.
-	  
-// 	init_sequence = 10;
+//	  */
+// 	   init_sequence = 10;
 //     cout << "Begin of experiment " << init_sequence << endl;
 //     Requisite req(false, false);
 //     if (!checkRequisites( req ))  return;
@@ -789,8 +789,8 @@ TEST_CASE("exp9") {
 // 	}
 // 	EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
 // 	k->setContextSwitchDelay(Tick(8));
-// 	k->addForcedDispatch(tasks[0], cpus_little[0], 6);
-// 	k->addForcedDispatch(tasks[1], cpus_little[0], 6);
+// 	k->addForcedDispatch(ets[0], cpus_little[0], 6);
+// 	k->addForcedDispatch(ets[1], cpus_little[0], 6);
 
 // 	SIMUL.initSingleRun();
 // 	tasks[1]->activate(Tick(activ[1]));
@@ -855,8 +855,8 @@ TEST_CASE("exp9") {
 //         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
 //         tasks.push_back(t);
 //     }
-//     kern->addForcedDispatch(tasks[0], cpus_little[0], 6);
-//     kern->addForcedDispatch(tasks[1], cpus_little[0], 6);
+//     kern->addForcedDispatch(ets[0], cpus_little[0], 6);
+//     kern->addForcedDispatch(ets[1], cpus_little[0], 6);
 
 //     CPU_BL::referenceFrequency = 2000; // BIG_3 frequency
 
@@ -949,10 +949,10 @@ TEST_CASE("exp9") {
 //         t->killOnMiss(true);
 //     }
 //     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-//     k->addForcedDispatch(tasks[0], cpus_big[0], 18);
-//     k->addForcedDispatch(tasks[1], cpus_big[1], 18);
-//     k->addForcedDispatch(tasks[2], cpus_big[2], 18);
-//     k->addForcedDispatch(tasks[3], cpus_big[3], 18);
+//     k->addForcedDispatch(ets[0], cpus_big[0], 18);
+//     k->addForcedDispatch(ets[1], cpus_big[1], 18);
+//     k->addForcedDispatch(ets[2], cpus_big[2], 18);
+//     k->addForcedDispatch(ets[3], cpus_big[3], 18);
 
 //     cpus_little[0]->toggleDisabled();
 //     cpus_little[1]->toggleDisabled();
@@ -1104,7 +1104,7 @@ TEST_CASE("exp9") {
 //     kernels[0]->addTask(*serv, "");
 
 //     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-//     k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+//     k->addForcedDispatch(ets[0], cpus_big[0], 18, 999);
 
 //     SIMUL.initSingleRun();
     
@@ -1163,7 +1163,7 @@ TEST_CASE("exp9") {
 //     kernels[0]->addTask(*serv, "");
 
 //     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-//     k->addForcedDispatch(tasks[0], cpus_big[0], 18, 999);
+//     k->addForcedDispatch(ets[0], cpus_big[0], 18, 999);
 
 //     SIMUL.initSingleRun();
 
@@ -1304,9 +1304,9 @@ TEST_CASE("exp9") {
 
 
 //     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-//     k->addForcedDispatch(tasks[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
-//     k->addForcedDispatch(tasks[1], cpus_big[0], 18, 1);
-//     k->addForcedDispatch(tasks[2], cpus_big[1], 18, 1);
+//     k->addForcedDispatch(ets[0], cpus_little[0], 12, 1); // note: normally it wouldn't fit this way
+//     k->addForcedDispatch(ets[1], cpus_big[0], 18, 1);
+//     k->addForcedDispatch(ets[2], cpus_big[1], 18, 1);
 //     k->addForcedDispatch(t1_big1,  cpus_big[1], 18, 1);  // it should preempt the executing task on big 0
 //     // server's free to go wherever.
 

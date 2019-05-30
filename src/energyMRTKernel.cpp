@@ -27,7 +27,7 @@ namespace RTSim {
 
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED             = 1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED             = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED             = 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED           = 0;
     bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED   = 1;
 
@@ -269,13 +269,18 @@ namespace RTSim {
         cout << b << endl;
     }
 
-    void EnergyMRTKernel::printState() {
+    void EnergyMRTKernel::printState(bool alsoQueues) {
+      cout << "t=" << SIMUL.getTime() << " State of scheduler:" << endl << "Running tasks:" << endl << "\t";
       for (CPU_BL *c : getProcessors()) {
           AbsRTTask *t = _queues->getRunningTask(c);
           if (dynamic_cast<CBServer*>(t) && dynamic_cast<CBServer*>(t)->isYielding())
             t = _queues->getFirstReady(c);
           cout << c->getName() << ": " << (t == NULL ? "0" : taskname(t)) << "\t";
       }
+
+      if (alsoQueues)
+        cout << endl << "Queues:" << endl << _queues->toString();
+
       cout << endl;
     }
 
@@ -406,17 +411,21 @@ namespace RTSim {
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
         cout << ".............................." << endl;
-        cout << t->toString() << " has just finished on " << p->toString() << ". Actual time = [" << SIMUL.getTime() << "]" << endl;
+        cout << "Actual time = [" << SIMUL.getTime() << "]. " << t->toString() << " has just finished on " << p->toString() << endl;
 
         _sched->extract(t);
         // todo delete cout
-        cout << "State of external scheduler: " << endl << _sched->toString() << endl;
+        string state = _sched->toString(); if (state == "") state = "(empty)";
+        cout << "State of external scheduler: " << endl << state << endl;
 
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
         _queues->onEnd(t, p);
         _e_migration_manager.addEndEvent(t, SIMUL.getTime());
+
+        cout << "State before migration:" << endl;
+        printState(true);
 
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
@@ -431,7 +440,9 @@ namespace RTSim {
             p->getIsland()->setOPP(0);
         }
 
-        printState();
+        onTaskGetsDescheduled(t, p);
+        cout << "State after migration:" << endl;
+        printState(true);
     }
 
     void EnergyMRTKernel::migrate(CPU_BL* endingCPU) {
@@ -453,7 +464,9 @@ namespace RTSim {
                 readyTasks = getReadyTasks(c);
                 for (AbsRTTask * tt : readyTasks) {
                     vector<struct ConsumptionTable> iDeltaPows;
+                    setTryingTaskOnCPU_BL(true);
                     tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
+                    setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
                         cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;                        
                         _queues->onMigrationFinished(tt, c, endingCPU);

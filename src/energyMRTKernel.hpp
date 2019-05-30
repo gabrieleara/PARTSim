@@ -689,14 +689,16 @@ namespace RTSim {
         /// Callback, when a CBS server ends a task
         void onTaskInServerEnd(AbsRTTask* t, CPU_BL* cpu, CBServer* cbs) {
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
-          cout << "\tEMRTK::" << __func__ << "()" << endl;
+          //cout << "\tEMRTK::" << __func__ << "(). time = [" << SIMUL.getTime() << "] " << t->toString() << " has just finished on " << cpu->toString() << endl;
 
           // for some reason, here task has wl idle, wrongly (should be kept until the end of this function). reset:
           cpu->setWorkload(Utils::getTaskWorkload(t));
           cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
 
           _queues->onTaskInServerEnd(t, cpu, cbs);
-          onTaskGetsDescheduled(cbs, cpu);
+          if (cbs->isEmpty())
+            onEnd(cbs);
+          //onTaskGetsDescheduled(cbs, cpu);
         }
 
         /// Callback, when a task gets running on a core
@@ -747,7 +749,9 @@ namespace RTSim {
 
         void printBool(bool b);
 
-        virtual void printState();
+        virtual void printState() { printState(false); }
+
+        void printState(bool alsoQueues);
 
         bool manageForcedDispatch(AbsRTTask*);
 

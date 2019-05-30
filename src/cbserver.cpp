@@ -273,9 +273,9 @@ namespace RTSim {
                 vtime.stop();
                 last_time = SIMUL.getTime();
                 _bandExEvt.post(last_time + cap);
-                cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time+cap << endl;
+                cout << "CBS::" << __func__ << "(). n > Q. _bandExEvt posted at " << last_time+cap << endl;
                 vtime.start((double)P/double(n));
-                cout << "CBS::" << __func__ << "(). vtime=" << getVirtualTime() << " setting vitime with " << P << "/" << Q << endl;
+                cout << "CBS::" << __func__ << "(). n > Q. vtime=" << getVirtualTime() << " setting vitime with " << P << "/" << Q << endl;
                 DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
             }
             Q = n;
@@ -306,12 +306,12 @@ namespace RTSim {
                     DBGPRINT("capacity is zero, go to recharging");
                     _bandExEvt.drop();
                     _bandExEvt.post(SIMUL.getTime());
-                    cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << SIMUL.getTime() << endl;
+                    cout << "CBS::" << __func__ << "(). cap == 0. _bandExEvt posted at " << SIMUL.getTime() << endl;
                 }
                 else {
                     DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);    
                     _bandExEvt.post(last_time + cap);
-                    cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time+cap << endl;
+                    cout << "CBS::" << __func__ << "(). cap != 0. _bandExEvt posted at " << last_time+cap << endl;
                 }
             }
         }
