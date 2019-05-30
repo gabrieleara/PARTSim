@@ -157,6 +157,7 @@ namespace RTSim {
                 }
             }
             for (AbsRTTask* th : tasks) {
+                cout << "\t\t\t\ttask " << th->toString() << " --> " << getEnveloper(th)->toString() << " ready on " << getProcessorReady(th)->toString() << endl;
                 if (getCBServer_CEMRTK_Utilization(th, utilizationIsland, capacity))
                     continue;
 
@@ -187,13 +188,13 @@ namespace RTSim {
             return false;
         }
 
-        //todo rem
-        //cout << cbs->getStatusString() << endl;
         if (cbs->isEmpty()) {
-            cout << "\t\t\t\t\tServer's empty => skip, you consider Util_actives" << endl;
+            cout << "\t\t\t\t\tServer's empty => skip, you consider Util_actives (" << cbs->getName() << ")" << endl;
             return true;
         }
         
+        //todo rem
+        cout << "\t\t\t\t\tserver status: " << cbs->getStatusString() << endl;
         // server utilization (its WCET/period) considered only if it's releasing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
             utilization += cbs->getRemainingWCET(capacity) / double(cbs->getDeadline());
@@ -222,17 +223,21 @@ namespace RTSim {
             if (c == NULL)
                 continue;
 
-            cout << __func__ << "(). cpu of elem is " << c->toString() << endl;
-            if (c->getIslandType() == island->getIslandType()) {
-                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << Tick(ceil(elem.first->getWCET(c->getSpeed()))) << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
-                
-                string startingWL = c->getWorkload();
-                c->setWorkload(Utils::getTaskWorkload(elem.first));
-                elem.second->changeBudget(Tick(ceil(elem.first->getWCET(c->getSpeed()))));
-                c->setWorkload(startingWL);
-            }
-        }
+            string startingWL = c->getWorkload();
+            c->setWorkload(Utils::getTaskWorkload(elem.first));
+            cout << __func__ << "(). cpu of elem is " << c->toString() << " wl: " << c->getWorkload() << endl;
 
+            if (c->getIslandType() == island->getIslandType()) {
+                Tick taskWCET = Tick(ceil(elem.first->getWCET(c->getSpeed())));
+                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
+                
+                elem.second->changeBudget(taskWCET);
+                elem.second->changeQ(taskWCET);
+            }
+            
+            c->setWorkload(startingWL);
+        }
+        cout << endl;
 
         // scale wcets of tasks on the island
     }

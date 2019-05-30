@@ -52,7 +52,7 @@ namespace RTSim {
         /// Returns all tasks currently in the scheduler
         vector<AbsRTTask*> getAllTasks() const { return sched_->getTasks(); }
 
-        /// Returns all tasks active in the server TODO IT'S WRONG!!
+        /// Returns all tasks active in the server TODO IT MAY BE WRONG, but I cannot rely on sched_ (erase not working?)!!
         vector<AbsRTTask*> getTasks() const {
           //cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
           vector<AbsRTTask*> res;
@@ -61,7 +61,7 @@ namespace RTSim {
             Task *tt = dynamic_cast<Task*>(tasks.at(i));
             //cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
             NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask*>(tt);
-            if ( (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isExecuting()) || tt->endEvt.getTime() == SIMUL.getTime() ) // todo make easier?
+            if ( ( tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive() ) || tt->endEvt.getTime() == SIMUL.getTime() ) // todo make easier?
               continue;
             if ( (ntt != NULL && (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime() || !tt->isActive())) )
               continue;
@@ -78,10 +78,6 @@ namespace RTSim {
 
         /// Tells if scheduler currently holds any task. Function not that much tested!
         bool isEmpty() const {
-          // todo check if it works in the general case. I haven't checked APIs..
-          // unsigned int numTasks = getTasks().size();
-          // if (getStatus() == ServerStatus::EXECUTING || getStatus() == ServerStatus::RELEASING)
-          //   numTasks--;
           vector<AbsRTTask*> tasks = getTasks();
           unsigned int numTasks = tasks.size();
           return numTasks == 0;
@@ -173,6 +169,7 @@ namespace RTSim {
         /// all times are in the past.
         std::list<repl_t> capacity_queue;
 
+    protected:
         /// A new event replenishment, different from the general
         /// "recharging" used in the Server class
         GEvent<CBServer> _replEvt;
@@ -258,6 +255,15 @@ namespace RTSim {
       virtual string toString() const {
         string s = "CBServerCallingEMRTKernel. " + CBServer::toString();
         return s;
+      }
+
+      /// Prints (cout) all events of CBS Server
+      virtual void printEvts() {
+        cout << endl << toString();
+        cout << "_bandExEvt: " << _bandExEvt.getTime() << ", ";
+        cout << "_rechargingEvt: " << _rechargingEvt.getTime() << ", ";
+        cout << "_idleEvt: " << _idleEvt.getTime() << ", ";
+        cout << endl << endl;
       } 
 
     };

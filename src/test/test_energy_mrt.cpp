@@ -36,8 +36,8 @@ map<int, Requisite> performedTests;
 
 void getCores(vector<CPU_BL*> &big, vector<CPU_BL*> &little, Island_BL **island_bl_little, Island_BL **island_bl_big);
 int  init_suite(EnergyMRTKernel** kern);
-bool inRange(int,int);
-bool inRangeMinMax(double eval, const double min, const double max);
+bool isInRange(int,int);
+bool isInRangeMinMax(double eval, const double min, const double max);
 bool checkRequisites(Requisite reqs);
 
 TEST_CASE("exp0") {
@@ -62,7 +62,7 @@ TEST_CASE("exp0") {
 
     REQUIRE (c0->getFrequency() == 2000);
     REQUIRE (c0->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     SIMUL.endSingleRun();
     delete t0;
@@ -102,11 +102,11 @@ TEST_CASE("exp1") {
 
     REQUIRE (c0->getFrequency() == 2000);
     REQUIRE (c0->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE (c1->getFrequency() == 2000);
     REQUIRE (c1->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 497));
+    REQUIRE (isInRange(int(t1->getWCET(c1->getSpeed())), 497));
 
     SIMUL.endSingleRun();
     delete t1; delete t0;
@@ -150,12 +150,12 @@ TEST_CASE("exp2") {
     REQUIRE (t0->getName() == "T2_task1");
     REQUIRE (c0->getFrequency() == 2000);
     REQUIRE (c0->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
 
     REQUIRE (t1->getName() == "T2_task2");
     REQUIRE (c1->getFrequency() == 2000);
     REQUIRE (c1->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t1->getWCET(c1->getSpeed())), 248));
+    REQUIRE (isInRange(int(t1->getWCET(c1->getSpeed())), 248));
 
     SIMUL.endSingleRun();
     delete t0; delete t1;
@@ -190,7 +190,7 @@ TEST_CASE("exp3") {
     REQUIRE (t0->getName() == "T3_task1");
     REQUIRE (c0->getFrequency() == 500);
     REQUIRE (c0->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 65));
+    REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 65));
 
     SIMUL.endSingleRun();
     delete t0;
@@ -235,22 +235,22 @@ TEST_CASE("exp4") {
     REQUIRE (task[0]->getName() == "T4_Task_LITTLE_0");
     REQUIRE (c0->getFrequency() == 700);
     REQUIRE (c0->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(task[0]->getWCET(c0->getSpeed())), 488));
+    REQUIRE (isInRange(int(task[0]->getWCET(c0->getSpeed())), 488));
 
     REQUIRE (task[1]->getName() == "T4_Task_LITTLE_1");
     REQUIRE (c1->getFrequency() == 700);
     REQUIRE (c1->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(task[1]->getWCET(c1->getSpeed())), 488));
+    REQUIRE (isInRange(int(task[1]->getWCET(c1->getSpeed())), 488));
 
     REQUIRE (task[2]->getName() == "T4_Task_LITTLE_2");
     REQUIRE (c2->getFrequency() == 700);
     REQUIRE (c2->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(task[2]->getWCET(c2->getSpeed())), 488));
+    REQUIRE (isInRange(int(task[2]->getWCET(c2->getSpeed())), 488));
 
     REQUIRE (task[3]->getName() == "T4_Task_LITTLE_3");
     REQUIRE (c3->getFrequency() == 700);
     REQUIRE (c3->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(task[3]->getWCET(c3->getSpeed())), 488));
+    REQUIRE (isInRange(int(task[3]->getWCET(c3->getSpeed())), 488));
 
     SIMUL.endSingleRun();
     for (int j = 0; j < 4; j++) {
@@ -306,28 +306,28 @@ TEST_CASE("exp5") {
     REQUIRE (t->getName() == "T5_task0");
     REQUIRE (c0->getFrequency() == 500);
     REQUIRE (c0->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(t->getWCET(c0->getSpeed())), 32));
+    REQUIRE (isInRange(int(t->getWCET(c0->getSpeed())), 32));
     cout << t->toString() << " on "<< c0->toString()<<endl;
 
     t = task[1];
     REQUIRE (t->getName() == "T5_task1");
     REQUIRE (c1->getFrequency() == 500);
     REQUIRE (c1->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(t->getWCET(c1->getSpeed())), 32));
+    REQUIRE (isInRange(int(t->getWCET(c1->getSpeed())), 32));
     cout << t->toString() << " on "<< c1->toString()<<endl;
 
     t = task[2];
     REQUIRE (t->getName() == "T5_task2");
     REQUIRE (c2->getFrequency() == 500);
     REQUIRE (c2->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(t->getWCET(c2->getSpeed())), 32));
+    REQUIRE (isInRange(int(t->getWCET(c2->getSpeed())), 32));
     cout << t->toString() << " on "<< c2->toString()<<endl;
 
     t = task[3];
     REQUIRE (t->getName() == "T5_task3");
     REQUIRE (c3->getFrequency() == 500);
     REQUIRE (c3->getIslandType() == IslandType::LITTLE);
-    REQUIRE (inRange(int(t->getWCET(c3->getSpeed())), 32));
+    REQUIRE (isInRange(int(t->getWCET(c3->getSpeed())), 32));
     cout << t->toString() << " on "<< c3->toString()<<endl;
 
     SIMUL.endSingleRun();
@@ -389,7 +389,7 @@ TEST_CASE("exp6") {
     REQUIRE (t->getName() == "T6_task0");
     REQUIRE (c->getFrequency() == 2000);
     REQUIRE (c->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 299));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 1;
@@ -398,7 +398,7 @@ TEST_CASE("exp6") {
     REQUIRE (t->getName() == "T6_task1");
     REQUIRE (c->getFrequency() == 2000);
     REQUIRE (c->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 299));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 2;
@@ -407,7 +407,7 @@ TEST_CASE("exp6") {
     REQUIRE (t->getName() == "T6_task2");
     REQUIRE (c->getFrequency() == 2000);
     REQUIRE (c->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 299));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 3;
@@ -416,7 +416,7 @@ TEST_CASE("exp6") {
     REQUIRE (t->getName() == "T6_task3");
     REQUIRE (c->getFrequency() == 2000);
     REQUIRE (c->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t->getWCET(c->getSpeed())),299));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())),299));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     i = 4;
@@ -425,7 +425,7 @@ TEST_CASE("exp6") {
     REQUIRE (t->getName() == "T6_task4");
     REQUIRE (c->getFrequency() == 2000);
     REQUIRE (c->getIslandType() == IslandType::BIG);
-    REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 199));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 199));
     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
     SIMUL.endSingleRun();
@@ -438,322 +438,322 @@ TEST_CASE("exp6") {
     performedTests[init_sequence] = req;
 }
 
-// TEST_CASE("exp7") {
-//     init_sequence = 7;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp7") {
+    init_sequence = 7;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     vector<CPU_BL*> cpus;
-//     PeriodicTask* task[5]; // to be cleared after each test
-//     CPU_BL* cpu_task[5]; // to be cleared after each test
-//     vector<CBServerCallingEMRTKernel*> et_tasks;
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
+    vector<CPU_BL*> cpus;
+    PeriodicTask* task[5]; // to be cleared after each test
+    CPU_BL* cpu_task[5]; // to be cleared after each test
+    vector<CBServerCallingEMRTKernel*> et_tasks;
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
 
-//     int wcets[] = { 63, 63, 63, 63, 30 };
-//     int i;
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         task_name = "T7_task" + std::to_string(j);
-//         cout << "Creating task: " << task_name;
-//         PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-//         char instr[60] = "";
-//         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-//         t->insertCode(instr);
-//         et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
+    int wcets[] = { 63, 63, 63, 63, 30 };
+    int i;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T7_task" + std::to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        t->insertCode(instr);
+        et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
 
-//         task[j] = t;
-//     }
+        task[j] = t;
+    }
 
-//     /* Towards random workloads, but this time alg. first decides to
-//        schedule all tasks on littles, and then, instead of schedule the
-//        next one in bigs, it shall increase littles frequency so to make
-//        space to it too and save energy */
+    /* Towards random workloads, but this time alg. first decides to
+       schedule all tasks on littles, and then, instead of schedule the
+       next one in bigs, it shall increase littles frequency so to make
+       space to it too and save energy */
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(1);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(1);
 
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(j)));
-//     }
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(j)));
+    }
 
-//     i = 0;
-//     PeriodicTask* t = task[i];
-//     CPU_BL* c = cpu_task[i];
-//     REQUIRE (t->getName() == "T7_task0");
-//     REQUIRE (c->getFrequency() == 500);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 415));
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    i = 0;
+    PeriodicTask* t = task[i];
+    CPU_BL* c = cpu_task[i];
+    REQUIRE (t->getName() == "T7_task0");
+    REQUIRE (c->getFrequency() == 500);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
-//     i = 1;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T7_task1");
-//     REQUIRE (c->getFrequency() == 500);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 415));
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    i = 1;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T7_task1");
+    REQUIRE (c->getFrequency() == 500);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
-//     i = 2;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T7_task2");
-//     REQUIRE (c->getFrequency() == 500);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 415));
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    i = 2;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T7_task2");
+    REQUIRE (c->getFrequency() == 500);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
-//     i = 3;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T7_task3");
-//     REQUIRE (c->getFrequency() == 500);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 415));
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    i = 3;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T7_task3");
+    REQUIRE (c->getFrequency() == 500);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
-//     i = 4;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T7_task4");
-//     REQUIRE (c->getFrequency() == 700);
-//     REQUIRE (c->getIslandType() == IslandType::BIG);
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 75));
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    i = 4;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T7_task4");
+    REQUIRE (c->getFrequency() == 700);
+    REQUIRE (c->getIslandType() == IslandType::BIG);
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 75));
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
 
-//     SIMUL.endSingleRun();
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
-//         delete task[j];
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete task[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
-// TEST_CASE("exp8") {
-//     init_sequence = 8;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, false);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp8") {
+    init_sequence = 8;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, false);
+    if (!checkRequisites( req ))  return;
 
-//     vector<CPU_BL*> cpus;
-//     PeriodicTask* task[9]; // to be cleared after each test
-//     CPU_BL* cpu_task[9]; // to be cleared after each test
-//     vector<CBServerCallingEMRTKernel*> et_tasks;
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
+    vector<CPU_BL*> cpus;
+    PeriodicTask* task[9]; // to be cleared after each test
+    CPU_BL* cpu_task[9]; // to be cleared after each test
+    vector<CBServerCallingEMRTKernel*> et_tasks;
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
 
-//     int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         task_name = "T8_task" + std::to_string(j);
-//         cout << "Creating task: " << task_name;
-//         PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-//         char instr[60] = "";
-//         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-//         t->insertCode(instr);
-//         et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
-//         task[j] = t;
-//     }
-//     // towards random workloads...
+    int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T8_task" + std::to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        t->insertCode(instr);
+        et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
+        task[j] = t;
+    }
+    // towards random workloads...
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(1);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(1);
 
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(j)));
-//     }
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(et_tasks.at(j)));
+    }
 
-//     int i = 0;
-//     PeriodicTask* t = task[i];
-//     CPU_BL* c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1400);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 499));
+    int i = 0;
+    PeriodicTask* t = task[i];
+    CPU_BL* c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1400);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 499));
 
-//     i = 1;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1700);
-//     REQUIRE (c->getIslandType() == IslandType::BIG);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 477));
+    i = 1;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1700);
+    REQUIRE (c->getIslandType() == IslandType::BIG);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 477));
 
-//     i = 2;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1700);
-//     REQUIRE (c->getIslandType() == IslandType::BIG);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 297));
+    i = 2;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1700);
+    REQUIRE (c->getIslandType() == IslandType::BIG);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 297));
 
-//     i = 3;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1400);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 449));
+    i = 3;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1400);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 449));
 
-//     i = 4;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1400);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 179));
+    i = 4;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1400);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 179));
 
-//     i = 5;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1400);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 22));
+    i = 5;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1400);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 22));
 
-//     i = 6;
-//     t = task[i];
-//     c = kern->getProcessorReady(t);
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     cout << "a"<<endl;
-//     REQUIRE (c->getFrequency() == 1400);
-//     cout << "b"<<endl;
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     cout << "c"<<endl;
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 168));
+    i = 6;
+    t = task[i];
+    c = kern->getProcessorReady(t);
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    cout << "a"<<endl;
+    REQUIRE (c->getFrequency() == 1400);
+    cout << "b"<<endl;
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    cout << "c"<<endl;
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 168));
 
-//     i = 7;
-//     t = task[i];
-//     c = kern->getProcessorReady(t);
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1400);
-//     REQUIRE (c->getIslandType() == IslandType::LITTLE);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 468));
+    i = 7;
+    t = task[i];
+    c = kern->getProcessorReady(t);
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1400);
+    REQUIRE (c->getIslandType() == IslandType::LITTLE);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 468));
 
-//     i = 8;
-//     t = task[i];
-//     c = cpu_task[i];
-//     REQUIRE (t->getName() == "T8_task" + to_string(i));
-//     REQUIRE (c->getFrequency() == 1700);
-//     REQUIRE (c->getIslandType() == IslandType::BIG);
-//     printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
-//     REQUIRE (inRange(int(t->getWCET(c->getSpeed())), 310));
+    i = 8;
+    t = task[i];
+    c = cpu_task[i];
+    REQUIRE (t->getName() == "T8_task" + to_string(i));
+    REQUIRE (c->getFrequency() == 1700);
+    REQUIRE (c->getIslandType() == IslandType::BIG);
+    printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+    REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 310));
 
-//     SIMUL.endSingleRun();
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
-//         delete task[j];
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete task[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
-// TEST_CASE("exp9") {
-//     init_sequence = 9;
-//     cout << "Begin of experiment " << init_sequence << endl;
-//     Requisite req(false, true);
-//     if (!checkRequisites( req ))  return;
+TEST_CASE("exp9") {
+    init_sequence = 9;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, true);
+    if (!checkRequisites( req ))  return;
 
-//     EnergyMRTKernel *kern;
-//     init_suite(&kern);
-//     REQUIRE(kern != NULL);
-//     vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
-//     vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
 
-//     int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
-//     vector<PeriodicTask*> tasks;
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-//         task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
-//         cout << "Creating task: " << task_name;
-//         PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-//         char instr[60] = "";
-//         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-//         t->insertCode(instr);
-//         CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
-//         tasks.push_back(t);
-//     }
-//     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-//     k->addForcedDispatch(tasks[0], cpus_little[0], 6);
-//     k->addForcedDispatch(tasks[1], cpus_little[1], 6);
-//     k->addForcedDispatch(tasks[2], cpus_little[2], 6);
-//     k->addForcedDispatch(tasks[3], cpus_little[3], 6);
+    int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
+    vector<PeriodicTask*> tasks;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        t->insertCode(instr);
+        CBServerCallingEMRTKernel* et_t = kern->addTaskAndEnvelope(t, "");
+        tasks.push_back(t);
+    }
+    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+    k->addForcedDispatch(tasks[0], cpus_little[0], 6);
+    k->addForcedDispatch(tasks[1], cpus_little[1], 6);
+    k->addForcedDispatch(tasks[2], cpus_little[2], 6);
+    k->addForcedDispatch(tasks[3], cpus_little[3], 6);
 
-//     k->addForcedDispatch(tasks[4], cpus_big[0], 18);
-//     k->addForcedDispatch(tasks[5], cpus_big[1], 18);
-//     k->addForcedDispatch(tasks[6], cpus_big[2], 18);
-//     k->addForcedDispatch(tasks[7], cpus_big[3], 18);
+    k->addForcedDispatch(tasks[4], cpus_big[0], 18);
+    k->addForcedDispatch(tasks[5], cpus_big[1], 18);
+    k->addForcedDispatch(tasks[6], cpus_big[2], 18);
+    k->addForcedDispatch(tasks[7], cpus_big[3], 18);
 
-//     k->addForcedDispatch(tasks[8], cpus_big[3], 18);
-//     k->addForcedDispatch(tasks[9], cpus_big[3], 18);
+    k->addForcedDispatch(tasks[8], cpus_big[3], 18);
+    k->addForcedDispatch(tasks[9], cpus_big[3], 18);
 
-//     SIMUL.initSingleRun();
-//     SIMUL.run_to(36);
+    SIMUL.initSingleRun();
+    SIMUL.run_to(36);
 
-//     REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-//     REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-//     //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
 
-//     REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
-//     REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-//     REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
+    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
 
-//     // task8 comes in place of task3
-//     REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+    // task8 comes in place of task3
+    REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
 
-//     SIMUL.run_to(199);
+    SIMUL.run_to(199);
 
-//     REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-//     REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-//     //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
 
-//     //REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
-//     REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-//     REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    //REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
+    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
 
-//     // task9 comes in place of task4
-//     REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
+    // task9 comes in place of task4
+    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
 
-//     SIMUL.run_to(500);
+    SIMUL.run_to(500);
 
-//     REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-//     REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-//     REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); // has ended already
+    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
+    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
+    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
+    REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); // has ended already
 
-//     REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); // has ended already
-//     REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-//     REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-//     REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); // has ended already
+    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
+    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
+    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
 
-//     SIMUL.run_to(536);
+    SIMUL.run_to(536);
 
-//     REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+    REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
 
-//     SIMUL.run_to(941);
+    SIMUL.run_to(941);
 
-//     REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());    
+    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());    
 
-//     SIMUL.run_to(1000);
-//     SIMUL.endSingleRun();
-//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
-//         delete tasks[j];
-//     delete kern;
-//     cout << "End of Experiment #" << init_sequence << endl << endl;
-//     performedTests[init_sequence] = req;
-// }
+    SIMUL.run_to(1000);
+    SIMUL.endSingleRun();
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+        delete tasks[j];
+    delete kern;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
 
 // TEST_CASE("exp10") {
 // 	*
@@ -812,10 +812,12 @@ TEST_CASE("exp6") {
 //     performedTests[init_sequence] = req;
 // }
 
-// TEST_CASE("exp12") {
+// TEST_CASE("exp12, RRSched") {
 //     /**
 //       * Testing RRScheduler. 2 tasks on the same processors.
 //       * At 500, they go into two different ones.
+//       * 
+//        * Test worked with PeriodicTasks not eveloped inside CBServers.
 //       */
 //     init_sequence = 12;
 //     cout << "Begin of experiment " << init_sequence << endl;
@@ -1561,7 +1563,7 @@ int init_suite(EnergyMRTKernel** kern) {
 }
 
 /// Returns true if the value 'eval' and 'expected' are distant 'error'%
-bool inRange(int eval, int expected) {
+bool isInRange(int eval, int expected) {
     const unsigned int error = 5;
 
     int min = int(eval - eval * error/100);
@@ -1571,7 +1573,7 @@ bool inRange(int eval, int expected) {
 }
 
 /// True if min <= eval <= max
-bool inRangeMinMax(double eval, const double min, const double max) {
+bool isInRangeMinMax(double eval, const double min, const double max) {
     return min <= eval <= max;
 }
 
