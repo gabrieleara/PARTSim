@@ -224,11 +224,11 @@ namespace RTSim {
 
             cout << __func__ << "(). cpu of elem is " << c->toString() << endl;
             if (c->getIslandType() == island->getIslandType()) {
-                cout << __func__ << "(). changing Q to " << elem.second->toString() << " to " << Tick(elem.first->getWCET(c->getSpeed())) << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
+                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << Tick(ceil(elem.first->getWCET(c->getSpeed()))) << ". core: " << c->toString() << "speed:" << c->getSpeed() << endl;
                 
                 string startingWL = c->getWorkload();
                 c->setWorkload(Utils::getTaskWorkload(elem.first));
-                elem.second->changeBudget(Tick(elem.first->getWCET(c->getSpeed())));
+                elem.second->changeBudget(Tick(ceil(elem.first->getWCET(c->getSpeed()))));
                 c->setWorkload(startingWL);
             }
         }

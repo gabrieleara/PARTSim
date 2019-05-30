@@ -106,8 +106,10 @@ namespace RTSim {
         status = EXECUTING;
         last_time = SIMUL.getTime();
         vtime.start((double)P/double(Q));
+        cout << "CBS::" << __func__ << "(). vtime=" << getVirtualTime() << " setting vitime with " << P << "/" << Q << endl;
         DBGPRINT_2("Last time is: ", last_time);
         _bandExEvt.post(last_time + cap);
+        cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time << "+" << cap << "=" << last_time + cap << endl; 
     }
 
     /*The server is preempted. */
@@ -138,7 +140,7 @@ namespace RTSim {
         if (vtime.get_value() <= double(SIMUL.getTime())) 
             status = IDLE;
         else {
-        _idleEvt.post(Tick::ceil(vtime.get_value()));
+            _idleEvt.post(Tick::ceil(vtime.get_value()));
             status = RELEASING;
         }
         DBGPRINT("Status is now XXXYYY " << status_string[status]);
@@ -173,11 +175,13 @@ namespace RTSim {
             DBGPRINT_2("new_deadline: ", d);
             status=READY;
             _replEvt.post(SIMUL.getTime());
+            cout << "CBS::" << __func__ << "(). _replEvt posted at " << SIMUL.getTime() << endl;
             }
         else
         {
             cap=0;
             _replEvt.post(d);
+            cout << "CBS::" << __func__ << "(). _replEvt posted at " << d << endl;
             d=d+P;
             setAbsDead(d);
             status=RECHARGING;
@@ -265,11 +269,13 @@ namespace RTSim {
             if (status == EXECUTING) {
                 DBGPRINT_3("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
-        _bandExEvt.drop();
+                _bandExEvt.drop();
                 vtime.stop();
                 last_time = SIMUL.getTime();
                 _bandExEvt.post(last_time + cap);
+                cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time+cap << endl;
                 vtime.start((double)P/double(n));
+                cout << "CBS::" << __func__ << "(). vtime=" << getVirtualTime() << " setting vitime with " << P << "/" << Q << endl;
                 DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
             }
             Q = n;
@@ -294,15 +300,18 @@ namespace RTSim {
 
             if (status == EXECUTING) {
                 vtime.start(double(P)/double(Q));
+                cout << "CBS::" << __func__ << "() - EXEC. setting vitime with " << P << "/" << Q << endl;
                 DBGPRINT("Server was executing");
                 if (cap == 0) {
                     DBGPRINT("capacity is zero, go to recharging");
                     _bandExEvt.drop();
                     _bandExEvt.post(SIMUL.getTime());
+                    cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << SIMUL.getTime() << endl;
                 }
                 else {
                     DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);    
                     _bandExEvt.post(last_time + cap);
+                    cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time+cap << endl;
                 }
             }
         }

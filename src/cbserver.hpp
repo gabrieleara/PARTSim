@@ -23,7 +23,7 @@ namespace RTSim {
         virtual Tick getBudget() const { return Q;}
         virtual Tick getPeriod() const { return P;}
 
-        Tick changeBudget(const Tick &n);
+        virtual Tick changeBudget(const Tick &n);
 
         Tick changeQ(const Tick &n);
         virtual double getVirtualTime();

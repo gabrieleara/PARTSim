@@ -175,6 +175,7 @@ namespace RTSim {
     void Server::onBudgetExhausted(Event *)
     {
         DBGENTER(_SERVER_DBG_LEV);
+        cout << "Server::" << __func__ << "()" << endl;
 
         assert(status == EXECUTING);
 
