@@ -37,6 +37,8 @@ map<int, Requisite> performedTests;
 void getCores(vector<CPU_BL*> &big, vector<CPU_BL*> &little, Island_BL **island_bl_little, Island_BL **island_bl_big);
 int  init_suite(EnergyMRTKernel** kern);
 bool isInRange(int,int);
+bool isInRange(Tick t1, int t2) { return isInRange(int(t1), t2); }
+bool isInRange(Tick t1, Tick t2) { return isInRange(int(t1), int(t2)); }
 bool isInRangeMinMax(double eval, const double min, const double max);
 bool checkRequisites(Requisite reqs);
 
@@ -62,7 +64,31 @@ TEST_CASE("exp0") {
 
     REQUIRE (c0->getFrequency() == 2000);
     REQUIRE (c0->getIslandType() == IslandType::BIG);
+    REQUIRE (isInRange (int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (et_t0->getStatus() == ServerStatus::EXECUTING);
+    REQUIRE (et_t0->getPeriod() == 500);
+    REQUIRE (isInRange (et_t0->getBudget(), 497));
+    REQUIRE (isInRange (et_t0->getEndBandwidthEvent(), 497));
+    REQUIRE (isInRange (et_t0->getReplenishmentEvent(), 500));
+
+    SIMUL.run_to(499);
+    cout << "end of virtualtime event: t=" << et_t0->getEndOfVirtualTimeEvent() << endl;
+    REQUIRE (isInRange (et_t0->getEndOfVirtualTimeEvent(), 500));
+    REQUIRE (et_t0->getStatus() == ServerStatus::RELEASING);
+
+    SIMUL.run_to(501);
+    REQUIRE (c0->getFrequency() == 2000);
+    REQUIRE (c0->getIslandType() == IslandType::BIG);
     REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
+    REQUIRE (et_t0->getStatus() == ServerStatus::EXECUTING);
+    REQUIRE (et_t0->getPeriod() == 500);
+    REQUIRE (isInRange (et_t0->getBudget(), 497));
+    REQUIRE (isInRange (et_t0->getEndBandwidthEvent(), 997));
+    REQUIRE (isInRange (et_t0->getReplenishmentEvent(), 500));
+
+    SIMUL.run_to(999);
+    cout << "end of virtualtime event: t=" << et_t0->getEndOfVirtualTimeEvent() << endl;
+    REQUIRE (isInRange (et_t0->getEndOfVirtualTimeEvent(), 1000));
 
     SIMUL.endSingleRun();
     delete t0;
@@ -729,15 +755,15 @@ TEST_CASE("exp9") {
 
     SIMUL.run_to(500);
 
-    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-    REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); // has ended already
+    REQUIRE (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
+    REQUIRE (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
+    REQUIRE (k->getProcessor(tasks[2])->getIslandType() == cpus_little[2]->getIslandType());
+    REQUIRE (k->getProcessor(tasks[3])->getIslandType() == cpus_little[3]->getIslandType()); // has ended already
 
-    REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); // has ended already
-    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    REQUIRE (k->getProcessor(tasks[4])->getIslandType() == cpus_big[0]->getIslandType()); // has ended already
+    REQUIRE (k->getProcessor(tasks[5])->getIslandType() == cpus_big[1]->getIslandType());
+    REQUIRE (k->getProcessor(tasks[6])->getIslandType() == cpus_big[2]->getIslandType());
+    REQUIRE (k->getProcessor(tasks[7])->getIslandType() == cpus_big[3]->getIslandType());
 
     SIMUL.run_to(536);
 

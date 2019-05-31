@@ -106,10 +106,10 @@ namespace RTSim {
         status = EXECUTING;
         last_time = SIMUL.getTime();
         vtime.start((double)P/double(Q));
-        cout << "CBS::" << __func__ << "(). vtime=" << getVirtualTime() << " setting vitime with " << P << "/" << Q << endl;
+        cout << "\tCBS::" << __func__ << "(). vtime=" << getVirtualTime() << " setting vtime with " << P << "/" << Q << endl;
         DBGPRINT_2("Last time is: ", last_time);
         _bandExEvt.post(last_time + cap);
-        cout << "CBS::" << __func__ << "(). _bandExEvt posted at " << last_time << "+" << cap << "=" << last_time + cap << endl; 
+        cout << "\tCBS::" << __func__ << "(). _bandExEvt posted at " << last_time << "+" << cap << "=" << last_time + cap << endl; 
     }
 
     /*The server is preempted. */
@@ -260,6 +260,9 @@ namespace RTSim {
 
     Tick CBServer::changeBudget(const Tick &n)
     {
+        cout << "CBS::" << __func__ << "() for " << getName() << " n (new budget)=" << n << ", Q (old budget)=" << Q << endl;
+        if (toString().find("T9_task8") != string::npos)
+            cout << "";
         Tick ret = 0;
         DBGENTER(_SERVER_DBG_LEV);
 
@@ -290,7 +293,7 @@ namespace RTSim {
             if (status == EXECUTING) {
                 DBGPRINT_3("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
-        last_time = SIMUL.getTime();
+                last_time = SIMUL.getTime();
                 DBGVAR(cap);
                 _bandExEvt.drop();
                 vtime.stop();
@@ -315,12 +318,13 @@ namespace RTSim {
                 }
             }
         }
+        cout << "\tending cap=" << cap << endl; 
         return ret;    
     }
 
     Tick CBServer::changeQ(const Tick &n)
     {
-        Q=n; 
+        Q = n; 
         return 0;
     }
 
@@ -354,6 +358,14 @@ namespace RTSim {
 
         EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
         if (emrtk != NULL) emrtk->onReplenishment(this);
+    }
+
+    void CBServerCallingEMRTKernel::executing_recharging() {
+        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
+        CBServer::executing_recharging();
+
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        if (emrtk != NULL) emrtk->onExecutingRecharging(this);
     }
 
     void CBServerCallingEMRTKernel::executing_releasing() {

@@ -423,11 +423,11 @@ namespace RTSim {
          */
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
-        /// Implements migration mechanism on task end
-        void migrate(CPU_BL* endingCPU_BL);
+        /// Implements migration mechanism on task end. Pulls a task into endingCPU_BL
+        void migrateInto(CPU_BL* endingCPU_BL);
 
-        /// Migrates a task away from its current core
-        void migrate_away(AbsRTTask* t);
+        /// Migrates a task away from its current core. Makes push away from task core
+        void migrateAway(AbsRTTask* t);
 
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
@@ -664,6 +664,14 @@ namespace RTSim {
         ///Invoked when a task ends
         virtual void onEnd(AbsRTTask* t);
 
+        void onExecutingRecharging(AbsRTTask *cbs) {
+          cout << "EMRTK::" << __func__ << "()" << endl;
+
+          // AbsRTTask* first = dynamic_cast<CBServers*>(cbs)->getFirst();
+          // CPU_BL* p
+          // p->setWorkload(Utils::getTaskWorkload(first));
+        }
+
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
@@ -721,6 +729,7 @@ namespace RTSim {
 
           cout << "\t" << cpu->getName() << " had wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl;
           cpu->setWorkload(Utils::getTaskWorkload(t));
+          assert (cpu->getWorkload() != "");
           cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl << endl;
         }
 

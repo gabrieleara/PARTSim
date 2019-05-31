@@ -446,11 +446,9 @@ namespace RTSim {
         /// schedule first task of core queue, i.e. posts its context switch event/time
         void schedule(CPU* c) {
             assert(c != NULL);
-            if (SIMUL.getTime() == 15)
-              cout << "";
             AbsRTTask *t = getFirst(c);
             // todo rem 
-            cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
+            //cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
 
             if (shouldDeschedule(c, t))
                 makeReady(c);

@@ -232,7 +232,7 @@ namespace RTSim {
                 cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
                 
                 elem.second->changeBudget(taskWCET);
-                elem.second->changeQ(taskWCET);
+                //elem.second->changeQ(taskWCET);
             }
             
             c->setWorkload(startingWL);
@@ -432,7 +432,7 @@ namespace RTSim {
             p->setBusy(false);
 
         if (!p->isBusy())
-            migrate(p);
+            migrateInto(p);
         else // core has already some ready tasks
             _queues->schedule(p);
 
@@ -446,7 +446,7 @@ namespace RTSim {
         printState(true);
     }
 
-    void EnergyMRTKernel::migrate(CPU_BL* endingCPU) {
+    void EnergyMRTKernel::migrateInto(CPU_BL* endingCPU) {
         /**
            Migration mechanism: a task finishes on CPU c, leaving it idle.
            If c is a little, try moving ready tasks originally assigned to
@@ -469,7 +469,8 @@ namespace RTSim {
                     tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
-                        cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;                        
+                        cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
+                        if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                         _queues->onMigrationFinished(tt, c, endingCPU);
                         // onEndDispatchMulti will take care of increasing core OPP
                         return;
@@ -491,14 +492,15 @@ namespace RTSim {
             if (nTasksOnCore > 1) {
                 AbsRTTask *tt = readyTasks.at(0);
                 cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
+                if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                 _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead
                 break;
             }
         }
          
-    } // end EMRTK::migrate()
+    } // end EMRTK::migrateInto()
 
-    void EnergyMRTKernel::migrate_away(AbsRTTask *t) {
+    void EnergyMRTKernel::migrateAway(AbsRTTask *t) {
         CPU_BL *cpu = getProcessor(t);
         // todo
     }
@@ -656,7 +658,7 @@ namespace RTSim {
                 continue;
             }
 
-            if (getProcessor(t) != NULL) { // e.g., task ends => migrate() => dispatch()
+            if (getProcessor(t) != NULL) { // e.g., task ends => migrateInto() => dispatch()
                 cout << "\tTask is running on a CPU already => skip" << endl;
                 continue;
             }

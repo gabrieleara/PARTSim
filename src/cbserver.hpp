@@ -204,6 +204,9 @@ namespace RTSim {
 
       // same as parent, but also calls EMRTKernel
       virtual void executing_releasing();
+
+      /// from executing to recharging (budget exhausted)
+      virtual void executing_recharging();
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
         const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
@@ -213,10 +216,22 @@ namespace RTSim {
         return t;
       }
 
+      Tick getEndBandwidthEvent() const {
+        return _bandExEvt.getTime();
+      }
+
+      Tick getIdleEvent() const {
+        return _idleEvt.getTime();
+      }
+
+      double getEndOfVirtualTimeEvent() { return getVirtualTime(); }
+
+      Tick getReplenishmentEvent() const { return _replEvt.getTime(); }
+
       /// Get WCET
       virtual double getWCET(double capacity) const {
         double wcet = 0.0;
-
+ 
         for (AbsRTTask* t : getTasks())
           wcet += double(dynamic_cast<Task*>(t)->getWCET());
 
@@ -253,7 +268,7 @@ namespace RTSim {
 
       /// Object to human-readable string
       virtual string toString() const {
-        string s = "CBServerCallingEMRTKernel. " + CBServer::toString();
+        string s = "CBServerCallingEMRTKernel " + getName() + ". " + CBServer::toString();
         return s;
       }
 
