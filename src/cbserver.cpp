@@ -100,7 +100,7 @@ namespace RTSim {
 
     void CBServer::ready_executing()
     {
-        cout << __func__ << "()" << endl;
+        cout << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         status = EXECUTING;
@@ -115,7 +115,7 @@ namespace RTSim {
     /*The server is preempted. */
     void CBServer::executing_ready()
     {
-        cout << __func__ << "()" << endl;
+        cout << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(isEmpty());
 
@@ -128,7 +128,7 @@ namespace RTSim {
     /*The sporadic task ends execution*/
     void CBServer::executing_releasing()
     {
-        cout << __func__ << "()" << endl;
+        cout << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(isEmpty());
     
@@ -148,7 +148,7 @@ namespace RTSim {
 
     void CBServer::releasing_idle()
     {
-        cout << __func__ << "()" << endl;
+        cout << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = IDLE;
     }
@@ -156,7 +156,7 @@ namespace RTSim {
     /*The server has no more bandwidth The server queue may be empty or not*/
     void CBServer::executing_recharging()
     {
-        cout << __func__ << "()" << endl;
+        cout << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         _bandExEvt.drop();

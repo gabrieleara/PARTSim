@@ -210,7 +210,6 @@ int main(int argc, char *argv[]) {
         PSTrace  pstrace("trace" + to_string(TEST_NO) + ".pst");
         cout << "Test to perform is " << TEST_NO << endl;
 
-        TEST_NO =0;
         if (TEST_NO == 0) {
             task_name = "T0_task1";
             cout << "Creating task: " << task_name << endl;
@@ -537,6 +536,7 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(500);
 
             k->printState(true);
+            exit(0);
 
             REQUIRE (k->getProcessor(tasks[0]) == cpus_little[0]);
             REQUIRE (k->getProcessor(tasks[1]) == cpus_little[1]);

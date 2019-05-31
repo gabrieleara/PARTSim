@@ -226,11 +226,11 @@ namespace RTSim {
         /// Empties a core queue
         virtual void empty(CPU* c);
 
+        /// True if the core queue is empty (i.e., no ready and running tasks on c)
+        bool isEmpty(CPU* c);
+
         /// Removes Utilization active that must end CBS server t
         void forgetU_active(AbsRTTask* t);
-
-        /// True if the core queue is empty
-        bool isEmpty(CPU* c);
         
         /// Get scheduler of a core
         Scheduler* getScheduler(CPU* c) {

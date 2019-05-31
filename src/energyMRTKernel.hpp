@@ -1,4 +1,3 @@
-
 /***************************************************************************
     begin                : Thu Apr 24 15:54:58 CEST 2003
     copyright            : (C) 2003 by Giuseppe Lipari
@@ -427,6 +426,9 @@ namespace RTSim {
         /// Implements migration mechanism on task end
         void migrate(CPU_BL* endingCPU_BL);
 
+        /// Migrates a task away from its current core
+        void migrate_away(AbsRTTask* t);
+
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
         
@@ -720,14 +722,6 @@ namespace RTSim {
           cout << "\t" << cpu->getName() << " had wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl;
           cpu->setWorkload(Utils::getTaskWorkload(t));
           cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl << endl;
-        }
-
-        /// Callback, when a task gets descheduled on a core 
-        void onTaskGetsDescheduled(AbsRTTask *t, CPU_BL* cpu) {
-          assert (t != NULL); assert (cpu != NULL);
-          cout << "\tEMRTK::" << __func__ << "() " << taskname(t) << " on " << cpu->getName() << endl;
-          
-          cpu->setWorkload("idle");
         }
 
         /**

@@ -26,8 +26,10 @@ namespace RTSim {
             else if (dynamic_cast<CBServer*>(t)) {
                 // get first task of server and thus its WL
                 Task *task = dynamic_cast<Task*>(dynamic_cast<CBServerCallingEMRTKernel*>(t)->getFirstTask());
-        		if (task == NULL) // server with no task
+        		if (task == NULL) { // server with no task
+				cout << "\tutils.hpp. cbs server with no task. returning wl idle" << endl;
         			return "idle";
+			}
     	        //cout << task->toString() << endl;
                 wl = dynamic_cast<ExecInstr*>(task->getInstrQueue().at(i).get())->getWorkload(); // this is for sure wrong. See comment below
             }

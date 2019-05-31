@@ -411,7 +411,7 @@ namespace RTSim {
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
         cout << ".............................." << endl;
-        cout << "Actual time = [" << SIMUL.getTime() << "]. " << t->toString() << " has just finished on " << p->toString() << endl;
+        cout << "Actual time = [" << SIMUL.getTime() << "]. EMRTK::" << __func__ << "(). " << t->toString() << " has just finished on " << p->toString() << endl;
 
         _sched->extract(t);
         // todo delete cout
@@ -441,7 +441,7 @@ namespace RTSim {
             p->getIsland()->setOPP(0);
         }
 
-        onTaskGetsDescheduled(t, p);
+        if (_queues->isEmpty(p)) {cout << p->getName() << " is empty -> wl idle" << endl; p->setWorkload("idle"); }
         cout << "State after migration:" << endl;
         printState(true);
     }
@@ -497,6 +497,11 @@ namespace RTSim {
         }
          
     } // end EMRTK::migrate()
+
+    void EnergyMRTKernel::migrate_away(AbsRTTask *t) {
+        CPU_BL *cpu = getProcessor(t);
+        // todo
+    }
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
         cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
