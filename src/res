@@ -1,0 +1,237 @@
+Looking for task5 in t
+Creating task: T9_task5wl: bzip2
+
+Task T9_task5: instruction list
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] (Q:500, P:500)
+
+CBServerCallingEMRTKernel::onArrival(). PeriodicTask T9_task5 DL = T 500 WCET(abs) 500
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:500, P:500).
+
+EMRTK::dispatch(p, t, opp) task:CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:500, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:500, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:500, P:500)
+
+onOppChanged(). changing budget to CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:500, P:500) to 498. core: BIG_1 freq 2000.000000 speed:1.00537
+
+CBS::changeBudget() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) n (new budget)=498, Q (old budget)=500
+
+t = 0, ctx switch set at 0 for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). changing budget to CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500) to 498. core: BIG_1 freq 2000.000000 speed:1.00537
+
+CBS::changeBudget() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) n (new budget)=498, Q (old budget)=498
+
+t = 0, ctx switch set at 0 for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). changing budget to CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500) to 498. core: BIG_1 freq 2000.000000 speed:1.00537
+
+CBS::changeBudget() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) n (new budget)=498, Q (old budget)=498
+
+t = 0, ctx switch set at 0 for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). changing budget to CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500) to 498. core: BIG_1 freq 2000.000000 speed:1.00537
+
+CBS::changeBudget() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) n (new budget)=498, Q (old budget)=498
+
+t = 0, ctx switch set at 0 for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). changing budget to CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500) to 498. core: BIG_1 freq 2000.000000 speed:1.00537
+
+CBS::changeBudget() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) n (new budget)=498, Q (old budget)=498
+
+t = 0, ctx switch set at 0 for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+time =0 EnergyMRTKernel::onBeginDispatchMulti() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) on BIG_1 freq 2000.000000
+
+onBeginDispatchMulti Scheduling task CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) on cpu BIG_1 freq 2000.000000
+
+CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) end ctx switch set at t=0
+
+time =0 EnergyMRTKernel::onEndDispatchMulti() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) on BIG_1 freq 2000.000000
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task3 DL = T 500 WCET(abs) 8)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: 0	BIG_3: 0	
+
+EMRTK::onTaskGetsRunning() CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) on BIG_1
+
+ready_executing() for CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Setting endEvt for PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 at t=498
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task3 DL = T 500 WCET(abs) 8)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: 0	
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task3 DL = T 500 WCET(abs) 8)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task3 DL = T 500 WCET(abs) 8)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task3 DL = T 500 WCET(abs) 8)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task9 DL = T 500 WCET(abs) 1)	
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: 0	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: 0	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: CBS(PeriodicTask T9_task4 DL = T 500 WCET(abs) 200)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task9 DL = T 500 WCET(abs) 1)	
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: CBS(PeriodicTask T9_task9 DL = T 500 WCET(abs) 1)	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: CBS(PeriodicTask T9_task0 DL = T 500 WCET(abs) 101)	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	
+
+	LITTLE_0: 0	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: 0	LITTLE_1: CBS(PeriodicTask T9_task1 DL = T 500 WCET(abs) 101)	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: CBS(PeriodicTask T9_task2 DL = T 500 WCET(abs) 101)	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: CBS(PeriodicTask T9_task8 DL = T 500 WCET(abs) 101)	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: 0	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+	LITTLE_0: 0	LITTLE_1: 0	LITTLE_2: 0	LITTLE_3: 0	BIG_0: 0	BIG_1: CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)	BIG_2: CBS(PeriodicTask T9_task6 DL = T 500 WCET(abs) 500)	BIG_3: CBS(PeriodicTask T9_task7 DL = T 500 WCET(abs) 500)	
+
+	1) CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500)
+
+Dealing with task CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ T9_task5	] (Q:498, P:500).
+
+t=498 CBSCEMRTK::onEnd() for PeriodicTask T9_task5 DL = T 500 WCET(abs) 500
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500
+
+MCS::onTaskInServerEnd() for CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500)
+
+	added active utilization for T9_task5 cpu BIG_1 freq 2000.000000 U_act 0.994655, cancel at t=500
+
+Actual time = [498]. EMRTK::onEnd(). CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500) has just finished on BIG_1 freq 2000.000000
+
+CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+onOppChanged(). elem = PeriodicTask T9_task5 DL = T 500 WCET(abs) 500 -> CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+executing_releasing() for CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+CBServerCallingEMRTKernel CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500). tasks: [ ] yielding (Q:498, P:500)
+
+Going to forget u_active of CBS(PeriodicTask T9_task5 DL = T 500 WCET(abs) 500) at 500 status RELEASING
+

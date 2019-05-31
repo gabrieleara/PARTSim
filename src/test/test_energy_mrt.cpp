@@ -754,6 +754,8 @@ TEST_CASE("exp9") {
     REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
 
     SIMUL.run_to(500);
+    for (CPU* c: k->getProcessors())
+        assert (queues->getUtilization_active(c) == 0);
 
     REQUIRE (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
     REQUIRE (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
@@ -774,6 +776,8 @@ TEST_CASE("exp9") {
     REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());
 
     SIMUL.run_to(1000);
+    for (CPU* c: k->getProcessors())
+        assert (queues->getUtilization_active(c) == 0);
     SIMUL.endSingleRun();
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete tasks[j];

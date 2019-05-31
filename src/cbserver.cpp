@@ -57,7 +57,7 @@ namespace RTSim {
 
     void CBServer::idle_ready()
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert (status == IDLE);
         status = READY;
@@ -91,7 +91,7 @@ namespace RTSim {
     // in other words, it should be possible to avoid the if.
     void CBServer::releasing_ready()
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = READY;
         _idleEvt.drop();
@@ -100,7 +100,7 @@ namespace RTSim {
 
     void CBServer::ready_executing()
     {
-        cout << __func__ << "() for " << toString() << endl;
+        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         status = EXECUTING;
@@ -115,7 +115,7 @@ namespace RTSim {
     /*The server is preempted. */
     void CBServer::executing_ready()
     {
-        cout << __func__ << "() for " << toString() << endl;
+        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(isEmpty());
 
@@ -128,7 +128,7 @@ namespace RTSim {
     /*The sporadic task ends execution*/
     void CBServer::executing_releasing()
     {
-        cout << __func__ << "() for " << toString() << endl;
+        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(isEmpty());
     
@@ -140,7 +140,9 @@ namespace RTSim {
         if (vtime.get_value() <= double(SIMUL.getTime())) 
             status = IDLE;
         else {
-            _idleEvt.post(Tick::ceil(vtime.get_value()));
+            cout << "Posting idle evt for " << getName() << " at t=" << vtime.get_value() << "-->" << ceil(vtime.get_value()) << endl;
+            //_idleEvt.post(Tick::ceil(vtime.get_value())); in exp 9, task WCET 200, P 500 goes out of period with ceil
+            _idleEvt.post(Tick(vtime.get_value()));
             status = RELEASING;
         }
         DBGPRINT("Status is now XXXYYY " << status_string[status]);
@@ -148,7 +150,7 @@ namespace RTSim {
 
     void CBServer::releasing_idle()
     {
-        cout << __func__ << "() for " << toString() << endl;
+        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = IDLE;
     }
@@ -156,7 +158,7 @@ namespace RTSim {
     /*The server has no more bandwidth The server queue may be empty or not*/
     void CBServer::executing_recharging()
     {
-        cout << __func__ << "() for " << toString() << endl;
+        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         _bandExEvt.drop();
@@ -197,27 +199,27 @@ namespace RTSim {
     /*The server has recovered its bandwidth and there is at least one task left in the queue*/
     void CBServer::recharging_ready()
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = READY;
     }
 
     void CBServer::recharging_idle()
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         assert(false);
     }
 
     void CBServer::onIdle(Event *e)
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         releasing_idle();
     }
 
     void CBServer::onReplenishment(Event *e)
     {
-        cout << __func__ << "()" << endl;
+        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         
         _replEvt.drop();
@@ -347,7 +349,7 @@ namespace RTSim {
             yield();
 
         EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
-        if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this);
+        if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this); // save util active
 
         cout << endl;
     }
@@ -371,6 +373,8 @@ namespace RTSim {
     void CBServerCallingEMRTKernel::executing_releasing() {
         cout << "CBSCEMRTK::" << __func__ << "()" << endl;
         CBServer::executing_releasing();
+
+        // here you should save Util active. Done in CBSCEMRTK::onEnd()
     }
 
     /// remember to call Server::setKernel(kern) before this

@@ -540,14 +540,20 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(499);
             // all cores are empty
-            for (CBServerCallingEMRTKernel* s : ets) {
-                cout << "Going to forget u_active of " << s->getName() << " at " << s->getIdleEvent() << endl;
-                //assert (double(s->getIdleEvent()) == 500.0);
-            }exit(0);
+            cout << endl << "t=499. all cores should be empty" << endl << endl;
+            // todo add check: tasks are either recharging -> no uactive/idleevt, or releasing and idleevt = 500
 
             SIMUL.run_to(500);
+            for (CPU* c: k->getProcessors())
+                assert (queues->getUtilization_active(c) == 0);
+
             k->printState(true);
-            exit(0);
+            for (CBServerCallingEMRTKernel* s : ets) {
+                cout << "Going to forget u_active of " << s->getName() << " at " << s->getIdleEvent() << " status " << s->getStatusString() << endl;
+            }
+
+            for (CPU* c: k->getProcessors())
+                cout << c->getName() << " has u_active " << queues->getUtilization_active(c) << endl;
             
             assert (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
             assert (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
@@ -569,6 +575,9 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
+
+            cout << "-----------------------" << endl;
+            cout << "Simulation has finished" << endl;
             return 0;
         }
         if (TEST_NO == 11) {

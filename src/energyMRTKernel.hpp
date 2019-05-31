@@ -664,12 +664,10 @@ namespace RTSim {
         ///Invoked when a task ends
         virtual void onEnd(AbsRTTask* t);
 
-        void onExecutingRecharging(AbsRTTask *cbs) {
+        void onExecutingRecharging(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
 
-          // AbsRTTask* first = dynamic_cast<CBServers*>(cbs)->getFirst();
-          // CPU_BL* p
-          // p->setWorkload(Utils::getTaskWorkload(first));
+          _queues->onExecutingRecharging(cbs);
         }
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
@@ -716,7 +714,7 @@ namespace RTSim {
           cpu->setWorkload(Utils::getTaskWorkload(t));
           cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
 
-          _queues->onTaskInServerEnd(t, cpu, cbs);
+          _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
           if (cbs->isEmpty())
             onEnd(cbs);
           //onTaskGetsDescheduled(cbs, cpu);
