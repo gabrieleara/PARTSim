@@ -697,7 +697,7 @@ TEST_CASE("exp9") {
 
     int wcets[] = { 101,101,101,8,   200,500,500,500,   101, 1  }; // 9 tasks
     vector<PeriodicTask*> tasks;
-    vector<CBServerCallingEMRTKernel*> et_tasks;
+    vector<CBServerCallingEMRTKernel*> ets;
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
         task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
         cout << "Creating task: " << task_name;
@@ -705,58 +705,120 @@ TEST_CASE("exp9") {
         char instr[60] = "";
         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
         t->insertCode(instr);
-        et_tasks.push_back(kern->addTaskAndEnvelope(t, ""));
+        ets.push_back(kern->addTaskAndEnvelope(t, ""));
         tasks.push_back(t);
     }
     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-    k->addForcedDispatch(et_tasks[0], cpus_little[0], 6);
-    k->addForcedDispatch(et_tasks[1], cpus_little[1], 6);
-    k->addForcedDispatch(et_tasks[2], cpus_little[2], 6);
-    k->addForcedDispatch(et_tasks[3], cpus_little[3], 6);
+    MultiCoresScheds* queues = k->getEnergyMultiCoresScheds();
+    k->addForcedDispatch(ets[0], cpus_little[0], 6);
+    k->addForcedDispatch(ets[1], cpus_little[1], 6);
+    k->addForcedDispatch(ets[2], cpus_little[2], 6);
+    k->addForcedDispatch(ets[3], cpus_little[3], 6);
 
-    k->addForcedDispatch(et_tasks[4], cpus_big[0], 18);
-    k->addForcedDispatch(et_tasks[5], cpus_big[1], 18);
-    k->addForcedDispatch(et_tasks[6], cpus_big[2], 18);
-    k->addForcedDispatch(et_tasks[7], cpus_big[3], 18);
+    k->addForcedDispatch(ets[4], cpus_big[0], 18);
+    k->addForcedDispatch(ets[5], cpus_big[1], 18);
+    k->addForcedDispatch(ets[6], cpus_big[2], 18);
+    k->addForcedDispatch(ets[7], cpus_big[3], 18);
 
-    k->addForcedDispatch(et_tasks[8], cpus_big[3], 18);
-    k->addForcedDispatch(et_tasks[9], cpus_big[3], 18);
+    k->addForcedDispatch(ets[8], cpus_big[3], 18);
+    k->addForcedDispatch(ets[9], cpus_big[3], 18);
 
     SIMUL.initSingleRun();
+    SIMUL.run_to(1);
+    k->printState(true);
+
+    SIMUL.run_to(34);
+    k->printState(true);
+
+    // at t=35 task WCET 8 finishes
+
     SIMUL.run_to(36);
+    k->printState(true);
+    for (CBServerCallingEMRTKernel* s : ets)
+        assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::READY);
+    for (CPU* c: k->getProcessors())
+        REQUIRE (queues->getUtilization_active(c) == 0.0);
 
-    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-    //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+    REQUIRE(k->getProcessor(ets[0]) == cpus_little[0]);
+    REQUIRE(k->getProcessor(ets[1]) == cpus_little[1]);
+    REQUIRE(k->getProcessor(ets[2]) == cpus_little[2]);
+    //REQUIRE(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
 
-    REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName());
-    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    REQUIRE(k->getProcessor(ets[4]) == cpus_big[0]);
+    REQUIRE(k->getProcessor(ets[5]) == cpus_big[1]);
+    REQUIRE(k->getProcessor(ets[6]) == cpus_big[2]);
+    REQUIRE(k->getProcessor(ets[7]) == cpus_big[3]);
 
     // task8 comes in place of task3
-    REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+    REQUIRE(k->getProcessor(ets[8]) == cpus_little[3]);
 
     SIMUL.run_to(199);
+    k->printState(true);
+    for (CBServerCallingEMRTKernel* s : ets)
+        if (s == ets[4])
+            REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+        else
+            assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+    for (CPU* c: k->getProcessors())
+        if (c == cpus_big[0])
+            REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+        else
+            REQUIRE (queues->getUtilization_active(c) == 0.0);
 
-    REQUIRE (k->getProcessor(tasks[0])->getName() == cpus_little[0]->getName());
-    REQUIRE (k->getProcessor(tasks[1])->getName() == cpus_little[1]->getName());
-    REQUIRE (k->getProcessor(tasks[2])->getName() == cpus_little[2]->getName());
-    //REQUIRE (k->getProcessor(tasks[3])->getName() == cpus_little[3]->getName()); has ended already
+    REQUIRE(k->getProcessor(ets[0]) == cpus_little[0]);
+    REQUIRE(k->getProcessor(ets[1]) == cpus_little[1]);
+    REQUIRE(k->getProcessor(ets[2]) == cpus_little[2]);
+    //REQUIRE(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
+    cout << "eccomi1 " << ets[3]->toString() << ", " << ets[3]->getEndOfVirtualTimeEvent() << endl;
 
-    //REQUIRE (k->getProcessor(tasks[4])->getName() == cpus_big[0]->getName()); has ended already
-    REQUIRE (k->getProcessor(tasks[5])->getName() == cpus_big[1]->getName());
-    REQUIRE (k->getProcessor(tasks[6])->getName() == cpus_big[2]->getName());
-    REQUIRE (k->getProcessor(tasks[7])->getName() == cpus_big[3]->getName());
+    //REQUIRE(k->getProcessor(ets[4]) == cpus_big[0]); has ended already
+    REQUIRE(k->getProcessor(ets[5]) == cpus_big[1]);
+    REQUIRE(k->getProcessor(ets[6]) == cpus_big[2]);
+    REQUIRE(k->getProcessor(ets[7]) == cpus_big[3]);
 
     // task9 comes in place of task4
-    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_big[0]->getName());
+    REQUIRE(k->getProcessor(ets[9]) == cpus_big[0]);
+
+    SIMUL.run_to(202);
+    for (CBServerCallingEMRTKernel* s : ets)
+        if (s == ets[4])
+            REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+        else
+            assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+    for (CPU* c: k->getProcessors())
+        if (c == cpus_big[0]) {
+            c->setWorkload(workload);
+            REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+            REQUIRE (ets[4]->getIdleEvent() == 500);
+            c->setWorkload("idle");
+        }
+        else
+            REQUIRE (queues->getUtilization_active(c) == 0.0);
+
+    SIMUL.run_to(499);
+    cout << endl << "t=499. all cores should be empty" << endl << endl;
+    k->printState(true);
+    for (CBServerCallingEMRTKernel* s : ets)
+        if (s == ets[4] || s == ets[5] || s == ets[6] || s == ets[7])
+            REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+        else
+            assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::IDLE);
+    for (CPU* c: k->getProcessors()) {
+        c->setWorkload(workload);
+        if (c == cpus_big[0])
+            REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed(18) / 500.0);
+        else if (dynamic_cast<CPU_BL*>(c)->getIslandType() == IslandType::BIG)
+            REQUIRE (queues->getUtilization_active(c) == 500.0 / c->getSpeed(18) / 500.0);
+        else
+            REQUIRE (queues->getUtilization_active(c) == 0.0);
+        c->setWorkload("idle");
+    }
 
     SIMUL.run_to(500);
     for (CPU* c: k->getProcessors())
-        assert (queues->getUtilization_active(c) == 0);
-
+        REQUIRE (queues->getUtilization_active(c) == 0.0);
+    k->printState(true);
+    
     REQUIRE (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
     REQUIRE (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
     REQUIRE (k->getProcessor(tasks[2])->getIslandType() == cpus_little[2]->getIslandType());
@@ -769,18 +831,21 @@ TEST_CASE("exp9") {
 
     SIMUL.run_to(536);
 
-    REQUIRE (k->getProcessor(tasks[8])->getName() == cpus_little[3]->getName());
+    REQUIRE (k->getProcessor(tasks[8]) == cpus_little[3]);
 
     SIMUL.run_to(941);
 
-    REQUIRE (k->getProcessor(tasks[9])->getName() == cpus_little[0]->getName());
+    REQUIRE (k->getProcessor(tasks[9]) == cpus_little[0]);
 
     SIMUL.run_to(1000);
-    for (CPU* c: k->getProcessors())
-        assert (queues->getUtilization_active(c) == 0);
     SIMUL.endSingleRun();
-    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+
+    cout << "-----------------------" << endl;
+    cout << "Simulation has finished" << endl;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
         delete tasks[j];
+        delete ets[j];
+    }
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
     performedTests[init_sequence] = req;
@@ -788,12 +853,12 @@ TEST_CASE("exp9") {
 
 TEST_CASE("exp10") {
 	/**
-	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
+	    At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 30 ticks.
 	    Then, another task, more important, arrives at time 6. Would this last task begin its
-	    context switch at time 8, thus being scheduled at time 8+8=16?
+	    context switch at time 30, thus being scheduled at time 30+30=60?
 	    Experiment requires EDF scheduler.
 	  */
-	   init_sequence = 10;
+    init_sequence = 10;
     cout << "Begin of experiment " << init_sequence << endl;
     Requisite req(false, false);
     if (!checkRequisites( req ))  return;
@@ -808,7 +873,7 @@ TEST_CASE("exp10") {
 	int deadl[] = { 500, 400 };
 	int activ[] = { 0,   6   };
 	vector<PeriodicTask*> tasks;
- vector<CBServerCallingEMRTKernel*> et_tasks;
+    vector<CBServerCallingEMRTKernel*> et_tasks;
 	for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
 	    task_name = "T" + to_string(init_sequence) + "_task" + to_string(j);
 	    cout << "Creating task: " << task_name;
@@ -828,13 +893,13 @@ TEST_CASE("exp10") {
 	tasks[1]->activate(Tick(activ[1]));
 	SIMUL.run_to(17);
 
-	REQUIRE(k->getProcessor(tasks[1]) == cpus_little[0]);
-	REQUIRE(k->getProcessorReady(tasks[0]) == cpus_little[0]);
+	REQUIRE (k->getProcessor(tasks[1]) == cpus_little[0]);
+	REQUIRE (k->getProcessorReady(tasks[0]) == cpus_little[0]);
 
 	SIMUL.run_to(156);
 
-	REQUIRE(k->getProcessor(tasks[0]) == cpus_little[0]);
-	REQUIRE(tasks[1]->isActive() == false);
+	REQUIRE (k->getProcessor(tasks[0]) == cpus_little[0]);
+	REQUIRE (tasks[1]->isActive() == false);
 
 	SIMUL.endSingleRun();
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)

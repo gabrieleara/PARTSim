@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 9;
+    int TEST_NO = 11;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -225,8 +225,8 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(1);
             CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
             cout << c0->toString() << endl;
-            assert (c0->getFrequency() == 2000);
-            assert (c0->getIslandType() == IslandType::BIG);
+            REQUIRE (c0->getFrequency() == 2000);
+            REQUIRE (c0->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(499);
             kern->printState();
@@ -304,13 +304,13 @@ int main(int argc, char *argv[]) {
             cout << "t=" << SIMUL.getTime() << endl;
             CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
 
-            //assert (t0->getName() == "T3_task1");
-            assert (c0->getFrequency() == 500);
-            assert (c0->getIslandType() == IslandType::LITTLE);
+            //REQUIRE (t0->getName() == "T3_task1");
+            REQUIRE (c0->getFrequency() == 500);
+            REQUIRE (c0->getIslandType() == IslandType::LITTLE);
             cout << "qua " << int(t0->getWCET(c0->getSpeed())) << endl;
             cout << "qua " << int(et_t0->getWCET(c0->getSpeed())) << endl;
             cout << "qua " << et_t0->toString() << endl;
-            assert (inRange(int(t0->getWCET(c0->getSpeed())), 65));
+            REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 65));
 
             SIMUL.endSingleRun();
 
@@ -502,76 +502,109 @@ int main(int argc, char *argv[]) {
             k->printState(true);
 
             SIMUL.run_to(36);
+            k->printState(true);
+            for (CBServerCallingEMRTKernel* s : ets)
+                REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::READY);
+            for (CPU* c: k->getProcessors())
+                REQUIRE (queues->getUtilization_active(c) == 0.0);
 
-            assert(k->getProcessor(ets[0]) == cpus_little[0]);
-            assert(k->getProcessor(ets[1]) == cpus_little[1]);
-            assert(k->getProcessor(ets[2]) == cpus_little[2]);
-            //assert(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
+            REQUIRE(k->getProcessor(ets[0]) == cpus_little[0]);
+            REQUIRE(k->getProcessor(ets[1]) == cpus_little[1]);
+            REQUIRE(k->getProcessor(ets[2]) == cpus_little[2]);
+            //REQUIRE(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
 
-
-            assert(k->getProcessor(ets[4]) == cpus_big[0]);
-            assert(k->getProcessor(ets[5]) == cpus_big[1]);
-            assert(k->getProcessor(ets[6]) == cpus_big[2]);
-            assert(k->getProcessor(ets[7]) == cpus_big[3]);
+            REQUIRE(k->getProcessor(ets[4]) == cpus_big[0]);
+            REQUIRE(k->getProcessor(ets[5]) == cpus_big[1]);
+            REQUIRE(k->getProcessor(ets[6]) == cpus_big[2]);
+            REQUIRE(k->getProcessor(ets[7]) == cpus_big[3]);
 
             // task8 comes in place of task3
-            assert(k->getProcessor(ets[8]) == cpus_little[3]);
+            REQUIRE(k->getProcessor(ets[8]) == cpus_little[3]);
 
             SIMUL.run_to(199);
+            k->printState(true);
+            for (CBServerCallingEMRTKernel* s : ets)
+                if (s == ets[4])
+                    REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+                else
+                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+            for (CPU* c: k->getProcessors())
+                if (c == cpus_big[0])
+                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+                else
+                    REQUIRE (queues->getUtilization_active(c) == 0.0);
 
-            assert(k->getProcessor(ets[0]) == cpus_little[0]);
-            assert(k->getProcessor(ets[1]) == cpus_little[1]);
-            assert(k->getProcessor(ets[2]) == cpus_little[2]);
-            //assert(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
+            REQUIRE(k->getProcessor(ets[0]) == cpus_little[0]);
+            REQUIRE(k->getProcessor(ets[1]) == cpus_little[1]);
+            REQUIRE(k->getProcessor(ets[2]) == cpus_little[2]);
+            //REQUIRE(k->getProcessor(ets[3]) == cpus_little[3]); has ended already
             cout << "eccomi1 " << ets[3]->toString() << ", " << ets[3]->getEndOfVirtualTimeEvent() << endl;
-            //assert(queues->getUtilization_active(cpus_big[0]) == 200.0 / cpus_big[0]->getSpeed() / 500.0);
 
-            //assert(k->getProcessor(ets[4]) == cpus_big[0]); has ended already
-            assert(k->getProcessor(ets[5]) == cpus_big[1]);
-            assert(k->getProcessor(ets[6]) == cpus_big[2]);
-            assert(k->getProcessor(ets[7]) == cpus_big[3]);
+            //REQUIRE(k->getProcessor(ets[4]) == cpus_big[0]); has ended already
+            REQUIRE(k->getProcessor(ets[5]) == cpus_big[1]);
+            REQUIRE(k->getProcessor(ets[6]) == cpus_big[2]);
+            REQUIRE(k->getProcessor(ets[7]) == cpus_big[3]);
 
             // task9 comes in place of task4
-            assert(k->getProcessor(ets[9]) == cpus_big[0]);
+            REQUIRE(k->getProcessor(ets[9]) == cpus_big[0]);
 
             SIMUL.run_to(202);
-            cout << "eccomi2 " << queues->getUtilization_active(cpus_big[0]) << " VS " << (200.0 / cpus_big[0]->getSpeed() / 500.0) + (1.0 / cpus_big[0]->getSpeed() / 500.0) << endl;
-            //assert(queues->getUtilization_active(cpus_big[0]) == (200.0 / cpus_big[0]->getSpeed() / 500.0) + (1.0 / cpus_big[0]->getSpeed() / 500.0) );
+            for (CBServerCallingEMRTKernel* s : ets)
+                if (s == ets[4])
+                    REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+                else
+                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+            for (CPU* c: k->getProcessors())
+                if (c == cpus_big[0]) {
+                    c->setWorkload(workload);
+                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+                    REQUIRE (ets[4]->getIdleEvent() == 500);
+                    c->setWorkload("idle");
+                }
+                else
+                    REQUIRE (queues->getUtilization_active(c) == 0.0);
 
             SIMUL.run_to(499);
-            // all cores are empty
             cout << endl << "t=499. all cores should be empty" << endl << endl;
-            // todo add check: tasks are either recharging -> no uactive/idleevt, or releasing and idleevt = 500
+            k->printState(true);
+            for (CBServerCallingEMRTKernel* s : ets)
+                if (s == ets[4] || s == ets[5] || s == ets[6] || s == ets[7])
+                    REQUIRE (s->getStatus() == ServerStatus::RELEASING);
+                else
+                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::IDLE);
+            for (CPU* c: k->getProcessors()) {
+                c->setWorkload(workload);
+                if (c == cpus_big[0])
+                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed(18) / 500.0);
+                else if (dynamic_cast<CPU_BL*>(c)->getIslandType() == IslandType::BIG)
+                    REQUIRE (queues->getUtilization_active(c) == 500.0 / c->getSpeed(18) / 500.0);
+                else
+                    REQUIRE (queues->getUtilization_active(c) == 0.0);
+                c->setWorkload("idle");
+            }
 
             SIMUL.run_to(500);
             for (CPU* c: k->getProcessors())
-                assert (queues->getUtilization_active(c) == 0);
-
+                REQUIRE (queues->getUtilization_active(c) == 0.0);
             k->printState(true);
-            for (CBServerCallingEMRTKernel* s : ets) {
-                cout << "Going to forget u_active of " << s->getName() << " at " << s->getIdleEvent() << " status " << s->getStatusString() << endl;
-            }
-
-            for (CPU* c: k->getProcessors())
-                cout << c->getName() << " has u_active " << queues->getUtilization_active(c) << endl;
             
-            assert (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
-            assert (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
-            assert (k->getProcessor(tasks[2])->getIslandType() == cpus_little[2]->getIslandType());
-            assert (k->getProcessor(tasks[3])->getIslandType() == cpus_little[3]->getIslandType()); // has ended already
+            REQUIRE (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[2])->getIslandType() == cpus_little[2]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[3])->getIslandType() == cpus_little[3]->getIslandType()); // has ended already
 
-            assert (k->getProcessor(tasks[4])->getIslandType() == cpus_big[0]->getIslandType()); // has ended already
-            assert (k->getProcessor(tasks[5])->getIslandType() == cpus_big[1]->getIslandType());
-            assert (k->getProcessor(tasks[6])->getIslandType() == cpus_big[2]->getIslandType());
-            assert (k->getProcessor(tasks[7])->getIslandType() == cpus_big[3]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[4])->getIslandType() == cpus_big[0]->getIslandType()); // has ended already
+            REQUIRE (k->getProcessor(tasks[5])->getIslandType() == cpus_big[1]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[6])->getIslandType() == cpus_big[2]->getIslandType());
+            REQUIRE (k->getProcessor(tasks[7])->getIslandType() == cpus_big[3]->getIslandType());
 
             SIMUL.run_to(536);
 
-            assert (k->getProcessor(tasks[8]) == cpus_little[3]);
+            REQUIRE (k->getProcessor(tasks[8]) == cpus_little[3]);
 
             SIMUL.run_to(941);
 
-            assert (k->getProcessor(tasks[9]) == cpus_little[0]);
+            REQUIRE (k->getProcessor(tasks[9]) == cpus_little[0]);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -582,9 +615,9 @@ int main(int argc, char *argv[]) {
         }
         if (TEST_NO == 11) {
             /**
-                At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 8 ticks.
+                At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 30 ticks.
                 Then, another task, more important, arrives at time 6. Would this last task begin its
-                context switch at time 8, thus being scheduled at time 8+8=16?
+                context switch at time 30, thus being scheduled at time 30+30=60?
                 Experiment requires EDF scheduler.
               */
             int wcets[] = { 30,  30  };
@@ -610,13 +643,13 @@ int main(int argc, char *argv[]) {
             dynamic_cast<Task*>(tasks[1])->activate(Tick(activ[1]));
             SIMUL.run_to(17);
 
-            assert(k->getProcessor(ets[1]) == cpus_little[0]);
-            assert(k->getProcessorReady(tasks[0]) == cpus_little[0]);
+            REQUIRE (k->getProcessor(ets[1]) == cpus_little[0]);
+            REQUIRE (k->getProcessorReady(tasks[0]) == cpus_little[0]);
 
             SIMUL.run_to(156);
 
-            assert(k->getProcessor(ets[0]) == cpus_little[0]);
-            assert(tasks[1]->isActive() == false);
+            REQUIRE (k->getProcessor(ets[0]) == cpus_little[0]);
+            REQUIRE (tasks[1]->isActive() == false);
 
             SIMUL.endSingleRun();
             return 0;
@@ -698,14 +731,14 @@ int main(int argc, char *argv[]) {
                 cout << "killing tasks" << endl;
                 Task *t = dynamic_cast<Task*>(tasks[j]);
                 t->killInstance();
-                assert(t->getState() == TSK_IDLE);
+                REQUIRE(t->getState() == TSK_IDLE);
             }
             SIMUL.run_to(501);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[4]))->getIslandType() == IslandType::BIG);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[4]))->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -752,31 +785,31 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(1);
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
-            assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
-            assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
-            assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
-            assert(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
+            REQUIRE(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
 
-            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
-            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
-            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
-            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
+            REQUIRE(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
+            REQUIRE(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+            REQUIRE(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
+            REQUIRE(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
 
             SIMUL.run_to(501);
             // same tests as above
-            assert(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
-            assert(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
-            assert(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
-            assert(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
-            assert(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
-            assert(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0])) == cpus_big[0]);
+            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[1])) == cpus_big[0]);
+            REQUIRE(k->getScheduler()->isInQueue(tasks[0]) == false); // an executing task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[1]) == false); // a ready task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
+            REQUIRE(k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
 
-            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
-            assert(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
-            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
-            assert(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
+            REQUIRE(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
+            REQUIRE(k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+            REQUIRE(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
+            REQUIRE(k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -807,19 +840,19 @@ int main(int argc, char *argv[]) {
             SIMUL.initSingleRun();
 
             SIMUL.run_to(1);
-            assert (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(5);
             cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
-            assert (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
+            REQUIRE (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
 
             SIMUL.run_to(16);
             cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
-            assert (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
 
             SIMUL.run_to(21);
             cout << " dasdsad " << dynamic_cast<Task*>(t2)->getStateString() << endl;
-            assert (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
+            REQUIRE (dynamic_cast<Task*>(t2)->getState() == TSK_IDLE);
 
             SIMUL.run_to(26);
 
@@ -854,18 +887,18 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(3); // t=2: executing to releasing
             cout << "time = " << SIMUL.getTime() << endl;
-            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_little.at(0))) == 0.0);
-            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big.at(0))) == 0.2);
+            REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_little.at(0))) == 0.0);
+            REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big.at(0))) == 0.2);
             k->print();
-            assert (k->getIslandUtilization(1.0, cpus_big[0]->getIslandType(), NULL) == 0.2);
-            assert (k->getUtilization(cpus_big.at(0), 1.0) == 0.2); // float repr. precision
+            REQUIRE (k->getIslandUtilization(1.0, cpus_big[0]->getIslandType(), NULL) == 0.2);
+            REQUIRE (k->getUtilization(cpus_big.at(0), 1.0) == 0.2); // float repr. precision
 
             SIMUL.run_to(5); // t=4: releasing to idle
             cout << "time = " << SIMUL.getTime() << endl;
             for (CPU_BL* c : cpus_big) {
                 if (c == cpus_big.at(0)) continue;
-                assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
-                assert (k->getUtilization(c, 1.0) == 0.0);
+                REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
+                REQUIRE (k->getUtilization(c, 1.0) == 0.0);
             }
 
             SIMUL.endSingleRun();
@@ -1091,73 +1124,73 @@ int main(int argc, char *argv[]) {
             tos2->activate(Tick(11));
 
             SIMUL.run_to(1); // init setup
-            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
-            assert (k->getProcessorRunning(t0_big0) == cpus_big[0]);
-            assert (k->getProcessorReady(serv) == cpus_big[0]);
-            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
-            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
-            // assert (double(t0_big0->deadEvt.getTime()) == 5.0); todo
+            REQUIRE (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            REQUIRE (k->getProcessorRunning(t0_big0) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            REQUIRE (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            // REQUIRE (double(t0_big0->deadEvt.getTime()) == 5.0); todo
 
             SIMUL.run_to(5); // t0_big0 ends and tos (serv) starts
-            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
-            assert (k->getProcessorRunning(serv) == cpus_big[0]);
-            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
-            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
-            assert (serv->getTasks().size() == 1);
-            assert (serv->getTasks().at(0) == tos);
+            REQUIRE (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            REQUIRE (k->getProcessorRunning(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            REQUIRE (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            REQUIRE (serv->getTasks().size() == 1);
+            REQUIRE (serv->getTasks().at(0) == tos);
             cout << " wcet " << tos->getWCET(1.0) << endl;
-            assert ((tos->getWCET(1.0) + double(SIMUL.getTime())) == 7.0);
-            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
-            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 10.0 / 30.0 + 1.0 / 31.0);
+            REQUIRE ((tos->getWCET(1.0) + double(SIMUL.getTime())) == 7.0);
+            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            REQUIRE (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 10.0 / 30.0 + 1.0 / 31.0);
             
             SIMUL.run_to(6); // taskDuring comes and goes ready on big0. Island util considers server util and tasks on big1
-            assert (k->getProcessorRunning(serv) == cpus_big[0]);
-            assert (k->getProcessorReady(t5) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(t5) == cpus_big[0]);
 
             SIMUL.run_to(7); // tos ends, yields, goes ready and taskDuring starts
-            assert (serv->isEmpty());
-            assert (k->getProcessorReady(serv) == cpus_big[0]);
-            assert (k->getProcessorRunning(t5) == cpus_big[0]);
-            assert ((t5->getWCET(1.0) + double(SIMUL.getTime())) == 9.0);
-            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
-            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
+            REQUIRE (serv->isEmpty());
+            REQUIRE (k->getProcessorReady(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(t5) == cpus_big[0]);
+            REQUIRE ((t5->getWCET(1.0) + double(SIMUL.getTime())) == 9.0);
+            REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
+            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
             
             SIMUL.run_to(8); // taskBefore (the server DL) comes and goes ready on big0. Island util considers u_active of big0 and tasks on big1
-            assert (k->getProcessorRunning(t5) == cpus_big[0]);
-            assert (k->getProcessorReady(serv) == cpus_big[0]);
-            assert (k->getProcessorReady(t3) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(t5) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(t3) == cpus_big[0]);
 
             SIMUL.run_to(9); // taskDuring ends, serv yields and is ready, taskBefore starts
-            assert (serv->isEmpty());
-            assert (k->getProcessorReady(serv) == cpus_big[0]);
-            assert (k->getProcessorRunning(t3) == cpus_big[0]);
-            assert ((t3->getWCET(1.0) + double(SIMUL.getTime())) == 10.0);
+            REQUIRE (serv->isEmpty());
+            REQUIRE (k->getProcessorReady(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(t3) == cpus_big[0]);
+            REQUIRE ((t3->getWCET(1.0) + double(SIMUL.getTime())) == 10.0);
 
             SIMUL.run_to(10); // server deadline, it recharges itself
-            assert (serv->isEmpty());
+            REQUIRE (serv->isEmpty());
             for (CPU* c : cpus_big)
-                assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
+                REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(c)) == 0.0);
 
             SIMUL.run_to(11); // tos2 comes, server gets running
-            assert (serv->getTasks().size() == 1);
-            assert (serv->getTasks().at(0) == tos2);
-            assert (serv->getStatus() == ServerStatus::EXECUTING);
-            assert (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 2.0 / 21.0 + 4.0/30.0 + 1.0 / 31.0);
-            assert (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
-            assert ((tos2->getWCET(1.0) + double(SIMUL.getTime())) == 13.0);
+            REQUIRE (serv->getTasks().size() == 1);
+            REQUIRE (serv->getTasks().at(0) == tos2);
+            REQUIRE (serv->getStatus() == ServerStatus::EXECUTING);
+            REQUIRE (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 2.0 / 21.0 + 4.0/30.0 + 1.0 / 31.0);
+            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            REQUIRE ((tos2->getWCET(1.0) + double(SIMUL.getTime())) == 13.0);
 
             SIMUL.run_to(12); // taskAfter comes. Island utilization considers server and tasks on big1
-            assert (k->getProcessorRunning(serv) == cpus_big[0]);
-            assert (k->getProcessorReady(t4) == cpus_big[0]);
+            REQUIRE (k->getProcessorRunning(serv) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(t4) == cpus_big[0]);
 
             SIMUL.run_to(13); // tos2 ends, task after starts
-            assert (k->getProcessorRunning(t4) == cpus_big[0]);
-            assert (k->getProcessorReady(serv) == cpus_big[0]);
-            assert (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
-            assert (k->getProcessorRunning(t0_little) == cpus_little[0]);
-            assert (k->getProcessorRunning(t0_big1) == cpus_big[1]);
-            assert (k->getProcessorReady(t1_big1) == cpus_big[1]);
-            assert ((t4->getWCET(1.0) + double(SIMUL.getTime())) == 14.0);
+            REQUIRE (k->getProcessorRunning(t4) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(serv) == cpus_big[0]);
+            REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
+            REQUIRE (k->getProcessorRunning(t0_little) == cpus_little[0]);
+            REQUIRE (k->getProcessorRunning(t0_big1) == cpus_big[1]);
+            REQUIRE (k->getProcessorReady(t1_big1) == cpus_big[1]);
+            REQUIRE ((t4->getWCET(1.0) + double(SIMUL.getTime())) == 14.0);
 
             SIMUL.endSingleRun();
             cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
