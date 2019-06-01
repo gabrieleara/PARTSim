@@ -635,6 +635,8 @@ int main(int argc, char *argv[]) {
                 tasks.push_back(t);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            MultiCoresScheds* queues = k->getEnergyMultiCoresScheds();
+
             k->setContextSwitchDelay(Tick(8));
             k->addForcedDispatch(ets[0], cpus_big[0], 18);
             k->addForcedDispatch(ets[1], cpus_big[0], 18);
@@ -646,12 +648,16 @@ int main(int argc, char *argv[]) {
             REQUIRE (k->getProcessor(ets[1]) == cpus_big[0]);
             REQUIRE (k->getProcessorReady(tasks[0]) == cpus_big[0]);
 
-            SIMUL.run_to(156);
-
-            REQUIRE (k->getProcessor(ets[0]) == cpus_big[0]);
-            REQUIRE (tasks[1]->isActive() == false);
-
+            SIMUL.run_to(400);
+            cout << queues->getUtilization_active(cpus_big[0]) <<endl;
+            
+            SIMUL.run_to(500);
+            REQUIRE (queues->getUtilization_active(cpus_big[0]) == 0.0);
+                
+            SIMUL.run_to(1000);
             SIMUL.endSingleRun();
+            cout << "-----------" << endl;
+            cout << "Simulation finished" << endl;
             return 0;
         }
         if (TEST_NO == 12) {

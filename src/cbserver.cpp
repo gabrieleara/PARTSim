@@ -117,7 +117,7 @@ namespace RTSim {
     {
         cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
-        assert(isEmpty());
+        //assert(isEmpty());
 
         status = READY;
         cap = cap - (SIMUL.getTime() - last_time);

@@ -419,7 +419,7 @@ namespace RTSim {
             assert(c != NULL);
             AbsRTTask *t = getFirst(c);
             // todo rem 
-            //cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
+            cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
 
             if (shouldDeschedule(c, t))
                 makeReady(c);

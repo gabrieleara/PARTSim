@@ -364,7 +364,7 @@ namespace RTSim {
         
         _queues->onBeginDispatchMultiFinished(p, st, overhead);
 
-        cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << endl;
+        cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << " - overhead=" << overhead << endl;
 
     }
 
@@ -455,6 +455,7 @@ namespace RTSim {
 
            Try not to touch running tasks.
         */
+        bool migrationDone = false;
         if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return; }
         if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return; }
         cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
@@ -469,7 +470,7 @@ namespace RTSim {
                     tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
-                        cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
+                        cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
                         if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                         _queues->onMigrationFinished(tt, c, endingCPU);
                         // onEndDispatchMulti will take care of increasing core OPP
@@ -477,11 +478,11 @@ namespace RTSim {
                     }
                 }
             }
-            cout << "\tNo migration from big island to endingCPU => balance little island load" << endl;
+            cout << "\t\tNo migration from big island to endingCPU => balance little island load" << endl;
         }
 
         if (endingCPU->getIslandType() == IslandType::BIG)
-            cout << "\tBalancing on big island load" << endl;
+            cout << "\t\tBalancing on big island load" << endl;
         
         // Take a ready task of the island and put it into endingCPU.
         // However, if core has only ready tasks, then such task, shouldn't
@@ -491,12 +492,14 @@ namespace RTSim {
             unsigned int nTasksOnCore = readyTasks.size() + (getRunningTask(c) == NULL ? 0 : 1);
             if (nTasksOnCore > 1) {
                 AbsRTTask *tt = readyTasks.at(0);
-                cout << "\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
+                cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
                 if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                 _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead
+                migrationDone = true;
                 break;
             }
         }
+        if (!migrationDone) cout << "\t\tNo migration done" << endl; 
          
     } // end EMRTK::migrateInto()
 
