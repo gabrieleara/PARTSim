@@ -45,7 +45,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 11;
+    int TEST_NO = 10;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -613,7 +613,7 @@ int main(int argc, char *argv[]) {
             cout << "Simulation has finished" << endl;
             return 0;
         }
-        if (TEST_NO == 11) {
+        if (TEST_NO == 10) {
             /**
                 At time 0, you have a task on a CPU, which is under a context switch. Say it lasts 30 ticks.
                 Then, another task, more important, arrives at time 6. Would this last task begin its
@@ -636,19 +636,19 @@ int main(int argc, char *argv[]) {
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
             k->setContextSwitchDelay(Tick(8));
-            k->addForcedDispatch(ets[0], cpus_little[0], 6);
-            k->addForcedDispatch(ets[1], cpus_little[0], 6);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+            k->addForcedDispatch(ets[1], cpus_big[0], 18);
 
             SIMUL.initSingleRun();
             dynamic_cast<Task*>(tasks[1])->activate(Tick(activ[1]));
             SIMUL.run_to(17);
 
-            REQUIRE (k->getProcessor(ets[1]) == cpus_little[0]);
-            REQUIRE (k->getProcessorReady(tasks[0]) == cpus_little[0]);
+            REQUIRE (k->getProcessor(ets[1]) == cpus_big[0]);
+            REQUIRE (k->getProcessorReady(tasks[0]) == cpus_big[0]);
 
             SIMUL.run_to(156);
 
-            REQUIRE (k->getProcessor(ets[0]) == cpus_little[0]);
+            REQUIRE (k->getProcessor(ets[0]) == cpus_big[0]);
             REQUIRE (tasks[1]->isActive() == false);
 
             SIMUL.endSingleRun();
