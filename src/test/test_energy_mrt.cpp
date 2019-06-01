@@ -1164,8 +1164,8 @@ TEST_CASE("exp14") {
     REQUIRE (k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
     REQUIRE (k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
 
-    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
-    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(ets[0]) == true);
+    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(ets[1]) == true);
     REQUIRE (k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
     REQUIRE (k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
 
@@ -1178,8 +1178,8 @@ TEST_CASE("exp14") {
     REQUIRE (k->getScheduler()->isInQueue(tasks[2]) == false); // a discarded task
     REQUIRE (k->getScheduler()->isInQueue(tasks[3]) == false); // a discarded task
 
-    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[0]) == true);
-    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(tasks[1]) == true);
+    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(ets[0]) == true);
+    REQUIRE (k->getEnergyMultiCoresScheds()->getScheduler(k->getProcessor(tasks[0]))->isInQueue(ets[1]) == true);
     REQUIRE (k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[2]) == NULL);
     REQUIRE (k->getEnergyMultiCoresScheds()->isInAnyQueue(tasks[3]) == NULL);
 
