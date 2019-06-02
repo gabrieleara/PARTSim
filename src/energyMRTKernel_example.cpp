@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 20;
+    int TEST_NO = 21;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -1284,8 +1284,8 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(500); // all tasks are over, usual dispatch
             SIMUL.sim_step();
-            for (CPU_BL* c : k->getProcessors())
-                REQUIRE (c->isBusy());
+            for (CBServerCallingEMRTKernel* e : ets)
+                REQUIRE (k->getProcessor(e) != NULL);
 
             SIMUL.endSingleRun();
 
@@ -1388,8 +1388,8 @@ int main(int argc, char *argv[]) {
                 be scheduled on its previous core, because U + U_t > 1 (EDF).
               */
             string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
-            int     wcets[] = { 160, 450, 450, 400, 60 };
-            int     deads[] = { 200, 500, 500, 500, 500 };
+            int     wcets[] = { 450, 450, 450, 400, 333 };
+            int     deads[] = { 500, 500, 500, 500, 500 };
             vector<CBServerCallingEMRTKernel*> ets;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
                 task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + names[j];
@@ -1416,17 +1416,13 @@ int main(int argc, char *argv[]) {
             SIMUL.initSingleRun();
             
             SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
-            cout << k->getScheduler()->toString() << endl;
-            // cout << dynamic_cast<RTKernel*>(ets[0]->getKernel())->getScheduler()->toString() << endl;
             ets[0]->killInstance();
-            // cout << k->getScheduler()->toString() << endl;
-            // cout << dynamic_cast<RTKernel*>(ets[0]->getKernel())->getScheduler()->toString() << endl;exit(0);
             SIMUL.sim_step(); // t=150, but all events have been processed
             cout << "u active big 0 " << k->getUtilization_active(cpus_big[0]) << endl;
             cout << "idle evt " << ets[0]->getIdleEvent() << endl;
             cout << "server status " << ets[0]->getStatusString() << endl;
-            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.75); // shall be 0.8
-            REQUIRE ( (double) ets[0]->getIdleEvent() > 185);
+            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.85); // shall be 0.9
+            REQUIRE ( (double) ets[0]->getIdleEvent() > 165);
             REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(151);
@@ -1435,23 +1431,26 @@ int main(int argc, char *argv[]) {
             REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
             REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
 
-            SIMUL.run_to(189); // end vtime => migration
+            SIMUL.run_to(169); // end vtime => migration
             REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
             REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
 
             cout << endl << "Scheduler state t=189:"<<endl;
             cout << k->getScheduler()->toString() << endl << endl;
 
-            SIMUL.run_to(201);
+            SIMUL.run_to(451);
             k->printState(true);
             REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
-            // REQUIRE (k->getReadyTasks(cpus_big[0]).empty() == false);
-            // REQUIRE (k->getReadyTasks(cpus_big[0]).at(0) == ets[0]); // todo: killed cbs servers don't arrive again
+            REQUIRE (k->getRunningTask(cpus_big[1]) == NULL);
+            REQUIRE (k->getRunningTask(cpus_big[2]) == NULL);
+            REQUIRE (k->getRunningTask(cpus_big[3]) == NULL);
 
             SIMUL.run_to(501); // all tasks are over, usual dispatch
             k->printState(true);
-            for (CBServerCallingEMRTKernel *e : ets)
-                REQUIRE (k->getProcessor(e) != NULL);            
+            for (CPU* c : k->getProcessors(IslandType::BIG))
+                REQUIRE (k->getRunningTask(c) != NULL);
+            REQUIRE (k->getProcessor(ets[0]) == NULL); // because task WCET 333 has stolen its utilization
+            REQUIRE (k->isDispatchable(ets[0], cpus_big[0]));
 
             SIMUL.endSingleRun();
 

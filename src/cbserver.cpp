@@ -146,7 +146,6 @@ namespace RTSim {
             status = RELEASING;
         }
         DBGPRINT("Status is now XXXYYY " << status_string[status]);
-        cout << "qqqq"<<endl;
     }
 
     void CBServer::releasing_idle()

@@ -766,6 +766,16 @@ namespace RTSim {
         }
 
         /// to debug internal functions...
+        bool isDispatchable(AbsRTTask *t, CPU_BL* c) {
+          bool isDispatchable = false;
+
+          vector<struct ConsumptionTable> iDeltaPows;
+          tryTaskOnCPU_BL(t, c, iDeltaPows);
+          isDispatchable = iDeltaPows.empty();
+
+          return isDispatchable;
+        }
+
         void test();
 
         static double time();
