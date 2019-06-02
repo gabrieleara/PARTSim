@@ -318,7 +318,7 @@ namespace RTSim {
 
         - the set of tasks handled by this kernel.
 
-        This implementation is quite general: it lets the user of this
+        This implementation is not quite general: it lets the user of this
         class the freedom to adopt any scheduler derived form
         Scheduler and a resource manager derived from ResManager or no
         resource manager at all.  The kernel for a multiprocessor
@@ -326,6 +326,9 @@ namespace RTSim {
         to the instruction class to implement the correct duration of
         its execution by asking the kernel of its task the speed of
         the processor on which it's scheduled.
+        It is not that general because the aim was to make everything work
+        as expected. That's why there are so many dynamic_cast<CPU_BL*>,
+        even when CPU is enough. 
 
         @see absCPU_BLFactory, Scheduler, ResManager, AbsRTTask
     */
@@ -379,17 +382,6 @@ namespace RTSim {
         */
         void chooseCPU_BL(AbsRTTask* t, vector<ConsumptionTable> iDeltaPows);
 
-        /// Returns the CBS server enveloping the periodic task t
-        AbsRTTask* getEnveloper(AbsRTTask* t) const {
-          if (!CBS_ENVELOPING_PER_TASK_ENABLED || isCBServer(t)) return t;
-
-          for (auto &elem : _envelopes)
-            if (elem.first == t)
-              return elem.second;
-
-          return NULL;
-        }
-
         /// Returns the CBS servers enveloping the periodic tasks
         vector<AbsRTTask*> getEnvelopers(vector<AbsRTTask*> ptasks) const {
           if (!CBS_ENVELOPING_PER_TASK_ENABLED) return ptasks;
@@ -442,11 +434,13 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
     public:
-        static bool EMRTK_BALANCE_ENABLED           ; /* Can't imagine disabling it, but so policy is in the list :) */
-        static bool EMRTK_LEAVE_LITTLE3_ENABLED     ;
-        static bool EMRTK_MIGRATE_ENABLED           ;
-        static bool EMRTK_CBS_YIELD_ENABLED         ;
-        static bool CBS_ENVELOPING_PER_TASK_ENABLED ; /// CBS server enveloping periodic tasks?
+        static bool EMRTK_BALANCE_ENABLED                   ; /* Can't imagine disabling it, but so policy is in the list :) */
+        static bool EMRTK_LEAVE_LITTLE3_ENABLED             ;
+        static bool EMRTK_MIGRATE_ENABLED                   ;
+        static bool EMRTK_CBS_YIELD_ENABLED                 ;
+
+        static bool CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
+        static bool CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
@@ -543,6 +537,17 @@ namespace RTSim {
           for (const auto& elem : _envelopes)
             if (elem.second == cbs)
               return elem.first;
+          return NULL;
+        }
+
+        /// Returns the CBS server enveloping the periodic task t
+        AbsRTTask* getEnveloper(AbsRTTask* t) const {
+          if (!CBS_ENVELOPING_PER_TASK_ENABLED || isCBServer(t)) return t;
+
+          for (auto &elem : _envelopes)
+            if (elem.first == t)
+              return elem.second;
+
           return NULL;
         }
 
@@ -671,32 +676,43 @@ namespace RTSim {
         }
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
-        void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
+        void onExecutingReleasing(CBServer* cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
-          _queues->onExecutingReleasing(getEnveloper(t), cpu, cbs);
+          CPU *cpu = getOldProcessor(cbs);
 
+          // for some reason, here task has wl idle, wrongly (should be kept until the end of this function). reset:
+          cpu->setWorkload(Utils::getTaskWorkload(cbs));
+          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
+          
+          _queues->onExecutingReleasing(cpu, cbs);
 
-          if (cbs->isEmpty()) {
-            /**
-              Policy for CBS servers:
-              If the task on a CBS server ends and the server gets empty,
-              schedule ready tasks on the core (i.e., deschedule & schedule server)
-              */
-            if (!EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED) {
-              cout << "CBS server yielding policy disabled => yeilding skip";
-              return;
-            }
-
-            cout << "\tServer's got empty. Server yields (= schedule a ready task of core)" << endl;
-            _queues->yield(cpu);
-            cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
+          if (EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED && cbs->isEmpty()) {
+              /**
+                Policy for CBS servers:
+                If the task on a CBS server ends and the server gets empty,
+                schedule ready tasks on the core (i.e., deschedule & schedule server)
+                */
+              cout << "\tServer's got empty. Server yields (= schedule a ready task of core)" << endl;
+              _queues->yield(cpu);
+              cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
           }
+          if (EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED) {
+              /**
+                Schedule ready task on core
+                */
+              assert (cbs->getStatus() == ServerStatus::RELEASING);
+              cout << "CBS enveloping periodic tasks enabled => schedule ready on " << cpu->getName() << endl;
+              _queues->schedule(cpu);
+          }
+
+          // cpu->setWorkload("idle");
         }
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
-          _queues->onReleasingIdle(cbs);
+          CPU* c = _queues->onReleasingIdle(cbs); // forget U_active
+          migrateInto(dynamic_cast<CPU_BL*>(c));
         }
 
         void onReplenishment(CBServer *cbs) {
@@ -707,12 +723,13 @@ namespace RTSim {
 
         /// Callback, when a CBS server ends a task
         void onTaskInServerEnd(AbsRTTask* t, CPU_BL* cpu, CBServer* cbs) {
+          // todo code to save util active should be useless
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
           //cout << "\tEMRTK::" << __func__ << "(). time = [" << SIMUL.getTime() << "] " << t->toString() << " has just finished on " << cpu->toString() << endl;
 
           // for some reason, here task has wl idle, wrongly (should be kept until the end of this function). reset:
-          cpu->setWorkload(Utils::getTaskWorkload(t));
-          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
+          // cpu->setWorkload(Utils::getTaskWorkload(t));
+          // cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
 
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
           if (cbs->isEmpty())

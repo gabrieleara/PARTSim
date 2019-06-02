@@ -361,20 +361,25 @@ namespace RTSim {
             forgetU_active(cbs);
         }
 
-        void onExecutingReleasing(AbsRTTask *t, CPU* cpu, CBServer *cbs) {
+        void onExecutingReleasing(CPU* cpu, CBServer *cbs) {
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
-            assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
+            assert(cbs != NULL); assert(cpu != NULL);
 
-            saveU_active(t, cpu, cbs);
+            saveU_active(cpu, cbs);
 
             cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() << (cbs->getTasks().size() > 0 ? " - first one: " + cbs->getTasks().at(0)->toString() : "") << endl;
         }
 
-        /// Callback for CBServer task going from releasing to idle => you can forget task active utilization
-        void onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
+        /**
+          Callback for CBServer task going from releasing to idle => you can forget task active utilization.
+          Returns the core where the CBS server was
+          */
+        CPU* onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
             cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
             
-            forgetU_active(cbs);
+            CPU* c = forgetU_active(cbs);
+            assert(c != NULL);
+            return c;
         }
 
         /// cbs recharging itself
@@ -405,7 +410,7 @@ namespace RTSim {
           cout << "MCS::" << __func__ << "() for " << cbs->getName() << endl;
           assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
 
-          saveU_active (t, cpu, cbs);
+          // saveU_active (cpu, cbs);
         }
 
         /// Remove the first task of a core queue. Also removes its ctx evt
@@ -459,8 +464,8 @@ namespace RTSim {
 
         // ------------------------------------------ Utilizations active
 
-        /// Removes Utilization active that must end CBS server t
-        void forgetU_active(AbsRTTask* t);
+        /// Removes Utilization active that must end CBS server t and returns core where t was
+        CPU* forgetU_active(AbsRTTask* t);
 
         /// Returns the U_active for tasks "releasing" on CBS server
         double getUtilization_active(CPU* cpu) {
@@ -476,15 +481,14 @@ namespace RTSim {
         }
 
         /// Save U_active of an ending task t
-        void saveU_active(AbsRTTask *t, CPU* cpu, CBServer* cbs) {
+        void saveU_active(CPU* cpu, CBServer* cbs) {
             cout << "MCS::" << __func__ << "() " << endl;
-            assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
+            assert(cbs != NULL); assert(cpu != NULL);
 
-            Task *tt = dynamic_cast<Task*>(t);
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
-            double u_active = double(tt->getWCET(cpu->getSpeed())) / (double) tt->getDeadline();
+            double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
             #include <cstdio>
-            printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(tt->getWCET(cpu->getSpeed())), (double) tt->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+            printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(cbs->getWCET(cpu->getSpeed())), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
 
             // a better map is by cpu, but then cpus can collide
             Tick vt = Tick(cbs->getVirtualTime());
@@ -492,8 +496,8 @@ namespace RTSim {
               cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << endl;
               return;
             }
-            _active_utilizations[t] = make_tuple(cpu, vt, u_active);
-            cout << "\tadded active utilization for " << tt->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[t]) << endl;
+            _active_utilizations[cbs] = make_tuple(cpu, vt, u_active);
+            cout << "\tadded active utilization for " << cbs->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[cbs]) << endl;
         }
 
         virtual void newRun() {}

@@ -30,6 +30,7 @@ using namespace MetaSim;
 using namespace RTSim;
 
 #define REQUIRE assert
+#define time()  SIMUL.getTime()
 
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params);
 
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 10;
+    int TEST_NO = 22;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -58,6 +59,12 @@ int main(int argc, char *argv[]) {
 
     cout << "current OPPs indices: [" << OPP_little << ", " << OPP_big << "]" << endl;
     cout << "Workload: [" << workload << "]" << endl;
+
+    EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED               = 0;
+    EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
+    EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
+    EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
+    EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 0;
 
     try {
         SIMUL.dbg.enable("All");
@@ -1204,6 +1211,177 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
+
+        EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
+
+        // CBS server enveloping Periodic Tasks examples.
+        // Require CBS servers enveloping periodic tasks and CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
+        if (TEST_NO == 19) {
+            /**
+                           vt end
+                !=======_____|_______!______...
+
+                1st example. End of virtual time arrives. Kernel tries to pull
+                tasks into core but it fails (tasks too big).
+
+                example below:
+
+                50          50
+                450 450 450 450
+                b0  b1  b2  b3   at time 0
+              */
+
+            int wcets[] = { 450, 450, 450, 450, 50, 50 };
+            int deads[] = { 500, 500, 500, 500, 500, 500 };
+            vector<CBServerCallingEMRTKernel*> ets;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+            k->addForcedDispatch(ets[1], cpus_big[1], 18);
+            k->addForcedDispatch(ets[2], cpus_big[2], 18);
+            k->addForcedDispatch(ets[3], cpus_big[3], 18);
+            k->addForcedDispatch(ets[4], cpus_big[3], 18); // ready
+            k->addForcedDispatch(ets[5], cpus_big[0], 18); // ready
+
+            for (CPU_BL* c : cpus_little)
+                c->toggleDisabled();
+
+            SIMUL.initSingleRun();
+            
+            SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
+            ets[0]->killInstance();
+            SIMUL.sim_step(); // t=150, but all events have been processed
+            cout << "u active big 0 " << k->getUtilization_active(cpus_big[0]) << endl;
+            cout << "idle evt " << ets[0]->getIdleEvent() << endl;
+            cout << "server status " << ets[0]->getStatusString() << endl;
+            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.0);
+            REQUIRE ( (double) ets[0]->getIdleEvent() > 150.0);
+            REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
+
+            SIMUL.run_to(151);
+            REQUIRE (cpus_big[0]->isBusy());
+
+            SIMUL.run_to(ets[0]->getIdleEvent()); // t=168, cannot migrate because core's already busy
+            SIMUL.sim_step();
+            cout << "==================" << endl;
+            cout << "t=" << time() << endl;
+            cout << "state of kernel:" << endl; k->printState(true);
+            cout << "server status " << ets[0]->getStatusString() << endl;
+            REQUIRE (ets[0]->getStatus() == ServerStatus::IDLE);
+            cout << "required: " << k->getRunningTask(cpus_big[0])->toString() << ", exp " << ets[5]->toString() << endl;
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[5]);
+            REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
+
+            SIMUL.run_to(500); // all tasks are over, usual dispatch
+            SIMUL.sim_step();
+            for (CPU_BL* c : k->getProcessors())
+                REQUIRE (c->isBusy());
+
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+            return 0;
+        }
+        if (TEST_NO == 20) {
+            /**
+                2nd example. End of virtual time of task t. Kernel pulls (migrates) a task into
+                the ending core. It has WCET > DL_t (t is now idle). When t arrives again, it can
+                be scheduled on its previous core.
+              */
+        }
+        if (TEST_NO == 21) {
+            /**
+                3rd example. End of virtual time of task t. Kernel pulls (migrates) a task into
+                the ending core. It has WCET > DL_t (t is now idle). When t arrives again, it cannot
+                be scheduled on its previous core, because U + U_t > 1 (EDF).
+              */
+        }
+        if (TEST_NO == 22) {
+            /**
+                4th example. Is it true that, when tasks finish or are killed, next ready tasks are
+                scheduled or, if no ready task is available on the core, there is a migration?
+              */
+            int wcets[] = { 10, 450, 450, 450, 20, 10 };
+            int deads[] = { 500, 500, 500, 500, 500, 500 };
+            vector<CBServerCallingEMRTKernel*> ets;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+            k->addForcedDispatch(ets[1], cpus_big[1], 18);
+            k->addForcedDispatch(ets[2], cpus_big[2], 18);
+            k->addForcedDispatch(ets[3], cpus_big[3], 18);
+            k->addForcedDispatch(ets[4], cpus_big[0], 18); // ready
+            k->addForcedDispatch(ets[5], cpus_big[3], 18); // ready
+
+            for (CPU_BL* c : cpus_little)
+                c->toggleDisabled();
+
+            SIMUL.initSingleRun();
+            
+            SIMUL.run_to(11);
+            cout << "==================" << endl;
+            cout << "t=" << time() << endl;
+            cout << "state of kernel:" << endl; k->printState(true);
+            cout << "server status " << ets[0]->getStatusString() << endl;
+            // recharging VS releasing: if task reaches its WCET (=> budget ends), then recharging, else releasing?
+            REQUIRE (ets[0]->getStatus() == ServerStatus::RECHARGING);
+            REQUIRE (ets[4] == k->getRunningTask(cpus_big[0]));
+            REQUIRE (k->getProcessorReady(ets[5]) == cpus_big[3]);
+
+            SIMUL.run_to(31);
+            cout << "==================" << endl;
+            cout << "t=" << time() << endl;
+            cout << "state of kernel:" << endl; k->printState(true);
+            cout << "server status " << ets[0]->getStatusString() << endl;
+            cout << "required: " << k->getRunningTask(cpus_big[0])->toString() << ", expected " << ets[5]->toString() << endl;
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[5]);
+
+            SIMUL.run_to(501); // all tasks are over, usual dispatch
+            k->printState(true);
+            for (CBServerCallingEMRTKernel* e : ets)
+                REQUIRE (k->getProcessor(e) != NULL);
+
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+            return 0;
+        }
+
+        // end of tests requiring CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;

@@ -112,6 +112,11 @@ namespace RTSim {
         AbsRTTask *t;
         int i = 0;
         while( (t = s->getTaskN(i)) != NULL) {
+            if (dynamic_cast<CBServer*>(t)->isYielding()) {
+                i++;
+                continue;
+            }
+
             tasks.push_back(t);
             i++;
         }
@@ -119,18 +124,23 @@ namespace RTSim {
         return tasks;
     }
 
-    void MultiCoresScheds::forgetU_active(AbsRTTask* t) {
-      cout << "\tMSC::" << __func__ << "() for " << t->toString() << endl;
+    CPU* MultiCoresScheds::forgetU_active(AbsRTTask* t) {
+        cout << "\tMSC::" << __func__ << "() for " << t->toString() << endl;
+        CPU* c;
 
         if (EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED)
-            t = dynamic_cast<EnergyMRTKernel*>(_kernel)->getEnveloped(t);
+            t = dynamic_cast<EnergyMRTKernel*>(_kernel)->getEnveloper(t);
 
         for (auto& elem : _active_utilizations) {
+            cout << "forgetU_active: " << elem.first->toString() << endl;
             if (elem.first == t) {
-                cout << "\treleasing_idle for " << elem.first->toString() << ". Its U_act was " << get<2>(elem.second) << endl;
+                cout << "\treleasing_idle for " << elem.first->toString() << " on " << get<0>(elem.second)->getName() << ". Its U_act was " << get<2>(elem.second) << endl;
+                c = get<0>(elem.second);
                 _active_utilizations.erase(elem.first);
+                break;
             }
         }
+        return c;
     }
 
     void MultiCoresScheds::empty(CPU* c) {
@@ -168,8 +178,11 @@ namespace RTSim {
             return getRunningTask(c) != NULL;
         }
         else if (dynamic_cast<EDFScheduler*>(_queues[c])){
-            if (dynamic_cast<CBServer*>(t) && getRunningTask(c) == t)
-                return false;
+            if (dynamic_cast<CBServer*>(t))
+                if (getRunningTask(c) == t)
+                    return false;
+                else if (dynamic_cast<CBServer*>(t)->isYielding())
+                    return true;
             bool isNotSameTask = getRunningTask(c) != NULL && getRunningTask(c) != t;
             return isNotSameTask;
         }

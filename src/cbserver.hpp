@@ -207,9 +207,12 @@ namespace RTSim {
 
       /// from executing to recharging (budget exhausted)
       virtual void executing_recharging();
+
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
         const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
+
+      void killInstance();
 
       AbsRTTask* getFirstTask() const {
         AbsRTTask* t = sched_->getFirst();
@@ -243,6 +246,7 @@ namespace RTSim {
       virtual double getRemainingWCET(double capacity) const {
         return getWCET(capacity);
       }
+
 
       /// Arrival event of task of server
       virtual void onArrival(AbsRTTask *t) {

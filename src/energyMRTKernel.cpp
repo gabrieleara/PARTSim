@@ -25,11 +25,12 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED             = 1; /* Can't imagine disabling it, but so policy is in the list :) */
-    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED       = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED             = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED           = 0;
-    bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED   = 1;
+    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED                     = 1; /* Can't imagine disabling it, but so policy is in the list :) */
+    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED               = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
+    bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
+    bool EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -364,7 +365,7 @@ namespace RTSim {
         
         _queues->onBeginDispatchMultiFinished(p, st, overhead);
 
-        cout << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << " - overhead=" << overhead << endl;
+        cout << "\t" << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << " - overhead=" << overhead << endl;
 
     }
 
@@ -458,6 +459,7 @@ namespace RTSim {
         bool migrationDone = false;
         if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return; }
         if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return; }
+        if (getRunningTask(endingCPU) != NULL) { assert (CBS_ENVELOPING_PER_TASK_ENABLED && CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return; }
         cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
 
         vector<AbsRTTask*> readyTasks;

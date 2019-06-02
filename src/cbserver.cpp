@@ -130,7 +130,7 @@ namespace RTSim {
     {
         cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
-        assert(isEmpty());
+        //assert(isEmpty());
     
         if (status == EXECUTING) {
             cap = cap - (SIMUL.getTime() - last_time);
@@ -146,6 +146,7 @@ namespace RTSim {
             status = RELEASING;
         }
         DBGPRINT("Status is now XXXYYY " << status_string[status]);
+        cout << "qqqq"<<endl;
     }
 
     void CBServer::releasing_idle()
@@ -338,6 +339,25 @@ namespace RTSim {
         return Tick::floor(dist);
     }
 
+    void CBServerCallingEMRTKernel::killInstance() {
+        cout << "CBSCEMRTK::" << __func__ << "() for " << getName() << " at t=" << SIMUL.getTime() << endl;
+
+        Task* t = dynamic_cast<Task*>(getFirstTask());
+        assert(t != NULL);
+
+        onEnd(t);
+        yield();
+        _bandExEvt.drop();
+        _replEvt.drop();
+        _rechargingEvt.drop();
+
+        t->endRun();
+        (*t->getActInstr())->deschedule();
+
+        //executing_releasing();
+    }
+
+    // task of server ends
     void CBServerCallingEMRTKernel::onEnd(AbsRTTask *t) {
         cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__ << "() for " << t->toString() << endl;
         CPU_BL* cpu = dynamic_cast<CPU_BL*>(dynamic_cast<Task*>(t)->getCPU());
@@ -349,7 +369,7 @@ namespace RTSim {
             yield();
 
         EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
-        if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this); // save util active
+        if (emrtk != NULL) emrtk->onTaskInServerEnd(t, cpu, this);
 
         cout << endl;
     }
@@ -375,11 +395,13 @@ namespace RTSim {
         CBServer::executing_releasing();
 
         // here you should save Util active. Done in CBSCEMRTK::onEnd()
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        if (emrtk != NULL) emrtk->onExecutingReleasing(this); // save util active
     }
 
     /// remember to call Server::setKernel(kern) before this
     void CBServerCallingEMRTKernel::releasing_idle() {
-        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
+        cout << "CBSCEMRTK::" << __func__ << "() t=" << SIMUL.getTime() << endl;
         CBServer::releasing_idle();
 
         EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
