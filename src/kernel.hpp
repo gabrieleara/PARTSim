@@ -269,6 +269,8 @@ namespace RTSim {
 
         AbsRTTask* getCurrExe() const;
 
+	virtual Scheduler* getScheduler() const { return _sched; }
+
         /**
            Prints on the DEBUG stream the status of the kernel
            (the name of the task running on each

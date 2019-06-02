@@ -441,6 +441,7 @@ namespace RTSim {
 
         static bool CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
         static bool CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
+        static bool CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate?
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.

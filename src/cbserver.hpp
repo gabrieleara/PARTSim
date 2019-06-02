@@ -212,7 +212,8 @@ namespace RTSim {
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
         const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
 
-      void killInstance();
+      /// Kills the server and its task. It can stay killed since now on or only until task next period
+      void killInstance(bool onlyOnce = true);
 
       AbsRTTask* getFirstTask() const {
         AbsRTTask* t = sched_->getFirst();

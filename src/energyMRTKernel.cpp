@@ -31,6 +31,7 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
     bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
     bool EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
+    bool EnergyMRTKernel::CBS_MIGRATE_AFTER_END                     = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -432,7 +433,7 @@ namespace RTSim {
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
-        if (!p->isBusy())
+        if (!p->isBusy() && CBS_MIGRATE_AFTER_END)
             migrateInto(p);
         else // core has already some ready tasks
             _queues->schedule(p);

@@ -315,7 +315,7 @@ namespace RTSim {
         reactivate();
     }
     
-    void Task::onEndInstance(Event *e)
+    void Task::onEndInstance(Event *)
     {
         DBGENTER(_TASK_DBG_LEV);
         

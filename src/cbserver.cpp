@@ -339,7 +339,7 @@ namespace RTSim {
         return Tick::floor(dist);
     }
 
-    void CBServerCallingEMRTKernel::killInstance() {
+    void CBServerCallingEMRTKernel::killInstance(bool onlyOnce) {
         cout << "CBSCEMRTK::" << __func__ << "() for " << getName() << " at t=" << SIMUL.getTime() << endl;
 
         Task* t = dynamic_cast<Task*>(getFirstTask());
