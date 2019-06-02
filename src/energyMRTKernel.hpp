@@ -436,12 +436,12 @@ namespace RTSim {
     public:
         static bool EMRTK_BALANCE_ENABLED                   ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED             ;
-        static bool EMRTK_MIGRATE_ENABLED                   ;
+        static bool EMRTK_MIGRATE_ENABLED                   ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. CBS_MIGRATE_AFTER_END)
         static bool EMRTK_CBS_YIELD_ENABLED                 ;
 
         static bool CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
         static bool CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
-        static bool CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate?
+        static bool CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.

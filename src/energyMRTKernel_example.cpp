@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
     EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
     EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
     EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 0;
+    EnergyMRTKernel::CBS_MIGRATE_AFTER_END                     = 1;
 
     try {
         SIMUL.dbg.enable("All");
@@ -1211,6 +1212,10 @@ int main(int argc, char *argv[]) {
 
             return 0;
         }
+
+
+
+
 
         EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END     = 1;
         EnergyMRTKernel::CBS_MIGRATE_AFTER_END                      = 0;
