@@ -384,7 +384,7 @@ namespace RTSim {
 
         /// Returns the CBS servers enveloping the periodic tasks
         vector<AbsRTTask*> getEnvelopers(vector<AbsRTTask*> ptasks) const {
-          if (!CBS_ENVELOPING_PER_TASK_ENABLED) return ptasks;
+          if (!EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED) return ptasks;
 
           vector<AbsRTTask*> envelopes;
           for (AbsRTTask *t : ptasks)
@@ -433,12 +433,12 @@ namespace RTSim {
     public:
         static bool EMRTK_BALANCE_ENABLED                   ; /* Can't imagine disabling it, but so policy is in the list :) */
         static bool EMRTK_LEAVE_LITTLE3_ENABLED             ;
-        static bool EMRTK_MIGRATE_ENABLED                   ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. CBS_MIGRATE_AFTER_END)
+        static bool EMRTK_MIGRATE_ENABLED                   ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
         static bool EMRTK_CBS_YIELD_ENABLED                 ;
 
-        static bool CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
-        static bool CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
-        static bool CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
+        static bool EMRTK_CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
@@ -530,7 +530,7 @@ namespace RTSim {
 
         /// Returns the enveloped RTask of CBS server
         AbsRTTask* getEnveloped(AbsRTTask* cbs) const {
-          assert (dynamic_cast<CBServer*>(cbs)); assert (CBS_ENVELOPING_PER_TASK_ENABLED);
+          assert (dynamic_cast<CBServer*>(cbs)); assert (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED);
 
           for (const auto& elem : _envelopes)
             if (elem.second == cbs)
@@ -540,7 +540,7 @@ namespace RTSim {
 
         /// Returns the CBS server enveloping the periodic task t
         AbsRTTask* getEnveloper(AbsRTTask* t) const {
-          if (!CBS_ENVELOPING_PER_TASK_ENABLED || isCBServer(t)) return t;
+          if (!EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED || isCBServer(t)) return t;
 
           for (auto &elem : _envelopes)
             if (elem.first == t)
@@ -558,7 +558,7 @@ namespace RTSim {
 
         /// Get core where task is running
         virtual CPU_BL *getProcessorRunning(AbsRTTask *t) const {
-          if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+          if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
           CPU *c = _queues->getProcessorRunning(t);
@@ -568,7 +568,7 @@ namespace RTSim {
 
         /// Get core where task is dispatched (either running and ready). Change of semantics wrt MRTKernel todo
         virtual CPU_BL *getProcessor(AbsRTTask *t) const {
-          if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+          if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
           CPU *c = _queues->getProcessor(t);
@@ -696,7 +696,7 @@ namespace RTSim {
               _queues->yield(cpu);
               cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
           }
-          if (EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED) {
+          if (EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED) {
               /**
                 Schedule ready task on core
                 */

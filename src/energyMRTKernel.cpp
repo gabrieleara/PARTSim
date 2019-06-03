@@ -29,9 +29,10 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED               = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
-    bool EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
-    bool EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
-    bool EnergyMRTKernel::CBS_MIGRATE_AFTER_END                     = 1;
+
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                     = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -61,7 +62,7 @@ namespace RTSim {
     AbsRTTask* EnergyMRTKernel::getRunningTask(CPU* c) {
         AbsRTTask* t = _queues->getRunningTask(c);
 
-        if (CBS_ENVELOPING_PER_TASK_ENABLED)
+        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
             t = getEnveloper(t);
 
         return t;
@@ -71,7 +72,7 @@ namespace RTSim {
         vector<AbsRTTask*> t = _queues->getReadyTasks(c);
         vector<AbsRTTask*> tt;
 
-        if (CBS_ENVELOPING_PER_TASK_ENABLED)
+        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
             tt = getEnvelopers(t);
         else
             tt = t;
@@ -83,7 +84,7 @@ namespace RTSim {
     }
 
     CPU_BL *EnergyMRTKernel::getProcessorReady(AbsRTTask *t) const {
-        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
         CPU_BL* c = dynamic_cast<CPU_BL*>(_queues->isInAnyQueue(t));
@@ -94,7 +95,7 @@ namespace RTSim {
     }
 
     bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
-        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
         return _queues->isInAnyQueue(t) != NULL;
@@ -313,7 +314,7 @@ namespace RTSim {
     bool EnergyMRTKernel::isToBeDescheduled(CPU_BL *p, AbsRTTask *t) {
       assert(p != NULL);
 
-      if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+      if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
       if (dynamic_cast<RRScheduler*>(_sched) && t != NULL) { // t is null at time == 0
@@ -439,7 +440,7 @@ if (p->getName().find("BIG_0") != string::npos)
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
-        if (!p->isBusy() && CBS_MIGRATE_AFTER_END)
+        if (!p->isBusy() && EMRTK_CBS_MIGRATE_AFTER_END)
             migrateInto(p);
         else // core has already some ready tasks
             _queues->schedule(p);
@@ -466,7 +467,7 @@ if (p->getName().find("BIG_0") != string::npos)
         bool migrationDone = false;
         if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return false; }
         if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return false; }
-        if (getRunningTask(endingCPU) != NULL) { assert (CBS_ENVELOPING_PER_TASK_ENABLED && CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return false; }
+        if (getRunningTask(endingCPU) != NULL) { assert (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return false; }
         cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
 
         vector<AbsRTTask*> readyTasks;
@@ -480,7 +481,7 @@ if (p->getName().find("BIG_0") != string::npos)
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
                         cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
-                        if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
+                        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                         _queues->onMigrationFinished(tt, c, endingCPU);
                         // onEndDispatchMulti will take care of increasing core OPP
                         return true;
@@ -502,7 +503,7 @@ if (p->getName().find("BIG_0") != string::npos)
             if (nTasksOnCore > 1) {
                 AbsRTTask *tt = readyTasks.at(0);
                 cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
-                if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
+                if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                 _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead
                 migrationDone = true;
                 break;
@@ -543,7 +544,7 @@ if (p->getName().find("BIG_0") != string::npos)
             return;
         }
 
-        if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
 
         bool fitsInOtherCore = true; // if it only fits on little 3 and in bigs

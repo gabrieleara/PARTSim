@@ -128,7 +128,7 @@ namespace RTSim {
         cout << "\tMSC::" << __func__ << "() for " << t->toString() << endl;
         CPU* c;
 
-        if (EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED)
+        if (EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
             t = dynamic_cast<EnergyMRTKernel*>(_kernel)->getEnveloper(t);
 
         for (auto& elem : _active_utilizations) {

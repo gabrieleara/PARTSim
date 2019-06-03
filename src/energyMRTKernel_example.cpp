@@ -35,18 +35,16 @@ using namespace RTSim;
 void dumpSpeeds(CPUModelBP::ComputationalModelBPParams const & params);
 
 void dumpAllSpeeds();
-
-/// Returns true if the value 'eval' and 'expected' are distant 'error'%
-bool inRange(int eval, int expected);
-
-/// True if min <= eval <= max
-bool inRangeMinMax(double eval, const double min, const double max);
+bool isInRange(int,int);
+bool isInRange(Tick t1, int t2) { return isInRange(int(t1), t2); }
+bool isInRange(Tick t1, Tick t2) { return isInRange(int(t1), int(t2)); }
+bool isInRangeMinMax(double eval, const double min, const double max);
 
 int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 20;
+    int TEST_NO = 7;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -60,12 +58,17 @@ int main(int argc, char *argv[]) {
     cout << "current OPPs indices: [" << OPP_little << ", " << OPP_big << "]" << endl;
     cout << "Workload: [" << workload << "]" << endl;
 
-    EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED               = 0;
-    EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
-    EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
-    EnergyMRTKernel::CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
-    EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 0;
-    EnergyMRTKernel::CBS_MIGRATE_AFTER_END                     = 1;
+
+
+    EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                     = 0;
+    EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                           = 1;
+    EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                         = 0;
+
+    EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
+    EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 0;
+    EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                     = 1;
+
+
 
     try {
         SIMUL.dbg.enable("All");
@@ -221,31 +224,48 @@ int main(int argc, char *argv[]) {
         if (TEST_NO == 0) {
             task_name = "T0_task1";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
-            jtrace.attachToTask(*t);
-            tasks.push_back(t);
+            PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+            t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+            CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
+            ttrace.attachToTask(*t0);
+            jtrace.attachToTask(*t0);
+            tasks.push_back(t0);
 
             SIMUL.initSingleRun();
-
             SIMUL.run_to(1);
-            CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et)));
-            cout << c0->toString() << endl;
+            CPU_BL *c0 = dynamic_cast<CPU_BL*>(dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0)));
+
             REQUIRE (c0->getFrequency() == 2000);
             REQUIRE (c0->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange (int(t0->getWCET(c0->getSpeed())), 497));
+            REQUIRE (et_t0->getStatus() == ServerStatus::EXECUTING);
+            REQUIRE (et_t0->getPeriod() == 500);
+            REQUIRE (isInRange (et_t0->getBudget(), 497));
+            REQUIRE (isInRange (et_t0->getEndBandwidthEvent(), 497));
+            REQUIRE (isInRange (et_t0->getReplenishmentEvent(), 500));
 
             SIMUL.run_to(499);
-            kern->printState();
+            cout << "end of virtualtime event: t=" << et_t0->getEndOfVirtualTimeEvent() << endl;
+            REQUIRE (isInRange (et_t0->getEndOfVirtualTimeEvent(), 500));
+            REQUIRE (et_t0->getStatus() == ServerStatus::RELEASING);
 
-            SIMUL.run_to(500);
-            kern->printState();
+            SIMUL.run_to(501);
+            REQUIRE (c0->getFrequency() == 2000);
+            REQUIRE (c0->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
+            REQUIRE (et_t0->getStatus() == ServerStatus::EXECUTING);
+            REQUIRE (et_t0->getPeriod() == 500);
+            REQUIRE (isInRange (et_t0->getBudget(), 497));
+            REQUIRE (isInRange (et_t0->getEndBandwidthEvent(), 997));
+            REQUIRE (isInRange (et_t0->getReplenishmentEvent(), 500));
 
             SIMUL.run_to(999);
-            kern->printState();
+            cout << "end of virtualtime event: t=" << et_t0->getEndOfVirtualTimeEvent() << endl;
+            REQUIRE (isInRange (et_t0->getEndOfVirtualTimeEvent(), 1000));
 
             SIMUL.endSingleRun();
+            cout << "-------------" << endl;
+            cout << "Simultion finished" << endl;
             return 0;
 
             // only task1 (500,500) => BIG max freq = 2000, with 500 the scaled WCET
@@ -253,46 +273,72 @@ int main(int argc, char *argv[]) {
         if (TEST_NO == 1) {
             task_name = "T1_task1";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-            tasks.push_back(t);
+            PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+            t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+            CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
             task_name = "T1_task2";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(500," + workload + ");");
-            CBServerCallingEMRTKernel* et1 = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
-            tasks.push_back(t);
+            PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
+            t1->insertCode("fixed(500," + workload + ");");
+            CBServerCallingEMRTKernel* et_t1 = kern->addTaskAndEnvelope(t1, "");
 
             SIMUL.initSingleRun();
-            SIMUL.run_to(500);
-            cout << "\n\n---------------------------------- t = " << SIMUL.getTime() << endl << endl;
+            SIMUL.run_to(1);
+
+            CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
+            CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t1));
+
+            REQUIRE (c0->getFrequency() == 2000);
+            REQUIRE (c0->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
+
+            REQUIRE (c1->getFrequency() == 2000);
+            REQUIRE (c1->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t1->getWCET(c1->getSpeed())), 497));
+
             SIMUL.run_to(1000);
-            SIMUL.endSingleRun(); 
+            SIMUL.endSingleRun();
+
+            cout << "-------------" << endl;
+            cout << "Simultion finished" << endl;
             return 0;
             // task1 (500,500) => BIG_3 max freq, task2 (500,500) => BIG_2 max freq
         }
         if (TEST_NO == 2) {
             task_name = "T2_task1";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
-            CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
-            //jtrace.attachToTask(*t);
-            tasks.push_back(t);
+            PeriodicTask* t0 = new PeriodicTask(500, 500, 0, task_name);
+            t0->insertCode("fixed(500," + workload + ");"); // WCET 500 at max frequency on big cores
+            CBServerCallingEMRTKernel* et_t0 = kern->addTaskAndEnvelope(t0, "");
 
             task_name = "T2_task2";
             cout << "Creating task: " << task_name << endl;
-            t = new PeriodicTask(500, 500, 0, task_name);
-            t->insertCode("fixed(250," + workload + ");");
-            CBServerCallingEMRTKernel* et1 = kern->addTaskAndEnvelope(t, "");
-            ttrace.attachToTask(*t);
-            tasks.push_back(t);
+            PeriodicTask* t1 = new PeriodicTask(500, 500, 0, task_name);
+            t1->insertCode("fixed(250," + workload + ");");
+            CBServerCallingEMRTKernel* et_t1 = kern->addTaskAndEnvelope(t1, "");
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1);
+
+            CPU_BL *c0 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t0));
+            CPU_BL *c1 = dynamic_cast<CPU_BL*>(kern->getProcessor(et_t1));
+
+            for(string s : kern->getRunningTasks())
+              cout << "running :" << s<<endl;
+
+            REQUIRE (t0->getName() == "T2_task1");
+            REQUIRE (c0->getFrequency() == 2000);
+            REQUIRE (c0->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 497));
+
+            REQUIRE (t1->getName() == "T2_task2");
+            REQUIRE (c1->getFrequency() == 2000);
+            REQUIRE (c1->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t1->getWCET(c1->getSpeed())), 248));
+
+            SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
 
             // task1 (500,500) => BIG_3 max freq, task2 (250,500) => same
         }
@@ -318,7 +364,7 @@ int main(int argc, char *argv[]) {
             cout << "qua " << int(t0->getWCET(c0->getSpeed())) << endl;
             cout << "qua " << int(et_t0->getWCET(c0->getSpeed())) << endl;
             cout << "qua " << et_t0->toString() << endl;
-            REQUIRE (inRange(int(t0->getWCET(c0->getSpeed())), 65));
+            REQUIRE (isInRange(int(t0->getWCET(c0->getSpeed())), 65));
 
             SIMUL.endSingleRun();
 
@@ -381,23 +427,85 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         else if(TEST_NO == 7) {
-          int wcets[] = { 63, 63, 63, 63, 30 };
-          for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-            task_name = "T7_task" + std::to_string(j);
-            cout << "Creating task: " << task_name;
-            PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
-            char instr[60] = "";
-            sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-            t->insertCode(instr);
-            ets.push_back(kern->addTaskAndEnvelope(t, ""));
-            ttrace.attachToTask(*t);
-            tasks.push_back(t);
-          }
+            vector<CPU_BL*> cpus;
+            PeriodicTask* task[5]; // to be cleared after each test
+            CPU_BL* cpu_task[5]; // to be cleared after each test
+            vector<CBServerCallingEMRTKernel*> ets;
 
-          /* Towards random workloads, but this time alg. first decides to
-             schedule all tasks on littles, and then, instead of schedule the
-             next one in bigs, it shall increase littles frequency so to make
-             space to it too and save energy */
+            int wcets[] = { 63, 63, 63, 63, 30 };
+            int i;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T7_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(500, 500, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+
+                task[j] = t;
+            }
+
+            /* Towards random workloads, but this time alg. first decides to
+               schedule all tasks on littles, and then, instead of schedule the
+               next one in bigs, it shall increase littles frequency so to make
+               space to it too and save energy */
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1);
+
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                cpu_task[j] = dynamic_cast<CPU_BL*>(kern->getProcessor(ets.at(j)));
+            }
+
+            i = 0;
+            PeriodicTask* t = task[i];
+            CPU_BL* c = cpu_task[i];
+            REQUIRE (t->getName() == "T7_task0");
+            REQUIRE (c->getFrequency() == 500);
+            REQUIRE (c->getIslandType() == IslandType::LITTLE);
+            REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+            printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+            i = 1;
+            t = task[i];
+            c = cpu_task[i];
+            REQUIRE (t->getName() == "T7_task1");
+            REQUIRE (c->getFrequency() == 500);
+            REQUIRE (c->getIslandType() == IslandType::LITTLE);
+            REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+            printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+            i = 2;
+            t = task[i];
+            c = cpu_task[i];
+            REQUIRE (t->getName() == "T7_task2");
+            REQUIRE (c->getFrequency() == 500);
+            REQUIRE (c->getIslandType() == IslandType::LITTLE);
+            REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+            printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+            i = 3;
+            t = task[i];
+            c = cpu_task[i];
+            REQUIRE (t->getName() == "T7_task3");
+            REQUIRE (c->getFrequency() == 500);
+            REQUIRE (c->getIslandType() == IslandType::LITTLE);
+            REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 415));
+            printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+            i = 4;
+            t = task[i];
+            c = cpu_task[i];
+            REQUIRE (t->getName() == "T7_task4");
+            REQUIRE (c->getFrequency() == 700);
+            REQUIRE (c->getIslandType() == IslandType::BIG);
+            REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 75));
+            printf("aaa %s scheduled on %s freq %lu with wcet %f\n", t->getName().c_str(), c->toString().c_str(), c->getFrequency(), t->getWCET(c->getSpeed()));
+
+            //SIMUL.run_to(1000);
+            SIMUL.endSingleRun();
+            return 0;
         }
         if (TEST_NO == 8) {
             int wcets[] = { 181, 419, 261, 163, 65, 8, 61, 170, 273 };
@@ -1217,11 +1325,11 @@ int main(int argc, char *argv[]) {
 
 
 
-        EnergyMRTKernel::CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END     = 1;
-        EnergyMRTKernel::CBS_MIGRATE_AFTER_END                      = 0;
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END     = 1;
+        EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                      = 0;
 
         // CBS server enveloping Periodic Tasks examples.
-        // Require CBS servers enveloping periodic tasks and CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
+        // Require CBS servers enveloping periodic tasks and EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
         if (TEST_NO == 19) {
             /**
                            vt end
@@ -1589,7 +1697,7 @@ int main(int argc, char *argv[]) {
             return 0;
         }
 
-        // end of tests requiring CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
+        // end of tests requiring EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;
@@ -1620,7 +1728,7 @@ void dumpAllSpeeds() {
 }
 
 /// Returns true if the value 'eval' and 'expected' are distant 'error'%
-bool inRange(int eval, int expected) {
+bool isInRange(int eval, int expected) {
     const unsigned int error = 5;
 
     int min = int(eval - eval * error/100);
@@ -1630,6 +1738,6 @@ bool inRange(int eval, int expected) {
 }
 
 /// True if min <= eval <= max
-bool inRangeMinMax(double eval, const double min, const double max) {
+bool isInRangeMinMax(double eval, const double min, const double max) {
     return min <= eval <= max;
 }
