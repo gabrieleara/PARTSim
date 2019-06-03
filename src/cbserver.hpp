@@ -208,9 +208,11 @@ namespace RTSim {
       /// from executing to recharging (budget exhausted)
       virtual void executing_recharging();
 
+      bool _killed = false;
+
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
-        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
+        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched), _killed(false) { };
 
       /// Kills the server and its task. It can stay killed since now on or only until task next period
       void killInstance(bool onlyOnce = true);
@@ -243,11 +245,14 @@ namespace RTSim {
         return wcet;
       }
 
+      virtual CPU* getProcessor(const AbsRTTask* t) const;
+
       /// Get remaining WCET - practically WCET
       virtual double getRemainingWCET(double capacity) const {
         return getWCET(capacity);
       }
 
+      bool isKilled() const { return _killed; }
 
       /// Arrival event of task of server
       virtual void onArrival(AbsRTTask *t) {

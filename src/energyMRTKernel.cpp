@@ -329,6 +329,7 @@ namespace RTSim {
     // Note MRTKernel version differs: dispatch() gives tasks a free CPU and calls onBDM(), which in turns
     // assigns them. EnergyMRTKernel, instead, needs to make assignment decisions: dispatch() chooses
     // a CPU for all tasks, and on*DM() makes the context switch (split into onBDM() and onEBM(), as in MRTKernel)
+    // Begins context switch on a core, task is at the end of onBDM() still ready on core.
     void EnergyMRTKernel::onBeginDispatchMulti(BeginDispatchMultiEvt* e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
@@ -372,7 +373,7 @@ namespace RTSim {
 
     /**
         Called after dispatch(), i.e. after choosing a CPU forall arrived tasks.
-        Here task begins executing in its core.
+        Here task begins executing in its core. End of context switch on core.
       */
     void EnergyMRTKernel::onEndDispatchMulti(EndDispatchMultiEvt* e) {
         AbsRTTask* t      = e->getTask();

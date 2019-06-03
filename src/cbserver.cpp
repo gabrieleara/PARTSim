@@ -341,19 +341,35 @@ namespace RTSim {
     void CBServerCallingEMRTKernel::killInstance(bool onlyOnce) {
         cout << "CBSCEMRTK::" << __func__ << "() for " << getName() << " at t=" << SIMUL.getTime() << endl;
 
+        _killed = true;
+
         Task* t = dynamic_cast<Task*>(getFirstTask());
         assert(t != NULL);
 
-        onEnd(t);
         yield();
         _bandExEvt.drop();
         _replEvt.drop();
         _rechargingEvt.drop();
 
-        t->endRun();
-        (*t->getActInstr())->deschedule();
+        // t->endRun();
+        // (*t->getActInstr())->deschedule();
+        // t->setCPU(this->getCPU());
+        t->killInstance();
 
+        onEnd(t);
         //executing_releasing();
+    }
+
+    CPU* CBServerCallingEMRTKernel::getProcessor(const AbsRTTask* t) const {
+        EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        AbsRTTask* tt = const_cast<AbsRTTask*>(t);
+
+        if (dynamic_cast<PeriodicTask*>(tt)) {
+            assert (emrtk != NULL);
+            return emrtk->getProcessor(tt);
+        }
+        else
+            return CBServer::getProcessor(tt);
     }
 
     // task of server ends

@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 21;
+    int TEST_NO = 23;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -1443,6 +1443,10 @@ int main(int argc, char *argv[]) {
             cout << endl << "Scheduler state t=189:"<<endl;
             cout << k->getScheduler()->toString() << endl << endl;
 
+            SIMUL.run_to(201);
+            k->printState(true);
+            exit(0);
+
             SIMUL.run_to(451);
             k->printState(true);
             REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
@@ -1523,6 +1527,56 @@ int main(int argc, char *argv[]) {
             k->printState(true);
             for (CBServerCallingEMRTKernel* e : ets)
                 REQUIRE (k->getProcessor(e) != NULL);
+
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+            return 0;
+        }
+
+        else if (TEST_NO == 23) {
+            // temp
+            int wcets[] = { 10 };
+            int deads[] = { 200 };
+            vector<CBServerCallingEMRTKernel*> ets;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+
+            for (CPU_BL* c : cpus_little)
+                c->toggleDisabled();
+
+            SIMUL.initSingleRun();
+
+            SIMUL.run_to(1);
+            cout << "==================" << endl;
+            ets[0]->killInstance();
+            k->printState();
+            
+            SIMUL.run_to(201);
+            cout << "==================" << endl;
+            cout << "t=" << time() << endl;
+            cout << "state of kernel:" << endl; k->printState(true);
+
+            SIMUL.run_to(501); // all tasks are over, usual dispatch
+            k->printState(true);
 
             SIMUL.endSingleRun();
 

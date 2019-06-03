@@ -567,7 +567,7 @@ namespace RTSim {
           return _queues->getProcessorRunning(t);
         }
 
-        /// Get core where task is dispatched (either running and ready)
+        /// Get core where task is dispatched (either running and ready). Change of semantics wrt MRTKernel todo
         virtual CPU_BL *getProcessor(AbsRTTask *t) const {
           if (CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
             t = getEnveloper(t);
