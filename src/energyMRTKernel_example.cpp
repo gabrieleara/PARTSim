@@ -1576,8 +1576,7 @@ int main(int argc, char *argv[]) {
             cout << "==================" << endl;
             cout << "t=" << time() << endl;
             cout << "state of kernel:" << endl; k->printState(true);
-            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
-                // exit(0);
+            REQUIRE (k->getProcessorRunning(ets[0])->getIslandType() == IslandType::BIG);
 
             SIMUL.endSingleRun();
 

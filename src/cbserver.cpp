@@ -355,25 +355,10 @@ namespace RTSim {
         t->killInstance();
         cout << endl << endl << "Kill event is now " << t->killEvt.toString() << endl << endl;
         t->killEvt.doit();
-        t->killEvt.drop();
         cout << "Kill event is dropped? " << t->killEvt.toString() << endl;
         
         executing_releasing();
-
-
-
-        // t->endRun();
-        //t->setCPU(this->getCPU());
-        // Event* killEvt = t->killEvt;
-        // t->onKill(killEvt);
-        // t->killEvt.drop();
-        
-
-        //EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
-        //if (emrtk != NULL) emrtk->onCBSKilled(t, cpu, this);
-
-        //onEnd(t);
-        //executing_releasing();
+        _dispatchEvt.drop();
     }
 
     CPU* CBServerCallingEMRTKernel::getProcessor(const AbsRTTask* t) const {

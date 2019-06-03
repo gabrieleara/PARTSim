@@ -82,6 +82,8 @@ namespace RTSim {
           unsigned int numTasks = tasks.size();
           return numTasks == 0;
         }
+
+        bool isKilled() const { return _killed; }
         
         /// Tells if task is in scheduler
         bool isInServer(AbsRTTask* t) {
@@ -187,6 +189,9 @@ namespace RTSim {
             floor((d - vtime) * Q / P). 
         */
         policy_t idle_policy;
+
+        /// Is CBS server killed?
+        bool _killed = false;
     };
 
 
@@ -208,11 +213,9 @@ namespace RTSim {
       /// from executing to recharging (budget exhausted)
       virtual void executing_recharging();
 
-      bool _killed = false;
-
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
-        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched), _killed(false) { };
+        const std::string &sched = "FIFOSched") : CBServer(q,p,d,HR,name,sched) { };
 
       /// Kills the server and its task. It can stay killed since now on or only until task next period
       void killInstance(bool onlyOnce = true);
@@ -251,8 +254,6 @@ namespace RTSim {
       virtual double getRemainingWCET(double capacity) const {
         return getWCET(capacity);
       }
-
-      bool isKilled() const { return _killed; }
 
       /// Arrival event of task of server
       virtual void onArrival(AbsRTTask *t) {

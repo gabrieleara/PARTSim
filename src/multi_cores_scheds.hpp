@@ -486,9 +486,13 @@ namespace RTSim {
             assert(cbs != NULL); assert(cpu != NULL);
 
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
-            double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
             #include <cstdio>
+            double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
             printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(cbs->getWCET(cpu->getSpeed())), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+            if (cbs->isKilled()) {
+              u_active = double(cbs->getBudget()) / (double) cbs->getDeadline(); // todo right? or it applies only in case of CBS_ENVELOPING_PER_TASK?
+              printf("\tu_active = %f/%f (wl: %s, speed: %f). Amendment, \'cause task\'s killed\n", double(cbs->getBudget()), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+            }
 
             // a better map is by cpu, but then cpus can collide
             Tick vt = Tick(cbs->getVirtualTime());
