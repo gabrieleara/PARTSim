@@ -128,7 +128,6 @@ namespace RTSim {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel* model = find(task);
-	cout << model->toString() << endl;
         if (model == NULL) // raise an exception
             throw RTSchedExc("AbsRTTask not found");
 		

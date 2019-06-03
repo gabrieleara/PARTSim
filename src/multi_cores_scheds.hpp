@@ -193,7 +193,7 @@ namespace RTSim {
             dropEvt(c, oldTask);
 
             _running_tasks.erase(c);
-            //oldTask->deschedule();
+            oldTask->deschedule();
             //cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
         }
 

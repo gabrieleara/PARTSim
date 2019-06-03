@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 23;
+    int TEST_NO = 20;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -1274,7 +1274,7 @@ int main(int argc, char *argv[]) {
             cout << "idle evt " << ets[0]->getIdleEvent() << endl;
             cout << "server status " << ets[0]->getStatusString() << endl;
             REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.7); // shall be 0.8
-            REQUIRE ( (double) ets[0]->getIdleEvent() == 188);
+            REQUIRE ( (double) ets[0]->getIdleEvent() >= 185);
             REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(151);
@@ -1348,7 +1348,7 @@ int main(int argc, char *argv[]) {
             cout << "idle evt " << ets[0]->getIdleEvent() << endl;
             cout << "server status " << ets[0]->getStatusString() << endl;
             REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.75); // shall be 0.8
-            REQUIRE ( (double) ets[0]->getIdleEvent() > 185);
+            REQUIRE ( (double) ets[0]->getIdleEvent() >= 185);
             REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(151);
@@ -1366,9 +1366,8 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(201);
             k->printState(true);
-            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
-            // REQUIRE (k->getReadyTasks(cpus_big[0]).empty() == false);
-            // REQUIRE (k->getReadyTasks(cpus_big[0]).at(0) == ets[0]); // todo: killed cbs servers don't arrive again
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
+            REQUIRE (k->getReadyTasks(cpus_big[0]).at(0) == ets[4]);
 
             SIMUL.run_to(501); // all tasks are over, usual dispatch
             k->printState(true);
@@ -1393,7 +1392,7 @@ int main(int argc, char *argv[]) {
                 be scheduled on its previous core, because U + U_t > 1 (EDF).
               */
             string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
-            int     wcets[] = { 450, 450, 450, 400, 333 };
+            int     wcets[] = { 450, 450, 450, 400, 343 };
             int     deads[] = { 500, 500, 500, 500, 500 };
             vector<CBServerCallingEMRTKernel*> ets;
             for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
@@ -1445,7 +1444,6 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(201);
             k->printState(true);
-            exit(0);
 
             SIMUL.run_to(451);
             k->printState(true);
@@ -1458,8 +1456,9 @@ int main(int argc, char *argv[]) {
             k->printState(true);
             for (CPU* c : k->getProcessors(IslandType::BIG))
                 REQUIRE (k->getRunningTask(c) != NULL);
-            REQUIRE (k->getProcessor(ets[0]) == NULL); // because task WCET 333 has stolen its utilization
-            REQUIRE (k->isDispatchable(ets[0], cpus_big[0]));
+            REQUIRE (k->getProcessor(ets[0]) != NULL);
+            ets[0]->endRun(); // since it goes scheduled somewhere
+            REQUIRE (k->isDispatchable(ets[0], cpus_big[0])); // because task WCET 343 has stolen its utilization
 
             SIMUL.endSingleRun();
 
@@ -1541,7 +1540,7 @@ int main(int argc, char *argv[]) {
         }
 
         else if (TEST_NO == 23) {
-            // temp
+            /// Does killInstance() on CBS server enveloping periodic tasks work?
             int wcets[] = { 10 };
             int deads[] = { 200 };
             vector<CBServerCallingEMRTKernel*> ets;

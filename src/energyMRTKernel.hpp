@@ -97,13 +97,13 @@ namespace RTSim {
         stream << endl << endl;
 
         if (alsoConsumptions) {
-    double totalConsumption = 0.0;
-	  for ( AbsRTTask *t : tasks ) {
-            double cons = getConsumption(t, stream);
-            totalConsumption += cons;
-    }
-    stream << endl << endl << "Total tasks consumption = " << totalConsumption << endl;
-	}
+          double totalConsumption = 0.0;
+      	  for ( AbsRTTask *t : tasks ) {
+                  double cons = getConsumption(t, stream);
+                  totalConsumption += cons;
+          }
+          stream << endl << endl << "Total tasks consumption = " << totalConsumption << endl;
+      	}
         
         stream.close();
       }
@@ -416,10 +416,7 @@ namespace RTSim {
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
         /// Implements migration mechanism on task end. Pulls a task into endingCPU_BL
-        void migrateInto(CPU_BL* endingCPU_BL);
-
-        /// Migrates a task away from its current core. Makes push away from task core
-        void migrateAway(AbsRTTask* t);
+        bool migrateInto(CPU_BL* endingCPU_BL);
 
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
@@ -713,21 +710,24 @@ namespace RTSim {
 
         /// Callback, when CBS server is killed. It expects the tasks inside the CBS server still alive.
         void onCBSKilled(AbsRTTask* t, CPU_BL* cpu, CBServerCallingEMRTKernel* cbs) {
-          //assert (!cbs->isEmpty()); 
           assert (cpu != NULL); assert(cbs != NULL);
           cout << "EMRTK::" << __func__ << "() for " << cbs->toString() << endl;
 
-          //Task *t = dynamic_cast<Task*>(cbs->getFirstTask());
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
           _queues->onEnd(cbs, cpu);
-          //onEnd(cbs);
         }
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
           CPU* c = _queues->onReleasingIdle(cbs); // forget U_active
-          migrateInto(dynamic_cast<CPU_BL*>(c));
+          AbsRTTask* oldTask = getRunningTask(c);
+          bool migrationDone = migrateInto(dynamic_cast<CPU_BL*>(c));
+          //can introduce bugs?:
+          if (migrationDone && oldTask != NULL) {
+            cout << "\tMigration done => descheduling task " << taskname(oldTask) << endl;
+            oldTask->deschedule();
+          }
         }
 
         void onReplenishment(CBServer *cbs) {
@@ -750,7 +750,6 @@ namespace RTSim {
           cout << __func__ << "() cbs is empty? " << cbs->isEmpty() << endl;
           if (cbs->isEmpty())
             onEnd(cbs);
-          //onTaskGetsDescheduled(cbs, cpu);
         }
 
         /// Callback, when a task gets running on a core

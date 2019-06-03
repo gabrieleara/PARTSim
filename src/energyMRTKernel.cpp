@@ -384,6 +384,8 @@ namespace RTSim {
         _queues->onEndDispatchMultiFinished(cpu,t);
         MRTKernel::onEndDispatchMulti(e);
 
+        cpu->setBusy(true); // introducted afterwards
+
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
         // Thus, big island freq is 2000, not 1100 (the max). todo: maybe it's useless to have these instructions below
@@ -414,13 +416,16 @@ namespace RTSim {
         CPU_BL* p = dynamic_cast<CPU_BL*>(getProcessor(t));
         DBGPRINT_6(t->toString(), " has just finished on ", p->toString(), ". Actual time = [", SIMUL.getTime(), "]");
         cout << ".............................." << endl;
-        cout << "Actual time = [" << SIMUL.getTime() << "]. EMRTK::" << __func__ << "(). " << t->toString() << " has just finished on " << p->toString() << endl;
+        cout << "\tActual time = [" << SIMUL.getTime() << "]. EMRTK::" << __func__ << "(). " << t->toString() << " has just finished on " << p->toString() << endl;
+
+if (p->getName().find("BIG_0") != string::npos)
+    cout << "";
 
         _sched->extract(t);
         // todo delete cout
         string state = _sched->toString();
-        if (state == "") cout << "(External scheduler is empty)" << endl;
-        else cout << "State of external scheduler: " << endl << state << endl;
+        if (state == "") cout << "\t(External scheduler is empty)" << endl;
+        else cout << "\tState of external scheduler: " << endl << "\t\t" << state << endl;
 
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
@@ -428,7 +433,7 @@ namespace RTSim {
         _queues->onEnd(t, p);
         _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
-        cout << "State before migration:" << endl;
+        cout << "\tState before migration:" << endl;
         printState(true);
 
         if (!isDispatching(p) && getRunningTask(p) == NULL)
@@ -440,16 +445,16 @@ namespace RTSim {
             _queues->schedule(p);
 
         if (!p->getIsland()->isBusy()) {
-            cout << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
+            cout << "\t" << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
             p->getIsland()->setOPP(0);
         }
 
-        if (_queues->isEmpty(p)) {cout << p->getName() << " is empty -> wl idle" << endl; p->setWorkload("idle"); }
-        cout << "State after migration:" << endl;
+        if (_queues->isEmpty(p)) { cout << "\t" << p->getName() << " is empty -> wl idle" << endl; p->setWorkload("idle"); }
+        cout << "\tState after migration:" << endl;
         printState(true);
     }
 
-    void EnergyMRTKernel::migrateInto(CPU_BL* endingCPU) {
+    bool EnergyMRTKernel::migrateInto(CPU_BL* endingCPU) {
         /**
            Migration mechanism: a task finishes on CPU c, leaving it idle.
            If c is a little, try moving ready tasks originally assigned to
@@ -459,9 +464,9 @@ namespace RTSim {
            Try not to touch running tasks.
         */
         bool migrationDone = false;
-        if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return; }
-        if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return; }
-        if (getRunningTask(endingCPU) != NULL) { assert (CBS_ENVELOPING_PER_TASK_ENABLED && CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return; }
+        if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return false; }
+        if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return false; }
+        if (getRunningTask(endingCPU) != NULL) { assert (CBS_ENVELOPING_PER_TASK_ENABLED && CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return false; }
         cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
 
         vector<AbsRTTask*> readyTasks;
@@ -478,7 +483,7 @@ namespace RTSim {
                         if (CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
                         _queues->onMigrationFinished(tt, c, endingCPU);
                         // onEndDispatchMulti will take care of increasing core OPP
-                        return;
+                        return true;
                     }
                 }
             }
@@ -504,13 +509,8 @@ namespace RTSim {
             }
         }
         if (!migrationDone) cout << "\t\tNo migration done" << endl; 
-         
+        return migrationDone; 
     } // end EMRTK::migrateInto()
-
-    void EnergyMRTKernel::migrateAway(AbsRTTask *t) {
-        CPU_BL *cpu = getProcessor(t);
-        // todo
-    }
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
         cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;
