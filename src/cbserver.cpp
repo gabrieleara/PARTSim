@@ -341,22 +341,38 @@ namespace RTSim {
     void CBServerCallingEMRTKernel::killInstance(bool onlyOnce) {
         cout << "CBSCEMRTK::" << __func__ << "() for " << getName() << " at t=" << SIMUL.getTime() << endl;
 
-        _killed = true;
-
         Task* t = dynamic_cast<Task*>(getFirstTask());
-        assert(t != NULL);
+        CPU_BL* cpu = dynamic_cast<CPU_BL*>(t->getCPU());
+        assert(t != NULL); assert (cpu != NULL);
 
         yield();
         _bandExEvt.drop();
         _replEvt.drop();
         _rechargingEvt.drop();
 
-        // t->endRun();
-        // (*t->getActInstr())->deschedule();
-        // t->setCPU(this->getCPU());
-        t->killInstance();
+        _killed = true;
 
-        onEnd(t);
+        t->killInstance();
+        cout << endl << endl << "Kill event is now " << t->killEvt.toString() << endl << endl;
+        t->killEvt.doit();
+        t->killEvt.drop();
+        cout << "Kill event is dropped? " << t->killEvt.toString() << endl;
+        
+        executing_releasing();
+
+
+
+        // t->endRun();
+        //t->setCPU(this->getCPU());
+        // Event* killEvt = t->killEvt;
+        // t->onKill(killEvt);
+        // t->killEvt.drop();
+        
+
+        //EnergyMRTKernel* emrtk = dynamic_cast<EnergyMRTKernel*>(kernel);
+        //if (emrtk != NULL) emrtk->onCBSKilled(t, cpu, this);
+
+        //onEnd(t);
         //executing_releasing();
     }
 

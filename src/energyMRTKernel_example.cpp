@@ -1568,15 +1568,16 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(1);
             cout << "==================" << endl;
             ets[0]->killInstance();
-            k->printState();
-            
+            k->printState(true);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+            REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.0);
             SIMUL.run_to(201);
             cout << "==================" << endl;
             cout << "t=" << time() << endl;
             cout << "state of kernel:" << endl; k->printState(true);
-
-            SIMUL.run_to(501); // all tasks are over, usual dispatch
-            k->printState(true);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
+                // exit(0);
 
             SIMUL.endSingleRun();
 

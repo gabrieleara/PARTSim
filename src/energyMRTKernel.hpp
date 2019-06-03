@@ -709,6 +709,18 @@ namespace RTSim {
           // cpu->setWorkload("idle");
         }
 
+        /// Callback, when CBS server is killed. It expects the tasks inside the CBS server still alive.
+        void onCBSKilled(AbsRTTask* t, CPU_BL* cpu, CBServerCallingEMRTKernel* cbs) {
+          //assert (!cbs->isEmpty()); 
+          assert (cpu != NULL); assert(cbs != NULL);
+          cout << "EMRTK::" << __func__ << "() for " << cbs->toString() << endl;
+
+          //Task *t = dynamic_cast<Task*>(cbs->getFirstTask());
+          _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
+          _queues->onEnd(cbs, cpu);
+          //onEnd(cbs);
+        }
+
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
@@ -733,6 +745,7 @@ namespace RTSim {
           // cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
 
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
+          cout << __func__ << "() cbs is empty? " << cbs->isEmpty() << endl;
           if (cbs->isEmpty())
             onEnd(cbs);
           //onTaskGetsDescheduled(cbs, cpu);
