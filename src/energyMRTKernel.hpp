@@ -288,9 +288,10 @@ namespace RTSim {
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
-                    ss << "\tEmpty queue for " << q.first->getName() << endl;
-                else
-                    ss << "\t" << q.first->getName() << "(freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ":" << endl << qs << endl;
+                    ss << "\tEmpty queue for " << q.first->getName();
+                ss << "\t" << q.first->getName() << " ( freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ", u_active: " << getUtilization_active(q.first) << " ):" << endl;
+                if (qs != "")
+                    ss << "\t" << qs << endl;
             }
             return ss.str();
         }
@@ -802,6 +803,17 @@ namespace RTSim {
         void printMap();
 
         void printBool(bool b);
+
+        void printPolicies() const {
+          cout << "EMRTK_BALANCE_ENABLED: " << EMRTK_BALANCE_ENABLED << endl;
+          cout << "EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << endl;
+          cout << "EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << endl; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
+          cout << "EMRTK_CBS_YIELD_ENABLED: " << EMRTK_CBS_YIELD_ENABLED << endl;
+
+          cout << "EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED: " << EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED          << endl; /// CBS server enveloping periodic tasks?
+          cout << "EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END: " << EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END   << endl; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
+          cout << "EMRTK_CBS_MIGRATE_AFTER_END: " << EMRTK_CBS_MIGRATE_AFTER_END << endl;
+        }
 
         virtual void printState() { printState(false); }
 

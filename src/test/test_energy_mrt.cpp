@@ -53,7 +53,7 @@ bool fixDependencies(Requisite reqs, bool abortOnFix = false);
 TEST_CASE("exp0") {
     init_sequence = 0;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -109,7 +109,7 @@ TEST_CASE("exp0") {
 TEST_CASE("exp1") {
     init_sequence = 1;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -155,7 +155,7 @@ TEST_CASE("exp1") {
 TEST_CASE("exp2") {
     init_sequence = 2;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -205,7 +205,7 @@ TEST_CASE("exp2") {
 TEST_CASE("exp3") {
     init_sequence = 3;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -240,7 +240,7 @@ TEST_CASE("exp3") {
 TEST_CASE("exp4") {
     init_sequence = 4;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     PeriodicTask* task[5]; // to be cleared after each test
@@ -302,7 +302,7 @@ TEST_CASE("exp4") {
 TEST_CASE("exp5") {
     init_sequence = 5;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     vector<CPU_BL*> cpus;
@@ -383,7 +383,7 @@ TEST_CASE("exp6") {
         entire island after a decision for other tasks has already been made*/
     init_sequence = 6;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     vector<CPU_BL*> cpus;
@@ -478,7 +478,7 @@ TEST_CASE("exp6") {
 TEST_CASE("exp7") {
     init_sequence = 7;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     vector<CPU_BL*> cpus;
@@ -562,8 +562,10 @@ TEST_CASE("exp7") {
 
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
-    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
         delete task[j];
+        delete ets.at(j);
+    }
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
     performedTests[init_sequence] = req;
@@ -572,7 +574,7 @@ TEST_CASE("exp7") {
 TEST_CASE("exp8") {
     init_sequence = 8;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     vector<CPU_BL*> cpus;
@@ -688,8 +690,10 @@ TEST_CASE("exp8") {
     REQUIRE (isInRange(int(t->getWCET(c->getSpeed())), 310));
 
     SIMUL.endSingleRun();
-    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
         delete task[j];
+        delete ets.at(j);
+    }
     delete kern;
     cout << "End of Experiment #" << init_sequence << endl << endl;
     performedTests[init_sequence] = req;
@@ -766,6 +770,8 @@ TEST_CASE("exp9") {
 
     SIMUL.run_to(199);
     k->printState(true);
+cout << "exit 0";
+    exit(0);
     for (CBServerCallingEMRTKernel* s : ets)
         if (s == ets[4])
             REQUIRE (s->getStatus() == ServerStatus::RELEASING);
@@ -872,7 +878,7 @@ TEST_CASE("exp10") {
 	  */
     init_sequence = 10;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -943,7 +949,7 @@ TEST_CASE("exp13") {
       */
     init_sequence = 13;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
     performedTests[init_sequence] = req;
 
@@ -1027,7 +1033,7 @@ TEST_CASE("exp14") {
       */
     init_sequence = 14;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req();
+    Requisite req;
     if (!checkRequisites( req ))  return;
     performedTests[init_sequence] = req;
 
