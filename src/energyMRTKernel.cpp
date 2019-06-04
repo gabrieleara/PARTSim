@@ -272,19 +272,31 @@ namespace RTSim {
         cout << b << endl;
     }
 
-    void EnergyMRTKernel::printState(bool alsoQueues) {
-      cout << "t=" << SIMUL.getTime() << " State of scheduler:" << endl << "Running tasks:" << endl << "\t";
-      for (CPU_BL *c : getProcessors()) {
+    void EnergyMRTKernel::printState(bool alsoQueues, bool alsoCBSStatus) {
+        cout << "t=" << SIMUL.getTime() << " State of scheduler:" << endl << "Running tasks:" << endl << "\t";
+        for (CPU_BL *c : getProcessors()) {
           AbsRTTask *t = _queues->getRunningTask(c);
           if (dynamic_cast<CBServer*>(t) && dynamic_cast<CBServer*>(t)->isYielding())
             t = _queues->getFirstReady(c);
           cout << c->getName() << ": " << (t == NULL ? "0" : taskname(t)) << "\t";
-      }
+        }
 
-      if (alsoQueues)
+        if (alsoQueues)
         cout << endl << "Queues:" << endl << _queues->toString();
 
-      cout << endl;
+        if (alsoCBSStatus) {
+            cout << "CBS servers (= periodic tasks) statuses:" << endl;
+            for (const auto& elem : _envelopes) {
+                cout << "- " << elem.second->toString();
+                if (elem.second->getStatus() == ServerStatus::RELEASING) {
+                    cout << ". util_active=" << to_string(_queues->getUtilization_active(elem.second)) <<
+                        " expires at t=" << elem.second->getVirtualTime();
+                }
+                cout << endl;
+            }
+        }
+
+        cout << endl;
     }
 
     void EnergyMRTKernel::addForcedDispatch(AbsRTTask* t, CPU_BL* c, unsigned int opp, unsigned int times) {
@@ -480,8 +492,15 @@ if (p->getName().find("BIG_0") != string::npos)
                     tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
-                        cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
-                        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
+                        cout << "\t\tMigrating " << tt->toString() << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
+                        cout << "blabla task " << tt->toString() << "" << EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED << "island: " << (endingCPU->getIslandType() == IslandType::LITTLE) << endl;
+                        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
+                            CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(tt); 
+                            assert (!cbs->isEmpty()); 
+                            endingCPU->setWorkload(Utils::getTaskWorkload(cbs));
+                            Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed()))); 
+                            cbs->changeBudget(newB); 
+                        }
                         _queues->onMigrationFinished(tt, c, endingCPU);
                         // onEndDispatchMulti will take care of increasing core OPP
                         return true;

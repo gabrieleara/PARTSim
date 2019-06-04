@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 7;
+    int TEST_NO = 9;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -617,10 +617,12 @@ int main(int argc, char *argv[]) {
             SIMUL.run_to(34);
             k->printState(true);
 
+            // at t=35 task WCET 8 finishes
+
             SIMUL.run_to(36);
             k->printState(true);
             for (CBServerCallingEMRTKernel* s : ets)
-                REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::READY);
+                assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::READY);
             for (CPU* c: k->getProcessors())
                 REQUIRE (queues->getUtilization_active(c) == 0.0);
 
@@ -636,17 +638,19 @@ int main(int argc, char *argv[]) {
 
             // task8 comes in place of task3
             REQUIRE(k->getProcessor(ets[8]) == cpus_little[3]);
+            cout << ets[8]->getBudget() << endl;
+            REQUIRE (ets[8]->getBudget() > 400);
 
             SIMUL.run_to(199);
-            k->printState(true);
+            k->printState(true, true);
             for (CBServerCallingEMRTKernel* s : ets)
                 if (s == ets[4])
                     REQUIRE (s->getStatus() == ServerStatus::RELEASING);
                 else
-                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+                    assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
             for (CPU* c: k->getProcessors())
-                if (c == cpus_big[0])
-                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+                if (c == cpus_big[0] && ets[4]->getStatus() == ServerStatus::RELEASING)
+                    REQUIRE (isInRange(queues->getUtilization_active(c), 200.0 / c->getSpeed() / 500.0));
                 else
                     REQUIRE (queues->getUtilization_active(c) == 0.0);
 
@@ -663,17 +667,16 @@ int main(int argc, char *argv[]) {
 
             // task9 comes in place of task4
             REQUIRE(k->getProcessor(ets[9]) == cpus_big[0]);
-
             SIMUL.run_to(202);
             for (CBServerCallingEMRTKernel* s : ets)
                 if (s == ets[4])
                     REQUIRE (s->getStatus() == ServerStatus::RELEASING);
                 else
-                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
+                    assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING);
             for (CPU* c: k->getProcessors())
                 if (c == cpus_big[0]) {
                     c->setWorkload(workload);
-                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed() / 500.0);
+                    REQUIRE (isInRange(queues->getUtilization_active(c), 200.0 / c->getSpeed() / 500.0));
                     REQUIRE (ets[4]->getIdleEvent() == 500);
                     c->setWorkload("idle");
                 }
@@ -687,13 +690,13 @@ int main(int argc, char *argv[]) {
                 if (s == ets[4] || s == ets[5] || s == ets[6] || s == ets[7])
                     REQUIRE (s->getStatus() == ServerStatus::RELEASING);
                 else
-                    REQUIRE (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::IDLE);
+                    assert (s->getStatus() == ServerStatus::EXECUTING || s->getStatus() == ServerStatus::RECHARGING || s->getStatus() == ServerStatus::IDLE);
             for (CPU* c: k->getProcessors()) {
                 c->setWorkload(workload);
                 if (c == cpus_big[0])
-                    REQUIRE (queues->getUtilization_active(c) == 200.0 / c->getSpeed(18) / 500.0);
+                    REQUIRE (isInRange(queues->getUtilization_active(c), 200.0 / c->getSpeed(18) / 500.0));
                 else if (dynamic_cast<CPU_BL*>(c)->getIslandType() == IslandType::BIG)
-                    REQUIRE (queues->getUtilization_active(c) == 500.0 / c->getSpeed(18) / 500.0);
+                    REQUIRE (isInRange(queues->getUtilization_active(c), 500.0 / c->getSpeed(18) / 500.0));
                 else
                     REQUIRE (queues->getUtilization_active(c) == 0.0);
                 c->setWorkload("idle");
@@ -722,7 +725,7 @@ int main(int argc, char *argv[]) {
 
             REQUIRE (k->getProcessor(tasks[9]) == cpus_little[0]);
 
-            SIMUL.run_to(1000);
+            // SIMUL.run_to(1000);
             SIMUL.endSingleRun();
 
             cout << "-----------------------" << endl;

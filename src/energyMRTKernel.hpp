@@ -817,7 +817,7 @@ namespace RTSim {
 
         virtual void printState() { printState(false); }
 
-        void printState(bool alsoQueues);
+        void printState(bool alsoQueues, bool alsoCBSStatus = false);
 
         bool manageForcedDispatch(AbsRTTask*);
 

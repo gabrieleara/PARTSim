@@ -468,7 +468,7 @@ namespace RTSim {
         CPU* forgetU_active(AbsRTTask* t);
 
         /// Returns the U_active for tasks "releasing" on CBS server
-        double getUtilization_active(CPU* cpu) {
+        double getUtilization_active(CPU* cpu) const {
           assert (cpu != NULL);
           double u_active = 0.0;
 
@@ -480,6 +480,13 @@ namespace RTSim {
           return u_active;
         }
 
+        /// Only for debug, get utilization active of task t
+        double getUtilization_active(AbsRTTask* t) {
+          assert (t != NULL);
+
+          return get<2>(_active_utilizations[t]);
+        }
+
         /// Save U_active of an ending task t
         void saveU_active(CPU* cpu, CBServer* cbs) {
             cout << "MCS::" << __func__ << "() " << endl;
@@ -487,12 +494,13 @@ namespace RTSim {
 
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
             #include <cstdio>
-            double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
-            printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(cbs->getWCET(cpu->getSpeed())), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
-            if (cbs->isKilled()) {
-              u_active = double(cbs->getBudget()) / (double) cbs->getDeadline(); // todo right? or it applies only in case of CBS_ENVELOPING_PER_TASK?
-              printf("\tu_active = %f/%f (wl: %s, speed: %f). Amendment, \'cause task\'s killed\n", double(cbs->getBudget()), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
-            }
+            // double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
+            // printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(cbs->getWCET(cpu->getSpeed())), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+            // if (cbs->isKilled()) {
+              double u_active = double(cbs->getBudget()) / (double) cbs->getDeadline(); // todo right? or it applies only in case of CBS_ENVELOPING_PER_TASK?
+              // printf("\tu_active = %f/%f (wl: %s, speed: %f). Amendment, \'cause task\'s killed\n", double(cbs->getBudget()), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+              printf("\tu_active = %f/%f (wl: %s, speed: %f, based on CBS budget)\n", double(cbs->getBudget()), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
+            // }
 
             // a better map is by cpu, but then cpus can collide
             Tick vt = Tick(cbs->getVirtualTime());

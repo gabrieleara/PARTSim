@@ -104,8 +104,8 @@ namespace RTSim {
         /// Server to human-readable string
         virtual string toString() const { 
           stringstream s; 
-          s << "tasks: [ " << sched_->toString() << "]" << (isYielding() ? " yielding":"") <<
-            " (Q:" << getBudget() << ", P:" << getPeriod() << ")";
+          s << "\ttasks: [ " << sched_->toString() << "]" << (isYielding() ? " yielding":"") <<
+            " (Q:" << getBudget() << ", P:" << getPeriod() << ")\tstatus: " << getStatusString();
           return s.str();
         }
 
@@ -279,12 +279,12 @@ namespace RTSim {
 
       /// Object to human-readable string
       virtual string toString() const {
-        string s = "CBServerCallingEMRTKernel " + getName() + ". " + CBServer::toString();
+        string s = "CBSCEMRTK " + getName() + ". " + CBServer::toString();
         return s;
       }
 
       /// Prints (cout) all events of CBS Server
-      virtual void printEvts() {
+      virtual void printEvts() const {
         cout << endl << toString();
         cout << "_bandExEvt: " << _bandExEvt.getTime() << ", ";
         cout << "_rechargingEvt: " << _rechargingEvt.getTime() << ", ";

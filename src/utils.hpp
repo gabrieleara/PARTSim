@@ -14,7 +14,7 @@ namespace RTSim {
       */
     class Utils {
     public:
-	/// Returns the workload type of the first instrution of the task t
+        /// Returns the workload type of the first instrution of the task t
         static string getTaskWorkload(AbsRTTask *t, bool initInstr = true) {
             string wl = "";
     	    unsigned int i = 0;
@@ -46,6 +46,14 @@ namespace RTSim {
 
             assert (wl != "");
             return wl; 
+        }
+
+        /// Vector to string
+        static string toString(const vector<double> vec) {
+            string s = "[";
+            for (double d : vec)
+                s += to_string(d) + ", ";
+            return s + "]";
         }
     };
 
