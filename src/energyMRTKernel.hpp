@@ -381,14 +381,18 @@ namespace RTSim {
         CBServer* _serverBig;
         CBServer* _serverLittle;
 
+        // ----------------------------------- Migrations
+
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
 
-        /// Balance load by migration todo joinable with balanceLoad?
-        MigrationProposal migrateByBalancing (CPU_BL *endingCPU);
+        /// Balance load by migration todo joinable with balanceLoad? Tasks in toBeSkipped will be skipped
+        MigrationProposal migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*>* toBeSkipped = NULL);
 
-        /// Proposes a migration from Big to Little
-        MigrationProposal migrateFromBig (CPU_BL *endingCPU);
+        /// Proposes a migration from Big to Little. Tasks in toBeSkipped will be skipped
+        MigrationProposal migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*>* toBeSkipped = NULL);
+
+
 
         /**
         * CPU_BL choice from the table of consumptions (not sorted).
@@ -429,8 +433,11 @@ namespace RTSim {
          */
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
-        /// Implements migration mechanism on task end. Pulls a task into endingCPU_BL
-        bool migrateInto(CPU_BL* endingCPU_BL);
+        /// Returns a possible migration to endingCPU. Tasks in toBeSkipped will be skipped. Implements migration mechanism on task end.
+        MigrationProposal getTaskToMigrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> *toBeSkipped = NULL);
+
+        /// Pulls a task into endingCPU_BL. It finally performs the migration. Tasks in toBeSkipped will be skipped
+        bool migrateInto(CPU_BL* endingCPU_BL, vector<AbsRTTask*>* toBeSkipped = NULL);
 
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }

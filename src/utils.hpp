@@ -14,6 +14,25 @@ namespace RTSim {
       */
     class Utils {
     public:
+        /// Returns true if the element is in the vector
+        template <typename T>
+        static bool exists(T toBeFound, vector<T> objs) {
+            bool found = false;
+            for (T o : objs) // usare il for e l'if. T deve fare overriding di operator==() per il confronto tra oggetti
+                if (o == toBeFound) {
+                  found = true;
+                  break;
+                }
+          return found;
+        }
+
+	/// Wrapper for exists()
+	template <typename T>
+	static bool exists(T toBeFound, vector<T>* objs) {
+	    if (objs == NULL) return false;
+	    return exists(toBeFound, *objs);
+	}
+
         /// Returns the workload type of the first instrution of the task t
         static string getTaskWorkload(AbsRTTask *t, bool initInstr = true) {
             string wl = "";
