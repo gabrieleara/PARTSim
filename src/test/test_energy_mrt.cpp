@@ -849,7 +849,6 @@ TEST_CASE("exp9") {
 
     REQUIRE (k->getProcessor(tasks[8]) == cpus_little[3]);
 
-cout << "sdasdas";
     SIMUL.run_to(941);
 
     REQUIRE (k->getProcessor(tasks[9]) == cpus_little[0]);

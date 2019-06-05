@@ -30,9 +30,10 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
 
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                     = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED             = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END      = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                       = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_RECL = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -476,11 +477,37 @@ if (p->getName().find("BIG_0") != string::npos)
 
            Try not to touch running tasks.
         */
-        bool migrationDone = false;
         if (!EMRTK_MIGRATE_ENABLED) { cout << "Migration policy disabled => skip" << endl; return false; }
         if (getReadyTasks(endingCPU).size() != 0) { cout << endingCPU->getName() << " already has some ready task => skip migration" << endl; return false; }
         if (getRunningTask(endingCPU) != NULL) { assert (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END); cout << endingCPU->getName() << " already has a running task => skip migration" << endl; return false; }
         cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << endl;
+
+        MigrationProposal migrationProposal = migrateFromBig(endingCPU);
+
+        if (migrationProposal.task == NULL) // no migration from big to little
+            migrationProposal = migrateByBalancing (endingCPU);
+
+        if (migrationProposal.task == NULL)
+            cout << "\t\tNo migration done" << endl;
+        else {
+            migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
+            if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
+                CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task); 
+                assert (!cbs->isEmpty()); 
+                Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed()))); 
+                cbs->changeBudget(newB); 
+            }
+            
+            // make task run on ending core.
+            // onEndDispatchMulti will take care of increasing core OPP
+            _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
+        }
+
+        return migrationProposal.task != NULL;
+    } // end EMRTK::migrateInto()
+
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateFromBig (CPU_BL *endingCPU) {
+        MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
 
         vector<AbsRTTask*> readyTasks;
         if (endingCPU->getIslandType() == IslandType::LITTLE) {
@@ -488,49 +515,57 @@ if (p->getName().find("BIG_0") != string::npos)
                 readyTasks = getReadyTasks(c);
                 for (AbsRTTask * tt : readyTasks) {
                     vector<struct ConsumptionTable> iDeltaPows;
-                    setTryingTaskOnCPU_BL(true);
+                    setTryingTaskOnCPU_BL(true); // to bypass onOPPChanged()
                     tryTaskOnCPU_BL(tt, endingCPU, iDeltaPows);
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty()) {
-                        cout << "\t\tMigrating " << tt->toString() << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
-                        cout << "blabla task " << tt->toString() << "" << EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED << "island: " << (endingCPU->getIslandType() == IslandType::LITTLE) << endl;
-                        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
-                            CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(tt); 
-                            assert (!cbs->isEmpty()); 
-                            endingCPU->setWorkload(Utils::getTaskWorkload(cbs));
-                            Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed()))); 
-                            cbs->changeBudget(newB); 
-                        }
-                        _queues->onMigrationFinished(tt, c, endingCPU);
-                        // onEndDispatchMulti will take care of increasing core OPP
-                        return true;
+                        cout << "\t\tMigration proposal of " << tt->toString() << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
+                        // if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
+                        //     CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(tt); 
+                        //     assert (!cbs->isEmpty()); 
+                        //     endingCPU->setWorkload(Utils::getTaskWorkload(cbs));
+                        //     Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed()))); 
+                        //     cbs->changeBudget(newB); 
+                        // }
+                        migrationProposal.task  = tt;
+                        migrationProposal.from  = c;
+                        migrationProposal.to    = endingCPU;
+                        goto endFun; // break and return
                     }
                 }
             }
             cout << "\t\tNo migration from big island to endingCPU => balance little island load" << endl;
         }
 
-        if (endingCPU->getIslandType() == IslandType::BIG)
-            cout << "\t\tBalancing on big island load" << endl;
+        endFun: return migrationProposal;
+    }
+
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateByBalancing (CPU_BL *endingCPU) {
+        cout << "\t\tEMRTK::" << __func__ << "(). Balancing load of island: " << endingCPU->getName() << endl;
+        MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
+        vector<AbsRTTask*> readyTasks;
         
-        // Take a ready task of the island and put it into endingCPU.
-        // However, if core has only ready tasks, then such task, shouldn't
-        // be the only ready one for its original core (why to move it in that case?)
+        // Take a ready task of the same island and put it into endingCPU.
         for (CPU_BL * c : getProcessors(endingCPU->getIslandType())) {
             readyTasks = getReadyTasks(c);
             unsigned int nTasksOnCore = readyTasks.size() + (getRunningTask(c) == NULL ? 0 : 1);
             if (nTasksOnCore > 1) {
                 AbsRTTask *tt = readyTasks.at(0);
-                cout << "\t\tMigrating " << taskname(tt) << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
-                if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) { CBServer* cbs = dynamic_cast<CBServer*>(tt); Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed()))); cbs->changeBudget(newQ); }
-                _queues->onMigrationFinished(tt, c, endingCPU); // todo add migration overhead
-                migrationDone = true;
+                cout << "\t\tMigration proposal of " << tt->toString() << " from " << c->toString() << " to " << endingCPU->toString() << " with same frequency " << endl;
+                // if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
+                //     CBServer* cbs = dynamic_cast<CBServer*>(tt);
+                //     Tick newQ = Tick(ceil(cbs->getWCET(endingCPU->getSpeed())));
+                //     cbs->changeBudget(newQ);
+                // }
+                migrationProposal.task  = tt;
+                migrationProposal.from  = c;
+                migrationProposal.to    = endingCPU;
                 break;
             }
         }
-        if (!migrationDone) cout << "\t\tNo migration done" << endl; 
-        return migrationDone; 
-    } // end EMRTK::migrateInto()
+
+        return migrationProposal;
+    }
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
         cout << "t = " << SIMUL.getTime() << " " << __func__ << " for finishingTask = " << taskname(finishingTask) << endl;

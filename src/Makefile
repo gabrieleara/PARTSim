@@ -71,7 +71,9 @@ edfsched.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 edfsched.o: ./strtoken.hpp ./debugstream.hpp ./entity.hpp ./event.hpp
 edfsched.o: ./particle.hpp ./trace.hpp ./abstask.hpp ./cpu.hpp ./timer.hpp
 edfsched.o: ./gevent.hpp ./powermodel.hpp ./kernel.hpp ./abskernel.hpp
-edfsched.o: ./kernevt.hpp
+edfsched.o: ./kernevt.hpp rttask.hpp ./regvar.hpp ./randomvar.hpp
+edfsched.o: ./cloneable.hpp ./task.hpp ./taskevt.hpp ./feedback.hpp
+edfsched.o: ./taskexc.hpp
 energyMRTKernel.o: energyMRTKernel.hpp mrtkernel.hpp ./kernel.hpp
 energyMRTKernel.o: ./baseexc.hpp ./entity.hpp ./basetype.hpp ./tick.hpp
 energyMRTKernel.o: ./strtoken.hpp ./abskernel.hpp ./abstask.hpp ./cpu.hpp
@@ -225,6 +227,7 @@ multi_cores_scheds.o: ./cloneable.hpp ./feedback.hpp ./taskexc.hpp
 multi_cores_scheds.o: ./exeinstr.hpp ./instr.hpp utils.hpp cbserver.hpp
 multi_cores_scheds.o: server.hpp resmanager.hpp ./capacitytimer.hpp
 multi_cores_scheds.o: rttask.hpp ./regvar.hpp ./rrsched.hpp ./edfsched.hpp
+multi_cores_scheds.o: energyMRTKernel.hpp
 piresman.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 piresman.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 piresman.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp

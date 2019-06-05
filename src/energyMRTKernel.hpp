@@ -278,7 +278,7 @@ namespace RTSim {
             stringstream ss;
             int i = 1;
             for (AbsRTTask* t : tasks)
-                ss << "\t" << i++ << ") " << t->toString();
+                ss << "\t\t" << i++ << ") " << t->toString() << endl;
             return ss.str();
         }
 
@@ -288,10 +288,11 @@ namespace RTSim {
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
-                    ss << "\tEmpty queue for " << q.first->getName();
-                ss << "\t" << q.first->getName() << " ( freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ", u_active: " << getUtilization_active(q.first) << " ):" << endl;
-                if (qs != "")
-                    ss << "\t" << qs << endl;
+                    ss << "\tEmpty queue for " << q.first->getName() << endl << endl;
+                else {
+                    ss << "\t" << q.first->getName() << " ( freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ", u_active: " << getUtilization_active(q.first) << " ):" << endl;
+                    ss << qs << endl;
+                }
             }
             return ss.str();
         }
@@ -345,8 +346,14 @@ namespace RTSim {
 
         /// A task envoleped inside a server
         struct EnvelopedTask {
-          AbsRTTask *_task;
-          CBServerCallingEMRTKernel  *_server;
+            AbsRTTask *_task;
+            CBServerCallingEMRTKernel  *_server;
+        };
+
+        struct MigrationProposal {
+            AbsRTTask *task;
+            CPU_BL *from;
+            CPU_BL *to;
         };
 
         // little, big (order matters for speed)
@@ -376,6 +383,12 @@ namespace RTSim {
 
         /// island cores load balancing policy: if possible, make all island cores work
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
+
+        /// Balance load by migration todo joinable with balanceLoad?
+        MigrationProposal migrateByBalancing (CPU_BL *endingCPU);
+
+        /// Proposes a migration from Big to Little
+        MigrationProposal migrateFromBig (CPU_BL *endingCPU);
 
         /**
         * CPU_BL choice from the table of consumptions (not sorted).
@@ -437,9 +450,11 @@ namespace RTSim {
         static bool EMRTK_MIGRATE_ENABLED                   ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
         static bool EMRTK_CBS_YIELD_ENABLED                 ;
 
-        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED         ; /// CBS server enveloping periodic tasks?
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
-        static bool EMRTK_CBS_MIGRATE_AFTER_END                   ; /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED         ;     /// CBS server enveloping periodic tasks?
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ;     /// After task ends its virtual time, there can be migrations (requires CBS_ENVELOPING)
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_RECL;  /// After task ends its virtual time, there can be migrations...with reclaiming (requires CBS_ENVELOPING)
+        static bool EMRTK_CBS_MIGRATE_AFTER_END                   ;     /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+
 
         /**
           * Kernel with scheduler s and CPU_BLs CPU_BLs.
@@ -718,17 +733,19 @@ namespace RTSim {
           _queues->onEnd(cbs, cpu);
         }
 
-        /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
+        /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing (virtual time ends)
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
           CPU* c = _queues->onReleasingIdle(cbs); // forget U_active
           AbsRTTask* oldTask = getRunningTask(c);
           bool migrationDone = migrateInto(dynamic_cast<CPU_BL*>(c));
           //can introduce bugs?:
-          if (migrationDone && oldTask != NULL) {
-            cout << "\tMigration done => descheduling task " << taskname(oldTask) << endl;
-            oldTask->deschedule();
-          }
+          // if (migrationDone && oldTask != NULL) {
+          //   cout << "\tMigration done => descheduling task " << taskname(oldTask) << endl;
+          //   oldTask->deschedule();
+          // }
+
+
         }
 
         void onReplenishment(CBServer *cbs) {

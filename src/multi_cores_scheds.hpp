@@ -339,10 +339,11 @@ namespace RTSim {
            prepares for context switch on the final core (= chosen after migration).
 
            Migration is not specifically meant for big-littles, it can also be
-           a task movement between 2 cores. That's why function is here
+           a task movement between 2 cores. That's why this function is here
         */
         void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) {
             assert(t != NULL); assert(original != NULL); assert(final != NULL);
+            cout << "\t\tMCS::" << __func__ << "() migrate " << t->toString() << " from " << original->toString() << " to " << final->toString() << endl;
 
             try {
                 removeFromQueue(original, t);
