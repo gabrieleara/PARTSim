@@ -743,16 +743,38 @@ namespace RTSim {
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing (virtual time ends)
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
-          CPU* c = _queues->onReleasingIdle(cbs); // forget U_active
-          AbsRTTask* oldTask = getRunningTask(c);
-          bool migrationDone = migrateInto(dynamic_cast<CPU_BL*>(c));
+          CPU_BL* endingCPU = dynamic_cast<CPU_BL*>(_queues->onReleasingIdle(cbs)); // forget U_active
+          AbsRTTask* oldTask = getRunningTask(endingCPU);
           //can introduce bugs?:
           // if (migrationDone && oldTask != NULL) {
           //   cout << "\tMigration done => descheduling task " << taskname(oldTask) << endl;
           //   oldTask->deschedule();
           // }
 
+          CBServerCallingEMRTKernel *task = NULL;
+          vector<AbsRTTask*> toBeSkipped;
+          while (true) {
+            // Pick a task to be migrated
+            MigrationProposal migrationProposal = getTaskToMigrateInto(dynamic_cast<CPU_BL*>(endingCPU));
+            task = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task);
+            if (task == NULL) break;
+            toBeSkipped.push_back(task);
 
+            // Double check if migration breaks previous task schedulability
+            double slack = double(cbs->getDeadline() - SIMUL.getTime());
+            double remainingBudgetMigratedAdm = (double) task->get_remaining_budget() - slack;
+            if (task != NULL && task->getDeadline() > cbs->getDeadline() && remainingBudgetMigratedAdm >= 0.0) {
+                double utilRemBudgetMigratedAdm = remainingBudgetMigratedAdm / slack;
+                double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
+                if (utilRemBudgetMigratedAdm + utilCore > 1)
+                  cout << "\tCannot migrate " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
+                else {
+                  cout << "\tConfirmed migration of " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
+                  _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
+                  break;
+                }
+            }
+          }
         }
 
         void onReplenishment(CBServer *cbs) {

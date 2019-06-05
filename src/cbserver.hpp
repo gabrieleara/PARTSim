@@ -225,6 +225,13 @@ namespace RTSim {
         return t;
       }
 
+      // todo useless (getDeadline())?
+      Tick getNextActivation() const {
+        Tick lastArrival = getArrival();
+        Tick nextArrival = lastArrival + getPeriod();
+        return nextArrival;
+      }
+
       Tick getEndBandwidthEvent() const {
         return _bandExEvt.getTime();
       }
