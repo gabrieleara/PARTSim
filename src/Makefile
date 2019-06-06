@@ -101,7 +101,7 @@ energyMRTKernel_example.o: ./json_trace.hpp ./ps_trace.hpp ./tracepower.hpp
 energyMRTKernel_example.o: ./instr.hpp energyMRTKernel.hpp
 energyMRTKernel_example.o: multi_cores_scheds.hpp ./exeinstr.hpp utils.hpp
 energyMRTKernel_example.o: cbserver.hpp server.hpp resmanager.hpp
-energyMRTKernel_example.o: ./capacitytimer.hpp ./rrsched.hpp
+energyMRTKernel_example.o: ./capacitytimer.hpp ./rrsched.hpp ./taskstat.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
 entity.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./event.hpp
 entity.o: ./particle.hpp ./plist.hpp ./trace.hpp

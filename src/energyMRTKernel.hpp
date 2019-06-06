@@ -452,15 +452,15 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
     public:
-        static bool EMRTK_BALANCE_ENABLED                   ; /* Can't imagine disabling it, but so policy is in the list :) */
-        static bool EMRTK_LEAVE_LITTLE3_ENABLED             ;
-        static bool EMRTK_MIGRATE_ENABLED                   ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
-        static bool EMRTK_CBS_YIELD_ENABLED                 ;
+        static bool EMRTK_BALANCE_ENABLED                           ; /* Can't imagine disabling it, but so policy is in the list :) */
+        static bool EMRTK_LEAVE_LITTLE3_ENABLED                     ;
+        static bool EMRTK_MIGRATE_ENABLED                           ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
+        static bool EMRTK_CBS_YIELD_ENABLED                         ;
 
-        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED         ;     /// CBS server enveloping periodic tasks?
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END  ;     /// After task ends its virtual time, there can be migrations (requires CBS_ENVELOPING)
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_RECL;  /// After task ends its virtual time, there can be migrations...with reclaiming (requires CBS_ENVELOPING)
-        static bool EMRTK_CBS_MIGRATE_AFTER_END                   ;     /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED               ;     /// CBS server enveloping periodic tasks?
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END        ;     /// After task ends its virtual time, there can be migrations (requires EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK;     /// Advanced check after virtual time expires (requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END)
+        static bool EMRTK_CBS_MIGRATE_AFTER_END                         ;     /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
 
 
         /**
@@ -743,6 +743,7 @@ namespace RTSim {
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing (virtual time ends)
         void onReleasingIdle(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
+          double vtimes = _queues->getUtilization_active(getOldProcessor(cbs));
           CPU_BL* endingCPU = dynamic_cast<CPU_BL*>(_queues->onReleasingIdle(cbs)); // forget U_active
           AbsRTTask* oldTask = getRunningTask(endingCPU);
           //can introduce bugs?:
@@ -750,6 +751,12 @@ namespace RTSim {
           //   cout << "\tMigration done => descheduling task " << taskname(oldTask) << endl;
           //   oldTask->deschedule();
           // }
+
+          if (!EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK) {
+            cout << "EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK disabled" << endl;
+            bool migrationDone = migrateInto(dynamic_cast<CPU_BL*>(endingCPU));
+            return;
+          }
 
           CBServerCallingEMRTKernel *task = NULL;
           vector<AbsRTTask*> toBeSkipped;
@@ -768,7 +775,7 @@ namespace RTSim {
             if (task->getDeadline() > cbs->getDeadline() && remainingBudgetMigratedAdm >= 0.0) {
                 double utilRemBudgetMigratedAdm = remainingBudgetMigratedAdm / slack;
                 utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
-                if (utilRemBudgetMigratedAdm + utilCore > 1)
+                if ( (utilCore + vtimes) + utilRemBudgetMigratedAdm > 1)
                   cout << "\tCannot migrate " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
                 else
                   break;

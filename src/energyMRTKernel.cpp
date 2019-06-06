@@ -25,15 +25,15 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED                     = 1; /* Can't imagine disabling it, but so policy is in the list :) */
-    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED               = 0;
-    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                     = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                   = 0;
+    bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED                             = 1; /* Can't imagine disabling it, but so policy is in the list :) */
+    bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                       = 0;
+    bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                             = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                           = 0;
 
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED             = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END      = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                       = 1;
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_RECL = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED                 = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END          = 1;
+    bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                           = 0;
+    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK  = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {

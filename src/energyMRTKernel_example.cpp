@@ -25,6 +25,7 @@
 #include "rttask.hpp"
 #include "cpu.hpp"
 #include "cbserver.hpp"
+#include <taskstat.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -1328,92 +1329,10 @@ int main(int argc, char *argv[]) {
 
 
 
-        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END     = 1;
-        EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                      = 0;
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END           = 1;
+        EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                            = 0;
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK   = 0;
 
-        // CBS server enveloping Periodic Tasks examples.
-        // Require CBS servers enveloping periodic tasks and EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
-        if (TEST_NO == 19) {
-            /**
-                           vt end
-                !=======_____|_______!______...
-
-                1st example. End of virtual time arrives. Kernel tries to pull
-                tasks into core but it fails (tasks too big).
-
-                example below:
-
-                            150
-                160 450 450 350
-                b0  b1  b2  b3   at time 0
-
-                not understood
-              */
-
-            string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
-            int     wcets[] = { 160, 450, 450, 350, 150 };
-            int     deads[] = { 200, 500, 500, 500, 500 };
-            vector<CBServerCallingEMRTKernel*> ets;
-            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-                task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + names[j];
-                cout << "Creating task: " << task_name;
-                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
-                char instr[60] = "";
-                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-                cout << instr << endl;
-                t->insertCode(instr);
-                ets.push_back(kern->addTaskAndEnvelope(t, ""));
-                ttrace.attachToTask(*t);
-                tasks.push_back(t);
-            }
-            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-            k->addForcedDispatch(ets[0], cpus_big[0], 18);
-            k->addForcedDispatch(ets[1], cpus_big[1], 18);
-            k->addForcedDispatch(ets[2], cpus_big[2], 18);
-            k->addForcedDispatch(ets[3], cpus_big[3], 18);
-            k->addForcedDispatch(ets[4], cpus_big[3], 18); // ready
-
-            for (CPU_BL* c : cpus_little)
-                c->toggleDisabled();
-
-            SIMUL.initSingleRun();
-            
-            SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
-            ets[0]->killInstance();
-            SIMUL.sim_step(); // t=150, but all events have been processed
-            cout << "u active big 0 " << k->getUtilization_active(cpus_big[0]) << endl;
-            cout << "idle evt " << ets[0]->getIdleEvent() << endl;
-            cout << "server status " << ets[0]->getStatusString() << endl;
-            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.7); // shall be 0.8
-            REQUIRE ( (double) ets[0]->getIdleEvent() >= 185);
-            REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
-
-            SIMUL.run_to(151);
-            k->printState(true);
-            REQUIRE (k->getRunningTask(cpus_big[0]) == NULL); // no migration
-            REQUIRE (k->getRunningTask(cpus_big[3]) != NULL);
-            REQUIRE (k->getReadyTasks(cpus_big[3]).size() == 1);
-
-            SIMUL.run_to(189); // t=168, cannot migrate because core's already busy
-            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[5]);
-            REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
-
-            SIMUL.run_to(500); // all tasks are over, usual dispatch
-            SIMUL.sim_step();
-            for (CBServerCallingEMRTKernel* e : ets)
-                REQUIRE (k->getProcessor(e) != NULL);
-
-            SIMUL.endSingleRun();
-
-            cout << "--------------" << endl;
-            cout << "Simulation finished" << endl;
-            for (AbsRTTask *t : tasks)
-                delete t;
-            for (CBServerCallingEMRTKernel* cbs : ets)
-                delete cbs;
-            delete k;
-            return 0;
-        }
         if (TEST_NO == 20) {
             /**
                 2nd example. End of virtual time of task t. Kernel pulls (migrates) a task into
@@ -1701,6 +1620,58 @@ int main(int argc, char *argv[]) {
         }
 
         // end of tests requiring EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END
+
+        // Tests requiring EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = 1;
+        if (TEST_NO == 24) {
+            /// Does killInstance() on CBS server enveloping periodic tasks work?
+            int wcets[] = { 10 };
+            int deads[] = { 200 };
+            vector<CBServerCallingEMRTKernel*> ets;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + "_task_BIG_" + to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+
+            for (CPU_BL* c : cpus_little)
+                c->toggleDisabled();
+
+            SIMUL.initSingleRun();
+
+            SIMUL.run_to(1);
+            cout << "==================" << endl;
+            ets[0]->killInstance();
+            k->printState(true);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+            REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+            REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.0);
+            SIMUL.run_to(201);
+            cout << "==================" << endl;
+            cout << "t=" << time() << endl;
+            cout << "state of kernel:" << endl; k->printState(true);
+            REQUIRE (k->getProcessorRunning(ets[0])->getIslandType() == IslandType::BIG);
+
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+            return 0;
+        }
 
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Running simulation!" << endl;

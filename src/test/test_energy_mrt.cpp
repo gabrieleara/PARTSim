@@ -4,6 +4,7 @@
 #include <energyMRTKernel.hpp>
 #include <edfsched.hpp>
 #include <cbserver.hpp>
+#include <taskstat.hpp>
 
 #include "catch.hpp"
 
@@ -22,19 +23,27 @@ class Requisite {
     public:
         bool    satisfied;
         bool    EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield,
-                EMRTK_cbs_enveloping_per_task_enabled, EMRTK_cbs_enveloping_migrate_after_vtime_end, EMRTK_cbs_migrate_after_end;
+                EMRTK_cbs_enveloping_per_task_enabled, EMRTK_cbs_enveloping_migrate_after_vtime_end, EMRTK_cbs_migrate_after_end,
+                EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
 
         // in the default case, you don't want neither leave_little3 and migrate and CBS servers yielding
-        Requisite(bool leave_little3 = false, bool migrate = true, bool cbs_yield = false,
-            bool cbs_enveloping_per_task_enabled = true, bool cbs_enveloping_migrate_after_vtime_end = false, bool cbs_migrate_after_end = true)
-
-            : satisfied(false), EMRTK_leave_little3(leave_little3), EMRTK_migrate(migrate), EMRTK_cbs_yield(cbs_yield),
-              EMRTK_cbs_enveloping_per_task_enabled(cbs_enveloping_per_task_enabled), EMRTK_cbs_enveloping_migrate_after_vtime_end(cbs_enveloping_migrate_after_vtime_end), EMRTK_cbs_migrate_after_end(cbs_migrate_after_end) { }
+        Requisite(bool EMRTK_leave_little3 = false, bool EMRTK_migrate = true, bool EMRTK_cbs_yield = false,
+            bool EMRTK_cbs_enveloping_per_task_enabled = true, bool EMRTK_cbs_enveloping_migrate_after_vtime_end = false, bool EMRTK_cbs_migrate_after_end = true,
+            bool EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = true)
+            : satisfied(false) {
+                this->EMRTK_leave_little3 = EMRTK_leave_little3;
+                this->EMRTK_migrate = EMRTK_migrate;
+                this->EMRTK_cbs_yield = EMRTK_cbs_yield;
+                this->EMRTK_cbs_enveloping_per_task_enabled = EMRTK_cbs_enveloping_per_task_enabled;
+                this->EMRTK_cbs_enveloping_migrate_after_vtime_end = EMRTK_cbs_enveloping_migrate_after_vtime_end;
+                this->EMRTK_cbs_migrate_after_end = EMRTK_cbs_migrate_after_end;
+                this->EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
+            }
 
         string toString() const {
             string s = "Requisite with leave_little_3: " + to_string(EMRTK_leave_little3) + ", migrate: " + to_string(EMRTK_migrate) + ", cbs yielding: " + to_string(EMRTK_cbs_yield) + 
                 ", cbs_enveloping_per_task_enabled: " + to_string(EMRTK_cbs_enveloping_per_task_enabled) + ", cbs_enveloping_migrate_after_vtime_end: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end) + 
-                ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end);
+                ", EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk) + ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end);
             return s;
         }
 };
@@ -1112,7 +1121,9 @@ TEST_CASE("exp14") {
 
 
 
-/// Experiments suggested by Mr.Marinoni: ready after task ends, migrate after vtime, dispatch at period begin
+/// Experiments suggested by Mr.Marinoni: ready after task ends, migrate after vtime, dispatch at period begin.
+/// These are actually useless tests because if EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK is
+/// disabled, the algorithm is not correct
 
 TEST_CASE("Experiment 20") {
     /**
@@ -1122,7 +1133,7 @@ TEST_CASE("Experiment 20") {
       */
     init_sequence = 20;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false);
+    Requisite req (false, true, false, true, true, false, false);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1131,6 +1142,7 @@ TEST_CASE("Experiment 20") {
     vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
     vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
     vector<AbsRTTask*> tasks;
+    MissCount miss_count("miss");
 
     string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
     int     wcets[] = { 160, 450, 450, 400, 60 };
@@ -1146,6 +1158,7 @@ TEST_CASE("Experiment 20") {
         t->insertCode(instr);
         ets.push_back(kern->addTaskAndEnvelope(t, ""));
         tasks.push_back(t);
+        miss_count.attachToTask(t);
     }
     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
     k->addForcedDispatch(ets[0], cpus_big[0], 18);
@@ -1196,6 +1209,8 @@ TEST_CASE("Experiment 20") {
     for (CBServerCallingEMRTKernel *e : ets)
         REQUIRE (k->getProcessor(e) != NULL);            
 
+    assert (mc.getLastValue() > 0);
+
     SIMUL.endSingleRun();
 
     cout << "--------------" << endl;
@@ -1217,7 +1232,7 @@ TEST_CASE ("Experiment 21") {
       */
     init_sequence = 21;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false);
+    Requisite req(false, true, false, true, true, false, false);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1315,7 +1330,7 @@ TEST_CASE ("Experiment 22") {
       */
     init_sequence = 22;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false);
+    Requisite req(false, true, false, true, true, false, false);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1392,7 +1407,7 @@ TEST_CASE ("Experiment 23") {
     /// Does killInstance() on CBS server enveloping periodic tasks work?
     init_sequence = 23;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false);
+    Requisite req(false, true, false, true, true, false, false);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1626,13 +1641,12 @@ bool isInRangeMinMax(double eval, const double min, const double max) {
 
 bool checkRequisites(Requisite reqs) {
     cout << "Experiments with " << reqs.toString() << endl; 
-    cout << "Current settings: EMRTK_LEAVE_LITTLE3_ENABLED: " << EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED << ", EMRTK_MIGRATE_ENABLED: " << EnergyMRTKernel::EMRTK_MIGRATE_ENABLED << ", EMRTK_CBS_YIELD_ENABLED: " << EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED << endl; 
     reqs.satisfied = false;
 
     if (FORCE_REQUISITES) {
         fixDependencies(reqs);
 
-        cout << "Changing EMRTK policies settings as needed" << endl;
+        cout << "Changing EMRTK policies settings as needed:" << endl;
 
         cout << "\tSetting Leave Little 3 free policy to " << reqs.EMRTK_leave_little3 << endl;
         EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = reqs.EMRTK_leave_little3;
@@ -1653,6 +1667,9 @@ bool checkRequisites(Requisite reqs) {
 
         cout << "\tSetting CBS migration after virtualtime end to " << reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end << endl;
         EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end;
+
+        cout << "\tSetting CBS migration after virtualtime end advanced check to " << reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk << endl;
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
 
         reqs.satisfied = true;
         return true;
@@ -1679,6 +1696,10 @@ bool checkRequisites(Requisite reqs) {
     }
     if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end != EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END) {
         cout << "Test requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END << ". Skip" << endl;
+        return false;
+    }
+    if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk != EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK) {
+        cout << "Test requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK << ". Skip" << endl;
         return false;
     }
     if (reqs.EMRTK_cbs_migrate_after_end != EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END) {
@@ -1710,6 +1731,13 @@ bool fixDependencies(Requisite reqs, bool abortOnFix) {
 
     // migrations
     if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end && !reqs.EMRTK_migrate)
+        if (abortOnFix) {
+            cout << "\tabort on line " << __LINE__ << endl;
+            exit(0);
+        }
+        else reqs.EMRTK_migrate = 1;
+
+    if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk && !reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end)
         if (abortOnFix) {
             cout << "\tabort on line " << __LINE__ << endl;
             exit(0);
