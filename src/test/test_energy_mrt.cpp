@@ -1180,8 +1180,8 @@ TEST_CASE("Experiment 20") {
     REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
 
     SIMUL.run_to(189); // end vtime => migration
-    REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
     REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
+    REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
 
     cout << endl << "Scheduler state t=189:"<<endl;
     cout << k->getScheduler()->toString() << endl << endl;

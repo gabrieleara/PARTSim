@@ -468,7 +468,7 @@ if (p->getName().find("BIG_0") != string::npos)
         printState(true);
     }
 
-    bool EnergyMRTKernel::migrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> *toBeSkipped) {
+    bool EnergyMRTKernel::migrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> toBeSkipped) {
         /**
            Migration mechanism: a task finishes on CPU c, leaving it idle.
            If c is a little, try moving ready tasks originally assigned to
@@ -503,7 +503,7 @@ if (p->getName().find("BIG_0") != string::npos)
         return migrationProposal.task != NULL;
     } // end EMRTK::migrateInto()
 
-    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::getTaskToMigrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> *toBeSkipped) {
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::getTaskToMigrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> toBeSkipped) {
         assert (endingCPU != NULL);
         cout << "\tEMRTK::" << __func__ << "()" << endl;
 
@@ -515,7 +515,7 @@ if (p->getName().find("BIG_0") != string::npos)
         return migrationProposal;
     }
 
-    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*> *toBeSkipped) {
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped) {
         MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
 
         vector<AbsRTTask*> readyTasks;
@@ -542,7 +542,7 @@ if (p->getName().find("BIG_0") != string::npos)
         endFun: return migrationProposal;
     }
 
-    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*> *toBeSkipped) {
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped) {
         cout << "\t\tEMRTK::" << __func__ << "(). Balancing load of island: " << endingCPU->getName() << endl;
         MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
         vector<AbsRTTask*> readyTasks;

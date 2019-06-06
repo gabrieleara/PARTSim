@@ -387,10 +387,10 @@ namespace RTSim {
         void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
 
         /// Balance load by migration todo joinable with balanceLoad? Tasks in toBeSkipped will be skipped
-        MigrationProposal migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*>* toBeSkipped = NULL);
+        MigrationProposal migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped = {});
 
         /// Proposes a migration from Big to Little. Tasks in toBeSkipped will be skipped
-        MigrationProposal migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*>* toBeSkipped = NULL);
+        MigrationProposal migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped = {});
 
 
 
@@ -434,10 +434,10 @@ namespace RTSim {
         void leaveLittle3(AbsRTTask *t, std::vector<ConsumptionTable> iDeltaPows, CPU_BL*& chosenCPU_BL);
 
         /// Returns a possible migration to endingCPU. Tasks in toBeSkipped will be skipped. Implements migration mechanism on task end.
-        MigrationProposal getTaskToMigrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> *toBeSkipped = NULL);
+        MigrationProposal getTaskToMigrateInto(CPU_BL* endingCPU, vector<AbsRTTask*> toBeSkipped = {});
 
         /// Pulls a task into endingCPU_BL. It finally performs the migration. Tasks in toBeSkipped will be skipped
-        bool migrateInto(CPU_BL* endingCPU_BL, vector<AbsRTTask*>* toBeSkipped = NULL);
+        bool migrateInto(CPU_BL* endingCPU_BL, vector<AbsRTTask*> toBeSkipped = {});
 
         /// needed for onOPPChanged()
         bool isTryngTaskOnCPU_BL() { return _tryingTaskOnCPU_BL; }
@@ -753,9 +753,11 @@ namespace RTSim {
 
           CBServerCallingEMRTKernel *task = NULL;
           vector<AbsRTTask*> toBeSkipped;
+          double utilRemBudgetMigratedAdm, utilCore;
+          MigrationProposal migrationProposal;
           while (true) {
             // Pick a task to be migrated
-            MigrationProposal migrationProposal = getTaskToMigrateInto(dynamic_cast<CPU_BL*>(endingCPU));
+            migrationProposal = getTaskToMigrateInto(dynamic_cast<CPU_BL*>(endingCPU), toBeSkipped);
             task = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task);
             if (task == NULL) break;
             toBeSkipped.push_back(task);
@@ -763,17 +765,20 @@ namespace RTSim {
             // Double check if migration breaks previous task schedulability
             double slack = double(cbs->getDeadline() - SIMUL.getTime());
             double remainingBudgetMigratedAdm = (double) task->get_remaining_budget() - slack;
-            if (task != NULL && task->getDeadline() > cbs->getDeadline() && remainingBudgetMigratedAdm >= 0.0) {
+            if (task->getDeadline() > cbs->getDeadline() && remainingBudgetMigratedAdm >= 0.0) {
                 double utilRemBudgetMigratedAdm = remainingBudgetMigratedAdm / slack;
-                double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
+                utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
                 if (utilRemBudgetMigratedAdm + utilCore > 1)
                   cout << "\tCannot migrate " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
-                else {
-                  cout << "\tConfirmed migration of " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
-                  _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
+                else
                   break;
-                }
             }
+            else break;
+          }
+
+          if (task != NULL) {
+              cout << "\tConfirmed migration of " << task->toString() << " into " << endingCPU->toString() << ": " << utilRemBudgetMigratedAdm << "+" << utilCore << "=" << utilRemBudgetMigratedAdm + utilCore << "> 1 => pick next ready" << endl;
+              _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
           }
         }
 

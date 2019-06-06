@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 9;
+    int TEST_NO = 20;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
