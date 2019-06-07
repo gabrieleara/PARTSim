@@ -26,6 +26,7 @@
 #include "cpu.hpp"
 #include "cbserver.hpp"
 #include <taskstat.hpp>
+#include <stafford_importer.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -45,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 24;
+    int TEST_NO = 25;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -523,61 +524,7 @@ int main(int argc, char *argv[]) {
             }
             // towards random workloads...
         }
-        /*
-        // Useless test. Keeping it just to remember how to use delay, unif, delta.
-        if (TEST_NO == 9) {
-            // random variables
-            int taskNO = 3;
-            int task_period = 500;
-            int mode = 0;
-            int seed = 98;
-            srand(seed); // random nums are expected to be the same in all simulations
 
-            for (int j = 0; j < taskNO; j++) {
-                task_name = "T9_task" + std::to_string(j);
-                cout << "Creating task: " << task_name;
-                PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
-                char instr[60] = "";
-                // srand(time(NULL)) or srand(seed)
-                switch (mode) {
-                case 0:
-                  sprintf(instr, "delay(unif(1, %d));", task_period);
-                  break;
-                case 1:
-                  sprintf(instr, "delay(delta(%d));", task_period * rand() / (RAND_MAX + 1u));
-                  break;
-                case 2:
-                  sprintf(instr, "fixed(%d, %s);", task_period * rand() / (RAND_MAX + 1u), workload.c_str());
-                  break;
-                default: break;
-                }
-                t->insertCode(instr);
-                tasks.push_back(t);
-                ttrace.attachToTask(*t);
-                ets.push_back(kern->addTaskAndEnvelope(t, ""));
-            }
-
-            SIMUL.initSingleRun();
-            SIMUL.run_to(1000);
-            SIMUL.endSingleRun();
-
-            schedulers.clear();
-            kernels.clear();
-
-            RRScheduler *rrsched = new RRScheduler(100); // 100 is result of sysctl kernel.sched_rr_timeslice_ms on my machine, L5.0.2
-            //EnergyMRTKernel *kern = new EnergyMRTKernel(rrsched, island_bl_big, island_bl_little, "Round Robin");
-            kernels.push_back(kern);
-            for (AbsRTTask* t : tasks)
-                ets.push_back(kern->addTaskAndEnvelope(t, ""));
-
-            SIMUL.initSingleRun();
-            SIMUL.run_to(1000);
-            SIMUL.endSingleRun();
-            return 0;
-
-            // random workloads...delay(unif,PDF).
-            // todo above code not tested
-        }*/
         if (TEST_NO == 9) {
             // 100 and 101 will end up in LITTLEs, 500 in BIGs, 101 will end up in big.
             // 100 will finish before, making the task in big (101, the last one in the list) migrate to little
@@ -1712,9 +1659,48 @@ int main(int argc, char *argv[]) {
             return 0;
         }
 
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-        cout << "Running simulation!" << endl;
+        if (TEST_NO == 25) {
+            // Moving towards 3 tasks per core, seing if system crashes.
+            // Such task should be schedulable with EDF (sum of utilizations <= 1).
+            MissCount mc("miss count");
+            int task_period = 500;
+            unsigned int taskNumber = cpus_big.size() * 3 + cpus_little.size() * 3;
+            
+            int seed = 98;
+            srand(seed); // random nums are expected to be the same in all simulations
 
+            ets = StaffordImporter::getEnvelopedPeriodcTasks("taskset_generator/P_500_u_75.txt");
+            cout << "end" << endl;
+            exit(0);
+
+            for (int j = 0; j < 8 * 3; j++) {
+                task_name = "T9_task" + std::to_string(j);
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", task_period * rand() / (RAND_MAX + 1u), workload.c_str());
+                t->insertCode(instr);
+                tasks.push_back(t);
+                ttrace.attachToTask(*t);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                mc.attachToTask(t);
+            }
+
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+
+            SIMUL.initSingleRun();
+            SIMUL.run_to(1000);
+            cout << "missing tasks: " << mc.getLastValue() << endl;
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+        }
 
         SIMUL.run(1000); // 5000
         dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption(true, tasks);
