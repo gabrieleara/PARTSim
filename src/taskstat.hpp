@@ -84,9 +84,12 @@ namespace RTSim {
         //virtual 
         void attachToTask(Task *t) 
             {
-                new Particle<SchedEvt, PreemptionStat>(&t->schedEvt, this);
+              /*new Particle<SchedEvt, PreemptionStat>(&t->schedEvt, this);
                 new Particle<DeschedEvt, PreemptionStat>(&t->deschedEvt, this);
-                new Particle<EndEvt, PreemptionStat>(&t->endEvt, this);
+                new Particle<EndEvt, PreemptionStat>(&t->endEvt, this);*/
+              attach_stat(*this, t->schedEvt);
+              attach_stat(*this, t->deschedEvt);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -126,8 +129,10 @@ namespace RTSim {
 
         virtual void attachToTask(Task *t)
             {
-                new Particle<SchedEvt, GlobalPreemptionStat>(&t->schedEvt, this);
-                new Particle<DeschedEvt, GlobalPreemptionStat>(&t->deschedEvt, this);
+              //                new Particle<SchedEvt, GlobalPreemptionStat>(&t->schedEvt, this);
+              // new Particle<DeschedEvt, GlobalPreemptionStat>(&t->deschedEvt, this);
+              attach_stat(*this, t->schedEvt);
+              attach_stat(*this, t->deschedEvt);
             }
 
         virtual void initValue() {
@@ -161,7 +166,8 @@ namespace RTSim {
 
         void attachToTask(Task *t)
             {
-                new Particle<EndEvt, FinishingTimeStat>(&t->endEvt, this);
+              //                new Particle<EndEvt, FinishingTimeStat>(&t->endEvt, this);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -191,7 +197,8 @@ namespace RTSim {
 
         void attachToTask(Task *t) 
             {
-                new Particle<EndEvt, LatenessStat>(&t->endEvt, this); 
+              //                new Particle<EndEvt, LatenessStat>(&t->endEvt, this);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -223,7 +230,8 @@ namespace RTSim {
 
         void attachToTask(Task *t)
             {
-                new Particle<EndEvt, TardinessStat>(&t->endEvt, this);
+              //new Particle<EndEvt, TardinessStat>(&t->endEvt, this);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -251,7 +259,8 @@ namespace RTSim {
 
         void attachToTask(Task *t)
             {
-                new Particle<EndEvt, UtilizationStat>(&t->endEvt, this);
+              //                new Particle<EndEvt, UtilizationStat>(&t->endEvt, this);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -279,7 +288,8 @@ namespace RTSim {
 
         void attachToTask(Task *t)
             {
-                new Particle<EndEvt, MissPercentage>(&t->endEvt, this);
+              //                new Particle<EndEvt, MissPercentage>(&t->endEvt, this);
+              attach_stat(*this, t->endEvt);
             }
     };
 
@@ -298,7 +308,8 @@ namespace RTSim {
 
         void attachToTask(Task *t) 
             {
-                new Particle<DeadEvt, MissCount>(&t->deadEvt, this);
+              //                new Particle<DeadEvt, MissCount>(&t->deadEvt, this);
+              attach_stat(*this, t->deadEvt);
             }
     };
 

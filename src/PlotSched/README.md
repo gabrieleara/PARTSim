@@ -49,6 +49,17 @@ Now, the executable `PlotSched` is generated and can be run:
 ./PlotSched
 ```
 
+### In your code
+
+PSTrace  pstrace("trace.pst");
+
+PeriodicTask* t = new PeriodicTask(200, 200, 0, task_name);
+t->insertCode("fixed(10,bzip2)");
+pstrace.attachToTask(*t);
+
+...
+SIMUL.run(400);
+
 ### Usage
 
 The file extension is `.pst` (Plot Sched Trace).
