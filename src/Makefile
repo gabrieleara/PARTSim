@@ -102,6 +102,7 @@ energyMRTKernel_example.o: ./instr.hpp energyMRTKernel.hpp
 energyMRTKernel_example.o: multi_cores_scheds.hpp ./exeinstr.hpp utils.hpp
 energyMRTKernel_example.o: cbserver.hpp server.hpp resmanager.hpp
 energyMRTKernel_example.o: ./capacitytimer.hpp ./rrsched.hpp ./taskstat.hpp
+energyMRTKernel_example.o: ./fileImporter.hpp
 entity.o: ./entity.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp ./strtoken.hpp
 entity.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./event.hpp
 entity.o: ./particle.hpp ./plist.hpp ./trace.hpp

@@ -1,5 +1,5 @@
-#ifndef __STAFFORD_IMPORTER_H__
-#define __STAFFORD_IMPORTER_H__
+#ifndef __FILE_IMPORTER_H__
+#define __FILE_IMPORTER_H__
 
 #include <fstream>
 #include <iostream>
@@ -28,26 +28,32 @@ namespace RTSim {
        }
 
        fd.close();
+       cout << filename << endl;
+       cout << "imported " << tasks.size() << endl;
        return tasks;
     }
 
-    static vector<PeriodicTask*> getPeriodicTasks(cnst string& filename) {
-        map<unsigned int, pair<unsigned int, unsigned int>> tasks;
+    static vector<PeriodicTask*> getPeriodicTasks(const string& filename) {
+        map<unsigned int, pair<unsigned int, unsigned int>> tasks = importFromFile(filename);
         vector<PeriodicTask*> res;
         char instr[60] = "";
 
         for (const auto &elem : tasks) {
-            PeriodicTask* t = new PeriodicTask(elem.second.second, elem.second.second, 0, "task_" + to_string(elem.first));
+            PeriodicTask* t = new PeriodicTask((int)elem.second.second, (int)elem.second.second, 0, "task_" + to_string(elem.first));
             sprintf(instr, "fixed(%d, %s);", elem.second.first, "bzip2");
             t->insertCode(instr);
+            res.push_back(t);
         }
+
+        cout << "read " << res.size() << endl;
 
         return res;
     }
 
-    static vector<CBServerCallingEMRTKernel*> getEnvelopedPeriodcTasks(const string& filename) {
+    static vector<CBServerCallingEMRTKernel*> getEnvelopedPeriodcTasks(const string& filename, EnergyMRTKernel *kern) {
         vector<CBServerCallingEMRTKernel*> ets;
         vector<PeriodicTask*> tasks = getPeriodicTasks(filename);
+        cout << "received " << tasks.size() << endl;
 
         for (PeriodicTask* t : tasks) {
             ets.push_back(kern->addTaskAndEnvelope(t, ""));

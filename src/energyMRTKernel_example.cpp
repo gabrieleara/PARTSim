@@ -26,7 +26,7 @@
 #include "cpu.hpp"
 #include "cbserver.hpp"
 #include <taskstat.hpp>
-#include <stafford_importer.hpp>
+#include <fileImporter.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -1669,21 +1669,16 @@ int main(int argc, char *argv[]) {
             int seed = 98;
             srand(seed); // random nums are expected to be the same in all simulations
 
-            ets = StaffordImporter::getEnvelopedPeriodcTasks("taskset_generator/P_500_u_75.txt");
-            cout << "end" << endl;
-            exit(0);
+            ets = StaffordImporter::getEnvelopedPeriodcTasks("taskset_generator/P_500_u_75.txt", kern);
 
-            for (int j = 0; j < 8 * 3; j++) {
-                task_name = "T9_task" + std::to_string(j);
-                cout << "Creating task: " << task_name;
-                PeriodicTask* t = new PeriodicTask(task_period, task_period, 0, task_name);
-                char instr[60] = "";
-                sprintf(instr, "fixed(%d, %s);", task_period * rand() / (RAND_MAX + 1u), workload.c_str());
-                t->insertCode(instr);
-                tasks.push_back(t);
-                ttrace.attachToTask(*t);
-                ets.push_back(kern->addTaskAndEnvelope(t, ""));
-                mc.attachToTask(t);
+            cout << " there are tasks: " << ets.size() << endl;
+            for (CBServerCallingEMRTKernel* t : ets)
+                cout << t->toString() << endl;
+
+            for (CBServerCallingEMRTKernel* t : ets) {
+                tasks.push_back(t->getAllTasks().at(0));
+                ttrace.attachToTask(*t->getAllTasks().at(0));
+                mc.attachToTask(dynamic_cast<Task*>(t->getAllTasks().at(0)));
             }
 
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
@@ -1700,6 +1695,7 @@ int main(int argc, char *argv[]) {
             for (CBServerCallingEMRTKernel* cbs : ets)
                 delete cbs;
             delete k;
+            return 0;
         }
 
         SIMUL.run(1000); // 5000
