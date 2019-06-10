@@ -488,7 +488,7 @@ if (p->getName().find("BIG_0") != string::npos)
         MigrationProposal migrationProposal = migrateFromBig(endingCPU, toBeSkipped);
 
         if (migrationProposal.task == NULL) // no migration from big to little
-            migrationProposal = migrateByBalancing (endingCPU, toBeSkipped);
+            migrationProposal = balanceLoad (endingCPU, toBeSkipped);
 
         return migrationProposal;
     }
@@ -520,7 +520,7 @@ if (p->getName().find("BIG_0") != string::npos)
         endFun: return migrationProposal;
     }
 
-    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped) {
+    EnergyMRTKernel::MigrationProposal EnergyMRTKernel::balanceLoad (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped) {
         cout << "\t\tEMRTK::" << __func__ << "(). Balancing load of island: " << endingCPU->getName() << endl;
         MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
         vector<AbsRTTask*> readyTasks;
@@ -594,7 +594,7 @@ if (p->getName().find("BIG_0") != string::npos)
         }
     }
 
-    void EnergyMRTKernel::balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows) {
+    void EnergyMRTKernel::balanceLoadEnergy(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows) {
         // Load balancing policy: don't put all the load on a core of an island, but use also the others.
         // Mechanism: if chosen CPU is busy, find a free CPU in the island with the same consumption.
         // Note: with this algorithm tasks cannot be assigned to a core in an island
@@ -633,7 +633,7 @@ if (p->getName().find("BIG_0") != string::npos)
         bool chosenCPUchanged = false;
         bool toBeChanged = chosenCPU->isBusy();
 
-        balanceLoad(&chosenCPU, chosenOPP, chosenCPUchanged, iDeltaPows);
+        balanceLoadEnergy(&chosenCPU, chosenOPP, chosenCPUchanged, iDeltaPows);
 
         cout << "Temporarily chosenCPU: " << chosenCPU->toString() << " with freq " << chosenCPU->getFrequency(chosenOPP) << endl;
         leaveLittle3(t, iDeltaPows, chosenCPU);

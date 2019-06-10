@@ -384,10 +384,10 @@ namespace RTSim {
         // ----------------------------------- Migrations
 
         /// island cores load balancing policy: if possible, make all island cores work
-        void balanceLoad(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
+        void balanceLoadEnergy(CPU_BL **chosenCPU, unsigned int &chosenOPP, bool &chosenCPUchanged, vector<struct ConsumptionTable> iDeltaPows);
 
-        /// Balance load by migration todo joinable with balanceLoad? Tasks in toBeSkipped will be skipped
-        MigrationProposal migrateByBalancing (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped = {});
+        /// Balance load by migration. Tasks in toBeSkipped will be skipped. todo joinable with balanceLoadEnergy?
+        MigrationProposal balanceLoad (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped = {});
 
         /// Proposes a migration from Big to Little. Tasks in toBeSkipped will be skipped
         MigrationProposal migrateFromBig (CPU_BL *endingCPU, vector<AbsRTTask*> toBeSkipped = {});
