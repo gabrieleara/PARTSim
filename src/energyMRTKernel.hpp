@@ -626,7 +626,7 @@ namespace RTSim {
            Returns island utilization given a capacity to scale up/down tasks WCET.
            It also returns the number of tasks being scheduled in the island
         */
-        double getIslandUtilization(double capacity, IslandType  island, int *nTaskIsland);
+        double getIslandUtilization(double capacity, IslandType  island, int *nTaskIsland) const;
 
         /// Returns utilization of task t on CPU_BL c. This method could be defined for tasks, but this way I can make this implementation private
         double getUtilization(AbsRTTask* t, double capacity) const;
@@ -640,7 +640,7 @@ namespace RTSim {
         /**
           If it's an executing CBS server CEMRTK., it increases utilization by the CBS server utilization and return true.
           */
-        bool getCBServer_CEMRTK_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
+        bool getCBServer_Utilization(AbsRTTask *cbs, double &utilization_initial, const double cbs_core_capacity) const;
 
         /// Returns the set of tasks in the runqueue of CPU_BL c, but the runnning one, ordered by DL (300, 400, ...)
         virtual vector<AbsRTTask*> getReadyTasks(CPU_BL* c) const;

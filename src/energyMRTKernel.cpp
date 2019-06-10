@@ -122,7 +122,7 @@ namespace RTSim {
             ths.push_back(runningTask);
 
         for (AbsRTTask* th : ths) {
-            if (getCBServer_CEMRTK_Utilization(th, utilization, capacity))
+            if (getCBServer_Utilization(th, utilization, capacity))
                 continue;
 
             utilization += ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod());
@@ -141,7 +141,7 @@ namespace RTSim {
         return utilization;
     }
 
-    double EnergyMRTKernel::getIslandUtilization(double capacity, IslandType island, int *nTasksIsland) {
+    double EnergyMRTKernel::getIslandUtilization(double capacity, IslandType island, int *nTasksIsland) const {
         cout << "\t\t\t" << __func__ << "()" << endl;
         // Sum of running and ready tasks on island + utils active
         double utilizationIsland = 0.0;
@@ -149,30 +149,7 @@ namespace RTSim {
         for (CPU_BL* c1 : getProcessors(island)) {
             cout << "\t\t\t\t" << c1->getName() << ":" << endl;
 
-            vector<AbsRTTask*> tasks = getReadyTasks(c1);
-            AbsRTTask* runningTask = getRunningTask(c1);
-            if (runningTask != NULL) {
-                if (!getCBServer_CEMRTK_Utilization(runningTask, utilizationIsland, capacity)) {
-                    utilizationIsland += ceil(runningTask->getRemainingWCET(capacity)) / double(runningTask->getPeriod());
-                    cout << ceil(runningTask->getRemainingWCET(capacity)) << " " << double(runningTask->getPeriod()) << endl;
-                    cout << "\t\t\t\trunning task " << runningTask->toString() << " -> isl util=" << utilizationIsland << endl;
-                    if (nTasksIsland != NULL)
-                        *nTasksIsland = *nTasksIsland + 1;
-                }
-            }
-            for (AbsRTTask* th : tasks) {
-                cout << "\t\t\t\ttask " << th->toString() << " --> " << getEnveloper(th)->toString() << " ready on " << getProcessorReady(th)->toString() << endl;
-                if (getCBServer_CEMRTK_Utilization(th, utilizationIsland, capacity))
-                    continue;
-
-                if (getProcessorReady(th)->getIslandType() == c1->getIslandType() ||
-                    dynamic_cast<CPU_BL*>(getProcessor(th))->getIslandType() == c1->getIslandType()) { // todo maybe guard removable
-                    utilizationIsland += ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod());
-                    cout << "\t\t\t\tready task " << th->toString() << " -> isl util=" << utilizationIsland << endl;
-                    if (nTasksIsland != NULL)
-                        *nTasksIsland = *nTasksIsland + 1;
-                }
-            }
+            utilizationIsland += getUtilization(c1, capacity);
 
             double u_active_c1 = _queues->getUtilization_active(c1);
             utilizationIsland += u_active_c1;
@@ -183,9 +160,10 @@ namespace RTSim {
         return utilizationIsland;
     }
 
-    bool EnergyMRTKernel::getCBServer_CEMRTK_Utilization(AbsRTTask *th, double &utilization, const double capacity) const {
+    /// Adds the CBS server utilization to "utilization", if server status is executing or recharging, and returns true
+    bool EnergyMRTKernel::getCBServer_Utilization(AbsRTTask *task, double &utilization, const double capacity) const {
         cout << "\t\t\t\t" << __func__ << "(). init util=" << utilization << endl;
-        CBServerCallingEMRTKernel *cbs = dynamic_cast<CBServerCallingEMRTKernel*>(th);
+        CBServerCallingEMRTKernel *cbs = dynamic_cast<CBServerCallingEMRTKernel*>(task);
 
         if (cbs == NULL) {
             cout << "\t\t\t\t\tnot a CBServerCallingEMRTKernel => skip" << endl;
@@ -199,7 +177,7 @@ namespace RTSim {
         
         //todo rem
         cout << "\t\t\t\t\tserver status: " << cbs->getStatusString() << endl;
-        // server utilization (its WCET/period) considered only if it's releasing or recharging
+        // server utilization (its WCET/period) considered only if it's executing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING || cbs->getStatus() == ServerStatus::RECHARGING) {
             utilization += cbs->getRemainingWCET(capacity) / double(cbs->getPeriod());
             cout << "\t\t\t\t\tCBS server is executing. utilization increased to " << cbs->getRemainingWCET(capacity) << "/" << double(cbs->getPeriod()) << "=" << utilization << " capacity=" << capacity << endl;

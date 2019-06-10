@@ -1213,7 +1213,7 @@ int main(int argc, char *argv[]) {
             REQUIRE (serv->getTasks().at(0) == tos);
             cout << " wcet " << tos->getWCET(1.0) << endl;
             REQUIRE ((tos->getWCET(1.0) + double(SIMUL.getTime())) == 7.0);
-            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            REQUIRE (k->getCBServer_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
             REQUIRE (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 0.2 + 10.0 / 30.0 + 1.0 / 31.0);
             
             SIMUL.run_to(6); // taskDuring comes and goes ready on big0. Island util considers server util and tasks on big1
@@ -1226,7 +1226,7 @@ int main(int argc, char *argv[]) {
             REQUIRE (k->getProcessorRunning(t5) == cpus_big[0]);
             REQUIRE ((t5->getWCET(1.0) + double(SIMUL.getTime())) == 9.0);
             REQUIRE (k->getUtilization_active(dynamic_cast<CPU_BL*>(cpus_big[0])) == 0.2);
-            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
+            REQUIRE (k->getCBServer_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. core active util
             
             SIMUL.run_to(8); // taskBefore (the server DL) comes and goes ready on big0. Island util considers u_active of big0 and tasks on big1
             REQUIRE (k->getProcessorRunning(t5) == cpus_big[0]);
@@ -1249,7 +1249,7 @@ int main(int argc, char *argv[]) {
             REQUIRE (serv->getTasks().at(0) == tos2);
             REQUIRE (serv->getStatus() == ServerStatus::EXECUTING);
             REQUIRE (k->getIslandUtilization(1.0, IslandType::BIG, NULL) == 2.0 / 21.0 + 4.0/30.0 + 1.0 / 31.0);
-            REQUIRE (k->getCBServer_CEMRTK_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
+            REQUIRE (k->getCBServer_Utilization(serv, init_util, 1.0)); // is 0.2 server util or core active util? exp. server util
             REQUIRE ((tos2->getWCET(1.0) + double(SIMUL.getTime())) == 13.0);
 
             SIMUL.run_to(12); // taskAfter comes. Island utilization considers server and tasks on big1
