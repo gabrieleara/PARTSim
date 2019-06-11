@@ -29,6 +29,7 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                       = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                             = 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                           = 0;
+    bool EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE                         = 1;
 
     bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED                 = 1;
     bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END          = 1;
@@ -138,6 +139,10 @@ namespace RTSim {
         cout << "\t\t\tU_active on core (for CBS server): " << u_active << endl;
         utilization += u_active;
 
+        double u_tempMig = getUtilization_temporarilyMigrated(c);
+        cout << "\t\t\tU_tempMig = " << u_tempMig << endl;
+        utilization += u_tempMig;
+
         return utilization;
     }
 
@@ -187,6 +192,17 @@ namespace RTSim {
         cout << "\t\t\t\t\tCBS server not executing or recharging => skip" << endl;
         return false;
     }
+
+    double EnergyMRTKernel::getUtilization_temporarilyMigrated(CPU_BL *from) const {
+          double util = 0.0;
+
+          for (MigrationProposal mp : _temporarilyMigrated) {
+            if (mp.from == from)
+              util += getUtilization(mp.task, from->getSpeed()); // if speed's changed, than you've passed through dispatch() => temp.migr.ed task removed already
+          }
+
+          return util;
+        }
 
     void EnergyMRTKernel::onOppChanged(unsigned int curropp, Island_BL* island) {
         if (isTryngTaskOnCPU_BL())
@@ -410,9 +426,6 @@ namespace RTSim {
         cout << ".............................." << endl;
         cout << "\tActual time = [" << SIMUL.getTime() << "]. EMRTK::" << __func__ << "(). " << t->toString() << " has just finished on " << p->toString() << endl;
 
-if (p->getName().find("BIG_0") != string::npos)
-    cout << "";
-
         _sched->extract(t);
         // todo delete cout
         string state = _sched->toString();
@@ -469,8 +482,8 @@ if (p->getName().find("BIG_0") != string::npos)
             if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
                 CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task); 
                 assert (!cbs->isEmpty()); 
-                Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed()))); 
-                cbs->changeBudget(newB); 
+                //Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed())));  // done in onmigfinished()
+                //cbs->changeBudget(newB); 
             }
             
             // make task run on ending core.
@@ -507,9 +520,9 @@ if (p->getName().find("BIG_0") != string::npos)
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty() && !Utils::exists(tt, toBeSkipped)) {
                         cout << "\t\tMigration proposal of " << tt->toString() << " from " << c->toString() << " to " << iDeltaPows.at(0).cpu->toString() << " with frequency " << endingCPU->getFrequency(iDeltaPows.at(0).opp) << endl;
-                        migrationProposal.task  = tt;
-                        migrationProposal.from  = c;
-                        migrationProposal.to    = endingCPU;
+                        migrationProposal.task      = tt;
+                        migrationProposal.from      = c;
+                        migrationProposal.to        = endingCPU;
                         goto endFun; // break and return
                     }
                 }
@@ -649,6 +662,8 @@ if (p->getName().find("BIG_0") != string::npos)
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
         cout << "EMRTK::" << __func__ << "(p, t, opp) task:" << t->toString() << endl;
         CPU_BL* pp = dynamic_cast<CPU_BL*>(p);
+
+        removeTaskTemporarilyMigrated(pp);
 
         _queues->insertTask(t, pp, opp);
 

@@ -12,7 +12,7 @@ using namespace MetaSim;
 using namespace RTSim;
 using namespace std;
 
-#define time() SIMUL.getTime()
+#define time()              SIMUL.getTime()
 #define FORCE_REQUISITES    1 /* 1 if you want to try all experiments */
 
 string workload = "bzip2";
@@ -22,14 +22,14 @@ int init_sequence = 0;
 class Requisite {
     public:
         bool    satisfied;
-        bool    EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield,
+        bool    EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield, EMRTK_temporarily_migrate,
                 EMRTK_cbs_enveloping_per_task_enabled, EMRTK_cbs_enveloping_migrate_after_vtime_end, EMRTK_cbs_migrate_after_end,
                 EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
 
         // in the default case, you don't want neither leave_little3 and migrate and CBS servers yielding
         Requisite(bool EMRTK_leave_little3 = false, bool EMRTK_migrate = true, bool EMRTK_cbs_yield = false,
             bool EMRTK_cbs_enveloping_per_task_enabled = true, bool EMRTK_cbs_enveloping_migrate_after_vtime_end = false, bool EMRTK_cbs_migrate_after_end = true,
-            bool EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = true)
+            bool EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = true, bool EMRTK_temporarily_migrate = false)
             : satisfied(false) {
                 this->EMRTK_leave_little3 = EMRTK_leave_little3;
                 this->EMRTK_migrate = EMRTK_migrate;
@@ -38,12 +38,14 @@ class Requisite {
                 this->EMRTK_cbs_enveloping_migrate_after_vtime_end = EMRTK_cbs_enveloping_migrate_after_vtime_end;
                 this->EMRTK_cbs_migrate_after_end = EMRTK_cbs_migrate_after_end;
                 this->EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
+                this->EMRTK_temporarily_migrate = EMRTK_temporarily_migrate;
             }
 
         string toString() const {
             string s = "Requisite with leave_little_3: " + to_string(EMRTK_leave_little3) + ", migrate: " + to_string(EMRTK_migrate) + ", cbs yielding: " + to_string(EMRTK_cbs_yield) + 
                 ", cbs_enveloping_per_task_enabled: " + to_string(EMRTK_cbs_enveloping_per_task_enabled) + ", cbs_enveloping_migrate_after_vtime_end: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end) + 
-                ", EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk) + ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end);
+                ", EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk) + ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end) +
+                ", EMRTK_temporarily_migrate: " + to_string(EMRTK_temporarily_migrate);
             return s;
         }
 };
@@ -1133,7 +1135,7 @@ TEST_CASE("Experiment 20") {
       */
     init_sequence = 20;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req (false, true, false, true, true, false, false);
+    Requisite req (false, true, false, true, true, false, true);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1191,8 +1193,9 @@ TEST_CASE("Experiment 20") {
     // no migration, only schedule ready tasks
     REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
     REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
-
+    
     SIMUL.run_to(189); // end vtime => migration
+    k->printState(true);
     REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
     REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
 
@@ -1224,104 +1227,106 @@ TEST_CASE("Experiment 20") {
     performedTests[init_sequence] = req;
 }
 
-TEST_CASE ("Experiment 21") {
-    /**
-        3rd example. End of virtual time of task t. Kernel pulls (migrates) a task into
-        the ending core. It has WCET > DL_t (t is now idle). When t arrives again, it cannot
-        be scheduled on its previous core, because U + U_t > 1 (EDF).
-      */
-    init_sequence = 21;
-    cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false, false);
-    if (!checkRequisites( req ))  return;
+// test not more working because tasks are not allowed anymore to steal utilization from task whose vtime ends
+// TEST_CASE ("Experiment 21") {
+//     /**
+//         3rd example. End of virtual time of task t. Kernel pulls (migrates) a task into
+//         the ending core. It has WCET > DL_t (t is now idle). When t arrives again, it cannot
+//         be scheduled on its previous core, because U + U_t > 1 (EDF).
+//       */
+//     init_sequence = 21;
+//     cout << "Begin of experiment " << init_sequence << endl;
+//     Requisite req(false, true, false, true, true, false, true, true);
+//     if (!checkRequisites( req ))  return;
 
-    EnergyMRTKernel *kern;
-    init_suite(&kern);
-    REQUIRE(kern != NULL);
-    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
-    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
-    vector<AbsRTTask*> tasks;
+//     EnergyMRTKernel *kern;
+//     init_suite(&kern);
+//     REQUIRE(kern != NULL);
+//     vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+//     vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+//     vector<AbsRTTask*> tasks;
 
-    string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
-    int     wcets[] = { 450, 450, 450, 400, 343 };
-    int     deads[] = { 500, 500, 500, 500, 500 };
-    vector<CBServerCallingEMRTKernel*> ets;
-    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
-        task_name = "T" + to_string(init_sequence) + "_task_BIG_" + names[j];
-        cout << "Creating task: " << task_name;
-        PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
-        char instr[60] = "";
-        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
-        cout << instr << endl;
-        t->insertCode(instr);
-        ets.push_back(kern->addTaskAndEnvelope(t, ""));
-        tasks.push_back(t);
-    }
-    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-    k->addForcedDispatch(ets[0], cpus_big[0], 18);
-    k->addForcedDispatch(ets[1], cpus_big[1], 18);
-    k->addForcedDispatch(ets[2], cpus_big[2], 18);
-    k->addForcedDispatch(ets[3], cpus_big[3], 18);
-    k->addForcedDispatch(ets[4], cpus_big[3], 18); // ready
+//     string  names[] = { "B0_killed", "B1", "B2", "B3_running", "B3_ready" };
+//     int     wcets[] = { 450, 450, 450, 400, 343 }; // I know, these task wouldn't normally fit with EDF
+//     int     deads[] = { 500, 500, 500, 500, 500 };
+//     vector<CBServerCallingEMRTKernel*> ets;
+//     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+//         task_name = "T" + to_string(init_sequence) + "_task_BIG_" + names[j];
+//         cout << "Creating task: " << task_name;
+//         PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+//         char instr[60] = "";
+//         sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+//         cout << instr << endl;
+//         t->insertCode(instr);
+//         ets.push_back(kern->addTaskAndEnvelope(t, ""));
+//         tasks.push_back(t);
+//     }
+//     EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+//     k->addForcedDispatch(ets[0], cpus_big[0], 18);
+//     k->addForcedDispatch(ets[1], cpus_big[1], 18);
+//     k->addForcedDispatch(ets[2], cpus_big[2], 18);
+//     k->addForcedDispatch(ets[3], cpus_big[3], 18);
+//     k->addForcedDispatch(ets[4], cpus_big[3], 18); // ready
 
-    for (CPU_BL* c : cpus_little)
-        c->toggleDisabled();
+//     for (CPU_BL* c : cpus_little)
+//         c->toggleDisabled();
 
-    SIMUL.initSingleRun();
+//     SIMUL.initSingleRun();
     
-    SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
-    ets[0]->killInstance();
-    SIMUL.sim_step(); // t=150, but all events have been processed
-    cout << "u active big 0 " << k->getUtilization_active(cpus_big[0]) << endl;
-    cout << "idle evt " << ets[0]->getIdleEvent() << endl;
-    cout << "server status " << ets[0]->getStatusString() << endl;
-    REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.85); // shall be 0.9
-    REQUIRE ( (double) ets[0]->getIdleEvent() > 165);
-    REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
+//     SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
+//     ets[0]->killInstance();
+//     SIMUL.sim_step(); // t=150, but all events have been processed
+//     cout << "u active big 0 " << k->getUtilization_active(cpus_big[0]) << endl;
+//     cout << "idle evt " << ets[0]->getIdleEvent() << endl;
+//     cout << "server status " << ets[0]->getStatusString() << endl;
+//     REQUIRE (k->getUtilization_active(cpus_big[0]) > 0.85); // shall be 0.9
+//     REQUIRE ( (double) ets[0]->getIdleEvent() > 165);
+//     REQUIRE (ets[0]->getStatus() == ServerStatus::RELEASING);
 
-    SIMUL.run_to(151);
-    k->printState(true);
-    // no migration, only schedule ready tasks
-    REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
-    REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
+//     SIMUL.run_to(151);
+//     k->printState(true);
+//     // no migration, only schedule ready tasks
+//     REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+//     REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
 
-    SIMUL.run_to(169); // end vtime => migration
-    REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
-    REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
+//     SIMUL.run_to(169); // end vtime => migration
+//     k->printState(true);
+//     REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
+//     REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
 
-    cout << endl << "Scheduler state t=189:"<<endl;
-    cout << k->getScheduler()->toString() << endl << endl;
+//     cout << endl << "Scheduler state t=189:"<<endl;
+//     cout << k->getScheduler()->toString() << endl << endl;
 
-    SIMUL.run_to(201);
-    k->printState(true);
+//     SIMUL.run_to(201);
+//     k->printState(true);
 
-    SIMUL.run_to(451);
-    k->printState(true);
-    REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
-    REQUIRE (k->getRunningTask(cpus_big[1]) == NULL);
-    REQUIRE (k->getRunningTask(cpus_big[2]) == NULL);
-    REQUIRE (k->getRunningTask(cpus_big[3]) == NULL);
+//     SIMUL.run_to(451);
+//     k->printState(true);
+//     REQUIRE (k->getRunningTask(cpus_big[0]) == ets[4]);
+//     REQUIRE (k->getRunningTask(cpus_big[1]) == NULL);
+//     REQUIRE (k->getRunningTask(cpus_big[2]) == NULL);
+//     REQUIRE (k->getRunningTask(cpus_big[3]) == NULL);
 
-    SIMUL.run_to(501); // all tasks are over, usual dispatch
-    k->printState(true);
-    for (CPU* c : k->getProcessors(IslandType::BIG))
-        REQUIRE (k->getRunningTask(c) != NULL);
-    REQUIRE (k->getProcessor(ets[0]) != NULL);
-    ets[0]->endRun(); // since it goes scheduled somewhere
-    REQUIRE (k->isDispatchable(ets[0], cpus_big[0])); // because task WCET 343 has stolen its utilization
+//     SIMUL.run_to(501); // all tasks are over, usual dispatch
+//     k->printState(true);
+//     for (CPU* c : k->getProcessors(IslandType::BIG))
+//         REQUIRE (k->getRunningTask(c) != NULL);
+//     REQUIRE (k->getProcessor(ets[0]) != NULL);
+//     ets[0]->endRun(); // since it goes scheduled somewhere
+//     REQUIRE (k->isDispatchable(ets[0], cpus_big[0])); // because task WCET 343 has stolen its utilization
 
-    SIMUL.endSingleRun();
+//     SIMUL.endSingleRun();
 
-    cout << "--------------" << endl;
-    cout << "Simulation finished" << endl;
-    for (AbsRTTask *t : tasks)
-        delete t;
-    for (CBServerCallingEMRTKernel* cbs : ets)
-        delete cbs;
-    delete k;
-    cout << "End of Experiment #" << init_sequence << endl << endl;
-    performedTests[init_sequence] = req;
-}
+//     cout << "--------------" << endl;
+//     cout << "Simulation finished" << endl;
+//     for (AbsRTTask *t : tasks)
+//         delete t;
+//     for (CBServerCallingEMRTKernel* cbs : ets)
+//         delete cbs;
+//     delete k;
+//     cout << "End of Experiment #" << init_sequence << endl << endl;
+//     performedTests[init_sequence] = req;
+// }
 
 TEST_CASE ("Experiment 22") {
     /**
@@ -1330,7 +1335,7 @@ TEST_CASE ("Experiment 22") {
       */
     init_sequence = 22;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false, false);
+    Requisite req(false, true, false, true, true, false, true);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1407,7 +1412,7 @@ TEST_CASE ("Experiment 23") {
     /// Does killInstance() on CBS server enveloping periodic tasks work?
     init_sequence = 23;
     cout << "Begin of experiment " << init_sequence << endl;
-    Requisite req(false, true, false, true, true, false, false);
+    Requisite req(false, true, false, true, true, false, true);
     if (!checkRequisites( req ))  return;
 
     EnergyMRTKernel *kern;
@@ -1730,6 +1735,7 @@ bool checkRequisites(Requisite reqs) {
 
         cout << "Changing EMRTK policies settings as needed:" << endl;
 
+        // edit here when you add a new policy in EnergyMRTKernel
         cout << "\tSetting Leave Little 3 free policy to " << reqs.EMRTK_leave_little3 << endl;
         EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = reqs.EMRTK_leave_little3;
 
@@ -1738,6 +1744,9 @@ bool checkRequisites(Requisite reqs) {
 
         cout << "\tSetting CBS Server yielding policy to " << reqs.EMRTK_cbs_yield << endl;
         EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED = reqs.EMRTK_cbs_yield;
+
+        cout << "\tSetting Temporarily Migrate policy to " << reqs.EMRTK_temporarily_migrate << endl;
+        EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE = reqs.EMRTK_temporarily_migrate;
 
 
 
@@ -1757,6 +1766,7 @@ bool checkRequisites(Requisite reqs) {
         return true;
     }
 
+    // edit here when you add a new policy in EnergyMRTKernel
     if ( reqs.EMRTK_leave_little3 != EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED ) {
         cout << "Test requires EMRTK_LEAVE_LITTLE3_ENABLED = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED << ". Skip" << endl;
         return false;
@@ -1767,6 +1777,11 @@ bool checkRequisites(Requisite reqs) {
     }
     if (reqs.EMRTK_cbs_yield != EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED) {
         cout << "Test requires EMRTK_CBS_YIELD_ENABLED = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED << ". Skip" << endl;
+        return false;
+    }
+
+    if (reqs.EMRTK_temporarily_migrate != EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE) {
+        cout << "Test requires EMRTK_TEMPORARILY_MIGRATE = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE << ". Skip" << endl;
         return false;
     }
 
@@ -1792,6 +1807,7 @@ bool checkRequisites(Requisite reqs) {
     return true;
 }
 
+// edit here when you add a new policy in EnergyMRTKernel
 bool fixDependencies(Requisite reqs, bool abortOnFix) {
     cout << __func__ << "()" << endl;
 
@@ -1831,5 +1847,12 @@ bool fixDependencies(Requisite reqs, bool abortOnFix) {
             cout << "\tabort on line " << __LINE__ << endl;
             exit(0);
         }
-        else reqs.EMRTK_migrate = 1;    
+        else reqs.EMRTK_migrate = 1;
+
+    if (reqs.EMRTK_temporarily_migrate && !reqs.EMRTK_migrate)
+        if (abortOnFix) {
+            cout << "\tabort on line " << __LINE__ << endl;
+            exit(0);
+        }
+        else reqs.EMRTK_migrate = 1;
 }
