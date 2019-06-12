@@ -449,20 +449,6 @@ namespace RTSim {
         */
         bool isToBeDescheduled(CPU_BL* p, AbsRTTask *t);
 
-        /// Is task temporarily migrated on core c
-        bool isTaskTemporarilyMigrated(AbsRTTask* t, CPU_BL* c) const {
-          bool found = false;
-
-          for (MigrationProposal mp : _temporarilyMigrated) {
-            if (mp.task == t && mp.to == c) {
-              found = true;
-              break;
-            }
-          }
-
-          return found;
-        }
-
         /**
          * Implements the policy of leaving little 3 free, just in case a task with high WCET arrives,
          * risking to be forced to schedule it on big cores, increasing power consumption.
@@ -483,11 +469,12 @@ namespace RTSim {
             ending core and it is always utilized. There is no migration overhead and energy 
             consumption is the same because it is the same island, so same cache and frequency.
             */
-          if (!EMRTK_TEMPORARILY_MIGRATE) {
+          if (!EMRTK_TEMPORARILY_MIGRATE_VTIME) {
             cout << "\tTemporary migrations disabled => skip" << endl;
             return false;
           }
 
+          cout << "\tEMRTK::" << __func__ << "()" << endl;
           MigrationProposal migrationProposal = balanceLoad(endingCPU, {});
           
           if (migrationProposal.task == NULL) {
@@ -497,16 +484,19 @@ namespace RTSim {
 
           cout << "\tTemporarily migrated " << migrationProposal.task->toString() << " from " << migrationProposal.from->toString() << " to " << migrationProposal.to->toString() << endl;
           _temporarilyMigrated.push_back(migrationProposal);
+          migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
           _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
           return true;
         }
 
         /// Remove tasks temporarily migrated task to core 'to'
         void removeTaskTemporarilyMigrated(CPU_BL *to) {
+          cout << "\tEMRTK::" << __func__ << "() to core=" << to->toString() << endl;
           for (int i = 0; i < _temporarilyMigrated.size(); i++) {
             if (_temporarilyMigrated.at(i).to == to) {
               MigrationProposal mp = _temporarilyMigrated.at(i);
-              _queues->onMigrationFinished(mp.task, mp.from, mp.to);
+              mp.from->setWorkload(Utils::getTaskWorkload(mp.task));
+              _queues->onMigrationFinished(mp.task, mp.to, mp.from);
               _temporarilyMigrated.erase(_temporarilyMigrated.begin() + i);
             }
           }
@@ -529,12 +519,12 @@ namespace RTSim {
         static bool EMRTK_LEAVE_LITTLE3_ENABLED                     ;
         static bool EMRTK_MIGRATE_ENABLED                           ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
         static bool EMRTK_CBS_YIELD_ENABLED                         ;
-        static bool EMRTK_TEMPORARILY_MIGRATE                       ; /// Enables temporary (and fake) migrations, i.e. migration that only last until until a task starts on endingCPU
+        static bool EMRTK_TEMPORARILY_MIGRATE_VTIME                 ; /// Enables temporary (and fake) migrations on vtime end evt, i.e. migration that only last until until a task starts on endingCPU
+        static bool EMRTK_TEMPORARILY_MIGRATE_END                   ; /// As VTIME, but on task end evt (killed, end WCET, etc.)
 
         static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED               ;     /// CBS server enveloping periodic tasks?
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END        ;     /// After task ends its virtual time, there can be migrations (requires EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK;     /// Advanced check after virtual time expires (requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END)
         static bool EMRTK_CBS_MIGRATE_AFTER_END                         ;     /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END        ;     /// After task ends its virtual time, there can be migrations (requires EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
 
 
         /**
@@ -755,6 +745,38 @@ namespace RTSim {
             return mp.to->getPowerConsumption(mp.to->getFrequency()) <= mp.from->getPowerConsumption(mp.from->getFrequency());
         }
 
+        /// Does migration break schedulability on the ending core?
+        bool isMigrationSafe(const MigrationProposal mp) {
+            assert (mp.task != NULL); assert (mp.from != NULL); assert (mp.to != NULL);
+            CPU_BL *endingCPU = mp.to;
+            CBServerCallingEMRTKernel *task_m = dynamic_cast<CBServerCallingEMRTKernel*> (mp.task);
+            cout << "\tEMRTK::" << __func__ << "()" << endl;
+            
+            double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
+            bool safe = (double) task_m->get_remaining_budget() <= (1 - utilCore) * double(task_m->getDeadline() - SIMUL.getTime()); // remaining utilization of migrated task > 1 - U_core (remaining core util)
+
+            if (!safe)
+                cout << "\t\tNot safe to migrate " << task_m->toString() << " into " << endingCPU->toString() << ": " << task_m->get_remaining_budget() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ") => pick next ready" << endl;
+              else
+                cout << "\t\tMigration safe " << task_m->toString() << mp.from->toString() << " -> " << endingCPU->toString() << endl;
+
+            return safe;
+        }
+
+        /// Is task temporarily migrated on core to
+        bool isTaskTemporarilyMigrated(AbsRTTask* t, CPU_BL* to) const {
+          bool found = false;
+
+          for (MigrationProposal mp : _temporarilyMigrated) {
+            if (mp.task == t && mp.to == to) {
+              found = true;
+              break;
+            }
+          }
+
+          return found;
+        }
+
         /**
          * Begins the dispatch process (context switch). The task is dispatched, but not
          * executed yet. Its execution on its CPU_BL starts with onEndDispatchMulti()
@@ -833,14 +855,13 @@ namespace RTSim {
             _queues->schedule(endingCPU);
             return;
           }
-          if (!EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK) {
-            cout << "\tEMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK disabled" << endl;
+          if (!EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END) {
+            cout << "\tEMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END disabled" << endl;
             return;
           }
 
           // no ready task on core. Core's idle. Try migrating from other cores
           vector<AbsRTTask*> toBeSkipped;
-          double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
           MigrationProposal migrationProposal;
           CBServerCallingEMRTKernel *task_m = NULL;
           while (true) {
@@ -851,10 +872,7 @@ namespace RTSim {
             toBeSkipped.push_back(task_m);
 
             // Double check if migration breaks previous task schedulability
-            if ( (double) task_m->get_remaining_budget() > (1 - utilCore) * double(task_m->getDeadline() - SIMUL.getTime()) ) // remaining utilization of migrated task > 1 - U_core (remaining core util)
-                cout << "\tCannot migrate " << task_m->toString() << " into " << endingCPU->toString() << ": " << task_m->get_remaining_budget() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ") => pick next ready" << endl;
-            else
-                if (isMigrationEnergConvenient(migrationProposal))
+            if ( isMigrationSafe(migrationProposal) && isMigrationEnergConvenient(migrationProposal) )
                   break;
           }
 

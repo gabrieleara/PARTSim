@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 25;
+    int TEST_NO = 13;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -65,6 +65,8 @@ int main(int argc, char *argv[]) {
     EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                     = 0;
     EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                           = 1;
     EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                         = 0;
+    EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME                 = 0;
+    EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_END                   = 0;
 
     EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED           = 1;
     EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END    = 0;
@@ -780,13 +782,14 @@ int main(int argc, char *argv[]) {
                 sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
                 cout << instr << endl;
                 t->insertCode(instr);
-                CBServerCallingEMRTKernel* et = kern->addTaskAndEnvelope(t, "");
-                ttrace.attachToTask(*t);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
                 tasks.push_back(t);
 
                 t->killOnMiss(true);
             }
             EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            MultiCoresScheds* queues = k->getEnergyMultiCoresScheds();
+
             k->addForcedDispatch(ets[0], cpus_big[0], 18);
             k->addForcedDispatch(ets[1], cpus_big[1], 18);
             k->addForcedDispatch(ets[2], cpus_big[2], 18);
@@ -804,14 +807,24 @@ int main(int argc, char *argv[]) {
                 cout << "killing tasks" << endl;
                 Task *t = dynamic_cast<Task*>(tasks[j]);
                 t->killInstance();
-                REQUIRE(t->getState() == TSK_IDLE);
+                REQUIRE (t->getState() == TSK_IDLE);
             }
+            for (CPU* c : k->getProcessors())
+                REQUIRE (queues->getUtilization_active(c) == 0.0);
             SIMUL.run_to(501);
-            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
-            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
-            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
-            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
-            REQUIRE(dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[4]))->getIslandType() == IslandType::BIG);
+            for (CPU* c : k->getProcessors())
+                REQUIRE (queues->getUtilization_active(c) == 0.0);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[0]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[1]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[2]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessor(tasks[3]))->getIslandType() == IslandType::BIG);
+            REQUIRE (dynamic_cast<CPU_BL*>(k->getProcessorReady(tasks[4]))->getIslandType() == IslandType::BIG);
+
+            SIMUL.run_to(999);
+            k->printState(true);
+            exit(0);
+            for (CPU* c : k->getProcessors())
+                REQUIRE (k->getRunningTask(c) == NULL);
 
             SIMUL.run_to(1000);
             SIMUL.endSingleRun();
@@ -1278,7 +1291,6 @@ int main(int argc, char *argv[]) {
 
         EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END           = 1;
         EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                            = 0;
-        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK   = 0;
 
         if (TEST_NO == 20) {
             /**
@@ -1578,7 +1590,7 @@ int main(int argc, char *argv[]) {
 
         // Tests requiring EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK
 
-        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = 1;
+        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = 1;
 
         if (TEST_NO == 24) {
             /**
@@ -1686,6 +1698,102 @@ int main(int argc, char *argv[]) {
             SIMUL.initSingleRun();
             SIMUL.run_to(1000);
             cout << "missing tasks: " << mc.getLastValue() << endl;
+            SIMUL.endSingleRun();
+
+            cout << "--------------" << endl;
+            cout << "Simulation finished" << endl;
+            for (AbsRTTask *t : tasks)
+                delete t;
+            for (CBServerCallingEMRTKernel* cbs : ets)
+                delete cbs;
+            delete k;
+            return 0;
+        }
+
+        EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                        = 1;
+        EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME                    = 1;
+        EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_END                      = 1;
+
+        if (TEST_NO == 26) {
+            /**
+                24th example repeated, but this time when task is killed, processor goes
+                idles since there is no ready task and no task can be migrated definitevely via
+                the migration test. However, it is possible to temporarily migrate task 49 into
+                BIG1. When t=60 (period task 38) arrives, the task 49 goes back to BIG0 and 
+                continues there for 4 ticks; in the meanwhile, task 38 runs on BIG1.
+
+                Only temporary migrations should be used here.
+              */
+            string  names[] = { "B0_running", "B0_migr", "B1_killed" };
+            int     wcets[] = { 25, 75, 38 };
+            int     deads[] = { 100, 100, 60 };
+            MissCount ms("miss");
+            vector<CBServerCallingEMRTKernel*> ets;
+            for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+                task_name = "T" + to_string(TEST_NO) + names[j];
+                cout << "Creating task: " << task_name;
+                PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+                char instr[60] = "";
+                sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+                cout << instr << endl;
+                t->insertCode(instr);
+                ets.push_back(kern->addTaskAndEnvelope(t, ""));
+                ttrace.attachToTask(*t);
+                tasks.push_back(t);
+                ms.attachToTask(t);
+                pstrace.attachToTask(*t);
+
+            }
+            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+            k->addForcedDispatch(ets[0], cpus_big[0], 18);
+            k->addForcedDispatch(ets[1], cpus_big[0], 18);
+            k->addForcedDispatch(ets[2], cpus_big[1], 18);
+
+            for (CPU_BL* c : cpus_little)
+                c->toggleDisabled();
+            cpus_big[2]->toggleDisabled();
+            cpus_big[3]->toggleDisabled();
+
+            SIMUL.initSingleRun();
+            
+            SIMUL.run_to(15); // kill task on big1
+            ets[2]->killInstance();
+            SIMUL.sim_step(); // t=15, but all events have been processed
+            cout << "u active big 1 " << k->getUtilization_active(cpus_big[1]) << endl;
+            cout << "idle evt " << ets[2]->getIdleEvent() << endl;
+            cout << "server status " << ets[2]->getStatusString() << endl;
+            REQUIRE (k->getUtilization_active(cpus_big[1]) > 0.6); // shall be 0.63
+            REQUIRE ( (double) ets[2]->getIdleEvent() >= 20);
+            REQUIRE (ets[2]->getStatus() == ServerStatus::RELEASING);
+
+            SIMUL.run_to(16); // because of temporary migrations, task 49 is moved to core BIG1
+            REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
+            REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
+
+            SIMUL.run_to(26); // end vtime, nothing happens on BIG1 because task 49 running; BIG0 gets idle 
+            k->printState(true);
+            REQUIRE (k->getUtilization_active(cpus_big[1]) == 0.0);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+            REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+            REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
+            REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
+
+            SIMUL.run_to(61); // temporary task moved back to its core 
+            k->printState(true);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == ets[1]);
+            REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+            REQUIRE (k->getRunningTask(cpus_big[1]) == ets[2]);
+            REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[0]) == false);
+            REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]) == false);
+
+            SIMUL.run_to(95);
+            k->printState(true);
+            REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+            REQUIRE (k->getRunningTask(cpus_big[1]) == ets[2]);
+
+            REQUIRE (ms.getLastValue() == 0);
+
             SIMUL.endSingleRun();
 
             cout << "--------------" << endl;

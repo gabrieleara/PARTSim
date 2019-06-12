@@ -22,14 +22,14 @@ int init_sequence = 0;
 class Requisite {
     public:
         bool    satisfied;
-        bool    EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield, EMRTK_temporarily_migrate,
-                EMRTK_cbs_enveloping_per_task_enabled, EMRTK_cbs_enveloping_migrate_after_vtime_end, EMRTK_cbs_migrate_after_end,
-                EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
+        bool    EMRTK_leave_little3, EMRTK_migrate, EMRTK_cbs_yield, EMRTK_temporarily_migrate_vtime,
+                EMRTK_cbs_enveloping_per_task_enabled, EMRTK_cbs_enveloping_migrate_after_vtime_end, EMRTK_cbs_migrate_after_end
+                ;
 
         // in the default case, you don't want neither leave_little3 and migrate and CBS servers yielding
         Requisite(bool EMRTK_leave_little3 = false, bool EMRTK_migrate = true, bool EMRTK_cbs_yield = false,
             bool EMRTK_cbs_enveloping_per_task_enabled = true, bool EMRTK_cbs_enveloping_migrate_after_vtime_end = false, bool EMRTK_cbs_migrate_after_end = true,
-            bool EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = true, bool EMRTK_temporarily_migrate = false)
+            bool EMRTK_temporarily_migrate_vtime = false)
             : satisfied(false) {
                 this->EMRTK_leave_little3 = EMRTK_leave_little3;
                 this->EMRTK_migrate = EMRTK_migrate;
@@ -37,15 +37,14 @@ class Requisite {
                 this->EMRTK_cbs_enveloping_per_task_enabled = EMRTK_cbs_enveloping_per_task_enabled;
                 this->EMRTK_cbs_enveloping_migrate_after_vtime_end = EMRTK_cbs_enveloping_migrate_after_vtime_end;
                 this->EMRTK_cbs_migrate_after_end = EMRTK_cbs_migrate_after_end;
-                this->EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk = EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
-                this->EMRTK_temporarily_migrate = EMRTK_temporarily_migrate;
+                this->EMRTK_temporarily_migrate_vtime = EMRTK_temporarily_migrate_vtime;
             }
 
         string toString() const {
             string s = "Requisite with leave_little_3: " + to_string(EMRTK_leave_little3) + ", migrate: " + to_string(EMRTK_migrate) + ", cbs yielding: " + to_string(EMRTK_cbs_yield) + 
                 ", cbs_enveloping_per_task_enabled: " + to_string(EMRTK_cbs_enveloping_per_task_enabled) + ", cbs_enveloping_migrate_after_vtime_end: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end) + 
-                ", EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk) + ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end) +
-                ", EMRTK_temporarily_migrate: " + to_string(EMRTK_temporarily_migrate);
+                ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end) +
+                ", EMRTK_TEMPORARILY_MIGRATE_VTIME: " + to_string(EMRTK_temporarily_migrate_vtime);
             return s;
         }
 };
@@ -1745,8 +1744,8 @@ bool checkRequisites(Requisite reqs) {
         cout << "\tSetting CBS Server yielding policy to " << reqs.EMRTK_cbs_yield << endl;
         EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED = reqs.EMRTK_cbs_yield;
 
-        cout << "\tSetting Temporarily Migrate policy to " << reqs.EMRTK_temporarily_migrate << endl;
-        EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE = reqs.EMRTK_temporarily_migrate;
+        cout << "\tSetting Temporarily Migrate policy to " << reqs.EMRTK_temporarily_migrate_vtime << endl;
+        EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME = reqs.EMRTK_temporarily_migrate_vtime;
 
 
 
@@ -1758,9 +1757,6 @@ bool checkRequisites(Requisite reqs) {
 
         cout << "\tSetting CBS migration after virtualtime end to " << reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end << endl;
         EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end;
-
-        cout << "\tSetting CBS migration after virtualtime end advanced check to " << reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk << endl;
-        EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk;
 
         reqs.satisfied = true;
         return true;
@@ -1780,8 +1776,8 @@ bool checkRequisites(Requisite reqs) {
         return false;
     }
 
-    if (reqs.EMRTK_temporarily_migrate != EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE) {
-        cout << "Test requires EMRTK_TEMPORARILY_MIGRATE = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE << ". Skip" << endl;
+    if (reqs.EMRTK_temporarily_migrate_vtime != EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME) {
+        cout << "Test requires EMRTK_TEMPORARILY_MIGRATE_VTIME = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME << ". Skip" << endl;
         return false;
     }
 
@@ -1793,10 +1789,6 @@ bool checkRequisites(Requisite reqs) {
     }
     if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end != EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END) {
         cout << "Test requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END << ". Skip" << endl;
-        return false;
-    }
-    if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk != EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK) {
-        cout << "Test requires EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK = 1, but it's disabled: " << EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK << ". Skip" << endl;
         return false;
     }
     if (reqs.EMRTK_cbs_migrate_after_end != EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END) {
@@ -1835,13 +1827,6 @@ bool fixDependencies(Requisite reqs, bool abortOnFix) {
         }
         else reqs.EMRTK_migrate = 1;
 
-    if (reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end_adv_chk && !reqs.EMRTK_cbs_enveloping_migrate_after_vtime_end)
-        if (abortOnFix) {
-            cout << "\tabort on line " << __LINE__ << endl;
-            exit(0);
-        }
-        else reqs.EMRTK_migrate = 1;   
-        
     if (reqs.EMRTK_cbs_migrate_after_end && !reqs.EMRTK_migrate)
         if (abortOnFix) {
             cout << "\tabort on line " << __LINE__ << endl;
@@ -1849,7 +1834,7 @@ bool fixDependencies(Requisite reqs, bool abortOnFix) {
         }
         else reqs.EMRTK_migrate = 1;
 
-    if (reqs.EMRTK_temporarily_migrate && !reqs.EMRTK_migrate)
+    if (reqs.EMRTK_temporarily_migrate_vtime && !reqs.EMRTK_migrate)
         if (abortOnFix) {
             cout << "\tabort on line " << __LINE__ << endl;
             exit(0);

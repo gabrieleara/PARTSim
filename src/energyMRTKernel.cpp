@@ -29,12 +29,12 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                       = 0;
     bool EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                             = 1;
     bool EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                           = 0;
-    bool EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE                         = 1;
+    bool EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME                   = 1;
+    bool EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_END                     = 1;
 
     bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED                 = 1;
     bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END          = 1;
     bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                           = 0;
-    bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END_ADV_CHK  = 1;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
       : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
@@ -123,6 +123,9 @@ namespace RTSim {
             ths.push_back(runningTask);
 
         for (AbsRTTask* th : ths) {
+            if (isTaskTemporarilyMigrated(th, c))
+                continue;
+
             if (getCBServer_Utilization(th, utilization, capacity))
                 continue;
 
@@ -140,7 +143,7 @@ namespace RTSim {
         utilization += u_active;
 
         double u_tempMig = getUtilization_temporarilyMigrated(c);
-        cout << "\t\t\tU_tempMig = " << u_tempMig << endl;
+        cout << "\t\t\tU_tempMig on " << c->toString() << " = " << u_tempMig << endl;
         utilization += u_tempMig;
 
         return utilization;
@@ -445,7 +448,8 @@ namespace RTSim {
             p->setBusy(false);
 
         if (!p->isBusy() && EMRTK_CBS_MIGRATE_AFTER_END)
-            migrateInto(p);
+            if (!migrateInto(p) && EMRTK_TEMPORARILY_MIGRATE_END)
+                migrateTemporarily(p);
         else // core has already some ready tasks
             _queues->schedule(p);
 
@@ -476,15 +480,15 @@ namespace RTSim {
         MigrationProposal migrationProposal = getTaskToMigrateInto(endingCPU, toBeSkipped);
 
         if (migrationProposal.task == NULL)
-            cout << "\t\tNo migration done" << endl;
+            cout << "\t\tEMRTK::" << __func__ << "(). No migration done" << endl;
         else {
             migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
-            if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
+            /*if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
                 CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task); 
                 assert (!cbs->isEmpty()); 
                 //Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed())));  // done in onmigfinished()
                 //cbs->changeBudget(newB); 
-            }
+            }*/
             
             // make task run on ending core.
             // onEndDispatchMulti will take care of increasing core OPP
@@ -502,6 +506,11 @@ namespace RTSim {
 
         if (migrationProposal.task == NULL) // no migration from big to little
             migrationProposal = balanceLoad (endingCPU, toBeSkipped);
+
+        if (migrationProposal.task != NULL && isMigrationSafe(migrationProposal) == false) {
+            toBeSkipped.push_back(migrationProposal.task);
+            migrationProposal = getTaskToMigrateInto(endingCPU, toBeSkipped);
+        }
 
         return migrationProposal;
     }
