@@ -822,7 +822,6 @@ int main(int argc, char *argv[]) {
 
             SIMUL.run_to(999);
             k->printState(true);
-            exit(0);
             for (CPU* c : k->getProcessors())
                 REQUIRE (k->getRunningTask(c) == NULL);
 

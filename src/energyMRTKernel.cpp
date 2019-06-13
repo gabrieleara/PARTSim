@@ -441,17 +441,25 @@ namespace RTSim {
         _queues->onEnd(t, p);
         _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
-        cout << "\tState before migration:" << endl;
-        printState(true);
 
         if (!isDispatching(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
-        if (!p->isBusy() && EMRTK_CBS_MIGRATE_AFTER_END)
-            if (!migrateInto(p) && EMRTK_TEMPORARILY_MIGRATE_END)
-                migrateTemporarily(p);
-        else // core has already some ready tasks
+        cout << "\tState before migration (migrations after end=" << EMRTK_CBS_MIGRATE_AFTER_END << ", Temporarily migrate after end=" << EMRTK_TEMPORARILY_MIGRATE_END << ", core busy=" << p->isBusy() << "):" << endl;
+        printState(true);
+
+        if (!p->isBusy() && EMRTK_CBS_MIGRATE_AFTER_END) {
+            cout << "\tTrying to migrate into core" << endl;
+            if (!migrateInto(p) && EMRTK_TEMPORARILY_MIGRATE_END) {
+                cout << "\tFailed to migrate into core, trying to temporarily migrate into core" << endl;
+                bool res = migrateTemporarily(p);
+                cout << "\tTemporary migration into core " << (res ? "succeeded" : "failed") << endl;
+            }
+        }
+        else { // core has already some ready tasks
+            cout << "\tcore busy, schedule ready task" << endl;
             _queues->schedule(p);
+        }
 
         if (!p->getIsland()->isBusy()) {
             cout << "\t" << p->getIsland()->getName() << "'s got free => clock down to min speed" << endl;
