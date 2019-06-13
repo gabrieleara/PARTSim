@@ -1666,6 +1666,95 @@ TEST_CASE ("exp 26, Temporarily migrate on task end") {
     performedTests[init_sequence] = req;
 }
 
+TEST_CASE ("exp 27, migrations have precedence on temporary ones") {
+    /**
+        26th example repeated, but this time I want to be sure
+        that, when virtual time ends, if a migration is possible,
+        there is temporary migration.
+      */
+    init_sequence = 27;
+    cout << "Begin of experiment " << init_sequence << endl;
+    Requisite req(false, true, false, true, true, false, true, false);
+    if (!checkRequisites( req ))  return;
+
+    EnergyMRTKernel *kern;
+    init_suite(&kern);
+    REQUIRE(kern != NULL);
+    vector<CPU_BL *> cpus_little = kern->getIslandLittle()->getProcessors();
+    vector<CPU_BL *> cpus_big = kern->getIslandBig()->getProcessors();
+    vector<AbsRTTask*> tasks;
+
+    string  names[] = { "B0_running", "B0_migr", "B1_killed" };
+    int     wcets[] = { 35, 36, 25 };
+    int     deads[] = { 100, 100, 60 };
+    // MissCount ms("miss");
+    vector<CBServerCallingEMRTKernel*> ets;
+    for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++) {
+        task_name = "T" + to_string(TEST_NO) + names[j];
+        cout << "Creating task: " << task_name;
+        PeriodicTask* t = new PeriodicTask(deads[j], deads[j], 0, task_name);
+        char instr[60] = "";
+        sprintf(instr, "fixed(%d, %s);", wcets[j], workload.c_str());
+        cout << instr << endl;
+        t->insertCode(instr);
+        ets.push_back(kern->addTaskAndEnvelope(t, ""));
+        // ttrace.attachToTask(*t);
+        tasks.push_back(t);
+        // ms.attachToTask(t);
+        // pstrace.attachToTask(*t);
+
+    }
+    EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+    k->addForcedDispatch(ets[0], cpus_big[0], 18);
+    k->addForcedDispatch(ets[1], cpus_big[0], 18);
+    k->addForcedDispatch(ets[2], cpus_big[1], 18);
+
+    for (CPU_BL* c : cpus_little)
+        c->toggleDisabled();
+    cpus_big[2]->toggleDisabled();
+    cpus_big[3]->toggleDisabled();
+
+    SIMUL.initSingleRun();
+    
+    SIMUL.run_to(10); // kill task on big1
+    ets[2]->killInstance();
+    SIMUL.sim_step(); // t=10, but all events have been processed
+    cout << "u active big 1 " << k->getUtilization_active(cpus_big[1]) << endl;
+    cout << "idle evt " << ets[2]->getIdleEvent() << endl;
+    cout << "server status " << ets[2]->getStatusString() << endl;
+    REQUIRE (k->getUtilization_active(cpus_big[1]) > 0.4); // shall be 0.41
+    REQUIRE ( (double) ets[2]->getIdleEvent() >= 20);
+    REQUIRE (ets[2]->getStatus() == ServerStatus::RELEASING);
+
+    SIMUL.run_to(26); // end vtime, migration of t36 to BIG1
+    k->printState(true);
+    REQUIRE (k->getUtilization_active(cpus_big[1]) == 0.0);
+    REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
+    REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+    REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
+    REQUIRE (false == k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
+
+    SIMUL.run_to(36); // end of t35; t36 remains on BIG1 (thus migration is not temporary)
+    k->printState(true);
+    REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
+    REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
+    REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
+
+    // REQUIRE (ms.getLastValue() == 0);
+
+    SIMUL.endSingleRun();
+
+    cout << "--------------" << endl;
+    cout << "Simulation finished" << endl;
+    for (AbsRTTask *t : tasks)
+        delete t;
+    for (CBServerCallingEMRTKernel* cbs : ets)
+        delete cbs;
+    delete k;
+    cout << "End of Experiment #" << init_sequence << endl << endl;
+    performedTests[init_sequence] = req;
+}
+
 TEST_CASE("None") {
     for (const auto& elem : performedTests) {
         cout << "Performed experiment #" << elem.first << " with " << elem.second.toString() << endl;

@@ -469,7 +469,7 @@ namespace RTSim {
             ending core and it is always utilized. There is no migration overhead and energy 
             consumption is the same because it is the same island, so same cache and frequency.
             */
-          if (!EMRTK_TEMPORARILY_MIGRATE_VTIME) {
+          if (!EMRTK_TEMPORARILY_MIGRATE_VTIME && !EMRTK_TEMPORARILY_MIGRATE_END) {
             cout << "\tTemporary migrations disabled => skip" << endl;
             return false;
           }
