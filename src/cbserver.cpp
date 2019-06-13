@@ -345,6 +345,8 @@ namespace RTSim {
         CPU_BL* cpu = dynamic_cast<CPU_BL*>(t->getCPU());
         assert(t != NULL); assert (cpu != NULL);
 
+        executing_releasing();
+        status = EXECUTING;
         yield();
         _bandExEvt.drop();
         _replEvt.drop();
@@ -356,8 +358,8 @@ namespace RTSim {
         cout << endl << endl << "Kill event is now " << t->killEvt.toString() << endl << endl;
         t->killEvt.doit();
         cout << "Kill event is dropped? " << t->killEvt.toString() << endl;
-        
-        executing_releasing();
+
+        status = RELEASING;
         _dispatchEvt.drop();
     }
 

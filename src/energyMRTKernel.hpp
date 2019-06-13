@@ -246,7 +246,7 @@ namespace RTSim {
             assert(cbs != NULL); assert(original != NULL); assert(final != NULL);
             cout << "\t\tEMCS::" << __func__ << "()" << endl;
 
-            assert (final->getWorkload() != "idle");
+            final->setWorkload(Utils::getTaskWorkload(t));
             Tick newBudget = Tick(ceil(cbs->getFirstTask()->getWCET(final->getSpeed()))); 
             cbs->changeBudget(Tick(newBudget));
 
