@@ -894,6 +894,7 @@ namespace RTSim {
         void onTaskInServerEnd(AbsRTTask* t, CPU_BL* cpu, CBServer* cbs) {
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
 
+          cout << "\tEMRTK::" << __func__ << "()" << endl;
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
           cout << __func__ << "() cbs is empty? " << cbs->isEmpty() << endl;
           if (cbs->isEmpty())

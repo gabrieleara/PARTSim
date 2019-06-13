@@ -139,7 +139,7 @@ namespace RTSim {
         }
 
         double u_active = _queues->getUtilization_active(c);
-        cout << "\t\t\tU_active on core (for CBS server): " << u_active << endl;
+        cout << "\t\t\tU_active on core " << c->getName() << " (for CBS server): " << u_active << endl;
         utilization += u_active;
 
         double u_tempMig = getUtilization_temporarilyMigrated(c);

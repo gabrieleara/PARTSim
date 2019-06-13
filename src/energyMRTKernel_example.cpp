@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
     string workload = "bzip2";
-    int TEST_NO = 13;
+    int TEST_NO = 26;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -1724,7 +1724,7 @@ int main(int argc, char *argv[]) {
 
                 Only temporary migrations should be used here.
               */
-            string  names[] = { "B0_running", "B0_migr", "B1_killed" };
+            string  names[] = { "B0_running", "B0_temp_migr", "B1_killed" };
             int     wcets[] = { 25, 75, 38 };
             int     deads[] = { 100, 100, 60 };
             MissCount ms("miss");
@@ -1767,6 +1767,7 @@ int main(int argc, char *argv[]) {
             REQUIRE (ets[2]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(16); // because of temporary migrations, task 49 is moved to core BIG1
+            k->printState(true);
             REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
             REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
             REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
