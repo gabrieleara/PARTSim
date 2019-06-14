@@ -735,10 +735,10 @@ namespace RTSim {
         }
 
         /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
-        bool isDispatching(AbsRTTask*);
+        // bool isDispatched(AbsRTTask*);
 
         /// is any task dispatched on CPU_BL p?
-        bool isDispatching(CPU_BL* p);
+        // bool isDispatching(CPU_BL* p);
 
         /// Is migration energetically convenient? True if power consumption decreases or is equal between cores
         bool isMigrationEnergConvenient(const MigrationProposal mp) {

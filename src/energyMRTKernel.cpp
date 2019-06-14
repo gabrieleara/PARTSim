@@ -96,16 +96,16 @@ namespace RTSim {
         return c;
     }
 
-    bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
-        if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
-            t = getEnveloper(t);
+    // bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
+    //     if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
+    //         t = getEnveloper(t);
 
-        return _queues->isInAnyQueue(t) != NULL;
-    }
+    //     return _queues->isInAnyQueue(t) != NULL;
+    // }
 
-    bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
-      return !_queues->isEmpty(p);
-    }
+    // bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
+    //   return !_queues->isEmpty(p);
+    // }
     
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getPeriod());
@@ -442,7 +442,7 @@ namespace RTSim {
         _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
 
-        if (!isDispatching(p) && getRunningTask(p) == NULL)
+        if (_queues->isEmpty(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
         cout << "\tState before migration (migrations after end=" << EMRTK_CBS_MIGRATE_AFTER_END << ", Temporarily migrate after end=" << EMRTK_TEMPORARILY_MIGRATE_END << ", core busy=" << p->isBusy() << "):" << endl;
@@ -720,7 +720,7 @@ namespace RTSim {
                 continue;
             }
 
-            if (isDispatching(t)) {
+            if (_queues->isInAnyQueue(t)) {
                 // dispatch() is called even before onEndMultiDispatch() finishes and thus tasks seem
                 // not to be dispatching (i.e., assigned to a processor)
                 cout << "\tTask has already been dispatched, but dispatching is not complete => skip (you\'ll still see desched&sched evt, to trace tasks)" << endl;
