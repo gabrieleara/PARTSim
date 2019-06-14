@@ -399,7 +399,6 @@ namespace RTSim {
         vector<MigrationProposal> _temporarilyMigrated;
 
         /// CBServers. Each island has its server
-        bool _withCBServers;
         CBServer* _serverBig;
         CBServer* _serverLittle;
 
@@ -439,7 +438,6 @@ namespace RTSim {
         Island_BL* getIsland(IslandType island) const { return _islands[island]; }
 
         bool isCBServer(AbsRTTask* t) const { return dynamic_cast<CBServerCallingEMRTKernel*>(t) != NULL; }
-        bool isPeriodicTask(AbsRTTask* t) const { return dynamic_cast<PeriodicTask*>(t) != NULL; }
 
         /**
            Tells if a task is to be descheduled on a CPU
@@ -515,7 +513,7 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
     public:
-        static bool EMRTK_BALANCE_ENABLED                           ; /* Can't imagine disabling it, but so policy is in the list :) */
+        static bool EMRTK_BALANCE_ENABLED                           ; /// Can't imagine disabling it, but so policy is in the list :)
         static bool EMRTK_LEAVE_LITTLE3_ENABLED                     ;
         static bool EMRTK_MIGRATE_ENABLED                           ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
         static bool EMRTK_CBS_YIELD_ENABLED                         ;
@@ -664,7 +662,7 @@ namespace RTSim {
         }
 
         /// Returns tasks to be dispatched for the used scheduler
-        void getNewTasks(vector<AbsRTTask*> tasks, int& num_newtasks);
+//        void getNewTasks(vector<AbsRTTask*> tasks, int& num_newtasks);
 
         /// Get all processors, in all islands
         vector<CPU_BL*> getProcessors() const { 
@@ -928,7 +926,7 @@ namespace RTSim {
             _queues->endRun();
         }
 
-        /// to debug internal functions...
+ /// ---------------------------------------------------- to debug internal functions...
         bool isDispatchable(AbsRTTask *t, CPU_BL* c) {
           bool isDispatchable = false;
 
@@ -970,20 +968,6 @@ namespace RTSim {
         bool manageForcedDispatch(AbsRTTask*);
 
         void addForcedDispatch(AbsRTTask *t, CPU_BL *c, unsigned int opp, unsigned int times = 1);
-
-        /// You'll never see the task anymore scheduled. if onlyAfterEnds is false, it means kill now
-        // todo delete if never used
-        void discardTask(AbsRTTask *t, bool onlyAfterEnds = false, unsigned int times = 1) {
-          assert (t != NULL);
-
-          if (onlyAfterEnds) {
-            CPU_BL *cpu = dynamic_cast<CPU_BL*>(getProcessor(t));
-            if (cpu != NULL)
-              _queues->removeFromQueue(cpu, t);
-          }
-
-          _discardedTasks[t] = make_tuple(times);
-        }
 
         bool manageDiscartedTask(AbsRTTask *t) {
           assert (t != NULL);
