@@ -25,180 +25,7 @@
 namespace RTSim {
 
   class CBServer;
-  class CBServerCallingEMRTKernel;  
-
-    /**
-       Manages tasks migrations among cores and how islands frequency
-       has changed over time.
-
-       Expected scenarios - task migration history:
-       t. tick evt   core      wl
-       t1  0  sched  little_0  bzip
-       t1 10  susp
-       t1 15  sched  little_3  bzip
-       t1 25  cg_wl            encrypt
-       t1 50  desch
-       t1 80  sched  little2   encrypt
-
-       island frequency history:
-       island       tick OPP
-       little_island   0   0
-       little_island 240  10
-       little_island 500  11
-    */
-    class EnergyMigrationManager : public MigrationManager {
-    private:
-      typedef struct MigrationCPURow { Island_BL* island; Tick tick; unsigned int opp; } MigrationCPURow;
-
-      /// Remeber Island frequencies over time
-      vector<MigrationCPURow> _islands_history;
-
-    protected:
-      /// Returns the opp the island had at time tick. And you can infere CPU frequency
-      unsigned int getOPPAtTime(Tick tick, Island_BL* island) const {
-        unsigned int opp = 0;
-        for (const auto& elem : _islands_history)
-          if (elem.island == island && elem.tick <= tick) {
-            opp = elem.opp;
-          }
-        return opp;
-      }
-
-    public:
-      EnergyMigrationManager(vector<Island_BL*> islands) {
-        // At the beginning, islands frequency is supposed to be the minimum
-        //        for (Island_BL* i : islands)
-        //addFrequencyChangeEvent(i, Tick(0), 0);
-      }
-      ~EnergyMigrationManager() { cout << __func__ << endl; _islands_history.clear(); }
-
-      /// Add an island frequency change event
-      void addFrequencyChangeEvent(Island_BL* island, Tick when, unsigned int opp) {
-        assert(opp >= 0 && opp < island->getOPPsize());
-        if (getOPPAtTime(when, island) == opp) // frequency already recorded
-          return;
-
-        MigrationCPURow r = { island, when, opp };
-        _islands_history.push_back(r);
-      }
-
-      /**
-      	 Prints island frequencies over time and optinally tasks migrations (if alsoConsumption = true) into a file.
-
-       	 If you need tasks migrations, then pass also them.
-      	*/
-      void dumpToFile(const bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string filename = "migrationManager.txt") {
-        assert (alsoConsumptions && !tasks.empty());
-
-        ofstream stream;
-        stream.open(filename);
-        stream << toString();
-
-        stream << endl << endl;
-
-        if (alsoConsumptions) {
-          double totalConsumption = 0.0;
-      	  for ( AbsRTTask *t : tasks ) {
-                  double cons = getConsumption(t, stream);
-                  totalConsumption += cons;
-          }
-          stream << endl << endl << "Total tasks consumption = " << totalConsumption << endl;
-      	}
-        
-        stream.close();
-      }
-
-      /// Returns island frequencies over time and tasks migrations
-      string toString() const {
-        stringstream ss;
-        ss << MigrationManager::toString();
-
-        ss << endl << "Island frequencies over time:" << endl;
-        ss << "Island\t\tTick\tFrequency" << endl;
-        for (const auto& elem : _islands_history) {
-          ss << elem.island->toString() << "\t" << double(elem.tick) << "\t" << elem.island->getFrequency(elem.opp) << endl;
-        }
-        return ss.str();
-      }
-
-      /**
-         Gets the total power consumption for a task tt and
-         outputs to a stream, if it is != NULL
-      */
-      double getConsumption(AbsRTTask* tt, ostream& os = cout) const {
-        double cons = 0.0;
-        os << __func__ << "(" << taskname(tt) << "):" << endl << "\tcons = ";
-
-        // if there is no event event, I suppose there is an error somewhere
-        for (int i = 1; i < _tasks_history.size(); i++) {
-          int j = i - 1;
-          while (j >= 0 && _tasks_history.at(j).task != tt)
-            j--;
-          if (j < 0) continue; // no corresponding row found for task tt
-          const MigrationTaskRow r1 = _tasks_history.at(j); // corresponding previous evt of task of r2
-          const MigrationTaskRow r2 = _tasks_history.at(i); // row of considered evt
-          if (r1.task != r2.task)
-            continue;
-
-          bool shallSum = false;
-          switch (r2.evt) {
-          case SUSPEND:
-            os << "(case SUSPEND) ";
-            if (r1.evt == SCHEDULE || r1.evt == WL_CHANGE)
-              shallSum = true;
-            break;
-          case END:
-            os << "(case END) ";
-            shallSum = true;
-            break;
-          case SCHEDULE:
-            os << "(case SCHEDULE) ";
-            // in all cases, cons += 0.0;
-            break;
-          case DESCHEDULE:
-            os << "(case DESCHEDULE) ";
-            shallSum = true;
-            if (r1.evt == DESCHEDULE)
-              shallSum = false;
-            break;
-          case WL_CHANGE:
-            os << "(case WL_CHANGE) ";
-            shallSum = true;
-            break;
-          default:
-            os << "default => error";
-            cout << "default => error";
-            abort();
-          }
-          
-          if (shallSum) {
-            string startingWL = r1.cpu->getWorkload();
-            r1.cpu->setWorkload(r1.wl);
-
-            CPU_BL *cpu = dynamic_cast<CPU_BL*> (r1.cpu);
-            double freq = cpu->getFrequency(getOPPAtTime(r1.tick, cpu->getIsland()));
-            cons += double(r2.tick - r1.tick) * cpu->getPowerConsumption(freq);
-         
-            char buf[100] = "";
-            sprintf(buf, "(%ld-%ld)*%f (freq=%ld) + ", long(double(r2.tick)), long(double(r1.tick)), cpu->getPowerConsumption(freq), long(freq));
-            os << buf;
-
-            r1.cpu->setWorkload(startingWL);
-          }
-          else {
-            os << "0 + ";
-          }
-
-        } // for
-
-        os << " = " << cons << endl;
-        os << "\t(a + at the end is normal)" << endl;
-
-        assert(cons >= 0.0);
-        return cons;
-      }
-
-    };
+  class CBServerCallingEMRTKernel;
 
     /**
         \ingroup sched
@@ -381,7 +208,7 @@ namespace RTSim {
         bool _tryingTaskOnCPU_BL;
 
         /// The energy migration manager/recorder, recording tasks movements and cpu frequencies over time
-        EnergyMigrationManager _e_migration_manager;
+//        EnergyMigrationManager _e_migration_manager;
 
         /// Map of tasks and their own server, where they are enveloped
         map<AbsRTTask*, CBServerCallingEMRTKernel*> _envelopes; 
@@ -398,9 +225,6 @@ namespace RTSim {
         /// Temporarily migrated tasks, ie tasks migrated until arrival or deadline new core or scheduling on original core
         vector<MigrationProposal> _temporarilyMigrated;
 
-        /// CBServers. Each island has its server
-        CBServer* _serverBig;
-        CBServer* _serverLittle;
 
         // ----------------------------------- Migrations
 
@@ -605,14 +429,6 @@ namespace RTSim {
          */
         virtual void dispatch(CPU* c) {}
 
-        /// Dumps cores frequencies over time and (if alsoConsumption=true) also tasks migrations into a file. If filename="", migrationManager.txt is chosen
-        void dumpPowerConsumption(bool alsoConsumptions = true, vector<AbsRTTask*> tasks = {}, const string& filename = "") {
-          if (filename == "")
-            _e_migration_manager.dumpToFile(alsoConsumptions, tasks);
-          else
-            _e_migration_manager.dumpToFile(alsoConsumptions, tasks, filename);
-        }
-
         /// Returns the enveloped RTask of CBS server
         AbsRTTask* getEnveloped(AbsRTTask* cbs) const {
           assert (dynamic_cast<CBServer*>(cbs)); assert (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED);
@@ -715,28 +531,6 @@ namespace RTSim {
          *  CPU_BL (NULL if given CPU_BL is idle)
          */
         virtual AbsRTTask* getRunningTask(CPU* c);
-
-        /// Get server running on the given island
-        virtual CBServer* getServer(IslandType island) const {
-          if (island == IslandType::BIG)
-            return _serverBig;
-          else
-            return _serverLittle;
-        }
-
-        /// Returns all available servers
-        virtual vector<CBServer*> getServers() const { 
-          vector<CBServer*> all;
-          all.push_back(getServer(IslandType::LITTLE));
-          all.push_back(getServer(IslandType::BIG));
-          return all;
-        }
-
-        /// returns true if we have already decided t's processor (valid before onEndMultiDispatch() completes)
-        // bool isDispatched(AbsRTTask*);
-
-        /// is any task dispatched on CPU_BL p?
-        // bool isDispatching(CPU_BL* p);
 
         /// Is migration energetically convenient? True if power consumption decreases or is equal between cores
         bool isMigrationEnergConvenient(const MigrationProposal mp) {

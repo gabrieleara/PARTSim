@@ -37,7 +37,7 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                           = 0;
 
     EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string& name)
-      : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name), _e_migration_manager({big, little}) {
+      : MRTKernel(s, big->getProcessors().size() + little->getProcessors().size(), name) {
         setIslandBig(big); setIslandLittle(little);
         big->setKernel(this); little->setKernel(this);
 
@@ -95,17 +95,6 @@ namespace RTSim {
 
         return c;
     }
-
-    // bool EnergyMRTKernel::isDispatching(AbsRTTask* t) {
-    //     if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && dynamic_cast<PeriodicTask*>(t))
-    //         t = getEnveloper(t);
-
-    //     return _queues->isInAnyQueue(t) != NULL;
-    // }
-
-    // bool EnergyMRTKernel::isDispatching(CPU_BL *p) {
-    //   return !_queues->isEmpty(p);
-    // }
     
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getPeriod());
@@ -213,8 +202,7 @@ namespace RTSim {
 
         cout << __func__ << "(). envelopes: " << endl;
         printEnvelopes();
-        _e_migration_manager.addFrequencyChangeEvent(island, SIMUL.getTime(), curropp);
-        
+
         // update budget of servers (enveloping periodic tasks) in the island
         for (auto &elem : _envelopes) {
             cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
@@ -360,7 +348,6 @@ namespace RTSim {
             _m_oldExe[dt] = p;
             _m_currExe[p] = NULL;
             dt->deschedule();
-            _e_migration_manager.addDeschedulingEvent(dt, SIMUL.getTime());
             cout << dt->toString() << " descheduled for " << taskname(st) <<endl;
         }
 
@@ -395,7 +382,7 @@ namespace RTSim {
         _queues->onEndDispatchMultiFinished(cpu,t);
         MRTKernel::onEndDispatchMulti(e);
 
-        cpu->setBusy(true); // introducted afterwards
+        cpu->setBusy(true); // introduced afterwards
 
         // use case: 2 tasks arrive at t=0 and are scheduled on big 0 and big 1 freq 1100.
         // Then, at time t=100, another task arrives and the algorithm decides to schedule it on big 2 freq 2000.
@@ -405,10 +392,7 @@ namespace RTSim {
           cout << "\t" << t->toString() << " " << cpu->toString() << " updating opp to " << opp << endl;
           cpu->setOPP(opp);
         }
-        else // otherwise you have to same freq change events
-          _e_migration_manager.addFrequencyChangeEvent(cpu->getIsland(), SIMUL.getTime(), opp);
 
-        _e_migration_manager.addSchedulingEvent(t, SIMUL.getTime(), cpu);
         _m_oldExe[t] = cpu;
 
         cout << endl;
@@ -439,7 +423,6 @@ namespace RTSim {
         _m_currExe.erase(p);
         _m_dispatched.erase(t);
         _queues->onEnd(t, p);
-        _e_migration_manager.addEndEvent(t, SIMUL.getTime());
 
 
         if (_queues->isEmpty(p) && getRunningTask(p) == NULL)
@@ -491,12 +474,6 @@ namespace RTSim {
             cout << "\t\tEMRTK::" << __func__ << "(). No migration done" << endl;
         else {
             migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
-            /*if (EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED && endingCPU->getIslandType() == IslandType::LITTLE) {
-                CBServerCallingEMRTKernel* cbs = dynamic_cast<CBServerCallingEMRTKernel*>(migrationProposal.task); 
-                assert (!cbs->isEmpty()); 
-                //Tick newB = Tick(ceil(cbs->getFirstTask()->getWCET(endingCPU->getSpeed())));  // done in onmigfinished()
-                //cbs->changeBudget(newB); 
-            }*/
             
             // make task run on ending core.
             // onEndDispatchMulti will take care of increasing core OPP
