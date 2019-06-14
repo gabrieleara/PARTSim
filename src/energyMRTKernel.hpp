@@ -207,9 +207,6 @@ namespace RTSim {
 
         bool _tryingTaskOnCPU_BL;
 
-        /// The energy migration manager/recorder, recording tasks movements and cpu frequencies over time
-//        EnergyMigrationManager _e_migration_manager;
-
         /// Map of tasks and their own server, where they are enveloped
         map<AbsRTTask*, CBServerCallingEMRTKernel*> _envelopes; 
 
@@ -337,16 +334,16 @@ namespace RTSim {
         void setTryingTaskOnCPU_BL(bool b) { _tryingTaskOnCPU_BL = b; }
 
     public:
-        static bool EMRTK_BALANCE_ENABLED                           ; /// Can't imagine disabling it, but so policy is in the list :)
-        static bool EMRTK_LEAVE_LITTLE3_ENABLED                     ;
-        static bool EMRTK_MIGRATE_ENABLED                           ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
-        static bool EMRTK_CBS_YIELD_ENABLED                         ;
-        static bool EMRTK_TEMPORARILY_MIGRATE_VTIME                 ; /// Enables temporary (and fake) migrations on vtime end evt, i.e. migration that only last until until a task starts on endingCPU
-        static bool EMRTK_TEMPORARILY_MIGRATE_END                   ; /// As VTIME, but on task end evt (killed, end WCET, etc.)
+        static bool EMRTK_BALANCE_ENABLED                               ; /// Can't imagine disabling it, but so policy is in the list :)
+        static bool EMRTK_LEAVE_LITTLE3_ENABLED                         ;
+        static bool EMRTK_MIGRATE_ENABLED                               ; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
+        static bool EMRTK_CBS_YIELD_ENABLED                             ;
+        static bool EMRTK_TEMPORARILY_MIGRATE_VTIME                     ; /// Enables temporary (and fake) migrations on vtime end evt, i.e. migration that only last until until a task starts on endingCPU
+        static bool EMRTK_TEMPORARILY_MIGRATE_END                       ; /// As VTIME, but on task end evt (killed, end WCET, etc.)
 
-        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED               ;     /// CBS server enveloping periodic tasks?
-        static bool EMRTK_CBS_MIGRATE_AFTER_END                         ;     /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
-        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END        ;     /// After task ends its virtual time, there can be migrations (requires EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
+        static bool EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED               ; /// CBS server enveloping periodic tasks?
+        static bool EMRTK_CBS_MIGRATE_AFTER_END                         ; /// After a task ends its WCET, can you migrate? Needs EMRTK_MIGRATE_ENABLED
+        static bool EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END        ; /// After task ends its virtual time, there can be migrations (requires EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED)
 
 
         /**
@@ -476,9 +473,6 @@ namespace RTSim {
           CPU_BL* cc = dynamic_cast<CPU_BL*>(c);
           return cc;
         }
-
-        /// Returns tasks to be dispatched for the used scheduler
-//        void getNewTasks(vector<AbsRTTask*> tasks, int& num_newtasks);
 
         /// Get all processors, in all islands
         vector<CPU_BL*> getProcessors() const { 
