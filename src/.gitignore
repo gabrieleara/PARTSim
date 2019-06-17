@@ -10,6 +10,8 @@ cmake-build-debug/
 *.pst
 t.txt.save
 *#*
+*lock*
+*~
 example
 test/test
 t

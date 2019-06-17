@@ -1888,7 +1888,6 @@ int main(int argc, char *argv[]) {
         }
 
         SIMUL.run(1000); // 5000
-        dynamic_cast<EnergyMRTKernel*>(kernels[0])->dumpPowerConsumption(true, tasks);
         cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
         cout << "Simulation finished" << endl;
     } catch (BaseExc &e) {
