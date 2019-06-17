@@ -1680,7 +1680,8 @@ int main(int argc, char *argv[]) {
             int seed = 98;
             srand(seed); // random nums are expected to be the same in all simulations
 
-            ets = StaffordImporter::getEnvelopedPeriodcTasks("taskset_generator/P_500_u_75.txt", kern);
+            string filename = StaffordImporter::generate(500, 1.0); // periodo, utilizzazione
+            ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern);
 
             cout << " there are tasks: " << ets.size() << endl;
             for (CBServerCallingEMRTKernel* t : ets)
@@ -1700,7 +1701,7 @@ int main(int argc, char *argv[]) {
             SIMUL.endSingleRun();
 
             cout << "--------------" << endl;
-            cout << "Simulation finished" << endl;
+            cout << "Simulation finished, filename=" << filename << endl;
             for (AbsRTTask *t : tasks)
                 delete t;
             for (CBServerCallingEMRTKernel* cbs : ets)

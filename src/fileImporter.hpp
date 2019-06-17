@@ -4,12 +4,37 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <cstdio>
+#include <ctime>
+#include <iomanip>
 
 namespace RTSim {
     using namespace MetaSim;
 
     class StaffordImporter {
     public:
+
+    static string generate(unsigned int period, double utilization) {
+        char s[200]         = "";
+        char filename[120]  = "";
+
+        time_t n            = time(0);
+        struct tm* _tm      = localtime(&n);
+        char now[200]       = "";
+        sprintf(now, "%d_%d_%d_%d_%d_%d", _tm->tm_mday, _tm->tm_mon + 1, _tm->tm_year + 1900, _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
+
+        sprintf(filename, "taskset_generator/%s_P_%u_u_%f.txt", now, period, utilization);
+        sprintf(s, "python taskset_generator/taskgen.py -s 8 -n 3 -p %u -u %f --round-C > %s", period, utilization, filename);
+
+        if (std::ifstream(filename)) {
+          remove(filename);
+        }
+
+        cout << "executing: " << s << endl;
+        system(s);
+        cout << "file made" << endl;
+        return string(filename);
+    }
 
     /// Imports tasks from file. Returns CPU/set number -> (WCET, Period = Deadline) for all CPU, tasks.
     static map<unsigned int, pair<unsigned int, unsigned int>> importFromFile(const string& filename) {
