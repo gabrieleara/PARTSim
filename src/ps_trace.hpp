@@ -33,7 +33,7 @@ namespace RTSim {
         std::ofstream fd;
         bool first_event;
 
-        void writeTaskEvent(const Task &tt, const std::string &evt_name);
+        void writeTaskEvent(const Task &tt, const std::string &evt_name, TaskEvt* evt);
 
     public:
         PSTrace(const std::string& name);

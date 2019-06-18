@@ -187,7 +187,7 @@ int main(int argc, char *argv[]) {
             }
 
             CPU_BL *c = new CPU_BL(cpu_name, "idle", pm);
-            c->setIndex(i);
+            c->setIndex(i + 4);
             pm->setCPU(c);
             pm->setFrequencyMax(max_frequency);
             TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
@@ -1689,6 +1689,7 @@ int main(int argc, char *argv[]) {
                     tasks.push_back(t->getAllTasks().at(0));
                     ttrace.attachToTask(*t->getAllTasks().at(0));
                     mc.attachToTask(dynamic_cast<Task*>(t->getAllTasks().at(0)));
+                    pstrace.attachToTask(dynamic_cast<Task&>(*t->getAllTasks().at(0)));
                 }
 
                 EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);

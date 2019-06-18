@@ -2,12 +2,14 @@
 #include "ui_mainwindow.h"
 #include "customtoolbar.h"
 #include "eventview.h"
+#include "toast.h"
 
 #include <QToolBar>
 #include <QToolButton>
 #include <QIcon>
 #include <QFileDialog>
 #include <QSettings>
+#include <QShortcut>
 
 #include <QDebug>
 
@@ -48,6 +50,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
   ui->setupUi(this);
 
+  setupShortcut();
+
   plot = new Plot(this);
   this->setCentralWidget(plot);
 
@@ -74,6 +78,12 @@ void MainWindow::loadSettings()
         newTraceChosen(lastPath.absoluteFilePath());
         tfl->update(lastPath.absoluteDir().absolutePath());
     }
+}
+
+void MainWindow::setupShortcut()
+{
+    QShortcut *shortcut = new QShortcut(QKeySequence(Qt::Key_F5), this);
+    QObject::connect(shortcut, SIGNAL(activated()), this, SLOT(updatePlot()));
 }
 
 void MainWindow::zoomChanged(qreal start, qreal end, qreal windowWidth)
@@ -220,6 +230,8 @@ void MainWindow::on_actionViewChangedTriggered()
 
 void MainWindow::updatePlot(qreal center)
 {
+    Toast::show("View updated");
+
   plot->clear();
   unsigned long row = 0;
 

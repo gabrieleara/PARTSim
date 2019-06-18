@@ -22,7 +22,8 @@ SOURCES += main.cpp\
     eventsmanager.cpp \
     customscene.cpp \
     rangeselector.cpp \
-    plotframe.cpp
+    plotframe.cpp \
+    toast.cpp
 
 HEADERS  += mainwindow.h\
     customtoolbar.h \
@@ -34,7 +35,8 @@ HEADERS  += mainwindow.h\
     eventsmanager.h \
     customscene.h \
     rangeselector.h \
-    plotframe.h
+    plotframe.h \
+    toast.h
 
 FORMS    += mainwindow.ui
 

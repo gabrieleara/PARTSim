@@ -17,11 +17,11 @@ namespace RTSim {
         fd.close();
     }
 
-    void PSTrace::writeTaskEvent(const Task &tt, const std::string &evt_name)
+    void PSTrace::writeTaskEvent(const Task &tt, const std::string &evt_name, TaskEvt* evt)
     {
         fd << SIMUL.getTime() << "\t";
         fd << tt.getName() << "\t";
-        fd << "0\t";
+        fd << (dynamic_cast<ArrEvt*>(evt) != NULL ? 0 : evt->getCPU()) << "\t";
         fd << evt_name << "\t";
         fd << endl;
     }
@@ -29,32 +29,32 @@ namespace RTSim {
     void PSTrace::probe(ArrEvt& e)
     {
         Task& tt = *(e.getTask());
-        writeTaskEvent(tt, "CREATION\tI");
+        writeTaskEvent(tt, "CREATION\tI", &e);
     }
 
     void PSTrace::probe(EndEvt& e)
     {
         Task& tt = *(e.getTask());
-        writeTaskEvent(tt, "RUNNING\tE");
+        writeTaskEvent(tt, "RUNNING\tE", &e);
         //writeTaskEvent(tt, "DEAD\tI");
     }
 
     void PSTrace::probe(SchedEvt& e)
     {
         Task& tt = *(e.getTask());
-        writeTaskEvent(tt, "RUNNING\tS");
+        writeTaskEvent(tt, "RUNNING\tS", &e);
     }
 
     void PSTrace::probe(DeschedEvt& e)
     {
         Task& tt = *(e.getTask());
-        writeTaskEvent(tt, "RUNNING\tE");
+        writeTaskEvent(tt, "RUNNING\tE", &e);
     }
 
     void PSTrace::probe(DeadEvt& e)
     {
         Task& tt = *(e.getTask());
-        writeTaskEvent(tt, "MISS\t\tI");
+        writeTaskEvent(tt, "MISS\t\tI", &e);
     }
 
     void PSTrace::attachToTask(Task& t)

@@ -34,6 +34,7 @@ class MainWindow : public QMainWindow
   void populate_dock();
 
   void loadSettings();
+  void setupShortcut();
 public:
   MainWindow(QString folder, QWidget *parent = 0);
   MainWindow(QWidget *parent = 0);
