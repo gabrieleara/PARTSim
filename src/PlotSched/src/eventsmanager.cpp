@@ -27,7 +27,7 @@ void EventsManager::newEventArrived(Event e)
     last_event = e.getStart();
 }
 
-
+// count tasks
 unsigned long EventsManager::countCallers()
 {
   return events_container.count();
@@ -45,12 +45,40 @@ QList<Event> * EventsManager::getCallerEventsList(unsigned long caller)
   return &(*i);
 }
 
-
+// task --> evt, evt...
 QMap <QString, QList<Event>> * EventsManager::getCallers()
 {
   return &events_container;
 }
 
+// core --> evt for task, evt for task, evt for task...
+QMap <QString, QList<Event>> * EventsManager::getCPUs()
+{
+    QMap <QString, QList<Event>> *cpus_events = new QMap <QString, QList<Event>>();
+    std::vector<QString> cores;
+
+    // get all cpus
+    for (auto elem : events_container.toStdMap()) {
+        for (Event evt : elem.second) {
+            QString core = evt.getCPU();
+            if (std::find(cores.begin(), cores.end(), core) == cores.end())
+                cores.push_back(core);
+        }
+    }
+
+    /// for each core, take all events that happened on that core
+    for (QString core : cores) {
+        QList<Event> events;
+        for (QList<Event> elem : events_container.values()) {
+            for (Event evt : elem)
+                if (core == evt.getCPU())
+                    events.append(evt);
+        }
+        cpus_events->insert(core, events);
+    }
+
+    return cpus_events;
+}
 
 qreal EventsManager::magnify(qreal start, qreal end, qreal width)
 {

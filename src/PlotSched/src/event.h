@@ -23,7 +23,7 @@ class Event : public QObject
   unsigned long duration;
   QString cpu;
   unsigned long row;
-  QString caller;
+  QString caller; // the task
   QString event;
   event_kind kind;
 
@@ -50,6 +50,7 @@ public:
   unsigned long getStart();
   unsigned long getDuration();
   QString getCaller();
+  QString getCPU();
   event_kind getKind();
 };
 

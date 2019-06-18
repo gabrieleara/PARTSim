@@ -167,6 +167,10 @@ QString Event::getCaller()
   return caller;
 }
 
+QString Event::getCPU()
+{
+    return cpu;
+}
 
 event_kind Event::getKind()
 {

@@ -43,7 +43,7 @@ CustomToolBar::CustomToolBar(QWidget * parent) :
   connect(buttonZoomFit, SIGNAL(clicked()), this, SLOT(buttonZoomFitSlot()));
 
   QToolButton * buttonChangeView = new QToolButton(this);
-  buttonZoomFit->setIcon(QIcon::fromTheme("zoom-fit-best"));
+  buttonChangeView->setIcon(QIcon::fromTheme("zoom-fit-best")); // don't know..
   buttonChangeView->setToolTip("Change scheduling view: tasks <-> cores");
   this->addWidget(buttonChangeView);
   connect(buttonChangeView, SIGNAL(clicked()), this, SLOT(buttonChangeViewSlot()));

@@ -11,13 +11,14 @@ class PlotFrame : public QGraphicsItemGroup
 {
   qreal vertical_offset;
 
-  QList<QGraphicsSimpleTextItem *> callers;
+  QList<QGraphicsSimpleTextItem *> callers; // the tasks
   QVector<QGraphicsLineItem *> lines;
 
 public:
   PlotFrame(qreal offset = 50, QGraphicsItem * parent = 0);
 
-  void addCaller(const QString &caller);
+  /// add a row to the plot
+  void addRow(const QString &title);
   void setWidth(qreal width);
 };
 

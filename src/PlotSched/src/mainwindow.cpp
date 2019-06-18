@@ -7,6 +7,7 @@
 #include <QToolButton>
 #include <QIcon>
 #include <QFileDialog>
+#include <QSettings>
 
 #include <QDebug>
 
@@ -14,6 +15,7 @@ MainWindow::MainWindow(QString folder, QWidget *parent) :
   QMainWindow(parent),
   ui(new Ui::MainWindow)
 {
+    qDebug() << "MainWindow()";
   ui->setupUi(this);
 
   plot = new Plot(this);
@@ -30,6 +32,8 @@ MainWindow::MainWindow(QString folder, QWidget *parent) :
   }
 
   this->_currentView = VIEWS::CORES;
+
+  loadSettings();
 
   ep = new EventsParser;
   //connect(ep, SIGNAL(eventGenerated(QGraphicsItem*)), plot, SLOT(addNewItem(QGraphicsItem*)));
@@ -50,11 +54,26 @@ MainWindow::MainWindow(QWidget *parent) :
   populate_toolbar();
   populate_dock();
 
+  this->_currentView = VIEWS::CORES;
+
   ep = new EventsParser;
   //connect(ep, SIGNAL(eventGenerated(QGraphicsItem*)), plot, SLOT(addNewItem(QGraphicsItem*)));
   connect(ep, SIGNAL(eventGenerated(Event)), &em, SLOT(newEventArrived(Event)));
   connect(ep, SIGNAL(fileParsed()), this, SLOT(updatePlot()));
   connect(plot, SIGNAL(zoomChanged(qreal,qreal,qreal)), this, SLOT(zoomChanged(qreal,qreal,qreal)));
+
+  loadSettings();
+}
+
+void MainWindow::loadSettings()
+{
+    QSettings settings;
+    qDebug() << "settings path: " << settings.fileName();
+    QFileInfo lastPath ( settings.value("lastPath", "").toString() );
+    if (lastPath.isFile()) {
+        newTraceChosen(lastPath.absoluteFilePath());
+        tfl->update(lastPath.absoluteDir().absolutePath());
+    }
 }
 
 void MainWindow::zoomChanged(qreal start, qreal end, qreal windowWidth)
@@ -175,6 +194,9 @@ void MainWindow::newTraceChosen(QString path)
 
   QFileInfo f(path);
   if (f.isFile()) {
+    QSettings settings;
+    settings.setValue("lastPath", path);
+
     em.clear();
     ep->parseFile(path);
   }
@@ -188,10 +210,11 @@ void MainWindow::on_actionTraces_Files_triggered()
 
 void MainWindow::on_actionViewChangedTriggered()
 {
-    if (this->_currentView)
+    if (this->_currentView == VIEWS::TASKS)
         this->_currentView = VIEWS::CORES;
     else
         this->_currentView = VIEWS::TASKS;
+    updatePlot();
 }
 
 
@@ -202,9 +225,12 @@ void MainWindow::updatePlot(qreal center)
 
   PlotFrame * pf = new PlotFrame;
 
-  QMap <QString, QList<Event>> * m = em.getCallers();
+  QMap <QString, QList<Event>> * m = (this->_currentView == VIEWS::TASKS ? em.getCallers() : em.getCPUs());
   for (QList<Event> l : *m) {
-    pf->addCaller(l.first().getCaller());
+    if (this->_currentView == VIEWS::TASKS)
+        pf->addRow(l.first().getCaller());
+    else
+        pf->addRow(l.first().getCPU());
 
     for (Event e : l) {
       e.setRow(row);

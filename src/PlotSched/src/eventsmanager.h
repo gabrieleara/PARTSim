@@ -22,6 +22,7 @@ public:
     unsigned long countCallers();
     QList<Event> * getCallerEventsList(unsigned long caller);
     QMap <QString, QList<Event>> * getCallers();
+    QMap <QString, QList<Event>> * getCPUs();
 
 signals:
 

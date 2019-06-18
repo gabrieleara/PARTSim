@@ -6,23 +6,22 @@ PlotFrame::PlotFrame(qreal offset, QGraphicsItem *parent) :
   vertical_offset = offset;
 }
 
-
-void PlotFrame::addCaller(const QString &c)
+/// adds a row to the plot
+void PlotFrame::addRow(const QString &title)
 {
-  unsigned int count = callers.count();
+    unsigned int count = callers.count();
 
-  qreal y = count * vertical_offset;
+    qreal y = count * vertical_offset;
 
-  QGraphicsSimpleTextItem * t = new QGraphicsSimpleTextItem(c, this);
-  t->setPos(-t->boundingRect().width() - 10, y - t->boundingRect().height());
-  callers.append(t);
-  this->addToGroup(t);
+    QGraphicsSimpleTextItem * t = new QGraphicsSimpleTextItem(title, this);
+    t->setPos(-t->boundingRect().width() - 10, y - t->boundingRect().height());
+    callers.append(t);
+    this->addToGroup(t);
 
-  QGraphicsLineItem * l = new QGraphicsLineItem(0, y, 0, y, this);
-  lines.append(l);
-  this->addToGroup(l);
+    QGraphicsLineItem * l = new QGraphicsLineItem(0, y, 0, y, this);
+    lines.append(l);
+    this->addToGroup(l);
 }
-
 
 void PlotFrame::setWidth(qreal width)
 {
