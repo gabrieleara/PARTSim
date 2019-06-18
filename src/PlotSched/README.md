@@ -85,7 +85,7 @@ The tool recognizes any row as an event.
 Examples of `.pst` files can be found in `examples/` folder.
 
 
-To enlarge the trace, hold the right button and slide your mouse.
+To enlarge the trace, hold the right button of your mouse and slide it.
 
 #### Rules
 
