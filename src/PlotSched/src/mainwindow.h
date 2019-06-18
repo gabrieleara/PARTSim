@@ -13,6 +13,8 @@ namespace Ui {
   class MainWindow;
 }
 
+enum VIEWS { CORES, TASKS };
+
 class MainWindow : public QMainWindow
 {
   Q_OBJECT
@@ -24,6 +26,8 @@ class MainWindow : public QMainWindow
   TraceFileLister * tfl;
   EventsParser * ep;
   Plot * plot;
+
+  enum VIEWS _currentView;
 
   void updateTitle();
   void populate_toolbar();
@@ -50,6 +54,8 @@ private slots:
   void on_actionZoomFitTriggered();
 
   void on_actionTraces_Files_triggered();
+
+  void on_actionViewChangedTriggered();
 
 signals:
   void newFolderChosen(QString);

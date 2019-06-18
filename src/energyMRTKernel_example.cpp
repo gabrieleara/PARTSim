@@ -1677,36 +1677,38 @@ int main(int argc, char *argv[]) {
             int task_period = 500;
             unsigned int taskNumber = cpus_big.size() * 3 + cpus_little.size() * 3;
             
-            int seed = 98;
-            srand(seed); // random nums are expected to be the same in all simulations
+            for (int i = 0; i < 10; i++) {
+                string filename = StaffordImporter::generate(500, 1.0); // periodo, utilizzazione
+                ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern);
 
-            string filename = StaffordImporter::generate(500, 1.0); // periodo, utilizzazione
-            ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern);
+                cout << " there are tasks: " << ets.size() << endl;
+                for (CBServerCallingEMRTKernel* t : ets)
+                    cout << t->toString() << endl;
 
-            cout << " there are tasks: " << ets.size() << endl;
-            for (CBServerCallingEMRTKernel* t : ets)
-                cout << t->toString() << endl;
+                for (CBServerCallingEMRTKernel* t : ets) {
+                    tasks.push_back(t->getAllTasks().at(0));
+                    ttrace.attachToTask(*t->getAllTasks().at(0));
+                    mc.attachToTask(dynamic_cast<Task*>(t->getAllTasks().at(0)));
+                }
 
-            for (CBServerCallingEMRTKernel* t : ets) {
-                tasks.push_back(t->getAllTasks().at(0));
-                ttrace.attachToTask(*t->getAllTasks().at(0));
-                mc.attachToTask(dynamic_cast<Task*>(t->getAllTasks().at(0)));
+                EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
+
+                SIMUL.initSingleRun();
+                SIMUL.run_to(1000);
+                cout << "missing tasks: " << mc.getLastValue() << endl;
+                SIMUL.endSingleRun();
+
+                cout << "--------------" << endl;
+                cout << "Simulation finished, filename=" << filename << endl;
+
+                assert(mc.getLastValue() == 0);
+
+                for (AbsRTTask *t : tasks)
+                    delete t;
+                for (CBServerCallingEMRTKernel* cbs : ets)
+                    delete cbs;
+                delete k;
             }
-
-            EnergyMRTKernel* k = dynamic_cast<EnergyMRTKernel*>(kern);
-
-            SIMUL.initSingleRun();
-            SIMUL.run_to(1000);
-            cout << "missing tasks: " << mc.getLastValue() << endl;
-            SIMUL.endSingleRun();
-
-            cout << "--------------" << endl;
-            cout << "Simulation finished, filename=" << filename << endl;
-            for (AbsRTTask *t : tasks)
-                delete t;
-            for (CBServerCallingEMRTKernel* cbs : ets)
-                delete cbs;
-            delete k;
             return 0;
         }
 

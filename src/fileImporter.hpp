@@ -20,7 +20,7 @@ namespace RTSim {
 
         time_t n            = time(0);
         struct tm* _tm      = localtime(&n);
-        char now[200]       = "";
+        char now[50]        = "";
         sprintf(now, "%d_%d_%d_%d_%d_%d", _tm->tm_mday, _tm->tm_mon + 1, _tm->tm_year + 1900, _tm->tm_hour, _tm->tm_min, _tm->tm_sec);
 
         sprintf(filename, "taskset_generator/%s_P_%u_u_%f.txt", now, period, utilization);

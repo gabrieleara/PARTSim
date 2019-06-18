@@ -18,6 +18,7 @@ public slots:
   void buttonZoomInSlot();
   void buttonZoomOutSlot();
   void buttonZoomFitSlot();
+  void buttonChangeViewSlot();
 
 signals:
   void openButtonClicked();
@@ -26,6 +27,8 @@ signals:
   void zoomInClicked();
   void zoomOutClicked();
   void zoomFitClicked();
+
+  void changeViewClicked();
 };
 
 #endif // CUSTOMTOOLBAR_H

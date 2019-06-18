@@ -29,6 +29,8 @@ MainWindow::MainWindow(QString folder, QWidget *parent) :
     emit newFolderChosen(filename);
   }
 
+  this->_currentView = VIEWS::CORES;
+
   ep = new EventsParser;
   //connect(ep, SIGNAL(eventGenerated(QGraphicsItem*)), plot, SLOT(addNewItem(QGraphicsItem*)));
   connect(ep, SIGNAL(eventGenerated(Event)), &em, SLOT(newEventArrived(Event)));
@@ -81,6 +83,7 @@ void MainWindow::populate_toolbar()
   connect(ct, SIGNAL(zoomInClicked()), this, SLOT(on_actionZoomInTriggered()));
   connect(ct, SIGNAL(zoomOutClicked()), this, SLOT(on_actionZoomOutTriggered()));
   connect(ct, SIGNAL(zoomFitClicked()), this, SLOT(on_actionZoomFitTriggered()));
+  connect(ct, SIGNAL(changeViewClicked()), this, SLOT(on_actionViewChangedTriggered()));
 }
 
 
@@ -183,6 +186,14 @@ void MainWindow::on_actionTraces_Files_triggered()
   tfl->setVisible(!tfl->isVisible());
 }
 
+void MainWindow::on_actionViewChangedTriggered()
+{
+    if (this->_currentView)
+        this->_currentView = VIEWS::CORES;
+    else
+        this->_currentView = VIEWS::TASKS;
+}
+
 
 void MainWindow::updatePlot(qreal center)
 {
@@ -193,12 +204,9 @@ void MainWindow::updatePlot(qreal center)
 
   QMap <QString, QList<Event>> * m = em.getCallers();
   for (QList<Event> l : *m) {
-    //qDebug() << "Trovato caller";
-
     pf->addCaller(l.first().getCaller());
 
     for (Event e : l) {
-      //qDebug() << " - Trovato evento";
       e.setRow(row);
       EventView * ev = new EventView(e);
       plot->addNewItem(ev);

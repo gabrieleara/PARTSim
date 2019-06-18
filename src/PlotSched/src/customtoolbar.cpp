@@ -42,6 +42,11 @@ CustomToolBar::CustomToolBar(QWidget * parent) :
 
   connect(buttonZoomFit, SIGNAL(clicked()), this, SLOT(buttonZoomFitSlot()));
 
+  QToolButton * buttonChangeView = new QToolButton(this);
+  buttonZoomFit->setIcon(QIcon::fromTheme("zoom-fit-best"));
+  buttonChangeView->setToolTip("Change scheduling view: tasks <-> cores");
+  this->addWidget(buttonChangeView);
+  connect(buttonChangeView, SIGNAL(clicked()), this, SLOT(buttonChangeViewSlot()));
 
   this->addSeparator();
 }
@@ -69,4 +74,9 @@ void CustomToolBar::buttonZoomOutSlot()
 void CustomToolBar::buttonZoomFitSlot()
 {
   emit zoomFitClicked();
+}
+
+void CustomToolBar::buttonChangeViewSlot()
+{
+  emit changeViewClicked();
 }
