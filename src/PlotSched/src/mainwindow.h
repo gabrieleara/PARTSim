@@ -40,6 +40,7 @@ public:
   MainWindow(QWidget *parent = 0);
   ~MainWindow();
 
+  void refresh();
 public slots:
   void newTraceChosen(QString);
   void updatePlot(qreal center = 0);

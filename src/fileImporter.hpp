@@ -33,6 +33,7 @@ namespace RTSim {
         cout << "executing: " << s << endl;
         system(s);
         cout << "file made" << endl;
+        saveLastGenerated(filename);
         return string(filename);
     }
 
@@ -58,13 +59,13 @@ namespace RTSim {
        return tasks;
     }
 
-    static vector<PeriodicTask*> getPeriodicTasks(const string& filename) {
+    static vector<PeriodicTask*> getPeriodicTasks(const string& filename, const int experiment_no) {
         map<unsigned int, pair<unsigned int, unsigned int>> tasks = importFromFile(filename);
         vector<PeriodicTask*> res;
         char instr[60] = "";
 
         for (const auto &elem : tasks) {
-            PeriodicTask* t = new PeriodicTask((int)elem.second.second, (int)elem.second.second, 0, "task_" + to_string(elem.first));
+            PeriodicTask* t = new PeriodicTask((int)elem.second.second, (int)elem.second.second, 0, "t_" + to_string(experiment_no) + "_" + to_string(elem.first));
             sprintf(instr, "fixed(%d, %s);", elem.second.first, "bzip2");
             t->insertCode(instr);
             res.push_back(t);
@@ -75,9 +76,10 @@ namespace RTSim {
         return res;
     }
 
-    static vector<CBServerCallingEMRTKernel*> getEnvelopedPeriodcTasks(const string& filename, EnergyMRTKernel *kern) {
+    static vector<CBServerCallingEMRTKernel*> getEnvelopedPeriodcTasks(const string& filename, EnergyMRTKernel *kern, const int experiment_no = -1) {
+        assert (filename != ""); assert (kern != NULL);
         vector<CBServerCallingEMRTKernel*> ets;
-        vector<PeriodicTask*> tasks = getPeriodicTasks(filename);
+        vector<PeriodicTask*> tasks = getPeriodicTasks(filename, experiment_no);
         cout << "received " << tasks.size() << endl;
 
         for (PeriodicTask* t : tasks) {
@@ -85,6 +87,26 @@ namespace RTSim {
         }
 
         return ets;
+    }
+
+
+    static string getLastGenerated() {
+        string filename = "";
+
+        ifstream in("taskset_generator/saved.conf");
+        in >> filename;
+        in.close();
+
+        assert(filename != "");
+
+        return filename;
+    }
+
+  private:
+    static void saveLastGenerated(const string& filename) {
+        ofstream out("taskset_generator/saved.conf");
+        out << filename;
+        out.close();
     }
 
     };

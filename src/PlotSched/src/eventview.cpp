@@ -39,13 +39,16 @@ void EventView::setEvent(Event e)
   e_ = new Event(e);
 
   drawText();
+  QGraphicsRectItem *rect;
 
   switch (e.getKind()) {
     case RUNNING :
-      drawRect(e.getDuration() * e.getMagnification(), eventToColor(e.getKind()));
+      rect = drawRect(e.getDuration() * e.getMagnification(), eventToColor(e.getKind()));
+      drawTextInRect(rect, e_->getCaller());
       break;
     case BLOCKED :
-      drawRect(e.getDuration() * e.getMagnification(), eventToColor(e.getKind()));
+      rect = drawRect(e.getDuration() * e.getMagnification(), eventToColor(e.getKind()));
+      drawTextInRect(rect, e_->getCaller());
       break;
     case ACTIVATION :
       drawArrowUp();
@@ -186,7 +189,7 @@ void EventView::drawArrowDownRed()
 }
 
 
-void EventView::drawRect(qreal duration, QColor color)
+QGraphicsRectItem *EventView::drawRect(qreal duration, QColor color)
 {
   /******************************
    *
@@ -210,6 +213,7 @@ void EventView::drawRect(qreal duration, QColor color)
   r->moveBy(0, -rectHeight);
 
   this->addToGroup(r);
+  return r;
 }
 
 
@@ -254,4 +258,12 @@ void EventView::drawText()
     end->moveBy(e_->getDuration() * e_->getMagnification(), 0);
     this->addToGroup(end);
   }
+}
+
+// adds text inside rect
+void EventView::drawTextInRect(QGraphicsRectItem *rect, const QString& text)
+{
+    QGraphicsSimpleTextItem * start = new QGraphicsSimpleTextItem(text, this);
+    start->setPos(rect->pos().x() + 3, rect->pos().y());
+    this->addToGroup(start);
 }

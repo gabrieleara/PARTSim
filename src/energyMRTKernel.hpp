@@ -19,6 +19,7 @@
 #include "rttask.hpp"
 #include "multi_cores_scheds.hpp"
 #include "rrsched.hpp"
+#include "utils.hpp"
 
 #define _ENERGYMRTKERNEL_DBG_LEV    "EnergyMRTKernel"
 
@@ -536,16 +537,23 @@ namespace RTSim {
             assert (mp.task != NULL); assert (mp.from != NULL); assert (mp.to != NULL);
             CPU_BL *endingCPU = mp.to;
             CBServerCallingEMRTKernel *task_m = dynamic_cast<CBServerCallingEMRTKernel*> (mp.task);
+            
+            string starting_wl = endingCPU->getWorkload();
+            endingCPU->setWorkload(Utils::getTaskWorkload(task_m));
             cout << "\tEMRTK::" << __func__ << "()" << endl;
             
             double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
-            bool safe = (double) task_m->get_remaining_budget() <= (1 - utilCore) * double(task_m->getDeadline() - SIMUL.getTime()); // remaining utilization of migrated task > 1 - U_core (remaining core util)
+            bool safe = (double) task_m->get_remaining_budget() / endingCPU->getSpeed() <= (1 - utilCore) * double(task_m->getDeadline() - SIMUL.getTime()); // remaining utilization of migrated task > 1 - U_core (remaining core util)
 
             if (!safe)
-                cout << "\t\tNot safe to migrate " << task_m->toString() << " into " << endingCPU->toString() << ": " << task_m->get_remaining_budget() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ") => pick next ready" << endl;
-              else
-                cout << "\t\tMigration safe " << task_m->toString() << mp.from->toString() << " -> " << endingCPU->toString() << endl;
+                cout << "\t\tNot safe to migrate " << task_m->toString() << " into " << endingCPU->toString() << " => pick next ready" << endl;
+            else
+              cout << "\t\tMigration safe " << task_m->toString() << mp.from->toString() << " -> " << endingCPU->toString() << endl;
 
+            cout << "\t\t\t" << endingCPU->toString() << " " << endingCPU->getWorkload() << " " << endingCPU->getFrequency() << endl;
+            cout << "\t\t\tCalculation: " << (double) task_m->get_remaining_budget() / endingCPU->getSpeed() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ")" << endl;  
+
+            endingCPU->setWorkload(starting_wl);
             return safe;
         }
 

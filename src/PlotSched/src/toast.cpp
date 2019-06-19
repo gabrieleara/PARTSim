@@ -17,7 +17,7 @@ Toast::Toast(const QString &message)
 
     int x = QGuiApplication::primaryScreen()->geometry().width() / 2 - 80;
     int y = QGuiApplication::primaryScreen()->geometry().height() - 120;
-    move ( 50,50 );
+    move ( x, y );
 }
 
 void Toast::show()
@@ -25,9 +25,10 @@ void Toast::show()
     QTimer* timer = new QTimer();
     QObject::connect(timer, SIGNAL(timeout()),
           this, SLOT(hide()));
-    timer->start(3000); // ms
+    timer->start(500); // ms
 
-    QMessageBox::show();
+//    QMessageBox::show();
+    exec(); // blocking :-(
 }
 
 void Toast::show(const QString &message)

@@ -67,6 +67,8 @@ MainWindow::MainWindow(QWidget *parent) :
   connect(plot, SIGNAL(zoomChanged(qreal,qreal,qreal)), this, SLOT(zoomChanged(qreal,qreal,qreal)));
 
   loadSettings();
+
+  showMaximized();
 }
 
 void MainWindow::loadSettings()

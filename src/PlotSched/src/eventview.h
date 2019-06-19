@@ -22,9 +22,11 @@ public:
   void drawArrowUp();
   void drawArrowDown();
   void drawArrowDownRed();
-  void drawRect(qreal duration, QColor color);
+  QGraphicsRectItem *drawRect(qreal duration, QColor color);
   void drawRectH(qreal duration, QColor color);
   void drawCircle();
+protected:
+  void drawTextInRect(QGraphicsRectItem *rect, const QString &text);
 };
 
 #endif // EVENTVIEW_H
