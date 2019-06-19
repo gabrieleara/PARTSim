@@ -23,6 +23,7 @@ class MainWindow : public QMainWindow
 
   EventsManager em;
   QString filename;
+  QString curTrace;
   TraceFileLister * tfl;
   EventsParser * ep;
   Plot * plot;
@@ -46,6 +47,8 @@ public slots:
   void updatePlot(qreal center = 0);
   void zoomChanged(qreal, qreal, qreal);
 
+  // reload current (trace) plot
+  void reloadTrace();
 private slots:
   void on_actionQuit_triggered();
   void on_actionOpen_triggered();

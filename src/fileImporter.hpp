@@ -50,7 +50,7 @@ namespace RTSim {
        }
 
        for (const auto &elem : tasks) {
-          cout << "wcet " << elem.second.first << " period " << elem.second.second << endl;
+          cout << elem.first << ")\twcet " << elem.second.first << " period " << elem.second.second << endl;
        }
 
        fd.close();
@@ -68,6 +68,8 @@ namespace RTSim {
             PeriodicTask* t = new PeriodicTask((int)elem.second.second, (int)elem.second.second, 0, "t_" + to_string(experiment_no) + "_" + to_string(elem.first));
             sprintf(instr, "fixed(%d, %s);", elem.second.first, "bzip2");
             t->insertCode(instr);
+            if (t->getWCET(1.0) == 0.0) // stafford may generate tasks with WCET 0
+              throw std::invalid_argument("Creating task with WCET 0");
             res.push_back(t);
         }
 
@@ -104,6 +106,7 @@ namespace RTSim {
 
   private:
     static void saveLastGenerated(const string& filename) {
+        assert (filename != "");
         ofstream out("taskset_generator/saved.conf");
         out << filename;
         out.close();

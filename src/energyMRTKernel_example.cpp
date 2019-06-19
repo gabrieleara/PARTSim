@@ -1553,7 +1553,7 @@ int main(int argc, char *argv[]) {
             // Moving towards 3 tasks per core, seing if system crashes.
             // Such task should be schedulable with EDF (sum of utilizations <= 1).
             MissCount mc("miss count");
-            bool ONLY_LAST_ONE = true;
+            bool ONLY_LAST_ONE = 1;
             int task_period = 500;
             unsigned int taskNumber = cpus_big.size() * 3 + cpus_little.size() * 3;
 
@@ -1574,7 +1574,7 @@ int main(int argc, char *argv[]) {
                     filename = StaffordImporter::getLastGenerated();
                 else
                     filename = StaffordImporter::generate(500, 1.0); // periodo, utilizzazione
-                ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern, i);
+                try { ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern, i); } catch(std::exception &e) { cerr << "Error: " << e.what() << endl; return 0; }
                 assert(ets.size() > 0);
 
                 cout << " there are tasks: " << ets.size() << endl;
@@ -1598,14 +1598,23 @@ int main(int argc, char *argv[]) {
                 SIMUL.sim_step();
                 k->printState(true);
                 for (CPU_BL* cpu : k->getProcessors()) {
-                    assert (k->getRunningTask(cpu) == NULL);
+                    // assert (k->getRunningTask(cpu) == NULL);
                     assert (k->getReadyTasks(cpu).empty());
                 }
+                SIMUL.run_to(500);
                 int missing = mc.getLastValue();
                 assert (missing == 0);
-                SIMUL.run_to(1000);
+                return 0;
+                SIMUL.run_to(999);
+                SIMUL.sim_step();
+                k->printState(true);
+                for (CPU_BL* cpu : k->getProcessors()) {
+                    // assert (k->getRunningTask(cpu) == NULL);
+                    assert (k->getReadyTasks(cpu).empty());
+                }
                 missing = mc.getLastValue();
                 assert (missing == 0);
+                SIMUL.run_to(1000);
                 SIMUL.endSingleRun();
 
                 cout << "--------------" << endl;
@@ -1613,17 +1622,15 @@ int main(int argc, char *argv[]) {
                 cout << "i = " << i << endl;
                 cout << "Simulation finished, filename=" << filename << endl;
 
-                assert(missing == 0);
-
-
                 for (AbsRTTask *t : tasks)
                     delete t;
                 for (CBServerCallingEMRTKernel* cbs : ets)
                     delete cbs;
                 delete k;
 
-                if (ONLY_LAST_ONE)
+                // if (ONLY_LAST_ONE)
                     return 0;
+
             }
             return 0;
         }

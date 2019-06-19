@@ -82,10 +82,15 @@ void MainWindow::loadSettings()
     }
 }
 
+void MainWindow::reloadTrace()
+{
+    this->newTraceChosen(curTrace);
+}
+
 void MainWindow::setupShortcut()
 {
     QShortcut *shortcut = new QShortcut(QKeySequence(Qt::Key_F5), this);
-    QObject::connect(shortcut, SIGNAL(activated()), this, SLOT(updatePlot()));
+    QObject::connect(shortcut, SIGNAL(activated()), this, SLOT(reloadTrace()));
 }
 
 void MainWindow::zoomChanged(qreal start, qreal end, qreal windowWidth)
@@ -94,6 +99,7 @@ void MainWindow::zoomChanged(qreal start, qreal end, qreal windowWidth)
   updatePlot(center);
 }
 
+// the menu on the left
 void MainWindow::populate_dock()
 {
   tfl = new TraceFileLister(this);
@@ -103,6 +109,7 @@ void MainWindow::populate_dock()
   connect(tfl, SIGNAL(traceChosen(QString)), this, SLOT(newTraceChosen(QString)));
 }
 
+// the one above
 void MainWindow::populate_toolbar()
 {
   CustomToolBar * ct = new CustomToolBar(this);
@@ -208,6 +215,7 @@ void MainWindow::newTraceChosen(QString path)
   if (f.isFile()) {
     QSettings settings;
     settings.setValue("lastPath", path);
+    this->curTrace = path;
 
     em.clear();
     ep->parseFile(path);
