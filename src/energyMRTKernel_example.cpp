@@ -27,6 +27,7 @@
 #include "cbserver.hpp"
 #include <taskstat.hpp>
 #include <fileImporter.hpp>
+#include <unistd.h>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -1553,7 +1554,7 @@ int main(int argc, char *argv[]) {
             // Moving towards 3 tasks per core, seing if system crashes.
             // Such task should be schedulable with EDF (sum of utilizations <= 1).
             MissCount mc("miss count");
-            bool ONLY_LAST_ONE = 1;
+            bool ONLY_LAST_ONE = 0;
             int task_period = 500;
             unsigned int taskNumber = cpus_big.size() * 3 + cpus_little.size() * 3;
 
@@ -1573,7 +1574,7 @@ int main(int argc, char *argv[]) {
                 if (ONLY_LAST_ONE)
                     filename = StaffordImporter::getLastGenerated();
                 else
-                    filename = StaffordImporter::generate(500, 1.0); // periodo, utilizzazione
+                    filename = StaffordImporter::generate(500, 0.6); // periodo, utilizzazione. Why not util=1.0? because littles will scale up WCETs => no 3 tasks per core
                 try { ets = StaffordImporter::getEnvelopedPeriodcTasks(filename, kern, i); } catch(std::exception &e) { cerr << "Error: " << e.what() << endl; return 0; }
                 assert(ets.size() > 0);
 
@@ -1601,10 +1602,13 @@ int main(int argc, char *argv[]) {
                     // assert (k->getRunningTask(cpu) == NULL);
                     assert (k->getReadyTasks(cpu).empty());
                 }
+                // return 0;
+                // usleep(5500000);
                 SIMUL.run_to(500);
                 int missing = mc.getLastValue();
                 assert (missing == 0);
-                return 0;
+                k->printState(true);
+                // return 0;
                 SIMUL.run_to(999);
                 SIMUL.sim_step();
                 k->printState(true);

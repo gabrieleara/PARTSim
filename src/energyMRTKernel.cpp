@@ -200,12 +200,12 @@ namespace RTSim {
         if (isTryngTaskOnCPU_BL())
             return;
 
-        cout << __func__ << "(). envelopes: " << endl;
-        printEnvelopes();
+        // cout << __func__ << "(). envelopes: " << endl;
+        // printEnvelopes();
 
         // update budget of servers (enveloping periodic tasks) in the island
         for (auto &elem : _envelopes) {
-            cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
+            // cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
             CPU_BL *c = getProcessor(elem.first);
 
             // dispatch() dispatches a task per time, setting CPU OPP => some tasks don't have core yet
@@ -214,11 +214,11 @@ namespace RTSim {
 
             string startingWL = c->getWorkload();
             c->setWorkload(Utils::getTaskWorkload(elem.first));
-            cout << __func__ << "(). cpu of elem is " << c->toString() << " wl: " << c->getWorkload() << endl;
+            // cout << __func__ << "(). cpu of elem is " << c->toString() << " wl: " << c->getWorkload() << endl;
 
             if (c->getIslandType() == island->getIslandType()) {
                 Tick taskWCET = Tick(ceil(elem.first->getWCET(c->getSpeed())));
-                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
+                // cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
                 
                 elem.second->changeBudget(taskWCET);
                 //elem.second->changeQ(taskWCET);
@@ -428,7 +428,7 @@ namespace RTSim {
         if (_queues->isEmpty(p) && getRunningTask(p) == NULL)
             p->setBusy(false);
 
-        cout << "\tState before migration (migrations after end=" << EMRTK_CBS_MIGRATE_AFTER_END << ", Temporarily migrate after end=" << EMRTK_TEMPORARILY_MIGRATE_END << ", core busy=" << p->isBusy() << "):" << endl;
+        cout << "\tState before migration (migrations after end=" << EMRTK_CBS_MIGRATE_AFTER_END << ", Temporarily migrate after end=" << EMRTK_TEMPORARILY_MIGRATE_END << ", core is busy=" << p->isBusy() << "):" << endl;
         printState(true);
 
         if (!p->isBusy() && EMRTK_CBS_MIGRATE_AFTER_END) {
