@@ -42,11 +42,23 @@ CustomToolBar::CustomToolBar(QWidget * parent) :
 
   connect(buttonZoomFit, SIGNAL(clicked()), this, SLOT(buttonZoomFitSlot()));
 
-  QToolButton * buttonChangeView = new QToolButton(this);
-  buttonChangeView->setIcon(QIcon::fromTheme("zoom-fit-best")); // don't know..
-  buttonChangeView->setToolTip("Change scheduling view: tasks <-> cores");
-  this->addWidget(buttonChangeView);
-  connect(buttonChangeView, SIGNAL(clicked()), this, SLOT(buttonChangeViewSlot()));
+  QToolButton * buttonChangeTasksView = new QToolButton(this);
+  buttonChangeTasksView->setIcon(QIcon(":/icons/assets/tau64x.png"));
+  buttonChangeTasksView->setToolTip("Change scheduling view: tasks");
+  this->addWidget(buttonChangeTasksView);
+  connect(buttonChangeTasksView, SIGNAL(clicked()), this, SLOT(buttonChangeViewTasksSlot()));
+
+  QToolButton * buttonChangeGanntView = new QToolButton(this);
+  buttonChangeGanntView->setIcon(QIcon(":/icons/assets/gannt64x.png"));
+  buttonChangeGanntView->setToolTip("Change scheduling view: Gannt diagram");
+  this->addWidget(buttonChangeGanntView);
+  connect(buttonChangeGanntView, SIGNAL(clicked()), this, SLOT(buttonChangeViewGanntSlot()));
+
+  QToolButton * buttonChangeCPUView = new QToolButton(this);
+  buttonChangeCPUView->setIcon(QIcon(":/icons/assets/cpu64x.png"));
+  buttonChangeCPUView->setToolTip("Change scheduling view: cores load");
+  this->addWidget(buttonChangeCPUView);
+  connect(buttonChangeCPUView, SIGNAL(clicked()), this, SLOT(buttonChangeViewCPUSlot()));
 
   this->addSeparator();
 }
@@ -76,7 +88,17 @@ void CustomToolBar::buttonZoomFitSlot()
   emit zoomFitClicked();
 }
 
-void CustomToolBar::buttonChangeViewSlot()
+void CustomToolBar::buttonChangeViewGanntSlot()
 {
-  emit changeViewClicked();
+  emit changeViewGanntClicked();
+}
+
+void CustomToolBar::buttonChangeViewCPUSlot()
+{
+  emit changeViewCPUClicked();
+}
+
+void CustomToolBar::buttonChangeViewTasksSlot()
+{
+  emit changeViewTasksClicked();
 }

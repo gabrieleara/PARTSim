@@ -18,7 +18,9 @@ public slots:
   void buttonZoomInSlot();
   void buttonZoomOutSlot();
   void buttonZoomFitSlot();
-  void buttonChangeViewSlot();
+  void buttonChangeViewGanntSlot();
+  void buttonChangeViewCPUSlot();
+  void buttonChangeViewTasksSlot();
 
 signals:
   void openButtonClicked();
@@ -28,7 +30,9 @@ signals:
   void zoomOutClicked();
   void zoomFitClicked();
 
-  void changeViewClicked();
+  void changeViewTasksClicked();
+  void changeViewGanntClicked();
+  void changeViewCPUClicked();
 };
 
 #endif // CUSTOMTOOLBAR_H

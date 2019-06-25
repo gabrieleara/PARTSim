@@ -13,7 +13,8 @@ namespace Ui {
   class MainWindow;
 }
 
-enum VIEWS { CORES, TASKS };
+enum VIEWS { GANNT, TASKS, CORES};
+const QString VIEWS_STR[] = { "Gannt", "Tasks", "Cores" };
 
 class MainWindow : public QMainWindow
 {
@@ -36,6 +37,10 @@ class MainWindow : public QMainWindow
 
   void loadSettings();
   void setupShortcut();
+
+  // Changes the view to v (e.g., show cores or Gannt instead of tasks)
+  void on_actionViewChangedTriggered(VIEWS v);
+
 public:
   MainWindow(QString folder, QWidget *parent = 0);
   MainWindow(QWidget *parent = 0);
@@ -61,7 +66,17 @@ private slots:
 
   void on_actionTraces_Files_triggered();
 
-  void on_actionViewChangedTriggered();
+  void on_actionViewChangedGanntTriggered() {
+      on_actionViewChangedTriggered(VIEWS::GANNT);
+  }
+
+  void on_actionViewChangedCPUTriggered() {
+      on_actionViewChangedTriggered(VIEWS::CORES);
+  }
+
+  void on_actionViewChangedTasksTriggered() {
+      on_actionViewChangedTriggered(VIEWS::TASKS);
+  }
 
 signals:
   void newFolderChosen(QString);

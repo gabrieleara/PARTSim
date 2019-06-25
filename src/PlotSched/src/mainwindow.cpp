@@ -33,7 +33,7 @@ MainWindow::MainWindow(QString folder, QWidget *parent) :
     emit newFolderChosen(filename);
   }
 
-  this->_currentView = VIEWS::CORES;
+  this->_currentView = VIEWS::GANNT;
 
   loadSettings();
 
@@ -58,7 +58,7 @@ MainWindow::MainWindow(QWidget *parent) :
   populate_toolbar();
   populate_dock();
 
-  this->_currentView = VIEWS::CORES;
+  this->_currentView = VIEWS::GANNT;
 
   ep = new EventsParser;
   //connect(ep, SIGNAL(eventGenerated(QGraphicsItem*)), plot, SLOT(addNewItem(QGraphicsItem*)));
@@ -121,7 +121,9 @@ void MainWindow::populate_toolbar()
   connect(ct, SIGNAL(zoomInClicked()), this, SLOT(on_actionZoomInTriggered()));
   connect(ct, SIGNAL(zoomOutClicked()), this, SLOT(on_actionZoomOutTriggered()));
   connect(ct, SIGNAL(zoomFitClicked()), this, SLOT(on_actionZoomFitTriggered()));
-  connect(ct, SIGNAL(changeViewClicked()), this, SLOT(on_actionViewChangedTriggered()));
+  connect(ct, SIGNAL(changeViewTasksClicked()), this, SLOT(on_actionViewChangedTasksTriggered()));
+  connect(ct, SIGNAL(changeViewCPUClicked()), this, SLOT(on_actionViewChangedCPUTriggered()));
+  connect(ct, SIGNAL(changeViewGanntClicked()), this, SLOT(on_actionViewChangedGanntTriggered()));
 }
 
 
@@ -228,19 +230,15 @@ void MainWindow::on_actionTraces_Files_triggered()
   tfl->setVisible(!tfl->isVisible());
 }
 
-void MainWindow::on_actionViewChangedTriggered()
+void MainWindow::on_actionViewChangedTriggered(VIEWS newView)
 {
-    if (this->_currentView == VIEWS::TASKS)
-        this->_currentView = VIEWS::CORES;
-    else
-        this->_currentView = VIEWS::TASKS;
+    this->_currentView = newView;
     updatePlot();
 }
 
-
 void MainWindow::updatePlot(qreal center)
 {
-    Toast::show("View updated");
+    Toast::show("View updated: " + VIEWS_STR[_currentView]);
 
   plot->clear();
   unsigned long row = 0;
