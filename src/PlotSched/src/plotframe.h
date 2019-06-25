@@ -17,9 +17,11 @@ class PlotFrame : public QGraphicsItemGroup
 public:
   PlotFrame(qreal offset = 50, QGraphicsItem * parent = 0);
 
-  /// add a row to the plot
+  /// add a row to the plot: t0 |____________
   void addRow(const QString &title);
   void setWidth(qreal width);
+  /// add a column to the plot (see cpp)
+  void addColumn(const QString &title);
 };
 
 #endif // PLOTFRAME_H

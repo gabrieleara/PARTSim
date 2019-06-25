@@ -240,32 +240,51 @@ void MainWindow::updatePlot(qreal center)
 {
     Toast::show("View updated: " + VIEWS_STR[_currentView]);
 
-  plot->clear();
-  unsigned long row = 0;
+    plot->clear();
 
-  PlotFrame * pf = new PlotFrame;
+    unsigned long row = 0;
+    unsigned long column = 0; // the column I am dealing with
+    PlotFrame * pf = new PlotFrame;
 
-  QMap <QString, QList<Event>> * m = (this->_currentView == VIEWS::TASKS ? em.getCallers() : em.getCPUs());
-  for (QList<Event> l : *m) {
-    if (this->_currentView == VIEWS::TASKS)
-        pf->addRow(l.first().getCaller());
-    else
-        pf->addRow(l.first().getCPU());
+    if (_currentView == VIEWS::TASKS || _currentView == VIEWS::GANNT) {
+        QMap <QString, QList<Event>> * m = (_currentView == VIEWS::TASKS ? em.getCallers() : em.getCPUs());
+        for (QList<Event> l : *m) {
+            if (this->_currentView == VIEWS::TASKS)
+                pf->addRow(l.first().getCaller());
+            else
+                pf->addRow(l.first().getCPU());
 
-    for (Event e : l) {
-      e.setRow(row);
-      EventView * ev = new EventView(e);
-      plot->addNewItem(ev);
+            for (Event e : l) {
+              e.setRow(row);
+              EventView * ev = new EventView(e);
+              plot->addNewItem(ev);
+            }
+            ++row;
+        }
     }
-    ++row;
-  }
+    else { // CORES. Maybe the resulting code will be mergeable with the one above.
+        QList<QString> cores = em.getCPUList();
+        // for each core, show its ready and running tasks at time t
+        for (QString core : cores) {
+            QMap <QString, QList<QString>> * m = em.getTasks(core, 0); // BIG0 -> { T0 runs, T1 ready, T2 ready }
+            pf->addColumn(core);
+            for (QString task : m->values()) {
+                  e.setColumn(column);
+                  e.setRow(row);
+                  EventView * ev = new EventView(e);
+                  plot->addNewItem(ev);
+                  row++;
+            }
+            column++;
+        }
+    }
 
-  qreal rightmost = plot->updateSceneView(center);
+    qreal rightmost = plot->updateSceneView(center);
 
-  pf->setWidth(rightmost);
-  plot->addNewItem(pf);
+    pf->setWidth(rightmost);
+    plot->addNewItem(pf);
 
-  plot->updateSceneView(center);
+    plot->updateSceneView(center);
 
-  qDebug() << "MainWindow::updatePlot()";
+    qDebug() << "MainWindow::updatePlot()";
 }

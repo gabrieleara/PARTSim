@@ -214,12 +214,10 @@ namespace RTSim {
 
             string startingWL = c->getWorkload();
             c->setWorkload(Utils::getTaskWorkload(elem.first));
-            // cout << __func__ << "(). cpu of elem is " << c->toString() << " wl: " << c->getWorkload() << endl;
-
+            cout << __func__ << "(). cpu of elem is " << c->toString() << " wl: " << c->getWorkload() << endl;
             if (c->getIslandType() == island->getIslandType()) {
                 Tick taskWCET = Tick(ceil(elem.first->getWCET(c->getSpeed())));
-                // cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
-                
+                cout << __func__ << "(). changing budget to " << elem.second->toString() << " to " << taskWCET << ". core: " << c->toString() << " speed:" << c->getSpeed() << endl;
                 elem.second->changeBudget(taskWCET);
                 //elem.second->changeQ(taskWCET);
             }
@@ -630,8 +628,10 @@ namespace RTSim {
              [] (struct ConsumptionTable const& e1, struct ConsumptionTable const& e2) { return e1.cons < e2.cons; });
 
         // todo delete after debug
+        cout << "EMRTK::" << __func__ << "()" << endl;
         for (auto elem: iDeltaPows) {
-            cout << elem.cons << " "<< elem.cpu->toString() << " " << elem.cpu->getFrequency(elem.opp) << endl;
+            cout << elem.cons << " " << elem.cpu->toString() << " with new opp " << elem.cpu->getFrequency(elem.opp) << endl;
+            assert (elem.cpu->getOPP() <= elem.opp);
         }
 
         struct ConsumptionTable chosen = iDeltaPows[0];

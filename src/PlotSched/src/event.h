@@ -22,7 +22,7 @@ class Event : public QObject
   unsigned long time_start;
   unsigned long duration;
   QString cpu;
-  unsigned long row;
+  unsigned long row, column; ///row and column of the event
   QString caller; // the task
   QString event;
   event_kind kind;
@@ -43,7 +43,9 @@ public:
   bool isCorrect();
   bool isPending();
   bool isRange();
+  unsigned long getColumn() { return column; }
   unsigned long getRow() {return row; }
+  void setColumn(unsigned long c) { column = c; }
   void setRow(unsigned long r) { row = r; }
   void setMagnification(qreal magnification) {this->magnification = magnification; }
   qreal getMagnification() { return magnification; }

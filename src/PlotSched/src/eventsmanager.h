@@ -24,6 +24,8 @@ public:
     QMap <QString, QList<Event>> * getCallers();
     QMap <QString, QList<Event>> * getCPUs();
 
+    QList<QString> getCPUList();
+    QMap<QString, QList<QString> > *getTasks(QString core, unsigned int time);
 signals:
 
 public slots:

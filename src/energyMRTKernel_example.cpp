@@ -1554,13 +1554,20 @@ int main(int argc, char *argv[]) {
             // Moving towards 3 tasks per core, seing if system crashes.
             // Such task should be schedulable with EDF (sum of utilizations <= 1).
             MissCount mc("miss count");
-            bool ONLY_LAST_ONE = 0;
+            bool ONLY_LAST_ONE = 1;
             int task_period = 500;
             unsigned int taskNumber = cpus_big.size() * 3 + cpus_little.size() * 3;
 
-            EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                        = 1;
-            EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME                    = 1;
-            EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_END                      = 1;
+            EnergyMRTKernel::EMRTK_BALANCE_ENABLED                             = 0; /* Can't imagine disabling it, but so policy is in the list :) */
+            EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED                       = 0;
+            EnergyMRTKernel::EMRTK_MIGRATE_ENABLED                             = 1;
+            EnergyMRTKernel::EMRTK_CBS_YIELD_ENABLED                           = 0;
+            EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_VTIME                   = 0;
+            EnergyMRTKernel::EMRTK_TEMPORARILY_MIGRATE_END                     = 0;
+
+            EnergyMRTKernel::EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED                 = 1;
+            EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END          = 1;
+            EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END                           = 1;
             
             for (int i = 0; i < 10; i++) {
                 EnergyMRTKernel *kern;

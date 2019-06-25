@@ -61,6 +61,8 @@ namespace RTSim {
             Task *tt = dynamic_cast<Task*>(tasks.at(i));
             //cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
             NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask*>(tt);
+            #include <cstdio>
+            printf("%f > %f && %d || %f == %f\n", (double) tt->arrEvt.getTime(), (double) SIMUL.getTime(), !tt->isActive(), (double) tt->endEvt.getTime(), (double) SIMUL.getTime());
             if ( ( tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive() ) || tt->endEvt.getTime() == SIMUL.getTime() ) // todo make easier?
               continue;
             if ( (ntt != NULL && (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime() || !tt->isActive())) )

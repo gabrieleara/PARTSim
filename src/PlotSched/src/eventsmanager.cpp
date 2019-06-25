@@ -80,6 +80,28 @@ QMap <QString, QList<Event>> * EventsManager::getCPUs()
     return cpus_events;
 }
 
+QList<QString> EventsManager::getCPUList() {
+    QMap <QString, QList<Event>> * evts = getCPUs();
+    return evts->keys();
+}
+
+/// core -> task, task, task... at a given time. The first task is the running one
+QMap <QString, QList<QString>>* EventsManager::getTasks(QString core, unsigned int time) {
+    QMap <QString, QList<Event>>* evts = getCPUs(); // core --> evt for task, evt for task, evt for task...
+    QMap <QString, QList<Event>>* res;
+
+    for (auto elem : events_container.toStdMap()) {
+        QList<QString>* scheduledTasks;
+        for (Event evt : elem.second) {
+            if (evt.getStart() == time)
+                scheduledTasks->append(evt.getCaller());
+        }
+        res->insert(elem.first, scheduledTasks);
+    }
+
+    return res;
+}
+
 qreal EventsManager::magnify(qreal start, qreal end, qreal width)
 {
   qreal new_center;

@@ -62,7 +62,10 @@ namespace RTSim {
         double utilization = 0.0;
         double capacity = c->getSpeed();
 
-#include <cstdio>
+        // todo del
+        #include <cstdio>
+        if (toBeAdmitted->getWCET(capacity) == 0.0)
+            cout << "" << toBeAdmitted->getWCET(capacity);
         printf("\t\t\tEDFSched::isAdmissible WCET %.17g cap %f speed %f\n", toBeAdmitted->getWCET(capacity), capacity, double(c->getSpeed()));
 
         for (AbsRTTask* t : tasks) {

@@ -24,11 +24,21 @@ EventView::EventView(const Event &e, qreal offset, QGraphicsItem * parent) :
   setEvent(e);
 }
 
+//EventView::EventView(const Event &e, qreal offset, QGraphicsItem * parent) :
+//  QGraphicsItemGroup(parent)
+//{
+//  height = 30;
+//  vertical_offset = offset;
+
+//  setEvent(e);
+//}
+
 EventView::~EventView()
 {
   delete e_;
 }
 
+/// Represent the event with a rectangle
 void EventView::setEvent(Event e)
 {
   //drawCircle(50, 50, 4);
