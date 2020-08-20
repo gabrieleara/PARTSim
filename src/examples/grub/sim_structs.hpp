@@ -89,7 +89,7 @@ public:
 	bool flag = super.addGrub(s);
 	cout << "Grub added: " << flag << endl;
 	kern.addTask(*s, "");
-	ttrace.attachToTask(&task);
+	ttrace.attachToTask(task);
     }    
 
     void create_high_server(Task &task) {
@@ -121,7 +121,7 @@ public:
 	    servers.push_back(LowServer);
 	}
 	LowServer->addTask(task);
-	ttrace.attachToTask(&task);	
+	ttrace.attachToTask(task);	
     }
 
     ~MySim() {
