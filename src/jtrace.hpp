@@ -22,6 +22,7 @@
 #include <basetype.hpp>
 #include <event.hpp>
 #include <trace.hpp>
+#include <rttask.hpp>
 
 #include <traceevent.hpp>
  
@@ -74,6 +75,8 @@ namespace RTSim {
 
     // The Little/Big Endian coding functions!
     virtual void record(Event *e);
+
+    void attachToTask(AbsRTTask &t) { }
   };
 
 } // namespace RTSim  

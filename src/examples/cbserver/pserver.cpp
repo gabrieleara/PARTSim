@@ -36,15 +36,15 @@ int main()
         t3.insertCode("fixed(10);");
         t3.setAbort(false);
 	
-        t11.setTrace(&jtrace);
-        t12.setTrace(&jtrace);
-        t2.setTrace(&jtrace);
-        t3.setTrace(&jtrace);
+        jtrace.attachToTask(t11);
+        jtrace.attachToTask(t12);
+        jtrace.attachToTask(t2);
+        jtrace.attachToTask(t3);
 
-        ttrace.attachToTask(&t11);
-        ttrace.attachToTask(&t12);
-        ttrace.attachToTask(&t2);
-        ttrace.attachToTask(&t3);
+        ttrace.attachToTask(t11);
+        ttrace.attachToTask(t12);
+        ttrace.attachToTask(t2);
+        ttrace.attachToTask(t3);
 
         PollingServer serv(4, 10, "server", "FIFOSched");//"RRSched(2);");
         serv.addTask(t11);

@@ -129,6 +129,9 @@ namespace RTSim {
     /// get remaining WCET scaled with capacity, big-little
     virtual double getRemainingWCET(double capacity = 1.0) const { return 0.0; };
 
+    template<class Trace>
+    void setTrace(Trace* tr) {  tr->attachToTask(*this);  }
+
   };
 
 } // namespace RTSim
