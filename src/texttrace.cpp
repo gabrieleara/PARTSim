@@ -66,7 +66,16 @@ namespace RTSim {
 				<< tt->getArrival() << endl;
 		}
 
-		void TextTrace::attachToTask(AbsRTTask &t)
+		void TextTrace::probe(KillEvt& e)
+		{
+			Task* tt = e.getTask();
+
+			fd << "[Time:" << SIMUL.getTime() << "]\t";  
+			fd << tt->getName()<<" killed its arrival was " 
+				<< tt->getArrival() << endl;
+		}
+
+                void TextTrace::attachToTask(AbsRTTask &t)
 		{
 			/*new Particle<ArrEvt, TextTrace>(&t->arrEvt, this);
 			new Particle<EndEvt, TextTrace>(&t->endEvt, this);
@@ -79,6 +88,7 @@ namespace RTSim {
             attach_stat(*this, tt.schedEvt);
             attach_stat(*this, tt.deschedEvt);
             attach_stat(*this, tt.deadEvt);
+            attach_stat(*this, tt.killEvt);
 	}
     
         VirtualTrace::VirtualTrace(map<string, int> *r)

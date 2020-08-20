@@ -48,6 +48,8 @@ namespace RTSim {
         void probe(DeschedEvt& e);
         
         void probe(DeadEvt& e);
+
+        void probe(KillEvt& e);
         
         void attachToTask(AbsRTTask &t);
     };
