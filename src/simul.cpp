@@ -21,6 +21,17 @@
 namespace MetaSim {
     using namespace std;
 
+    class MsgEvt : public Event {
+      string _msg;
+    public:
+      MsgEvt(const string &msg, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10)
+        : Event(p), _msg(msg) {  }
+      virtual void doit() {
+        DBGPRINT(_msg);
+        cout << _msg << endl;
+      }
+    };
+
     Simulation *Simulation::instance_ = 0;
         
     class NoMoreEventsInQueue {};
@@ -100,6 +111,8 @@ namespace MetaSim {
     const Tick Simulation::run_to(const Tick &stop)
     {
         try {
+            MsgEvt msgEvt("run_to() end time reached");
+            msgEvt.post(stop);
             while (getNextEventTime() <= stop) {
                 globTime = sim_step();
             }
@@ -107,8 +120,6 @@ namespace MetaSim {
             cerr << "No more events in queue: simulation time = " 
                  << globTime << endl;
         }
-
-        if (globTime < stop) globTime = stop; 
 
         return globTime;
     }
