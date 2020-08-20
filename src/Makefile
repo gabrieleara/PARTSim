@@ -1,6 +1,6 @@
 CPPFLAGS=-I.
 CXXFLAGS=-Wno-deprecated -Wno-deprecated-declarations --std=c++11 -fPIC
-CXXFLAGS_DEBUG=-Wno-deprecated -Wno-deprecated-declarations --std=c++11 -fPIC -g -O0
+CXXFLAGS_DEBUG=-Wno-deprecated -Wno-deprecated-declarations --std=c++11 -fPIC -g -O0 -D__DEBUG__
 
 CPP_FILES=$(wildcard *.cpp)
 HPP_FILES=$(wildcard *.hpp)

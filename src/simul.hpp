@@ -220,7 +220,6 @@ extern "C" {
 
 #define SIMUL         Simulation::getInstance()
 
-#define __DEBUG__
 #ifdef __DEBUG__
 
 #define DBGENTER(x) DbgObj __dbg_obj__(x,__PRETTY_FUNCTION__)
