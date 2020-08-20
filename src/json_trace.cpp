@@ -63,6 +63,12 @@ namespace RTSim {
         writeTaskEvent(tt, "dline_miss");
     }
     
+    void JSONTrace::probe(KillEvt& e)
+    {
+        Task& tt = *(e.getTask());
+        writeTaskEvent(tt, "kill");
+    }
+
     void JSONTrace::attachToTask(Task& t)
     {
         // new Particle<ArrEvt, JSONTrace>(&t->arrEvt, this);
@@ -76,5 +82,6 @@ namespace RTSim {
         attach_stat(*this, t.schedEvt);
         attach_stat(*this, t.deschedEvt);
         attach_stat(*this, t.deadEvt);
+        attach_stat(*this, t.killEvt);
     }
 }
