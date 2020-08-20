@@ -111,6 +111,7 @@ namespace RTSim {
         deschedEvt.drop();
         fakeArrEvt.drop();
         deadEvt.drop();
+        killEvt.drop();
     }
     
     /* Methods from the interface... */
@@ -139,7 +140,6 @@ namespace RTSim {
         DBGPRINT("Descheduling " << getName());
         
         schedEvt.drop();
-        
         deschedEvt.process();
     }
     
@@ -364,28 +364,27 @@ namespace RTSim {
     {
         
         DBGENTER(_TASK_DBG_LEV);
-        
-        endEvt.drop();
-        // todo right? otherwise at next task arrival, another deadEvt is posted => exception
-        deadEvt.drop();
 
-
-        (*actInstr)->deschedule();
-        execdTime += (*actInstr)->getExecTime();
-        
         if (chkBuffArrival()) {
             fakeArrEvt.post(SIMUL.getTime());
             DBGPRINT("[Fake Arrival generated]");
         }
         
-        state = TSK_IDLE;
+        if (isExecuting())
+            deschedule();
         
-        killEvt.process();
+        //killEvt.process();
+        killEvt.post(SIMUL.getTime());
     }
     
     void Task::onKill(Event *e)
     {
         DBGENTER(_TASK_DBG_LEV);
+        
+        // todo right? otherwise at next task arrival, another deadEvt is posted => exception
+        deadEvt.drop();
+
+        //(*actInstr)->deschedule();
         
         // from old Task ...
         killEvt.drop();
@@ -417,6 +416,8 @@ namespace RTSim {
             
             DBGPRINT("[Fake Arrival generated]");
         }
+
+        endRun();
     }
     
     void Task::onSched(Event *e)
@@ -466,6 +467,7 @@ namespace RTSim {
         endEvt.drop();
         
         (*actInstr)->deschedule();
+        execdTime += (*actInstr)->getExecTime();
         
         state = TSK_READY;
     }
