@@ -150,7 +150,8 @@ namespace RTSim {
             throw RTKernelExc("Received a onEnd of a non executing task");
         }
         _sched->extract(task);
-        _currExe = NULL;
+        if (_currExe == task)
+          _currExe = NULL;
         
         dispatch();
     }

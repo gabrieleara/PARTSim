@@ -365,11 +365,6 @@ namespace RTSim {
         
         DBGENTER(_TASK_DBG_LEV);
         
-        if (!isActive()) {
-            DBGPRINT("not active...");
-            throw TaskNotActive("killInstance() on a non-active task");
-        }
-        
         endEvt.drop();
         // todo right? otherwise at next task arrival, another deadEvt is posted => exception
         deadEvt.drop();
