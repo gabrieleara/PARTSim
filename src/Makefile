@@ -16,8 +16,9 @@ PROGRAMS_DEBUG=$(patsubst %,%_debug,$(PROGRAMS))
 LIBRARIES_DEBUG=$(patsubst %.so,%_debug.so,$(LIBRARIES))
 
 PROGRAMS_LDLIBS=-L. -lrtsim -lboost_program_options
+PROGRAMS_LDLIBS_DEBUG=-L. -lrtsim_debug -lboost_program_options
 
-all: $(LIBRARIES) $(LIBRARIES_DEBUG) $(PROGRAMS)
+all: $(LIBRARIES) $(LIBRARIES_DEBUG) $(PROGRAMS) $(PROGRAMS_DEBUG)
 
 release/%.o: %.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $(CPPFLAGS) -c $<
@@ -33,6 +34,9 @@ librtsim_debug.so: $(OBJ_FILES_DEBUG)
 
 examples/%: examples/%.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $(CPPFLAGS) $< $(PROGRAMS_LDLIBS)
+
+examples/%_debug: examples/%.cpp
+	$(CXX) -o $@ $(CXXFLAGS_DEBUG) $(CPPFLAGS) $< $(PROGRAMS_LDLIBS_DEBUG)
 
 clean:
 	rm -f $(PROGRAMS) $(PROGRAMS_DEBUG) $(LIBRARIES) $(LIBRARIES_DEBUG) $(OBJ_FILES) $(OBJ_FILES_DEBUG) *.o capacities.txt debug.txt *~ *.bak
