@@ -49,6 +49,8 @@ namespace RTSim {
         
         void probe(DeadEvt& e);
         
+        void probe(KillEvt& e);
+        
         void attachToTask(Task& t);
         
     };
