@@ -175,7 +175,7 @@ namespace MetaSim {
         FRIEND_DECL_SYMM_OPS(Tick, +);
         FRIEND_DECL_SYMM_OPS(Tick, -);
 
-        FRIEND_DECL_ASYMM_OPS(Tick, /);
+        FRIEND_DECL_SYMM_OPS(Tick, /);
 
         friend Tick operator-(const Tick &t);
 
@@ -194,7 +194,7 @@ namespace MetaSim {
     IMPL_SYMM_OPS(Tick, +);
     IMPL_SYMM_OPS(Tick, -);
 
-    IMPL_ASYMM_OPS(Tick, /);
+    IMPL_SYMM_OPS(Tick, /);
 
     inline Tick operator-(const Tick &t) { return Tick(-t.v); }
 
