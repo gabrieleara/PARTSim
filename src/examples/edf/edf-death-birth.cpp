@@ -35,8 +35,21 @@ static Tick getMaxPeriod() {
   return period;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
+  int seed = time(NULL);
+    --argc;  ++argv;
+    while (argc > 0) {
+      if (strcmp(*argv, "-h") == 0) {
+        printf("Usage: edf-death-birth [-s seed]\n");
+        exit(0);
+      } else if (strcmp(*argv, "-s") == 0) {
+        --argc;  ++argv;
+        assert(argc > 0);
+        seed = atoi(*argv);
+      }
+      --argc;  ++argv;
+    }
     double ustart = 0.9;
     try {
 
@@ -51,7 +64,10 @@ int main()
         EDFScheduler edfsched;
         RTKernel kern(&edfsched);
 
-        int n = std::experimental::randint(3, 10);
+        cout << "Simulation seed: " << seed << endl;
+        std::experimental::reseed(seed);
+
+        int n = std::experimental::randint(3, 3);
         vector<pair<Tick, Tick>> tset(n);
         double usum = 0.0;
         for (int i = 0; i < n; i++) {
