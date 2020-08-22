@@ -19,6 +19,8 @@ using namespace RTSim;
 
 static deque<PeriodicTask *> tasks;
 static int tid = 0;
+static double ustart = 0.9;
+static int nmax = 10;
 
 static double getUtot() {
   double usum = 0.0;
@@ -35,8 +37,7 @@ static Tick getMaxPeriod() {
   return period;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
   int seed = time(NULL);
     --argc;  ++argv;
     while (argc > 0) {
@@ -47,10 +48,18 @@ int main(int argc, char *argv[])
         --argc;  ++argv;
         assert(argc > 0);
         seed = atoi(*argv);
+      } else if (strcmp(*argv, "-n") == 0) {
+        --argc;  ++argv;
+        assert(argc > 0);
+        nmax = atoi(*argv);
+      } else if (strcmp(*argv, "-u") == 0) {
+        --argc;  ++argv;
+        assert(argc > 0);
+        ustart = atof(*argv);
+        assert(ustart > 0.0 && ustart <= 1.0);
       }
       --argc;  ++argv;
     }
-    double ustart = 0.9;
     try {
 
         SIMUL.dbg.enable("All");
@@ -67,7 +76,7 @@ int main(int argc, char *argv[])
         cout << "Simulation seed: " << seed << endl;
         std::experimental::reseed(seed);
 
-        int n = std::experimental::randint(3, 3);
+        int n = std::experimental::randint(3, nmax);
         vector<pair<Tick, Tick>> tset(n);
         double usum = 0.0;
         for (int i = 0; i < n; i++) {
