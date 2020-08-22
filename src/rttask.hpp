@@ -72,7 +72,7 @@ namespace RTSim {
         virtual string toString() const;
 
         /// Returns deadline. Assumption is DL = period
-        virtual Tick getDeadline() const { return getPeriod(); }
+        virtual Tick getRelDline() const override { return getPeriod(); }
 
         virtual double getMaxExecutionCycles() const { return getWCET(1.0); }
     };
