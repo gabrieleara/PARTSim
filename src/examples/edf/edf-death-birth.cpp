@@ -67,6 +67,8 @@ int main(int argc, char *argv[]) {
       --argc;  ++argv;
     }
 
+    cout << "Running with: seed=" << seed << ", nmax=" << nmax << ", tokill=" << tokill << ", utot=" << ustart << endl;
+
     assert(nmax > tokill);
 
     try {
