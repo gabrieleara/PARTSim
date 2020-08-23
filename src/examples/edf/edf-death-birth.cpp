@@ -23,6 +23,7 @@ static int tid = 0;
 static double ustart = 0.9;
 static int nmax = 10;
 static int tokill = 1;
+static double sat_factor = 0.0;
 
 static double getUtot() {
   double usum = 0.0;
@@ -44,7 +45,7 @@ int main(int argc, char *argv[]) {
     --argc;  ++argv;
     while (argc > 0) {
       if (strcmp(*argv, "-h") == 0) {
-        printf("Usage: edf-death-birth [-s seed][-n nmax_tasks][-k tokill][-u umax]\n");
+        printf("Usage: edf-death-birth [-s seed][-n nmax_tasks][-k tokill][-u umax][-f sat_factor]\n");
         exit(0);
       } else if (strcmp(*argv, "-s") == 0) {
         --argc;  ++argv;
@@ -59,6 +60,11 @@ int main(int argc, char *argv[]) {
         assert(argc > 0);
         ustart = atof(*argv);
         assert(ustart > 0.0 && ustart <= 1.0);
+      } else if (strcmp(*argv, "-f") == 0) {
+        --argc;  ++argv;
+        assert(argc > 0);
+        sat_factor = atof(*argv);
+        assert(sat_factor >= 0.0 && sat_factor <= 1.0);
       } else if (strcmp(*argv, "-k") == 0) {
         --argc;  ++argv;
         assert(argc > 0);
@@ -67,7 +73,7 @@ int main(int argc, char *argv[]) {
       --argc;  ++argv;
     }
 
-    cout << "Running with: seed=" << seed << ", nmax=" << nmax << ", tokill=" << tokill << ", utot=" << ustart << endl;
+    cout << "Running with: seed=" << seed << ", nmax=" << nmax << ", tokill=" << tokill << ", utot=" << ustart << ", sat_factor" << sat_factor << endl;
 
     assert(nmax > tokill);
 
@@ -179,8 +185,9 @@ int main(int argc, char *argv[]) {
         if (it == expiring_uacts.end())
           max_runtime += Tick(Uavail * double(ref_end - ref));
 
-        Tick runtime = std::experimental::randint((int)min_runtime, (int)max_runtime);
-        cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime=" << min_runtime << endl << endl;
+        Tick min_runtime_sat = min_runtime + Tick(sat_factor * double(max_runtime - min_runtime));
+        Tick runtime = std::experimental::randint((int)min_runtime_sat, (int)max_runtime);
+        cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime_sat=" << min_runtime_sat << ", min_runtime=" << min_runtime << endl << endl;
         PeriodicTask *t = new PeriodicTask(period, period, 0, string("T") + to_string(tid++));
         t->insertCode(string("fixed(") + to_string((int)runtime) + ");");
         ttrace.attachToTask(*t);
