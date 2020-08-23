@@ -141,7 +141,7 @@ int main(int argc, char *argv[]) {
             Tick vtime = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET();
             if (vtime < now)
               continue;
-            expiring_uacts.push_back(make_pair(vtime, double(t->getRemainingWCET()) / double(t->getPeriod())));
+            expiring_uacts.push_back(make_pair(vtime, double(t->getWCET()) / double(t->getPeriod())));
             tasks.erase(it);
             t->killInstance();
             ++nkilled;
@@ -151,11 +151,17 @@ int main(int argc, char *argv[]) {
 
         assert(nkilled == tokill);
 
-        std:sort(expiring_uacts.begin(), expiring_uacts.end(),
-                 [](const pair<Tick, double>& p1, const pair<Tick, double>& p2) {
-                   return p1.first < p2.first;
-                 });
-        
+        sort(expiring_uacts.begin(), expiring_uacts.end(),
+             [](const pair<Tick, double>& p1, const pair<Tick, double>& p2) {
+               return p1.first < p2.first;
+             });
+
+        cout << "expiring_uacts: ";
+        for (auto p: expiring_uacts) {
+          cout << "(" << p.first << ", " << p.second << "), ";
+        }
+        cout << endl;
+
         Tick a = expiring_uacts.front().first - now;
         Tick b = expiring_uacts.back().first + getMaxPeriod() - now;
         Tick period = std::experimental::randint((int)a, (int)b);
