@@ -11,6 +11,7 @@
 #include <json_trace.hpp>
 #include <rttask.hpp>
 #include <instr.hpp>
+#include <plist.hpp>
 
 #include <experimental/random>
 
@@ -21,6 +22,7 @@ static deque<PeriodicTask *> tasks;
 static int tid = 0;
 static double ustart = 0.9;
 static int nmax = 10;
+static int tokill = 1;
 
 static double getUtot() {
   double usum = 0.0;
@@ -42,7 +44,7 @@ int main(int argc, char *argv[]) {
     --argc;  ++argv;
     while (argc > 0) {
       if (strcmp(*argv, "-h") == 0) {
-        printf("Usage: edf-death-birth [-s seed]\n");
+        printf("Usage: edf-death-birth [-s seed][-n nmax_tasks][-u umax]\n");
         exit(0);
       } else if (strcmp(*argv, "-s") == 0) {
         --argc;  ++argv;
@@ -60,6 +62,9 @@ int main(int argc, char *argv[]) {
       }
       --argc;  ++argv;
     }
+
+    assert(nmax > tokill);
+
     try {
 
         SIMUL.dbg.enable("All");
@@ -76,7 +81,7 @@ int main(int argc, char *argv[]) {
         cout << "Simulation seed: " << seed << endl;
         std::experimental::reseed(seed);
 
-        int n = std::experimental::randint(3, nmax);
+        int n = std::experimental::randint(tokill + 1, nmax);
         vector<pair<Tick, Tick>> tset(n);
         double usum = 0.0;
         for (int i = 0; i < n; i++) {
@@ -103,29 +108,75 @@ int main(int argc, char *argv[]) {
 
         SIMUL.initSingleRun();
 
-        Tick next = std::experimental::randint(int(getMaxPeriod() * 2), int(getMaxPeriod() * 10));
-        cout << "Running till time " << next << endl;
+        int killable;
+        Tick now;
+        do {
+          Tick next = std::experimental::randint(int(getMaxPeriod() * 2), int(getMaxPeriod() * 10));
+          cout << "Running till time " << next << endl;
 
-        SIMUL.run_to(next);
-        cout << "sim paused at: " << SIMUL.getTime() << endl;
+          SIMUL.run_to(next);
+          now = SIMUL.getTime();
+          cout << "sim paused at: " << now << endl;
 
-        PeriodicTask *t = tasks[0];
-        tasks.pop_front();
-        double ukill = double(t->getWCET()) / double(t->getPeriod());
-        Tick rel_vtime = t->getExecTime() * t->getPeriod() / t->getWCET();
-        Tick period = std::experimental::randint((int)rel_vtime, (int)t->getPeriod());
-        Tick runtime = Tick(double(rel_vtime) * (1.0 - utot) + double(period - rel_vtime) * (1.0 - utot + ukill));
+          killable = 0;
+          for (auto t: tasks) {
+            Tick vtime = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET();
+            if (vtime >= now)
+              killable++;
+          }
+        } while (killable < tokill);
 
-        t->killInstance();
+        std::vector<pair<Tick, double>> expiring_uacts;
+        int nkilled = 0;
+        for (int i = 0; i < tokill; i++) {
+          for (auto it = tasks.begin(); it != tasks.end(); ++it) {
+            auto t = *it;
+            double ukill = double(t->getWCET()) / double(t->getPeriod());
+            Tick vtime = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET();
+            if (vtime < now)
+              continue;
+            expiring_uacts.push_back(make_pair(vtime, double(t->getRemainingWCET()) / double(t->getPeriod())));
+            tasks.erase(it);
+            t->killInstance();
+            ++nkilled;
+            break;
+          }
+        }
 
-        t = new PeriodicTask(period, period, 0, string("T") + to_string(tid++));
+        assert(nkilled == tokill);
+
+        std:sort(expiring_uacts.begin(), expiring_uacts.end(),
+                 [](const pair<Tick, double>& p1, const pair<Tick, double>& p2) {
+                   return p1.first < p2.first;
+                 });
+        
+        Tick a = expiring_uacts.front().first - now;
+        Tick b = expiring_uacts.back().first + getMaxPeriod() - now;
+        Tick period = std::experimental::randint((int)a, (int)b);
+        Tick max_runtime = 0;
+        Tick ref = now;
+        Tick ref_end = now + period;
+        double Uavail = 1.0 - utot;
+        auto it = expiring_uacts.begin();
+        Tick min_runtime = Tick(Uavail * double(std::min(it->first, ref_end) - ref));
+        for (; it != expiring_uacts.end() && it->first <= ref_end; ++it) {
+          max_runtime += Tick(Uavail * double(std::min(it->first, ref_end) - ref));
+          Uavail += it->second;
+          ref = it->first;
+        }
+        if (it == expiring_uacts.end())
+          max_runtime += Tick(Uavail * double(ref_end - ref));
+
+        Tick runtime = std::experimental::randint((int)min_runtime, (int)max_runtime);
+        cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime=" << min_runtime << endl << endl;
+        PeriodicTask *t = new PeriodicTask(period, period, 0, string("T") + to_string(tid++));
         t->insertCode(string("fixed(") + to_string((int)runtime) + ");");
         ttrace.attachToTask(*t);
         kern.addTask(*t, "");
         tasks.push_back(t);
         utot = getUtot();
 
-        SIMUL.run_to(SIMUL.getTime() + getMaxPeriod() * 10);
+        SIMUL.run_to(now + getMaxPeriod() * 10);
         SIMUL.endSingleRun();
     } catch (BaseExc &e) {
         cout << e.what() << endl;
