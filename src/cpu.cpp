@@ -159,7 +159,7 @@ namespace RTSim
     void CPU::setWorkload(const string &workload)
     {
 	if (workload == "idle")
-		cout << "\t" << getName() << " gets wl idle at t=" << SIMUL.getTime() << endl;;
+		DBGPRINT("\t" << getName() << " gets wl idle at t=" << SIMUL.getTime());
         _workload = workload;
     }
 

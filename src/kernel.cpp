@@ -133,7 +133,7 @@ namespace RTSim {
         _sched->insert(task);
 
         if(!_isContextSwitching) {
-            cout << "onArrival, calling dispatch"<<endl;
+            DBGPRINT("onArrival, calling dispatch");
             dispatch();
         } else {
             cout << "onArrival, posting enddispatchevt"<<endl;
