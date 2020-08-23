@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
     --argc;  ++argv;
     while (argc > 0) {
       if (strcmp(*argv, "-h") == 0) {
-        printf("Usage: edf-death-birth [-s seed][-n nmax_tasks][-u umax]\n");
+        printf("Usage: edf-death-birth [-s seed][-n nmax_tasks][-k tokill][-u umax]\n");
         exit(0);
       } else if (strcmp(*argv, "-s") == 0) {
         --argc;  ++argv;
@@ -59,6 +59,10 @@ int main(int argc, char *argv[]) {
         assert(argc > 0);
         ustart = atof(*argv);
         assert(ustart > 0.0 && ustart <= 1.0);
+      } else if (strcmp(*argv, "-k") == 0) {
+        --argc;  ++argv;
+        assert(argc > 0);
+        tokill = atoi(*argv);
       }
       --argc;  ++argv;
     }
