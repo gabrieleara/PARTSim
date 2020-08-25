@@ -18,10 +18,16 @@ LIBRARIES_DEBUG=$(patsubst %.so,%_debug.so,$(LIBRARIES))
 PROGRAMS_LDLIBS=-L. -lrtsim -lboost_program_options
 PROGRAMS_LDLIBS_DEBUG=-L. -lrtsim_debug -lboost_program_options
 
-all: $(LIBRARIES) $(LIBRARIES_DEBUG) $(PROGRAMS) $(PROGRAMS_DEBUG)
+all: release debug $(LIBRARIES) $(LIBRARIES_DEBUG) $(PROGRAMS) $(PROGRAMS_DEBUG)
+
+release:
+	mkdir -p release
 
 release/%.o: %.cpp
 	$(CXX) -o $@ $(CXXFLAGS) $(CPPFLAGS) -c $<
+
+debug:
+	mkdir -p debug
 
 debug/%.o: %.cpp
 	$(CXX) -o $@ $(CXXFLAGS_DEBUG) $(CPPFLAGS) -c $<
@@ -32,10 +38,10 @@ librtsim.so: $(OBJ_FILES)
 librtsim_debug.so: $(OBJ_FILES_DEBUG)
 	$(CXX) -shared -o $@ $^
 
-examples/%: examples/%.cpp
+examples/%: examples/%.cpp $(LIBRARIES)
 	$(CXX) -o $@ $(CXXFLAGS) $(CPPFLAGS) $< $(PROGRAMS_LDLIBS)
 
-examples/%_debug: examples/%.cpp
+examples/%_debug: examples/%.cpp $(LIBRARIES_DEBUG)
 	$(CXX) -o $@ $(CXXFLAGS_DEBUG) $(CPPFLAGS) $< $(PROGRAMS_LDLIBS_DEBUG)
 
 clean:
@@ -222,8 +228,8 @@ release/jtrace.o: server.hpp ./gevent.hpp ./abskernel.hpp ./abstask.hpp
 release/jtrace.o: ./cpu.hpp ./timer.hpp ./powermodel.hpp ./task.hpp
 release/jtrace.o: ./randomvar.hpp ./cloneable.hpp ./kernel.hpp ./kernevt.hpp
 release/jtrace.o: ./taskevt.hpp ./feedback.hpp ./taskexc.hpp ./scheduler.hpp
-release/jtrace.o: resmanager.hpp ./jtrace.hpp ./traceevent.hpp
-release/jtrace.o: ./waitinstr.hpp ./factory.hpp ./instr.hpp
+release/jtrace.o: resmanager.hpp ./jtrace.hpp rttask.hpp ./regvar.hpp
+release/jtrace.o: ./traceevent.hpp ./waitinstr.hpp ./factory.hpp ./instr.hpp
 release/kernel.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 release/kernel.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 release/kernel.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp
@@ -495,7 +501,12 @@ release/trace.o: ./entity.hpp ./particle.hpp ./plist.hpp ./trace.hpp
 release/traceevent.o: ./jtrace.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp
 release/traceevent.o: ./strtoken.hpp ./event.hpp ./simul.hpp ./basestat.hpp
 release/traceevent.o: ./debugstream.hpp ./entity.hpp ./particle.hpp
-release/traceevent.o: ./plist.hpp ./trace.hpp ./traceevent.hpp
+release/traceevent.o: ./plist.hpp ./trace.hpp rttask.hpp ./regvar.hpp
+release/traceevent.o: ./randomvar.hpp ./cloneable.hpp ./task.hpp ./gevent.hpp
+release/traceevent.o: ./abstask.hpp ./cpu.hpp ./timer.hpp ./powermodel.hpp
+release/traceevent.o: ./kernel.hpp ./abskernel.hpp ./kernevt.hpp
+release/traceevent.o: ./taskevt.hpp ./feedback.hpp ./taskexc.hpp
+release/traceevent.o: ./traceevent.hpp
 release/tracepower.o: tracepower.hpp ./cpu.hpp ./trace.hpp ./baseexc.hpp
 release/tracepower.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp ./timer.hpp
 release/tracepower.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp
@@ -671,8 +682,8 @@ debug/jtrace.o: ./gevent.hpp ./abskernel.hpp ./abstask.hpp ./cpu.hpp
 debug/jtrace.o: ./timer.hpp ./powermodel.hpp ./task.hpp ./randomvar.hpp
 debug/jtrace.o: ./cloneable.hpp ./kernel.hpp ./kernevt.hpp ./taskevt.hpp
 debug/jtrace.o: ./feedback.hpp ./taskexc.hpp ./scheduler.hpp resmanager.hpp
-debug/jtrace.o: ./jtrace.hpp ./traceevent.hpp ./waitinstr.hpp ./factory.hpp
-debug/jtrace.o: ./instr.hpp
+debug/jtrace.o: ./jtrace.hpp rttask.hpp ./regvar.hpp ./traceevent.hpp
+debug/jtrace.o: ./waitinstr.hpp ./factory.hpp ./instr.hpp
 debug/kernel.o: ./simul.hpp ./basestat.hpp ./basetype.hpp ./tick.hpp
 debug/kernel.o: ./baseexc.hpp ./strtoken.hpp ./debugstream.hpp ./entity.hpp
 debug/kernel.o: ./event.hpp ./particle.hpp ./plist.hpp ./trace.hpp ./cpu.hpp
@@ -933,7 +944,11 @@ debug/trace.o: ./entity.hpp ./particle.hpp ./plist.hpp ./trace.hpp
 debug/traceevent.o: ./jtrace.hpp ./baseexc.hpp ./basetype.hpp ./tick.hpp
 debug/traceevent.o: ./strtoken.hpp ./event.hpp ./simul.hpp ./basestat.hpp
 debug/traceevent.o: ./debugstream.hpp ./entity.hpp ./particle.hpp ./plist.hpp
-debug/traceevent.o: ./trace.hpp ./traceevent.hpp
+debug/traceevent.o: ./trace.hpp rttask.hpp ./regvar.hpp ./randomvar.hpp
+debug/traceevent.o: ./cloneable.hpp ./task.hpp ./gevent.hpp ./abstask.hpp
+debug/traceevent.o: ./cpu.hpp ./timer.hpp ./powermodel.hpp ./kernel.hpp
+debug/traceevent.o: ./abskernel.hpp ./kernevt.hpp ./taskevt.hpp
+debug/traceevent.o: ./feedback.hpp ./taskexc.hpp ./traceevent.hpp
 debug/tracepower.o: tracepower.hpp ./cpu.hpp ./trace.hpp ./baseexc.hpp
 debug/tracepower.o: ./basetype.hpp ./tick.hpp ./strtoken.hpp ./timer.hpp
 debug/tracepower.o: ./simul.hpp ./basestat.hpp ./debugstream.hpp ./entity.hpp
