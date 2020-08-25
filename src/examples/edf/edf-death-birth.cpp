@@ -40,29 +40,13 @@ static Tick getMaxPeriod() {
   return period;
 }
 
-// compute the area as sum of vertical rects (time on X axis)
-static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<pair<Tick, double>>& expiring_uacts) {
-  Tick max_runtime = 0;
-  Tick ref = now;
-  Tick ref_end = now + period;
-  auto it = expiring_uacts.begin();
-  for (; it != expiring_uacts.end() && it->first <= ref_end; ++it) {
-    max_runtime += Tick(uavail * double(std::min(it->first, ref_end) - ref));
-    uavail += it->second;
-    ref = it->first;
-  }
-  if (it == expiring_uacts.end())
-    max_runtime += Tick(uavail * double(ref_end - ref));
-  return max_runtime;
-}
-
 // compute the area as sum of horizontal rects (time on X axis)
-static Tick computeMaxRuntime2(Tick now, Tick period, double uavail, std::vector<pair<Tick, double>>& expiring_uacts) {
+static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<pair<Tick, double>>& expiring_uacts) {
   Tick ref_end = now + period;
-  Tick max_runtime = Tick(uavail * double(ref_end - now));
+  double max_runtime = Tick(uavail * double(ref_end - now));
   for (auto it = expiring_uacts.begin(); it != expiring_uacts.end() && it->first <= ref_end; ++it)
-    max_runtime += Tick(it->second * double(ref_end - it->first));
-  return max_runtime;
+    max_runtime += it->second * double(ref_end - it->first);
+  return Tick(max_runtime);
 }
 
 int main(int argc, char *argv[]) {
@@ -199,9 +183,6 @@ int main(int argc, char *argv[]) {
         double Uavail = 1.0 - utot;
         Tick min_runtime = Tick(Uavail * double(period));
         Tick max_runtime = computeMaxRuntime(now, period, utot, expiring_uacts);
-        Tick max_runtime2 = computeMaxRuntime2(now, period, utot, expiring_uacts);
-        cout << "max_runtime=" << max_runtime << ", max_runtime2=" << max_runtime2 << endl;
-
         Tick min_runtime_sat = min_runtime + Tick(sat_factor * double(max_runtime - min_runtime));
         Tick runtime = std::experimental::randint((int)min_runtime_sat, (int)max_runtime);
         cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime_sat=" << min_runtime_sat << ", min_runtime=" << min_runtime << endl << endl;
