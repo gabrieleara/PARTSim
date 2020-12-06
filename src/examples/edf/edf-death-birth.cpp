@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
         Tick period = std::experimental::randint((int)a, (int)b);
         double Uavail = 1.0 - utot;
         Tick min_runtime = Tick(Uavail * double(period));
-        Tick max_runtime = computeMaxRuntime(now, period, utot, expiring_uacts);
+        Tick max_runtime = computeMaxRuntime(now, period, Uavail, expiring_uacts);
         Tick min_runtime_sat = min_runtime + Tick(sat_factor * double(max_runtime - min_runtime));
         Tick runtime = std::experimental::randint((int)min_runtime_sat, (int)max_runtime);
         cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime_sat=" << min_runtime_sat << ", min_runtime=" << min_runtime << endl << endl;
