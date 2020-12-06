@@ -178,7 +178,7 @@ int main(int argc, char *argv[]) {
         cout << endl;
 
         Tick a = expiring_uacts.front().first - now;
-        Tick b = expiring_uacts.back().first + getMaxPeriod() - now;
+        Tick b = (expiring_uacts.back().first - now) * 2;
         Tick period = std::experimental::randint((int)a, (int)b);
         double Uavail = 1.0 - utot;
         Tick min_runtime = Tick(Uavail * double(period));
