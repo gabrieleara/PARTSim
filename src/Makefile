@@ -54,12 +54,6 @@ dep:
 run: 
 	./example > t.txt
 
-release:
-	mkdir -p release
-
-debug:
-	mkdir -p debug
-
 # DO NOT DELETE
 
 release/AVRTask.o: ./AVRTask.hpp ./task.hpp ./entity.hpp ./baseexc.hpp
