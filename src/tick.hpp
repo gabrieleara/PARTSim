@@ -125,8 +125,8 @@ namespace MetaSim {
 
         /// rounding
         /// FIXME: detect first if ::round() is available (e.g., VC2013)
-        #define xx_round(dbl) dbl >= 0.0 ? (int)(dbl + 0.5) : ((dbl - (double)(int)dbl) <= -0.5 ? (int)dbl : (int)(dbl - 0.5))
-        static Tick round(double t) { Tick q; q.v = (impl_t) xx_round(t); return q; }
+        #define xx_round(dbl) dbl >= 0.0 ? (impl_t)(dbl + 0.5) : ((dbl - (double)(impl_t)dbl) <= -0.5 ? (impl_t)dbl : (impl_t)(dbl - 0.5))
+        static Tick round(double t) { Tick q; q.v = xx_round(t); return q; }
 
         /// ceiling
         static Tick ceil(double t) { Tick q; q.v = (impl_t) ::ceil(t); return q; }
