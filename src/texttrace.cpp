@@ -26,7 +26,8 @@ namespace RTSim {
 		{
 			Task* tt = e.getTask();
 			fd << "[Time:" << SIMUL.getTime() << "]\t";
-			fd << tt->getName()<<" ended, its arrival was " << tt->getArrival() << endl;
+			fd << tt->getName()<<" ended, its arrival was " << tt->getArrival() << ", its period was "
+                           << tt->getPeriod() << ", RespTime/Period is " << double(SIMUL.getTime() - tt->getArrival()) / (double)tt->getPeriod() << endl;
 		}
 
 		void TextTrace::probe(SchedEvt& e)
