@@ -14,6 +14,7 @@
 #include <plist.hpp>
 
 #include <experimental/random>
+#include <sys/time.h>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -50,7 +51,9 @@ static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<
 }
 
 int main(int argc, char *argv[]) {
-  int seed = time(NULL);
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  long seed = tv.tv_sec * 1000000L + tv.tv_usec;
     --argc;  ++argv;
     while (argc > 0) {
       if (strcmp(*argv, "-h") == 0) {
