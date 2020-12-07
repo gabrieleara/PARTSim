@@ -42,7 +42,7 @@ static Tick getMaxPeriod() {
 }
 
 // compute the area as sum of horizontal rects (time on X axis)
-static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<pair<Tick, double>>& expiring_uacts) {
+static Tick computeMaxRuntime(Tick now, Tick period, double uavail, const std::vector<pair<Tick, double>>& expiring_uacts) {
   Tick ref_end = now + period;
   double max_runtime = uavail * double(ref_end - now);
   cout << "computeMaxRuntime: max_runtime=" << max_runtime << ", uavail=" << uavail << endl;
@@ -54,9 +54,9 @@ static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<
 }
 
 int main(int argc, char *argv[]) {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  long seed = tv.tv_sec * 1000000L + tv.tv_usec;
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  long seed = ts.tv_sec * 1000000000L + ts.tv_nsec;
     --argc;  ++argv;
     while (argc > 0) {
       if (strcmp(*argv, "-h") == 0) {
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
             usum += double(runtime) / double(period);
         }
         cout << "usum: " << usum << endl;
-        
+
         for (int i = 0; i < n; i++) {
             Tick period = tset[i].second;
             Tick runtime = Tick(double(tset[i].first) * (ustart / usum));
@@ -138,6 +138,7 @@ int main(int argc, char *argv[]) {
 
         int killable;
         Tick now;
+        Tick maxvtime_now;
         do {
           Tick next = std::experimental::randint(int(getMaxPeriod() * 2), int(getMaxPeriod() * 10));
           cout << "Running till time " << next << endl;
@@ -147,12 +148,16 @@ int main(int argc, char *argv[]) {
           cout << "sim paused at: " << now << endl;
 
           killable = 0;
+          maxvtime_now = 0;
           for (auto t: tasks) {
-            Tick vtime = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET();
-            if (vtime >= now)
+            Tick vtime_now = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET() - now;
+            if (vtime_now > 10) {
               killable++;
+              if (vtime_now > maxvtime_now)
+                maxvtime_now = vtime_now;
+            }
           }
-        } while (killable < tokill);
+        } while (killable < tokill || maxvtime_now < 100);
 
         std::vector<pair<Tick, double>> expiring_uacts;
         int nkilled = 0;
@@ -161,7 +166,7 @@ int main(int argc, char *argv[]) {
             auto t = *it;
             double ukill = double(t->getWCET()) / double(t->getPeriod());
             Tick vtime = t->getArrival() + t->getExecTime() * t->getPeriod() / t->getWCET();
-            if (vtime < now)
+            if (vtime <= now + 10)
               continue;
             expiring_uacts.push_back(make_pair(vtime, double(t->getWCET()) / double(t->getPeriod())));
             tasks.erase(it);
@@ -186,6 +191,8 @@ int main(int argc, char *argv[]) {
 
         Tick a = expiring_uacts.front().first - now;
         Tick b = (expiring_uacts.back().first - now) * 2;
+        cout << "a=" << a << ", b=" << b << endl;
+        assert (a > 0 && b > 0);
         Tick period = std::experimental::randint((int)a, (int)b);
         double Uavail = 1.0 - utot;
         Tick min_runtime = Tick::floor(Uavail * double(period));
