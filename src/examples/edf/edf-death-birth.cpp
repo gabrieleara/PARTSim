@@ -88,14 +88,14 @@ int main(int argc, char *argv[]) {
       --argc;  ++argv;
     }
 
-    cout << "Running with: seed=" << seed << ", nmax=" << nmax << ", tokill=" << tokill << ", utot=" << ustart << ", sat_factor" << sat_factor << endl;
+    cout << "Running with: seed=" << seed << ", nmax=" << nmax << ", tokill=" << tokill << ", utot=" << ustart << ", sat_factor=" << sat_factor << endl;
 
     assert(nmax > tokill);
 
     try {
 
         SIMUL.dbg.enable("All");
-        SIMUL.dbg.setStream("debug.txt");
+        // SIMUL.dbg.setStream("debug.txt");
         // set the trace file. This can be visualized by the
         // rttracer tool
 
@@ -118,11 +118,12 @@ int main(int argc, char *argv[]) {
             tset[i] = pair<Tick, Tick>(runtime, period);
             usum += double(runtime) / double(period);
         }
-
+        cout << "usum: " << usum << endl;
+        
         for (int i = 0; i < n; i++) {
             Tick period = tset[i].second;
             Tick runtime = Tick(double(tset[i].first) * (ustart / usum));
-            cout << "creating " << runtime << ", " << period << endl;
+            cout << "creating (normalized) runtime: " << runtime << ", period: " << period << endl;
             PeriodicTask *t = new PeriodicTask(period, period, 0, string("T") + to_string(tid++));
             t->insertCode(string("fixed(") + to_string((int)runtime) + ");");
             ttrace.attachToTask(*t);
@@ -191,7 +192,9 @@ int main(int argc, char *argv[]) {
         Tick max_runtime = computeMaxRuntime(now, period, Uavail, expiring_uacts);
         Tick min_runtime_sat = min_runtime + Tick(sat_factor * double(max_runtime - min_runtime));
         Tick runtime = std::experimental::randint((int)min_runtime_sat, (int)max_runtime);
-        cout << endl << "runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime_sat=" << min_runtime_sat << ", min_runtime=" << min_runtime << endl << endl;
+        cout << endl;
+        cout << "New task: runtime=" << runtime << ", period=" << period << ", max_runtime=" << max_runtime << ", min_runtime_sat=" << min_runtime_sat << ", min_runtime=" << min_runtime << endl << endl;
+        cout << "creating " << runtime << ", " << period << endl;
         PeriodicTask *t = new PeriodicTask(period, period, 0, string("T") + to_string(tid++));
         t->insertCode(string("fixed(") + to_string((int)runtime) + ");");
         ttrace.attachToTask(*t);
