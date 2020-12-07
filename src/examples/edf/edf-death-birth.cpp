@@ -44,10 +44,13 @@ static Tick getMaxPeriod() {
 // compute the area as sum of horizontal rects (time on X axis)
 static Tick computeMaxRuntime(Tick now, Tick period, double uavail, std::vector<pair<Tick, double>>& expiring_uacts) {
   Tick ref_end = now + period;
-  double max_runtime = Tick(uavail * double(ref_end - now));
-  for (auto it = expiring_uacts.begin(); it != expiring_uacts.end() && it->first <= ref_end; ++it)
+  double max_runtime = uavail * double(ref_end - now);
+  cout << "computeMaxRuntime: max_runtime=" << max_runtime << ", uavail=" << uavail << endl;
+  for (auto it = expiring_uacts.begin(); it != expiring_uacts.end() && it->first <= ref_end; ++it) {
     max_runtime += it->second * double(ref_end - it->first);
-  return Tick(max_runtime);
+    cout << "computeMaxRuntime: max_runtime=" << max_runtime << endl;
+  }
+  return Tick::floor(max_runtime);
 }
 
 int main(int argc, char *argv[]) {
