@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include <memory>
+#include "memory.hpp"
 
 // Known not supported YAML features:
 // - basically everything related to JSON

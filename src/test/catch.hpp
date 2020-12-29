@@ -372,7 +372,7 @@ namespace Catch {
 #pragma clang diagnostic pop
 #endif
 
-#include <memory>
+#include "memory.hpp"
 #include <vector>
 #include <stdlib.h>
 
@@ -2107,7 +2107,7 @@ namespace Catch {
     };
 }
 
-#include <memory>
+#include "memory.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -7869,4 +7869,3 @@ using Catch::Detail::Approx;
 #endif
 
 #endif // TWOBLUECUBES_SINGLE_INCLUDE_CATCH_HPP_INCLUDED
-

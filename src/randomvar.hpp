@@ -14,11 +14,11 @@
 #ifndef __RANDOMVAR_HPP__
 #define __RANDOMVAR_HPP__
 
+#include "memory.hpp"
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <memory>
 
 #include <baseexc.hpp>
 #include <cloneable.hpp>
@@ -40,8 +40,8 @@ namespace MetaSim {
        @{
     */
 
-    /** 
-     *  \defgroup metasim_random Random Variables  
+    /**
+     *  \defgroup metasim_random Random Variables
      *
      *  This classes are used to generate pseudo-random numbers according
      *  to a certain distribution. Every derived class should implement a
@@ -49,18 +49,18 @@ namespace MetaSim {
      *  overload method get() to return a double. Future Work: extend the
      *  class to support different pseudo-casual number generators.
      *
-     *  @author Giuseppe Lipari, Gerardo Lamastra, Antonino Casile.  
-     *  @version 1.0 
+     *  @author Giuseppe Lipari, Gerardo Lamastra, Antonino Casile.
+     *  @version 1.0
      */
     //@{
-    /** 
+    /**
         The basic class for Random Number Generator. It is possible to
         derive from this class to implement a new generator. */
     class RandomGen {
         RandNum _seed;
         RandNum _xn;
 
-        // constants used by the internal pseudo-causal number generator. 
+        // constants used by the internal pseudo-causal number generator.
         static const RandNum A;
         static const RandNum M;
         static const RandNum Q;	// M div A
@@ -122,8 +122,8 @@ namespace MetaSim {
             static const char* const _FILECLOSE;
             static const char* const _WRONGPDF;
 
-            Exc(std::string wh, std::string cl) : 
-                BaseExc(wh, cl, "randomvar.hpp") 
+            Exc(std::string wh, std::string cl) :
+                BaseExc(wh, cl, "randomvar.hpp")
                 {
                 }
         };
@@ -135,7 +135,7 @@ namespace MetaSim {
                 :Exc("Maximum value cannot be computed for this variable type", cl) {}
             MaxException(std::string m, std::string cl) :Exc(m, cl) {}
             virtual ~MaxException() throw() {}
-            virtual const char* what() const throw() 
+            virtual const char* what() const throw()
                 { return _what.c_str(); }
 
         };
@@ -149,24 +149,24 @@ namespace MetaSim {
         RandomVar(const RandomVar &r);
 
         /**
-           Polymorphic copy through cloning 
+           Polymorphic copy through cloning
         */
 //        virtual std::unique_ptr<RandomVar> clone() const = 0;
-        BASE_CLONEABLE(RandomVar)        
-        
+        BASE_CLONEABLE(RandomVar)
+
         virtual ~RandomVar();
-        
+
         /// Initialize the standard generator with a given
         /// seed
         static inline void init(RandNum s) { _pstdgen->init(s); }
-  
+
         /// Change the standard generator
         static RandomGen *changeGenerator(RandomGen *g);
 
         /// Restore the standard generator
         static void restoreGenerator();
 
-        /** 
+        /**
             This method must be overloaded in each derived
             class to return a double according to the propoer
             distriibution. */
@@ -179,9 +179,9 @@ namespace MetaSim {
 
 
         /** Parses a random variable from a string. String is in the
-            form "varname(par1, par2, ...)", where 
+            form "varname(par1, par2, ...)", where
 
-            - varname is one of the variable names described in file regvar.hpp; 
+            - varname is one of the variable names described in file regvar.hpp;
 
             - par1, par2, ... are parameters of the distribution, and their
               number and type depends on the specific distribution.
@@ -189,11 +189,11 @@ namespace MetaSim {
         static std::unique_ptr<RandomVar> parsevar(const std::string &str);
     };
 
-    /**  
+    /**
          This class returns always the same number (a constant).
          It's a particular case of a random distribution: it's a
          Delta of Dirac.
-    */  
+    */
     class DeltaVar : public RandomVar {
         double _var;
     public:
@@ -201,27 +201,27 @@ namespace MetaSim {
 
         CLONEABLE(RandomVar, DeltaVar)
 
-        static std::unique_ptr<DeltaVar> createInstance(std::vector<std::string> &par);  
-        
-        virtual double get() { return _var; } 
+        static std::unique_ptr<DeltaVar> createInstance(std::vector<std::string> &par);
+
+        virtual double get() { return _var; }
         virtual double getMaximum() throw(MaxException) {return _var;}
         virtual double getMinimum() throw(MaxException) {return _var;}
         virtual void   setMaximum(double v) throw(MaxException) { _var = v;}
     };
 
-    /** 
+    /**
         This class implements an uniform distribution, between min
         and max. */
     class UniformVar : public RandomVar {
       double _min, _max, generatedValue = 0.0;
     public:
-        UniformVar(double min, double max) 
+        UniformVar(double min, double max)
             : RandomVar(), _min(min), _max(max) {}
 
         CLONEABLE(RandomVar, UniformVar)
 
         static std::unique_ptr<UniformVar> createInstance(std::vector<std::string> &par);
-        
+
         virtual double get();
         virtual double getMaximum() throw(MaxException) {return _max;}
         virtual double getMinimum() throw(MaxException) {return _min;}
@@ -232,13 +232,13 @@ namespace MetaSim {
     class ExponentialVar : public UniformVar {
         double _lambda;
     public :
-        ExponentialVar(double m) : 
+        ExponentialVar(double m) :
             UniformVar(0, 1), _lambda(m) {}
 
         CLONEABLE(RandomVar, ExponentialVar)
 
         static std::unique_ptr<ExponentialVar> createInstance(std::vector<std::string> &par);
-        
+
         virtual double get();
 
         virtual double getMaximum() throw(MaxException)
@@ -259,7 +259,7 @@ namespace MetaSim {
             UniformVar(0, 1), _l(l), _k(k) {}
 
         CLONEABLE(RandomVar, WeibullVar)
-        
+
         static std::unique_ptr<WeibullVar> createInstance(std::vector<std::string> &par);
 
         virtual double get();
@@ -273,11 +273,11 @@ namespace MetaSim {
     class ParetoVar : public UniformVar {
         double _mu, _order;
     public :
-        ParetoVar(double m, double k) : 
+        ParetoVar(double m, double k) :
             UniformVar(0,1), _mu(m), _order(k) {};
 
         CLONEABLE(RandomVar, ParetoVar)
-        
+
         static std::unique_ptr<ParetoVar> createInstance(std::vector<std::string> &par);
 
         virtual double get();
@@ -296,14 +296,14 @@ namespace MetaSim {
         double _mu, _sigma;
         bool _yes;
         double _oldv;
-  
+
     public:
-        NormalVar(double m, double s) : 
+        NormalVar(double m, double s) :
             UniformVar(0, 1), _mu(m), _sigma(s), _yes(false)
             {}
 
         CLONEABLE(RandomVar, NormalVar)
-        
+
         static std::unique_ptr<NormalVar> createInstance(std::vector<std::string> &par);
 
         virtual double get();
@@ -320,13 +320,13 @@ namespace MetaSim {
         double _lambda;
     public:
         static const unsigned long CUTOFF;
-        PoissonVar(double l) : 
+        PoissonVar(double l) :
             UniformVar(0, 1), _lambda(l) {}
 
         CLONEABLE(RandomVar, PoissonVar)
 
         static std::unique_ptr<PoissonVar> createInstance(std::vector<std::string> &par);
-        
+
         virtual double get();
 
         virtual double getMaximum() throw(MaxException)
@@ -350,9 +350,9 @@ namespace MetaSim {
         DetVar(const std::string &filename);
         DetVar(std::vector<double> &a);
         DetVar(double a[], int s);
-        
+
         CLONEABLE(RandomVar, DetVar)
-        
+
         static std::unique_ptr<DetVar> createInstance(std::vector<std::string> &par);
 
         virtual double get();

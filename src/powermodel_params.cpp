@@ -1,8 +1,8 @@
 #include <sstream>
 
 #include "consts.hpp"
+#include "memory.hpp"
 #include "powermodel_params.hpp"
-#include <memory>
 
 namespace RTSim {
 
@@ -134,10 +134,7 @@ namespace RTSim {
 
     template <class T, class... Args>
     static std::unique_ptr<T> uniqueFrom(Args &&... args) {
-        return std::unique_ptr<T>(
-            new T(createFrom<T>(std::forward<Args>(args)...)));
-        // return
-        // std::make_unique<T>(createFrom<T>(std::forward<Args>(args)...));
+        return std::make_unique<T>(createFrom<T>(std::forward<Args>(args)...));
     }
 
     std::unique_ptr<CPUModelParams>

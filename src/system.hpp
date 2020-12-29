@@ -1,7 +1,7 @@
 // TODO: organize includes
 
 // STL
-#include <memory>
+#include "memory.hpp"
 #include <vector>
 
 // Static system information

@@ -1,11 +1,11 @@
 #ifndef __EVENT_HPP__
 #define __EVENT_HPP__
 
+#include "memory.hpp"
 #include <deque>
 #include <iostream>
 #include <limits>
 #include <typeinfo>
-#include <memory>
 
 #include <simul.hpp>
 #include <basestat.hpp>
@@ -21,7 +21,7 @@ namespace MetaSim {
     // Forward declaration
     class Entity;
 
-    /** 
+    /**
         The basic event class. It models an event in the
         simulator: contains all the basic methods for handling an
         event.
@@ -58,26 +58,26 @@ namespace MetaSim {
         analysing it later. See Trace class for more details.
 
         \sa GEvent<X>
-        
+
         \ingroup metasim_ee
 
     */
     class Event {
 
     public:
-        /** 
+        /**
             \ingroup metasim_exc
-	
-            Exceptions for the Event Class. 
+
+            Exceptions for the Event Class.
         */
         class Exc : public BaseExc {
         public:
-            Exc(const std::string message, 
-                const std::string cl = "Event", 
-                const std::string md = "event.cpp") 
+            Exc(const std::string message,
+                const std::string cl = "Event",
+                const std::string md = "event.cpp")
                 : BaseExc(message,cl,md) {} ;
         };
-  
+
     private:
         /**
            Template specialization for less function
@@ -93,13 +93,13 @@ namespace MetaSim {
         public:
             bool operator() (Event* e1, Event* e2) const;
         };
-                
+
         typedef priority_list<Event*, Cmp> EventQueue;
-  
+
         /**
            Event queue. This is the global event queue, used
            by the simulation engine.
-        */ 
+        */
         static EventQueue _eventQueue;
 
         /**
@@ -110,25 +110,25 @@ namespace MetaSim {
         /**
            number of fifo insertion
         */
-        unsigned long _order; 
-  
+        unsigned long _order;
+
         /// Tells if the element is in the event queue;
         bool _isInQueue;
-  
+
         /// A queue of all the statistical object. All these
         /// objects will be "invoked" after the event handler
-        /// (doit()) has been processed.  
+        /// (doit()) has been processed.
         std::deque<std::unique_ptr<ParticleInterface> > _particles;
 
         /// Triggering time of the event.
         Tick _time;
-  
+
         /// This is the last time the event was
         /// triggered. Used for the purpose of collecting
         /// traces and statistics.
         Tick _lastTime;
 
-        /** 
+        /**
             Event priority. This is used to give an order to
             events with the same time, in the event queue. We
             define _DEFAULT_PRIORITY as the default priority
@@ -139,7 +139,7 @@ namespace MetaSim {
         int _priority;
 
         int _std_priority;
-	
+
         /// We hide operator= to avoid improper use.
         Event& operator=(Event &);
     protected:
@@ -152,7 +152,7 @@ namespace MetaSim {
         /// _time field;
         void setTime(Tick actTime) throw(Exc);
 
-        /** 
+        /**
             Copy constructor. This is defined to allow dynamic
             event creation using another event as a
             prototype. Statistics and traces are copied.
@@ -166,9 +166,9 @@ namespace MetaSim {
         static const int _DEFAULT_PRIORITY = 8;
         static const int _IMMEDIATE_PRIORITY = 0;
 
-        /** 
+        /**
             Contructor.
-     
+
             @param p Event priority
         */
         Event(int p = _DEFAULT_PRIORITY);
@@ -176,7 +176,7 @@ namespace MetaSim {
         /// Destructor.
         virtual ~Event();
 
-        /** 
+        /**
             Inserts the event into the event queue. If the
             event is already in the event queue, an exception
             is raised. Then, the event will be processed at
@@ -195,7 +195,7 @@ namespace MetaSim {
             declared event (i.e., an event that was not
             created with new) unless you want a good old core
             dump.
-     
+
             @param myTime triggering time for the event.
             @param disp set it to true if the event object
             must be disposed.
@@ -203,31 +203,31 @@ namespace MetaSim {
         void post(Tick myTime, bool disp = false) throw(Exc, BaseExc);
 
         /**
-           Processes the event immediately. 
+           Processes the event immediately.
         */
         void process(bool disp=false);
 
-        /** 
+        /**
             Drop the event from the event queue. The event is
             simply extracted from the queue, and hence will
             not be processed, but it is not destroyed.
         */
         virtual void drop();
 
-        /** 
+        /**
             Returns the first event in the event queue.  This
             function is used by the main simulation engine and
             should never be called directly by any other
             object. The event is not extracted from the queue
         */
         static inline Event *getFirst() {
-            if (_eventQueue.empty()) 
+            if (_eventQueue.empty())
                 return NULL;
             else
                 return _eventQueue.front();
         }
 
-        /** 
+        /**
             Returns the event priority.  It is a identifier
             for the event priority. In the old version, events
             were distinguished by their class. For simplicity
@@ -235,30 +235,30 @@ namespace MetaSim {
         */
         inline int getPriority() const {return _priority;};
 
-        /** 
+        /**
             Set the event priority.  It is a identifier for
             the event priority. The lower the number, the
             higher the priority.
         */
         inline void setPriority(int p) { _priority = p;};
 
-        /** 
+        /**
             Restore the standard priority (the one defined in
             the constructor).
         */
         inline void restorePriority() { _priority = _std_priority;};
 
-        /** 
+        /**
             Returns the event time. Warning: if you try to get
             this field after the event has been triggered, the
             field could be inconsistent. Use getLastTime
             instead.
-     
-            @see getLastTime.  
+
+            @see getLastTime.
         */
         inline Tick getTime() const {return _time;};
 
-        /** 
+        /**
             Return the last time in which event was triggered.
             Basically it always is the same as
             getTime(). However, consider that, if the event is
@@ -272,31 +272,31 @@ namespace MetaSim {
             may repost the event altering the time field, but
             the user may access the actual time in which event
             has been triggered with getLastTime().
-     
+
             @see getTime */
         inline Tick getLastTime() const { return _lastTime; };
 
-        /** 
+        /**
             Returns the value of the disposable flag Indicates
             if the event has to be destroyed after bein
             processed.  In fact, if an event has been created
             dinamically, must be destroyed only after it has
             been processed. This is done by the Simulation
             class, only if the following flas is true.
-     
+
             @see post */
-        inline bool isDisposable() {return _disposable;};  
+        inline bool isDisposable() {return _disposable;};
 
 
         inline bool isInQueue() { return _isInQueue; }
 
-        /** 
+        /**
             Add a new particle to this event.  This is the new
             way to add statistics and traces to this object.
         */
         void addParticle(std::unique_ptr<ParticleInterface> s);
 
-        /** 
+        /**
             This method is called when the event is triggered.
             It contains part of the basic code of the
             simulation engine.  For this reason, it should be
@@ -304,7 +304,7 @@ namespace MetaSim {
             not touch if you don't know what you are doing.
             Also, this method should never be invoked by any
             entity.
-     
+
             It can throw any type of exceptions, in principle,
             so I can't specify any particular type of
             exception in the interface
@@ -314,22 +314,22 @@ namespace MetaSim {
         /**
            Must be defined for every derived class. This
            method is called from the action() method.  */
-        virtual void doit() = 0; 
+        virtual void doit() = 0;
 
         /**
            for debugging.
         */
         virtual void print();
 
-        /** 
+        /**
             for debugging
         */
         static void printQueue() {
             EventQueue::iterator it;
-    
-            for (it = _eventQueue.begin(); 
-                 it != _eventQueue.end(); 
-                 it++) 
+
+            for (it = _eventQueue.begin();
+                 it != _eventQueue.end();
+                 it++)
                 (*it)->print();
         }
 

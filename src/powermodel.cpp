@@ -29,15 +29,12 @@ namespace RTSim {
     CPUModel::create(const std::string &k, const CPUPowerModelDescriptor &desc,
                      volt_type v, freq_type f, freq_type f_max) {
         if (k == CPUModelMinimalParams::key) {
-            return std::unique_ptr<CPUModelMinimal>(
-                new CPUModelMinimal(v, f, f_max));
-            // return std::make_unique<CPUModelMinimal>(v, f, f_max);
+            return std::make_unique<CPUModelMinimal>(v, f, f_max);
         }
 
         if (k == CPUModelBPParams::key) {
-            std::unique_ptr<CPUModelBP> bpp(new CPUModelBP(v, f, f_max));
-            // std::unique_ptr<CPUModelBP> bpp =
-            //     std::make_unique<CPUModelBP>(v, f, f_max);
+            std::unique_ptr<CPUModelBP> bpp =
+                std::make_unique<CPUModelBP>(v, f, f_max);
 
             for (const auto &p : desc.params) {
                 const auto *pp = dynamic_cast<CPUModelBPParams *>(p.get());
@@ -63,9 +60,8 @@ namespace RTSim {
         }
 
         if (k == CPUModelTBParams::key) {
-            std::unique_ptr<CPUModelTB> tbp(new CPUModelTB(v, f, f_max));
-            // std::unique_ptr<CPUModelTB> tbp =
-            //     std::make_unique<CPUModelTB>(v, f, f_max);
+            std::unique_ptr<CPUModelTB> tbp =
+                std::make_unique<CPUModelTB>(v, f, f_max);
 
             for (const auto &p : desc.params) {
                 const auto *pp = dynamic_cast<CPUModelTBParams *>(p.get());

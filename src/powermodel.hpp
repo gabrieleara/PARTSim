@@ -23,8 +23,8 @@ email                : l.pannocchi@gmail.com
 
 #include "class_utils.hpp"
 #include "cloneable.hpp"
+#include "memory.hpp"
 #include "sortedcont.hpp"
-#include <memory>
 
 namespace RTSim {
     // Forward declarations

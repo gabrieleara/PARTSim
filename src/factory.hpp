@@ -23,14 +23,14 @@
  *
  * Revision 1.2  2003/04/24 14:55:53  lipari
  * *** empty log message ***
- * 
+ *
  */
 #ifndef __FACTORY_HPP__
 #define __FACTORY_HPP__
 
+#include "memory.hpp"
 #include <iostream>
 #include <map>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -39,7 +39,7 @@ typedef std::string defaultIDKeyType;
 // The abstract factory itself.
 // Implemented using the Singleton pattern
 template <class manufacturedObj, typename classIDKey=defaultIDKeyType>
-class genericFactory 
+class genericFactory
 {
     // a BASE_CREATE_FN is a function that takes no parameters
     // and returns an unique_ptr<> to a manufactuedObj.  Note that
@@ -105,7 +105,7 @@ void genericFactory<manufacturedObj, classIDKey>::regCreateFn(const classIDKey &
 template <class manufacturedObj, typename classIDKey>
 std::unique_ptr<manufacturedObj> genericFactory<manufacturedObj, classIDKey>::create(const classIDKey &className, std::vector<std::string> &parms) const
 {
-  std::unique_ptr<manufacturedObj> ret(nullptr); 
+  std::unique_ptr<manufacturedObj> ret(nullptr);
 
   typename FN_REGISTRY::const_iterator regEntry=registry.find(className);
   if (regEntry != registry.end()) {

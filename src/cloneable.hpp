@@ -1,7 +1,7 @@
 #ifndef __CLONEABLE_HPP__
 #define __CLONEABLE_HPP__
 
-#include <memory>
+#include "memory.hpp"
 
 // NOTICE: this assumes that the class is at least COPY CONSTRUCTIBLE (and has a
 // virtual destructor, for the unique and shared pointers to work properly)
