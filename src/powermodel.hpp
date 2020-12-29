@@ -558,6 +558,13 @@ namespace RTSim {
         /// @returns the forshadowed speedup
         virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
                                        volt_type v = 0) const override;
+
+    private:
+        template <class Codomain_fn, class Distance_fn,
+                  class Codomain = long double>
+        Codomain lookupApproximate(const std::string &wname, freq_type f,
+                                   volt_type v, Codomain_fn codomain,
+                                   Distance_fn distance) const;
     };
 } // namespace RTSim
 

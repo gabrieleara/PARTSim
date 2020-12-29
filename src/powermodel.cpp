@@ -19,6 +19,7 @@
 #include "powermodel.hpp"
 #include "system_descriptor.hpp"
 
+#include "interpolate.hpp"
 namespace RTSim {
     // =====================================================
     // CPUModel
@@ -191,9 +192,9 @@ namespace RTSim {
         _map[wname].insert(kv);
     }
 
-    // I know that these can be implemented with a lot of templates, I even
-    // implemented them all, but the functions became more cryptic and I didn't
-    // like them like that, result is the same
+    // I know that these functions can be implemented with a lot of templates, I
+    // even implemented them all, but the functions became more cryptic and I
+    // didn't like them like that, result is the same
 
     watt_type CPUModelTB::lookupPower(const string &wname, freq_type f,
                                       volt_type v) const {
@@ -235,65 +236,94 @@ namespace RTSim {
     // CPUModelTBApproximate
     // =====================================================
 
-    // NOTE: exp must be positive real
-    // d is a distance function (metric) between x and xi
-    template <class A, class T = long double, class E = long double>
-    static inline T weight(A x, A xi, T (*d)(A, A), E exp = 2.0) {
-        return T(1.0) / std::pow(d(x, xi), exp);
+    using Opp = typename CPUModelTB::TBParamsIn;
+
+#define cast(T, x) (static_cast<T>(x))
+    template <class RT = long double>
+    static inline RT opp_power_distance(Opp x, Opp xi) {
+        return std::pow(cast(RT, x.volt) - cast(RT, xi.volt), 2) *
+               std::abs(cast(RT, x.freq) - cast(RT, xi.freq));
     }
-
-    // w is a weight function based on a distance between x and xi
-    template <class A, class T = long double, class E = long double>
-    static inline T interpolate(A x, A x1, A x2, T y1, T y2, T (*w)(A, A, E),
-                                E exp = 2.0) {
-        T sum = 0.0;
-
-        T w1 = w(x, x1, exp);
-        T w2 = w(x, x2, exp);
-
-        sum += w1 * y1;
-        sum += w2 * y2;
-        return sum / (w1 + w2);
-    }
-
-    using Opp = CPUModelTB::TBParamsIn;
-
-    static inline long double opp_power_distance(Opp x, Opp xi) {
-        return std::pow(static_cast<long double>(x.volt - xi.volt), 2.0) *
-               std::abs(
-                   static_cast<long double>(static_cast<long double>(x.freq) -
-                                            static_cast<long double>(xi.freq)));
-    }
-
-    static inline long double opp_power_weight(Opp x, Opp xi,
-                                               long double exp = 2.0) {
-        return weight<Opp>(x, xi, opp_power_distance, exp);
-    }
-
-    static inline long double opp_power_interpolate(Opp x, Opp x1, Opp x2,
-                                                    long double y1,
-                                                    long double y2) {
-        return interpolate<Opp>(x, x1, x2, y1, y2, opp_power_weight);
-    }
-
-    static inline long double opp_speed_distance(Opp x, Opp xi) {
+    template <class RT = long double>
+    static inline RT opp_speed_distance(Opp x, Opp xi) {
         // TODO: hella not sure about this!
-        return std::pow(static_cast<long double>(x.freq) -
-                            static_cast<long double>(xi.freq),
-                        2);
+        return std::pow(cast(RT, x.freq) - cast(RT, xi.freq), 2);
+    }
+#undef cast
+
+    template <class T>
+    static inline Opp to_domain(T v) {
+        return v->first;
     }
 
-    static inline long double opp_speed_weight(Opp x, Opp xi,
-                                               long double exp = 2.0) {
-        return weight<Opp>(x, xi, opp_speed_distance, exp);
+    template <class T, class RT = watt_type>
+    static inline RT to_power(T v) {
+        return v->second.power;
     }
 
-    static inline long double opp_speed_interpolate(Opp x, Opp x1, Opp x2,
-                                                    long double y1,
-                                                    long double y2) {
-        return interpolate<Opp>(x, x1, x2, y1, y2, opp_speed_weight);
+    template <class T, class RT = speed_type>
+    static inline RT to_speed(T v) {
+        return v->second.speedup;
     }
 
+    template <class Codomain_fn, class Distance_fn, class Codomain>
+    Codomain CPUModelTBApproximate::lookupApproximate(
+        const std::string &wname, freq_type f, volt_type v,
+        Codomain_fn codomain, Distance_fn distance) const {
+
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = this->find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.first_non_less_key(key);
+        if (res == map.cend())
+            return 0;
+
+        auto res_key = res->first;
+        if (!(key < res_key)) {
+            // Exact match!
+            return codomain(res);
+        }
+
+        // The found key-value pair is the one whose key is the first
+        // strictly-greater key with respect to the supplied one. The previous
+        // pair, if any, is the one with the last strictly-less key than the
+        // supplied one.
+
+        if (res == map.cbegin())
+            return codomain(res);
+
+        auto next = res;
+        auto prev = res - 1;
+
+        return interpolate<Opp, long double>(key, prev, next,
+                                             to_domain<smap::const_iterator>,
+                                             codomain, distance);
+    }
+
+    watt_type CPUModelTBApproximate::lookupPower(const string &wname,
+                                                 freq_type f,
+                                                 volt_type v) const {
+        return lookupApproximate(wname, f, v,
+                                 to_power<smap::const_iterator, long double>,
+                                 opp_power_distance<long double>);
+    }
+
+    speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
+                                                  freq_type f,
+                                                  volt_type v) const {
+        return lookupApproximate(wname, f, v,
+                                 to_speed<smap::const_iterator, long double>,
+                                 opp_speed_distance<long double>);
+    }
+
+    /*
     watt_type CPUModelTBApproximate::lookupPower(const string &wname,
                                                  freq_type f,
                                                  volt_type v) const {
@@ -326,17 +356,12 @@ namespace RTSim {
         if (res == map.cbegin())
             return res->second.power;
 
-        auto &next = res;
+        auto next = res;
         auto prev = res - 1;
 
-        auto domain_next = next->first;
-        auto domain_prev = prev->first;
-
-        auto codomain_next = next->second.power;
-        auto codomain_prev = prev->second.power;
-
-        return opp_power_interpolate(key, domain_prev, domain_next,
-                                     codomain_prev, codomain_next);
+        return interpolate<Opp, double_prec>(
+            key, prev, next, to_domain<decltype(prev)>,
+            to_power<decltype(prev), double_prec>, opp_power_distance);
     }
 
     speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
@@ -371,17 +396,13 @@ namespace RTSim {
         if (res == map.cbegin())
             return res->second.speedup;
 
-        auto &next = res;
+        auto next = res;
         auto prev = res - 1;
 
-        auto domain_next = next->first;
-        auto domain_prev = prev->first;
-
-        auto codomain_next = next->second.speedup;
-        auto codomain_prev = prev->second.speedup;
-
-        return opp_speed_interpolate(key, domain_prev, domain_next,
-                                     codomain_prev, codomain_next);
+        return interpolate<Opp, double_prec>(
+            key, prev, next, to_domain<decltype(prev)>,
+            to_speed<decltype(prev), double_prec>, opp_speed_distance);
     }
+    */
 
 } // namespace RTSim
