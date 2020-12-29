@@ -31,7 +31,7 @@ namespace RTSim {
         }
 
         cout << "executing: " << s << endl;
-        system(s);
+        int res = system(s);
         cout << "file made" << endl;
         saveLastGenerated(filename);
         return string(filename);
