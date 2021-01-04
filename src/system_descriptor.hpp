@@ -1,0 +1,67 @@
+#ifndef SYSTEM_DESCRIPTOR_HPP
+#define SYSTEM_DESCRIPTOR_HPP
+
+#include <array>
+#include <string>
+#include <vector>
+
+#include "class_utils.hpp"
+#include "memory.hpp"
+#include "powermodel_params.hpp"
+#include "yaml.hpp"
+
+namespace RTSim {
+
+    class KernelDescriptor {
+    public:
+        std::string name;
+        std::string scheduler_type;
+    };
+
+    class CPUPowerModelDescriptor {
+    public:
+        std::string name;
+        CPUModelParams::key_type type;
+        std::vector<std::unique_ptr<CPUModelParams>> params;
+
+    public:
+        CPUPowerModelDescriptor() = default;
+        DISABLE_COPY(CPUPowerModelDescriptor);
+        DEFAULT_MOVABLE(CPUPowerModelDescriptor);
+    };
+
+    class IslandDescriptor {
+    public:
+        std::string name;
+        size_t numcpus;
+        KernelDescriptor kernel;
+        std::vector<volt_type> volts;
+        std::vector<freq_type> freqs;
+        std::string power_model;
+
+    public:
+        IslandDescriptor() = default;
+        DEFAULT_COPIABLE(IslandDescriptor);
+        DEFAULT_MOVABLE(IslandDescriptor);
+    };
+
+    class SystemDescriptor {
+    private:
+        using map_type = std::map<std::string, CPUPowerModelDescriptor>;
+        using vector_type = std::vector<IslandDescriptor>;
+
+    public:
+        map_type power_models;
+        vector_type islands;
+
+    public:
+        SystemDescriptor(std::string fname);
+
+    public:
+        DEFAULT_COPIABLE(SystemDescriptor);
+        DEFAULT_MOVABLE(SystemDescriptor);
+    };
+
+} // namespace RTSim
+
+#endif // SYSTEM_DESCRIPTOR_HPP

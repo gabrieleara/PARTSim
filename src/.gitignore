@@ -1,9 +1,12 @@
 .idea/
+.vscode/
 cmake-build-debug/
 
 *.bak
 *.swp
 *.o
+*.d
+*.so
 *.txt
 *.json
 *.trc

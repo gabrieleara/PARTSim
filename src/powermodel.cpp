@@ -11,172 +11,398 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <powermodel.hpp>
-#include <cpu.hpp>
-#include <assert.h>
+#include <cassert>
+#include <cmath>
 
-namespace RTSim
-{
+#include "cpu.hpp"
+#include "csv.hpp"
+#include "powermodel.hpp"
+#include "system_descriptor.hpp"
 
-    // Constructors/Destructor
+#include "interpolate.hpp"
+namespace RTSim {
+    // =====================================================
+    // CPUModel
+    // =====================================================
 
-	// Base Parent Class
-	//
-    CPUModel::CPUModel(double v, unsigned long int f, unsigned long f_max) :
-        _cpu(nullptr)
-    {
-        _V = v;
-        _F = f;//setFrequency(f);
-        if (f_max == -1)
-            _F_max = -1;
-        else
-            _F_max = f_max;//setFrequencyMax(f_max);
+    // TODO: Fake factory, convert to actual factory
+    std::unique_ptr<CPUModel>
+    CPUModel::create(const std::string &k, const CPUPowerModelDescriptor &desc,
+                     volt_type v, freq_type f, freq_type f_max) {
+        if (k == CPUModelMinimalParams::key) {
+            return std::make_unique<CPUModelMinimal>(v, f, f_max);
+        }
+
+        if (k == CPUModelBPParams::key) {
+            std::unique_ptr<CPUModelBP> bpp =
+                std::make_unique<CPUModelBP>(v, f, f_max);
+
+            for (const auto &p : desc.params) {
+                const auto *pp = dynamic_cast<CPUModelBPParams *>(p.get());
+
+                const CPUModelBP::PowerModelBPParams p_params{
+                    pp->power_params.d,
+                    pp->power_params.e,
+                    pp->power_params.g,
+                    pp->power_params.k,
+                };
+
+                const CPUModelBP::SpeedModelBPParams s_params{
+                    pp->speed_params.a,
+                    pp->speed_params.b,
+                    pp->speed_params.c,
+                    pp->speed_params.d,
+                };
+
+                bpp->setWorkloadParams(pp->workload, p_params, s_params);
+            }
+
+            return bpp;
+        }
+
+        if (k == CPUModelTBParams::key) {
+            std::unique_ptr<CPUModelTB> tbp =
+                std::make_unique<CPUModelTB>(v, f, f_max);
+
+            for (const auto &p : desc.params) {
+                const auto *pp = dynamic_cast<CPUModelTBParams *>(p.get());
+
+                CPUModelTB::TBParamsIn params;
+                params.freq = pp->freq;
+                params.volt = pp->volt;
+
+                tbp->setWorkloadParams(pp->workload, params, pp->power,
+                                       pp->speed);
+            }
+
+            return tbp;
+        }
+
+        throw std::exception{}; // TODO:
     }
 
-    CPU *CPUModel::getCPU() const
-    {
-        return _cpu;
+    void CPUModel::updatePower() {
+        watt_type p = lookupPower(getCPU()->getWorkload(), _V, _F);
+        if (!std::isnan(p))
+            _P = p;
     }
 
-    void CPUModel::setCPU(CPU *c)
-    {
-        _cpu = c;
+    void CPUModel::updateSpeed() {
+        speed_type s = lookupSpeed(getCPU()->getWorkload(), _V, _F);
+        if (!std::isnan(s))
+            _S = s;
     }
 
-    double CPUModel::getPower()
-    {
-        updatePower();
-        return _P;
+    // =====================================================
+    // CPUModelMinimal
+    // =====================================================
+
+    // TODO: why did the old implementation set the frequency to KHz internally?
+    // TODO: check formulae against measurement units
+    watt_type CPUModelMinimal::lookupPower(const string &, freq_type f,
+                                           volt_type v) const {
+        return (v * v) * f;
     }
 
-    long double CPUModel::getSpeed()
-    {
-        long double res = (double)_F_max / (double)_F;
-        return res;
+    speed_type CPUModelMinimal::lookupSpeed(const string &, freq_type f,
+                                            volt_type) const {
+        return _F_max / f;
     }
 
-    void CPUModel::setVoltage(double v)
-    {
-        //DBGPRINT_2("CPUModel::setVoltage ", v);
-        //cout << endl << "CPUModel::setVoltage" << endl;
-        if (v==0)
-          cout << "asd";
-        _V = v;
-        updatePower();
-    }
+    // =====================================================
+    // CPUModelBP
+    // =====================================================
 
-    void CPUModel::setFrequency(unsigned long int f)
-    {
-        //cout << endl << "CPUModel::setFrequency " <<f << endl;
-        _F = 1000 * f;
-        updatePower();
-    }
+    // TODO: remember to require always at least two workload parameters (idle
+    // and busy)
 
-    void CPUModel::setFrequencyMax(unsigned long int f)
-    {
-        _F_max = 1000 * f;
-    }
+    watt_type CPUModelBP::lookupPower(const std::string &workload, freq_type f,
+                                      volt_type v) const {
 
-    // Minimal Class
-    //
-    CPUModelMinimal::CPUModelMinimal(double v, unsigned long int f) :
-        CPUModel(v, f)
-    {
-    }
-
-    // deprecated, it might introduce bugs if you forget to update after setVoltage/setFrequency()
-    void CPUModelMinimal::updatePower()
-    {
-        //cout << endl << "CPUModelMinimal::update " << _V << " " << _F << endl;
-        _P = (_V * _V) * _F;
-    }
-
-    // BP Class
-    //
-    CPUModelBP::CPUModelBP(double v, unsigned long f, unsigned long f_max,
-                               double g_idle,
-                               double e_idle,
-                               double k_idle,
-                               double d_idle) :
-        CPUModel(v, f, f_max)
-    {
-        PowerModelBPParams mp;
-
-        mp.d = d_idle;
-        mp.e = e_idle;
-        mp.g = g_idle;
-        mp.k = k_idle;
-
-        _wl_param["idle"] = mp;
-    }
-
-    void CPUModelBP::updatePower()
-    {
-        #include <cstdio>
-     // printf("\t\t\tCPUModelBP::update freq %lu volt %f\n",getFrequency(),getVoltage() );
+        f *= 1000; // This model was trained using frequencies in KHz
 
         double K, eta, gamma, disp;
-        string _curr_wl = getCPU()->getWorkload();
-        assert(_curr_wl != "");
 
-        disp = _wl_param[_curr_wl].d;
-        K = _wl_param[_curr_wl].k;
-        eta = _wl_param[_curr_wl].e;
-        gamma = _wl_param[_curr_wl].g;
+        // TODO: if needed, export these outside, for now I'll remove them from
+        // class attributes
+        double P_charge, P_short, P_dyn, P_leak;
 
-        //cout << "\t\t\tCPUModelBP::update wl=" << _curr_wl << " _F "<<_F<<" _V "<<_V<< " disp " << disp<<" k "<<K<<" eta "<<eta<<" gamma "<<gamma<<endl;
+        const auto &params = _power_params.at(workload);
+
+        disp = params.d;
+        K = params.k;
+        eta = params.e;
+        gamma = params.g;
 
         // Evaluation of the P_charge
-        _P_charge = (K) * _F * (_V * _V);
+        P_charge = (K)*f * (v * v);
 
         // Evaluation of the P_short
-        _P_short =  eta * _P_charge;
+        P_short = eta * P_charge;
 
         // Evalution of the P_dyn
-        _P_dyn = _P_short + _P_charge;
+        P_dyn = P_short + P_charge;
 
         // Evaluation of P_leak
-        _P_leak = gamma * _V * _P_dyn;
+        P_leak = gamma * v * P_dyn;
 
         // Evaluation of the total Power
-        _P = _P_leak + _P_dyn + disp;
-
-        //cout << "\t\t\t_P = " << _P << " " << _P_charge<<" "<<_P_short<<" "<<_P_dyn<<" "<<_P_leak<<endl;
-
+        return P_leak + P_dyn + disp;
     }
 
-    long double CPUModelBP::slownessModel(const ComputationalModelBPParams &m,
-                      unsigned long int f)
-    {
-        //cout<<endl<<"\t\t\tm.a b c d " << m.a << " "<< m.b << " " << m.c << " " << m.d << " f " <<f<<endl;
+    speed_type CPUModelBP::lookupSpeed(const std::string &workload, freq_type f,
+                                       volt_type) const {
 
-        long double disp = m.a;
-        long double ideal = m.b / static_cast<long double>(f);
-        long double slope = m.c * exp(-(static_cast<long double>(f) / m.d));
+        f *= 1000; // This model was trained using frequencies in KHz
 
-        //cout<<endl<<"\t\t\tdisp ideal slope " << disp << " " << ideal << " " << slope << endl;
+        // TODO: asserts and all!
+        assert(_speed_params.find(getCPU()->getWorkload()) !=
+               _speed_params.end());
 
-        return disp + ideal + slope;
+        const auto &params = _speed_params.at(workload);
+
+        long double disp = params.a;
+        long double ideal = params.b / static_cast<long double>(f);
+        long double slope =
+            params.c * std::exp(-(static_cast<long double>(f) / params.d));
+
+        return 1.0 / (disp + ideal + slope);
     }
 
     void CPUModelBP::setWorkloadParams(const string &workload_name,
-                                         const PowerModelBPParams &power_params,
-                                         const ComputationalModelBPParams &computing_params)
-    {
-        _wl_param[workload_name] = power_params;
-        _comp_param[workload_name] = computing_params;
+                                       const PowerModelBPParams &power_params,
+                                       const SpeedModelBPParams &speed_params) {
+        _power_params[workload_name] = power_params;
+        _speed_params[workload_name] = speed_params;
     }
 
-    long double CPUModelBP::getSpeed()
-    {
-        string curr_wl = getCPU()->getWorkload();
-        assert(_comp_param.find(curr_wl) != _comp_param.end());
-        assert(_F == 1000 * getCPU()->getFrequency());
-        long double ret = 1.0 / slownessModel(_comp_param[curr_wl], _F);
-        //DBGPRINT("CPUModelBP::getSpeed() " << curr_wl << " " << ret << " " << _F);
+    // =====================================================
+    // CPUModelTB
+    // =====================================================
 
-        //cout << "\t\t\tCPUModelBP::getSpeed() wl _F " << curr_wl << " " << _F << " ret " << ret << endl;
-        return ret;
+    void CPUModelTB::setWorkloadParams(const string &wname,
+                                       const TBParamsIn &params,
+                                       watt_type power, speed_type speedup) {
+        // NOTICE: this may accept duplicates if supplied
+        TBParamsOut v;
+        v.power = power;
+        v.speedup = speedup;
+
+        std::pair<TBParamsIn, TBParamsOut> kv = std::make_pair(params, v);
+        _map[wname].insert(kv);
     }
+
+    // I know that these functions can be implemented with a lot of templates, I
+    // even implemented them all, but the functions became more cryptic and I
+    // didn't like them like that, result is the same
+
+    watt_type CPUModelTB::lookupPower(const string &wname, freq_type f,
+                                      volt_type v) const {
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.find_from_key(key);
+        if (res == map.cend())
+            return 0;
+        return res->second.power;
+    }
+
+    speed_type CPUModelTB::lookupSpeed(const string &wname, freq_type f,
+                                       volt_type v) const {
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.find_from_key(key);
+        if (res == map.cend())
+            return 0;
+        return res->second.speedup;
+    }
+
+    // =====================================================
+    // CPUModelTBApproximate
+    // =====================================================
+
+    using Opp = typename CPUModelTB::TBParamsIn;
+
+#define cast(T, x) (static_cast<T>(x))
+    template <class RT = long double>
+    static inline RT opp_power_distance(Opp x, Opp xi) {
+        return std::pow(cast(RT, x.volt) - cast(RT, xi.volt), 2) *
+               std::abs(cast(RT, x.freq) - cast(RT, xi.freq));
+    }
+    template <class RT = long double>
+    static inline RT opp_speed_distance(Opp x, Opp xi) {
+        // TODO: hella not sure about this!
+        return std::pow(cast(RT, x.freq) - cast(RT, xi.freq), 2);
+    }
+#undef cast
+
+    template <class T>
+    static inline Opp to_domain(T v) {
+        return v->first;
+    }
+
+    template <class T, class RT = watt_type>
+    static inline RT to_power(T v) {
+        return v->second.power;
+    }
+
+    template <class T, class RT = speed_type>
+    static inline RT to_speed(T v) {
+        return v->second.speedup;
+    }
+
+    template <class Codomain_fn, class Distance_fn, class Codomain>
+    Codomain CPUModelTBApproximate::lookupApproximate(
+        const std::string &wname, freq_type f, volt_type v,
+        Codomain_fn codomain, Distance_fn distance) const {
+
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = this->find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.first_non_less_key(key);
+        if (res == map.cend())
+            return 0;
+
+        auto res_key = res->first;
+        if (!(key < res_key)) {
+            // Exact match!
+            return codomain(res);
+        }
+
+        // The found key-value pair is the one whose key is the first
+        // strictly-greater key with respect to the supplied one. The previous
+        // pair, if any, is the one with the last strictly-less key than the
+        // supplied one.
+
+        if (res == map.cbegin())
+            return codomain(res);
+
+        auto next = res;
+        auto prev = res - 1;
+
+        return interpolate<Opp, long double>(key, prev, next,
+                                             to_domain<smap::const_iterator>,
+                                             codomain, distance);
+    }
+
+    watt_type CPUModelTBApproximate::lookupPower(const string &wname,
+                                                 freq_type f,
+                                                 volt_type v) const {
+        return lookupApproximate(wname, f, v,
+                                 to_power<smap::const_iterator, long double>,
+                                 opp_power_distance<long double>);
+    }
+
+    speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
+                                                  freq_type f,
+                                                  volt_type v) const {
+        return lookupApproximate(wname, f, v,
+                                 to_speed<smap::const_iterator, long double>,
+                                 opp_speed_distance<long double>);
+    }
+
+    /*
+    watt_type CPUModelTBApproximate::lookupPower(const string &wname,
+                                                 freq_type f,
+                                                 volt_type v) const {
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.first_non_less_key(key);
+        if (res == map.cend())
+            return 0;
+
+        auto res_key = res->first;
+
+        if (!(key < res_key)) {
+            // Exact match!
+            return res->second.power;
+        }
+
+        // The found key-value pair is the one whose key is the first
+        // strictly-greater key with respect to the supplied one. The previous
+        // pair, if any, is the one with the last strictly-less key than the
+        // supplied one.
+
+        if (res == map.cbegin())
+            return res->second.power;
+
+        auto next = res;
+        auto prev = res - 1;
+
+        return interpolate<Opp, double_prec>(
+            key, prev, next, to_domain<decltype(prev)>,
+            to_power<decltype(prev), double_prec>, opp_power_distance);
+    }
+
+    speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
+                                                  freq_type f,
+                                                  volt_type v) const {
+        TBParamsIn key;
+        key.volt = v;
+        key.freq = f;
+
+        auto res_map = find_suitable_map(wname);
+        if (res_map == _map.end())
+            return 0;
+
+        auto &map = res_map->second;
+
+        auto res = map.first_non_less_key(key);
+        if (res == map.cend())
+            return 0;
+
+        auto res_key = res->first;
+
+        if (!(key < res_key)) {
+            // Exact match!
+            return res->second.speedup;
+        }
+
+        // The found key-value pair is the one whose key is the first
+        // strictly-greater key with respect to the supplied one. The previous
+        // pair, if any, is the one with the last strictly-less key than the
+        // supplied one.
+
+        if (res == map.cbegin())
+            return res->second.speedup;
+
+        auto next = res;
+        auto prev = res - 1;
+
+        return interpolate<Opp, double_prec>(
+            key, prev, next, to_domain<decltype(prev)>,
+            to_speed<decltype(prev), double_prec>, opp_speed_distance);
+    }
+    */
 
 } // namespace RTSim

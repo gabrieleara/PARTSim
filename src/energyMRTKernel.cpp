@@ -95,7 +95,7 @@ namespace RTSim {
 
         return c;
     }
-    
+
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getPeriod());
 
@@ -171,7 +171,7 @@ namespace RTSim {
             cout << "\t\t\t\t\tServer's empty => skip, you consider Util_actives (" << cbs->getName() << ")" << endl;
             return true;
         }
-        
+
         //todo rem
         cout << "\t\t\t\t\tserver status: " << cbs->getStatusString() << endl;
         // server utilization (its WCET/period) considered only if it's executing or recharging
@@ -205,7 +205,7 @@ namespace RTSim {
 
         // update budget of servers (enveloping periodic tasks) in the island
         for (auto &elem : _envelopes) {
-            // cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl; 
+            // cout << __func__ << "(). elem = " << elem.first->toString() << " -> " << elem.second->toString() << endl;
             CPU_BL *c = getProcessor(elem.first);
 
             // dispatch() dispatches a task per time, setting CPU OPP => some tasks don't have core yet
@@ -221,7 +221,7 @@ namespace RTSim {
                 elem.second->changeBudget(taskWCET);
                 //elem.second->changeQ(taskWCET);
             }
-            
+
             c->setWorkload(startingWL);
         }
         cout << endl;
@@ -339,7 +339,7 @@ namespace RTSim {
         if ( st != NULL && dt == st ) {
             string ss = "Decided to dispatch " + st->toString() + " on its former CPU => skip context switch";
             DBGPRINT(ss);
-            cout << ss << endl; 
+            cout << ss << endl;
         }
         // if necessary, deschedule the task.
         if ( dt != NULL || isToBeDescheduled(p, dt) ) {
@@ -360,7 +360,7 @@ namespace RTSim {
         CPU_BL* oldProcessor = dynamic_cast<CPU_BL*>(getOldProcessor(st));
         if (st != NULL && oldProcessor != p && oldProcessor != NULL)
             overhead += _migrationDelay;
-        
+
         _queues->onBeginDispatchMultiFinished(p, st, overhead);
 
         cout << "\t" << taskname(st) << " end ctx switch set at t=" << SIMUL.getTime() + overhead << " - overhead=" << overhead << endl;
@@ -472,7 +472,7 @@ namespace RTSim {
             cout << "\t\tEMRTK::" << __func__ << "(). No migration done" << endl;
         else {
             migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
-            
+
             // make task run on ending core.
             // onEndDispatchMulti will take care of increasing core OPP
             _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
@@ -529,7 +529,7 @@ namespace RTSim {
         cout << "\t\tEMRTK::" << __func__ << "(). Balancing load of island: " << endingCPU->getName() << endl;
         MigrationProposal migrationProposal = { .task = NULL, .from = NULL, .to = NULL };
         vector<AbsRTTask*> readyTasks;
-        
+
         // Take a ready task of the same island and put it into endingCPU.
         for (CPU_BL * c : getProcessors(endingCPU->getIslandType())) {
             readyTasks = getReadyTasks(c);
@@ -647,9 +647,13 @@ namespace RTSim {
 
         dispatch(chosenCPU, t, chosenOPP);
         setTryingTaskOnCPU_BL(true);
-        cout << "time = " << SIMUL.getTime() << " - going to schedule task " << t->toString() << " in CPU " << chosenCPU->getName() <<
-             " with freq " << chosenCPU->getFrequency(chosenOPP) << " speed=" << chosenCPU->getSpeed(chosenOPP) <<
-             " chosenOPP " << chosenOPP << " - CPU" << (chosenCPUchanged && toBeChanged ? "":" not") << " changed "  << endl;
+        cout << "time = " << SIMUL.getTime() << " - going to schedule task "
+             << t->toString() << " in CPU " << chosenCPU->getName()
+             << " with freq " << chosenCPU->getFrequency(chosenOPP)
+             << " speed=" << chosenCPU->getSpeedByOPP(chosenOPP)
+             << " chosenOPP " << chosenOPP << " - CPU"
+             << (chosenCPUchanged && toBeChanged ? "" : " not") << " changed "
+             << endl;
         setTryingTaskOnCPU_BL(false);
     }
 
@@ -674,7 +678,7 @@ namespace RTSim {
 
         int num_newtasks    = 0; // # "new" tasks in the ready queue
         int i               = 0;
-        
+
         while (_sched->getTaskN(num_newtasks) != NULL)
             num_newtasks++;
 
@@ -746,7 +750,7 @@ namespace RTSim {
         double frequency = c->getFrequency();
         string startingWL = c->getWorkload();
         c->setWorkload(Utils::getTaskWorkload(t));
- 
+
         cout << "\tTrying to schedule on CPU " << c->toString() << " using freq " << frequency
              << " - it has already ntasks=" << getReadyTasks(c).size() << endl;
 
@@ -808,9 +812,9 @@ namespace RTSim {
                 iOldPow = oldUtilizationIsland * c->getPowerConsumption(frequency);
 
                 // todo remove after debug
-#include <cstdio>
+                // #include <cstdio>
 
-                printf("\t\t\tnew = [(util_isl_newFreq) %f + (util_new_task) %f] * (pow_newFreq) %.17g=%f, old: (util_isl_curFreq) %f * (pow_curFreq) %.17g=%f\n", 
+                printf("\t\t\tnew = [(util_isl_newFreq) %f + (util_new_task) %f] * (pow_newFreq) %.17g=%f, old: (util_isl_curFreq) %f * (pow_curFreq) %.17g=%f\n",
                     newUtilizationIsland, utilization_t, c->getPowerConsumption(newFreq),
                     iPowWithNewTask, oldUtilizationIsland,
                     c->getPowerConsumption(frequency), iOldPow);

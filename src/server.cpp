@@ -1,4 +1,4 @@
-#include <memory>
+#include "memory.hpp"
 #include <cassert>
 
 #include <factory.hpp>
@@ -12,12 +12,12 @@ namespace RTSim {
     using namespace std;
     using namespace parse_util;
 
-    string Server::status_string[] = {"IDLE", 
-                                      "READY", 
+    string Server::status_string[] = {"IDLE",
+                                      "READY",
                                       "EXECUTING",
-                                      "RELEASING", 
+                                      "RELEASING",
                                       "RECHARGING"};
-    
+
     Server::Server(const string &name, const string &s) :
         Entity(name),
         arr(0),
@@ -102,8 +102,8 @@ namespace RTSim {
     {
         return dline;
     }
-        
-    void Server::activate(AbsRTTask *task) 
+
+    void Server::activate(AbsRTTask *task)
     {
         DBGENTER(_SERVER_DBG_LEV);
 
@@ -114,7 +114,7 @@ namespace RTSim {
     {
         DBGENTER(_SERVER_DBG_LEV);
         sched_->extract(task);
-	
+
         if (getProcessor(task) != nullptr) {
             task->deschedule();
             currExe_ = nullptr;
@@ -128,7 +128,7 @@ namespace RTSim {
         _dispatchEvt.drop();
         _dispatchEvt.post(SIMUL.getTime());
     }
-        
+
     CPU *Server::getProcessor(const AbsRTTask *) const
     {
         return kernel->getProcessor(this);
@@ -138,7 +138,7 @@ namespace RTSim {
     {
         return kernel->getOldProcessor(this);
     }
-        
+
     void Server::onArrival(AbsRTTask *t)
     {
         DBGENTER(_SERVER_DBG_LEV);
@@ -171,7 +171,7 @@ namespace RTSim {
         sched_->notify(nullptr); // round robin case
         dispatch();
     }
-        
+
     void Server::onBudgetExhausted(Event *e)
     {
         DBGENTER(_SERVER_DBG_LEV);
@@ -195,7 +195,7 @@ namespace RTSim {
         if (status == READY) kernel->onArrival(this);
     }
 
-        
+
     void Server::onSched(Event *)
     {
         DBGENTER(_SERVER_DBG_LEV);
@@ -205,7 +205,7 @@ namespace RTSim {
         ready_executing();
         dispatch();
     }
-                
+
     void Server::onDesched(Event *)
     {
         DBGENTER(_SERVER_DBG_LEV);
@@ -218,7 +218,7 @@ namespace RTSim {
             currExe_->deschedule();
             currExe_ = nullptr;
             sched_->notify(nullptr);
-        }   
+        }
     }
 
     void Server::onDlineMiss(Event *)
@@ -274,7 +274,7 @@ namespace RTSim {
         DBGPRINT("Current situation");
         DBGPRINT_2("newExe: ", taskname(newExe));
         DBGPRINT_2("currExe_: ", taskname(currExe_));
-        
+
         if (newExe != currExe_) {
             if (currExe_ != nullptr) currExe_->deschedule();
             currExe_ = newExe;
@@ -292,5 +292,3 @@ namespace RTSim {
     }
 
 }
-
-

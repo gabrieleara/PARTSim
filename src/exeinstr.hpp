@@ -28,7 +28,7 @@
 #ifndef __EXEINSTR_HPP__
 #define __EXEINSTR_HPP__
 
-#include <memory>
+#include "memory.hpp"
 
 //From metasim
 #include <debugstream.hpp>
@@ -44,7 +44,7 @@ namespace RTSim {
 
   using namespace MetaSim;
 
-  /** 
+  /**
       \ingroup instr
 
       These instructions (ExecInstr & FixedInstr) are used to model a
@@ -52,7 +52,7 @@ namespace RTSim {
       building block of a real task
 
       @author Luigi Palopoli, Giuseppe Lipari, Gerardo Lamastra, Antonio Casile
-      @version 2.0 
+      @version 2.0
       @see Instr */
 
     class ExecInstr : public Instr {
@@ -91,7 +91,7 @@ namespace RTSim {
         static Instr *createInstance(const std::vector<std::string> &par);
 
         CLONEABLE(Instr, ExecInstr)
-        
+
         virtual ~ExecInstr();
 
       virtual string toString() const {
@@ -111,34 +111,34 @@ namespace RTSim {
         virtual inline double getActCycles() const override { return actCycles; }
         virtual string getWorkload() const { return workload; }
 
-        /* Commented, because the tracing mechanism has changed */ 
+        /* Commented, because the tracing mechanism has changed */
         // virtual void setTrace(Trace *t);
 
         template<class TraceClass>
         void setTrace(TraceClass &traceobj) {
             attach_stat(traceobj, _endEvt);
         }
-        
+
 
         //From Entity...
         virtual void newRun();
         virtual void endRun();
 
 
-        /** Function inherited from Instr. It refreshes the state of the 
-         *  executing instruction when a change of the CPU speed occurs. 
-         */ 
+        /** Function inherited from Instr. It refreshes the state of the
+         *  executing instruction when a change of the CPU speed occurs.
+         */
         void refreshExec(double oldSpeed, double newSpeed);
     };
 
     /**
        \ingroup instr
-     
+
        This is defined for user's commodity. Actually it is an ExecInstr
        having a fixed duration.
        @author Luigi Palopoli, Giuseppe Lipari, Gerardo Lamastra, Antonio Casile
        @version 2.0
-       @see Instr, Task 
+       @see Instr, Task
     */
     class FixedInstr : public ExecInstr {
     public:
@@ -150,6 +150,6 @@ namespace RTSim {
         static std::unique_ptr<Instr> createInstance(const std::vector<std::string> &par);
     };
 
-} // namespace RTSim 
+} // namespace RTSim
 
 #endif

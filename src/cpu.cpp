@@ -23,14 +23,9 @@ namespace RTSim
 
     string Island_BL::IslandName[NUM_ISLANDS] = {"BIG","LITTLE"};
 
-
-    CPU::CPU(const string &name,
-             const vector<double> &V,
-             const vector<unsigned int> &F,
-             CPUModel *pm) :
-
-        Entity(name), frequencySwitching(0), index(0)
-    {
+    CPU::CPU(const string &name, const vector<volt_type> &V,
+             const vector<freq_type> &F, CPUModel *pm)
+        : Entity(name), frequencySwitching(0), index(0) {
         auto num_OPPs = V.size();
 
         cpuName = name;
@@ -68,7 +63,7 @@ namespace RTSim
 
         // Setting speeds (basing upon frequencies)
         for (unsigned int opp = 0; opp < OPPs.size(); ++opp)
-          OPPs[opp].speed = getSpeed(opp);
+            OPPs[opp].speed = getSpeedByOPP(opp);
     }
 
     CPU::~CPU()
@@ -91,27 +86,23 @@ namespace RTSim
         updateCPUModel();
     }
 
-    unsigned long int CPU::getFrequency() const
-    {
+    freq_type CPU::getFrequency() const {
         return OPPs[currentOPP].frequency;
     }
 
-    double CPU::getVoltage() const {
+    volt_type CPU::getVoltage() const {
         return OPPs[currentOPP].voltage;
     }
 
-    double CPU::getMaxPowerConsumption()
-    {
+    watt_type CPU::getMaxPowerConsumption() {
         return _max_power_consumption;
     }
 
-    void CPU::setMaxPowerConsumption(double max_p)
-    {
+    void CPU::setMaxPowerConsumption(watt_type max_p) {
         _max_power_consumption = max_p;
     }
 
-    double CPU::getCurrentPowerConsumption()
-    {
+    watt_type CPU::getCurrentPowerConsumption() {
         if (PowerSaving) {
             updateCPUModel();
             return (powmod->getPower());
@@ -119,19 +110,17 @@ namespace RTSim
         return 0.0;
     }
 
-    double CPU::getCurrentPowerSaving()
-    {
+    watt_type CPU::getCurrentPowerSaving() {
         if (PowerSaving)
         {
             long double maxPowerConsumption = getMaxPowerConsumption();
             long double saved = maxPowerConsumption - getCurrentPowerConsumption();
-            return static_cast<double>(saved / maxPowerConsumption);
+            return static_cast<watt_type>(saved / maxPowerConsumption);
         }
         return 0;
     }
 
-    double CPU::setSpeed(double newLoad)
-    {
+    speed_type CPU::setSpeed(double newLoad) {
         DBGENTER(_KERNEL_DBG_LEV);
         DBGPRINT("pwr: setting speed in CPU::setSpeed()");
         DBGPRINT("pwr: New load is " << newLoad);
@@ -167,9 +156,8 @@ namespace RTSim
     {
         return _workload;
     }
-    
-    double CPU::getSpeed()
-    {
+
+    speed_type CPU::getSpeed() {
         if (PowerSaving) {
             updateCPUModel();
             return powmod->getSpeed();
@@ -177,8 +165,7 @@ namespace RTSim
         return 1.0;
     }
 
-    double CPU::getSpeed(unsigned int opp)
-    {
+    speed_type CPU::getSpeedByOPP(unsigned int opp) {
         if (!PowerSaving)
             return 1;
         assert(opp < OPPs.size() && opp >= 0);
@@ -209,7 +196,7 @@ namespace RTSim
             cout << "\tSpeed:" << (*iter).speed << endl;
         }
         for (unsigned int i = 0; i < OPPs.size(); i++)
-            cout << "Speed level" << getSpeed(i) << endl;
+            cout << "Speed level" << getSpeedByOPP(i) << endl;
         for (vector<OPP>::iterator iter = OPPs.begin(); iter != OPPs.end(); iter++)
         {
             cout << "Setting speed to " << (*iter).speed << endl;
@@ -240,11 +227,10 @@ namespace RTSim
         index = 0;
     }
 
-    CPU* uniformCPUFactory::createCPU(const string &name,
-                                      const vector<double> &V,
-                                      const vector<unsigned int> &F,
-                                      CPUModel *pm)
-    {
+    CPU *uniformCPUFactory::createCPU(const string &name,
+                                      const vector<volt_type> &V,
+                                      const vector<freq_type> &F,
+                                      CPUModel *pm) {
         CPU *c;
 
         if (_curr==_n)
@@ -272,11 +258,11 @@ namespace RTSim
     }
 
     // ------------------------------------------------------------- big little
-    unsigned long int CPU_BL::getFrequency() const {
+    freq_type CPU_BL::getFrequency() const {
         return _island->getFrequency();
     }
 
-    double CPU_BL::getVoltage() const {
+    volt_type CPU_BL::getVoltage() const {
         return _island->getVoltage();
     }
 
@@ -304,11 +290,11 @@ namespace RTSim
         return _island->getIslandType();
     }
 
-    unsigned long int CPU_BL::getFrequency(unsigned int opp) const {
+    freq_type CPU_BL::getFrequency(unsigned int opp) const {
         return _island->getFrequency(opp);
     }
 
-    double CPU_BL::getPowerConsumption(double frequency) {
+    watt_type CPU_BL::getPowerConsumption(freq_type frequency) {
         // Find what OPP corresponds to provided frequency
         unsigned int old_opp = getOPP();
         unsigned int opp = _island->getOPPByFrequency(frequency);
@@ -318,20 +304,20 @@ namespace RTSim
         return pow;
     }
 
-    double CPU_BL::getSpeed(double freq) {
+    speed_type CPU_BL::getSpeed(freq_type freq) {
         unsigned int opp = _island->getOPPByFrequency(freq);
-        return getSpeed(opp);
+        return getSpeedByOPP(opp);
     }
 
-    double CPU_BL::getSpeed(unsigned int opp) {
+    speed_type CPU_BL::getSpeedByOPP(unsigned int opp) {
         int old_curr_opp = getOPP();
         setOPP(opp);
-        double s = getSpeed();
+        speed_type s = getSpeed();
         setOPP(old_curr_opp);
         return s;
     }
 
-    double CPU_BL::getSpeed() {
+    speed_type CPU_BL::getSpeed() {
         assert(getOPP() < _island->getOPPsize() && getOPP() >= 0);
         updateCPUModel();
         return _pm->getSpeed();

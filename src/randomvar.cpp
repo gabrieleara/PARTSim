@@ -11,8 +11,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include "memory.hpp"
 #include <cmath>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -89,9 +89,9 @@ namespace MetaSim {
     }
 
     RandomGen* RandomVar::changeGenerator(RandomGen *g)
-    { 
+    {
         RandomGen *old = _pstdgen;
-        _pstdgen = g; 
+        _pstdgen = g;
         return old;
     }
 
@@ -103,9 +103,9 @@ namespace MetaSim {
 
     /*-----------------------------------------------------*/
 
-    unique_ptr<DeltaVar> DeltaVar::createInstance(vector<string> &par) 
+    unique_ptr<DeltaVar> DeltaVar::createInstance(vector<string> &par)
     {
-        if (par.size() != 1) 
+        if (par.size() != 1)
             throw ParseExc("Wrong number of parameters", "DeltaVar");
         double a = atof(par[0].c_str());
         return unique_ptr<DeltaVar>(new DeltaVar(a));
@@ -125,7 +125,7 @@ namespace MetaSim {
       return generatedValue;
     };
 
-    unique_ptr<UniformVar> UniformVar::createInstance(vector<string> &par) 
+    unique_ptr<UniformVar> UniformVar::createInstance(vector<string> &par)
     {
         double a,b;
 
@@ -178,17 +178,17 @@ namespace MetaSim {
         return _mu * pow (UniformVar::get(), -1/_order);
     };
 
-    unique_ptr<ParetoVar> ParetoVar::createInstance(vector<string> &par) 
+    unique_ptr<ParetoVar> ParetoVar::createInstance(vector<string> &par)
     {
         double a,b;
 
-        if (par.size() != 2) 
+        if (par.size() != 2)
             throw ParseExc("Wrong number of parameters", "ParetoVar");
 
         a = atof(par[0].c_str());
         b = atof(par[1].c_str());
         return unique_ptr<ParetoVar>(new ParetoVar(a,b));
-    } 
+    }
 
     /*-----------------------------------------------------*/
 
@@ -200,10 +200,10 @@ namespace MetaSim {
         static double z0, z1;
         static bool generate;
         generate = !generate;
-        
+
         if (!generate)
             return z1 * _sigma + _mu;
-        
+
         // generate two uniform samples
         double u1, u2;
         do
@@ -212,29 +212,29 @@ namespace MetaSim {
             u2 = UniformVar::get();
         }
         while ( u1 <= epsilon );
-        
+
         z0 = sqrt(-2.0 * log(u1)) * cos(two_pi * u2);
         z1 = sqrt(-2.0 * log(u1)) * sin(two_pi * u2);
         return z0 * _sigma + _mu;
     }
 
 
-    std::unique_ptr<NormalVar> NormalVar::createInstance(vector<string> &par) 
+    std::unique_ptr<NormalVar> NormalVar::createInstance(vector<string> &par)
     {
         double a,b;
 
-        if (par.size() != 2) 
+        if (par.size() != 2)
             throw ParseExc("Wrong number of parameters", "NormalVar");
 
         a = atof(par[0].c_str());
         b = atof(par[1].c_str());
         return unique_ptr<NormalVar>(new NormalVar(a,b));
-    } 
+    }
 
 
     /*-----------------------------------------------------*/
 
-    double PoissonVar::get() 
+    double PoissonVar::get()
     {
         double u = UniformVar::get();
         double F = exp(-_lambda);
@@ -248,7 +248,7 @@ namespace MetaSim {
         return CUTOFF;
     }
 
-    unique_ptr<PoissonVar> PoissonVar::createInstance(vector<string> &par) 
+    unique_ptr<PoissonVar> PoissonVar::createInstance(vector<string> &par)
     {
         double a;
 
@@ -256,7 +256,7 @@ namespace MetaSim {
             throw ParseExc("Wrong number of parameters", "PoissonVar");
         a = atof(par[0].c_str());
         return unique_ptr<PoissonVar>(new PoissonVar(a));
-    } 
+    }
 
 
     /*-----------------------------------------------------*/
@@ -284,19 +284,19 @@ namespace MetaSim {
         _count = 0;
     };
 
-    DetVar::DetVar(vector<double> &a) : _array(a) 
+    DetVar::DetVar(vector<double> &a) : _array(a)
     {
         _count = 0;
     }
 
     DetVar::DetVar(double *a, int s)
     {
-        for (int i = 0; i < s; ++i) 
+        for (int i = 0; i < s; ++i)
             _array.push_back(a[i]);
         _count = 0;
     }
 
-    double DetVar::get() 
+    double DetVar::get()
     {
         if (_count >= _array.size())
             _count = 0;
@@ -321,31 +321,31 @@ namespace MetaSim {
         return min;
     }
 
-    unique_ptr<DetVar> DetVar::createInstance(vector<string> &par) 
+    unique_ptr<DetVar> DetVar::createInstance(vector<string> &par)
     {
-        if (par.size() != 1) 
+        if (par.size() != 1)
             throw ParseExc("Wrong number of parameters", "DetVar");
 
         return unique_ptr<DetVar>(new DetVar(par[0]));
-    } 
+    }
 
     unique_ptr<RandomVar> RandomVar::parsevar(const std::string &str)
     {
         string token = get_token(str);
         DBGPRINT_2("token = ",  token);
-                
+
         string p = get_param(str);
         DBGPRINT_2("parms = ", p);
 
         vector<string> parms = split_param(p);
-  
-        for (size_t i = 0; i < parms.size(); ++i) 
+
+        for (size_t i = 0; i < parms.size(); ++i)
             DBGPRINT_4("par[", i, "] = ", parms[i]);
-                
+
         unique_ptr<RandomVar> var(FACT(RandomVar).create(token,parms));
-                
+
         if (var.get() == nullptr) throw ParseExc("parsevar", str);
-                                
+
         return var;
     }
 } // namespace MetaSim

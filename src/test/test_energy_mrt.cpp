@@ -43,8 +43,8 @@ class Requisite {
             }
 
         string toString() const {
-            string s = "Requisite with leave_little_3: " + to_string(EMRTK_leave_little3) + ", migrate: " + to_string(EMRTK_migrate) + ", cbs yielding: " + to_string(EMRTK_cbs_yield) + 
-                ", cbs_enveloping_per_task_enabled: " + to_string(EMRTK_cbs_enveloping_per_task_enabled) + ", cbs_enveloping_migrate_after_vtime_end: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end) + 
+            string s = "Requisite with leave_little_3: " + to_string(EMRTK_leave_little3) + ", migrate: " + to_string(EMRTK_migrate) + ", cbs yielding: " + to_string(EMRTK_cbs_yield) +
+                ", cbs_enveloping_per_task_enabled: " + to_string(EMRTK_cbs_enveloping_per_task_enabled) + ", cbs_enveloping_migrate_after_vtime_end: " + to_string(EMRTK_cbs_enveloping_migrate_after_vtime_end) +
                 ", cbs_migrate_after_end: " + to_string(EMRTK_cbs_migrate_after_end) +
                 ", EMRTK_temporarily_migrate_vtime: " + to_string(EMRTK_temporarily_migrate_vtime) + ", EMRTK_temporarily_migrate_end: " + to_string(EMRTK_temporarily_migrate_end);
             return s;
@@ -846,7 +846,7 @@ TEST_CASE("exp9") {
     for (CPU* c: k->getProcessors())
         REQUIRE (queues->getUtilization_active(c) == 0.0);
     k->printState(true);
-    
+
     REQUIRE (k->getProcessor(tasks[0])->getIslandType() == cpus_little[0]->getIslandType());
     REQUIRE (k->getProcessor(tasks[1])->getIslandType() == cpus_little[1]->getIslandType());
     REQUIRE (k->getProcessor(tasks[2])->getIslandType() == cpus_little[2]->getIslandType());
@@ -936,10 +936,10 @@ TEST_CASE("exp10") {
 
     SIMUL.run_to(400);
     cout << queues->getUtilization_active(cpus_big[0]) <<endl;
-    
+
     SIMUL.run_to(500);
     REQUIRE (queues->getUtilization_active(cpus_big[0]) == 0.0);
-        
+
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
     cout << "-----------" << endl;
@@ -954,7 +954,7 @@ TEST_CASE("exp10") {
 TEST_CASE("exp13") {
     /**
         Demostrating what happens when a task is killed.
-        It will come into play again in its next period and hopefully it can 
+        It will come into play again in its next period and hopefully it can
         be scheduled.
       */
     init_sequence = 13;
@@ -1023,7 +1023,7 @@ TEST_CASE("exp13") {
 
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
-    
+
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete tasks[j];
     delete kern;
@@ -1113,7 +1113,7 @@ TEST_CASE("exp14") {
 
     SIMUL.run_to(1000);
     SIMUL.endSingleRun();
-    
+
     for (int j = 0; j < sizeof(wcets) / sizeof(wcets[0]); j++)
         delete tasks[j];
     delete kern;
@@ -1174,7 +1174,7 @@ TEST_CASE("Experiment 20") {
         c->toggleDisabled();
 
     SIMUL.initSingleRun();
-    
+
     SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
     cout << k->getScheduler()->toString() << endl;
     // cout << dynamic_cast<RTKernel*>(ets[0]->getKernel())->getScheduler()->toString() << endl;
@@ -1194,7 +1194,7 @@ TEST_CASE("Experiment 20") {
     // no migration, only schedule ready tasks
     REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
     REQUIRE (k->getReadyTasks(cpus_big[0]).size() == 0);
-    
+
     SIMUL.run_to(189); // end vtime => migration
     k->printState(true);
     REQUIRE (k->getUtilization_active(cpus_big[0]) == 0.0);
@@ -1211,7 +1211,7 @@ TEST_CASE("Experiment 20") {
     SIMUL.run_to(501); // all tasks are over, usual dispatch
     k->printState(true);
     for (CBServerCallingEMRTKernel *e : ets)
-        REQUIRE (k->getProcessor(e) != NULL);            
+        REQUIRE (k->getProcessor(e) != NULL);
 
     // assert (miss_count.getLastValue() == 0);
 
@@ -1273,7 +1273,7 @@ TEST_CASE("Experiment 20") {
 //         c->toggleDisabled();
 
 //     SIMUL.initSingleRun();
-    
+
 //     SIMUL.run_to(150); // kill task on big0, task ready on big0 gets running
 //     ets[0]->killInstance();
 //     SIMUL.sim_step(); // t=150, but all events have been processed
@@ -1372,7 +1372,7 @@ TEST_CASE ("Experiment 22") {
         c->toggleDisabled();
 
     SIMUL.initSingleRun();
-    
+
     SIMUL.run_to(11);
     cout << "==================" << endl;
     cout << "t=" << time() << endl;
@@ -1519,7 +1519,7 @@ TEST_CASE("test 24, advanced check on vtime idle") {
     cpus_big[2]->toggleDisabled();
 
     SIMUL.initSingleRun();
-    
+
     SIMUL.run_to(15); // kill task on big1
     ets[2]->killInstance();
     SIMUL.sim_step(); // t=15, but all events have been processed
@@ -1565,7 +1565,7 @@ TEST_CASE ("exp 26, Temporarily migrate on task end") {
         24th example repeated, but this time when task is killed, processor goes
         idles since there is no ready task and no task can be migrated definitevely via
         the migration test. However, it is possible to temporarily migrate task 49 into
-        BIG1. When t=60 (period task 38) arrives, the task 49 goes back to BIG0 and 
+        BIG1. When t=60 (period task 38) arrives, the task 49 goes back to BIG0 and
         continues there for 4 ticks; in the meanwhile, task 38 runs on BIG1.
 
         Only temporary migrations should be used here.
@@ -1613,7 +1613,7 @@ TEST_CASE ("exp 26, Temporarily migrate on task end") {
     cpus_big[3]->toggleDisabled();
 
     SIMUL.initSingleRun();
-    
+
     SIMUL.run_to(15); // kill task on big1
     ets[2]->killInstance();
     SIMUL.sim_step(); // t=15, but all events have been processed
@@ -1630,7 +1630,7 @@ TEST_CASE ("exp 26, Temporarily migrate on task end") {
     REQUIRE (k->getRunningTask(cpus_big[0]) == ets[0]);
     REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
 
-    SIMUL.run_to(26); // end vtime, nothing happens on BIG1 because task 49 running; BIG0 gets idle 
+    SIMUL.run_to(26); // end vtime, nothing happens on BIG1 because task 49 running; BIG0 gets idle
     k->printState(true);
     REQUIRE (k->getUtilization_active(cpus_big[1]) == 0.0);
     REQUIRE (k->getRunningTask(cpus_big[0]) == NULL);
@@ -1638,7 +1638,7 @@ TEST_CASE ("exp 26, Temporarily migrate on task end") {
     REQUIRE (k->getRunningTask(cpus_big[1]) == ets[1]);
     REQUIRE (k->isTaskTemporarilyMigrated(ets[1], cpus_big[1]));
 
-    SIMUL.run_to(61); // temporary task moved back to its core 
+    SIMUL.run_to(61); // temporary task moved back to its core
     k->printState(true);
     REQUIRE (k->getRunningTask(cpus_big[0]) == ets[1]);
     REQUIRE (k->getReadyTasks(cpus_big[0]).empty());
@@ -1715,7 +1715,7 @@ TEST_CASE ("exp 27, migrations have precedence on temporary ones") {
     cpus_big[3]->toggleDisabled();
 
     SIMUL.initSingleRun();
-    
+
     SIMUL.run_to(10); // kill task on big1
     ets[2]->killInstance();
     SIMUL.sim_step(); // t=10, but all events have been processed
@@ -1765,21 +1765,19 @@ void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
     unsigned int OPP_big = 0;    // Index of OPP in big cores
 
-    vector<double> V_little = {
-            0.92, 0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993, 1.0475, 1.08445, 1.12125, 1.15779, 1.2075,
-            1.25625
-    };
-    vector<unsigned int> F_little = {
-            200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400
-    };
+    vector<volt_type> V_little = {
+        0.92,   0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993,
+        1.0475, 1.08445,  1.12125,  1.15779,  1.2075,  1.25625};
+    vector<freq_type> F_little = {200, 300,  400,  500,  600,  700, 800,
+                                  900, 1000, 1100, 1200, 1300, 1400};
 
-    vector<double> V_big = {
-            0.916319, 0.915475, 0.915102, 0.91498, 0.91502, 0.90375, 0.916562, 0.942543, 0.96877, 0.994941, 1.02094,
-            1.04648, 1.05995, 1.08583, 1.12384, 1.16325, 1.20235, 1.2538, 1.33287
-    };
-    vector<unsigned int> F_big = {
-            200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700, 1800, 1900, 2000
-    };
+    vector<volt_type> V_big = {0.916319, 0.915475, 0.915102, 0.91498, 0.91502,
+                               0.90375,  0.916562, 0.942543, 0.96877, 0.994941,
+                               1.02094,  1.04648,  1.05995,  1.08583, 1.12384,
+                               1.16325,  1.20235,  1.2538,   1.33287};
+    vector<freq_type> F_big = {200,  300,  400,  500,  600,  700,  800,
+                               900,  1000, 1100, 1200, 1300, 1400, 1500,
+                               1600, 1700, 1800, 1900, 2000};
 
     if (OPP_little >= V_little.size() || OPP_big >= V_big.size())
         exit(-1);
@@ -1798,27 +1796,32 @@ void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL
         CPUModelBP *pm = new CPUModelBP(V_little[V_little.size() - 1], F_little[F_little.size() - 1], max_frequency);
         {
             CPUModelBP::PowerModelBPParams idle_pp = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
-            CPUModelBP::ComputationalModelBPParams idle_cp = {1, 0, 0, 0};
+            CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("idle", idle_pp, idle_cp);
 
             CPUModelBP::PowerModelBPParams bzip2_pp = {0.00775587, 33.376, 1.54585, 9.53439e-10};
-            CPUModelBP::ComputationalModelBPParams bzip2_cp = {0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
+            CPUModelBP::SpeedModelBPParams bzip2_cp = {0.0256054, 2.9809e+6,
+                                                       0.602631, 8.13712e+9};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("bzip2", bzip2_pp, bzip2_cp);
 
             CPUModelBP::PowerModelBPParams hash_pp = {0.00624673, 176.315, 1.72836, 1.77362e-10};
-            CPUModelBP::ComputationalModelBPParams hash_cp = {0.00645628, 3.37134e+6, 7.83177, 93459};
+            CPUModelBP::SpeedModelBPParams hash_cp = {0.00645628, 3.37134e+6,
+                                                      7.83177, 93459};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("hash", hash_pp, hash_cp);
 
             CPUModelBP::PowerModelBPParams encrypt_pp = {0.00676544, 26.2243, 5.6071, 5.34216e-10};
-            CPUModelBP::ComputationalModelBPParams encrypt_cp = {6.11496e-78, 3.32246e+6, 6.5652, 115759};
+            CPUModelBP::SpeedModelBPParams encrypt_cp = {
+                6.11496e-78, 3.32246e+6, 6.5652, 115759};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("encrypt", encrypt_pp, encrypt_cp);
 
             CPUModelBP::PowerModelBPParams decrypt_pp = {0.00629664, 87.1519, 2.93286, 2.80871e-10};
-            CPUModelBP::ComputationalModelBPParams decrypt_cp = {5.0154e-68, 3.31791e+6, 7.154, 112163};
+            CPUModelBP::SpeedModelBPParams decrypt_cp = {5.0154e-68, 3.31791e+6,
+                                                         7.154, 112163};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("decrypt", decrypt_pp, decrypt_cp);
 
             CPUModelBP::PowerModelBPParams cachekiller_pp = {0.0126737, 67.9915, 1.63949, 3.66185e-10};
-            CPUModelBP::ComputationalModelBPParams cachekiller_cp = {1.20262, 352597, 2.03511, 169523};
+            CPUModelBP::SpeedModelBPParams cachekiller_cp = {1.20262, 352597,
+                                                             2.03511, 169523};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
         }
 
@@ -1843,27 +1846,32 @@ void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL
         CPUModelBP *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
         {
             CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
-            CPUModelBP::ComputationalModelBPParams idle_cp = {1, 0, 0, 0};
+            CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("idle", idle_pp, idle_cp);
 
             CPUModelBP::PowerModelBPParams bzip2_pp = {0.0407739, 12.022, 3.33367, 7.4577e-9};
-            CPUModelBP::ComputationalModelBPParams bzip2_cp = {0.17833, 1.63265e+6, 1.62033, 118803};
+            CPUModelBP::SpeedModelBPParams bzip2_cp = {0.17833, 1.63265e+6,
+                                                       1.62033, 118803};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("bzip2", bzip2_pp, bzip2_cp);
 
             CPUModelBP::PowerModelBPParams hash_pp = {0.0388215, 16.3205, 4.3418, 5.07039e-9};
-            CPUModelBP::ComputationalModelBPParams hash_cp = {0.017478, 1.93925e+6, 4.22469, 83048.3};
+            CPUModelBP::SpeedModelBPParams hash_cp = {0.017478, 1.93925e+6,
+                                                      4.22469, 83048.3};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("hash", hash_pp, hash_cp);
 
             CPUModelBP::PowerModelBPParams encrypt_pp = {0.0348728, 8.14399, 5.64344, 7.69915e-9};
-            CPUModelBP::ComputationalModelBPParams encrypt_cp = {8.39417e-34, 1.99222e+6, 3.33002, 96949.4};
+            CPUModelBP::SpeedModelBPParams encrypt_cp = {
+                8.39417e-34, 1.99222e+6, 3.33002, 96949.4};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("encrypt", encrypt_pp, encrypt_cp);
 
             CPUModelBP::PowerModelBPParams decrypt_pp = {0.0320508, 25.8727, 3.27135, 4.11773e-9};
-            CPUModelBP::ComputationalModelBPParams decrypt_cp = {9.49471e-35, 1.98761e+6, 2.65652, 109497};
+            CPUModelBP::SpeedModelBPParams decrypt_cp = {
+                9.49471e-35, 1.98761e+6, 2.65652, 109497};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("decrypt", decrypt_pp, decrypt_cp);
 
             CPUModelBP::PowerModelBPParams cachekiller_pp = {0.086908, 9.17989, 2.5828, 7.64943e-9};
-            CPUModelBP::ComputationalModelBPParams cachekiller_cp = {0.825212, 235044, 786.368, 25622.1};
+            CPUModelBP::SpeedModelBPParams cachekiller_cp = {0.825212, 235044,
+                                                             786.368, 25622.1};
             dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
         }
 
@@ -1921,7 +1929,7 @@ bool isInRange(int eval, int expected) {
     int min = int(eval - eval * error/100);
     int max = int(eval + eval * error/100);
 
-    return expected >= min && expected <= max; 
+    return expected >= min && expected <= max;
 }
 
 /// True if min <= eval <= max
@@ -1930,7 +1938,7 @@ bool isInRangeMinMax(double eval, const double min, const double max) {
 }
 
 bool checkRequisites(Requisite reqs) {
-    cout << "Experiments with " << reqs.toString() << endl; 
+    cout << "Experiments with " << reqs.toString() << endl;
     reqs.satisfied = false;
 
     if (FORCE_REQUISITES) {

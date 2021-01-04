@@ -34,13 +34,13 @@ namespace RTSim
 
     struct OPP {
         /// Voltage of each step (in Volts)
-        double voltage;
+        volt_type voltage;
 
         /// Frequency of each step (in MHz)
-        unsigned int frequency;
+        freq_type frequency;
 
         /// The speed is a value between 0 and 1
-        double speed;
+        speed_type speed;
     };
 
     /**
@@ -54,7 +54,7 @@ namespace RTSim
      */
     class CPU : public Entity {
     private:
-        double _max_power_consumption;
+        watt_type _max_power_consumption;
 
         /**
              *  Energy model of the CPU
@@ -72,7 +72,7 @@ namespace RTSim
         string cpuName;
 
         /// currentOPP is a value between 0 and OPPs.size() - 1
-        unsigned int currentOPP;
+        size_t currentOPP;
 
         bool PowerSaving;
 
@@ -88,10 +88,8 @@ namespace RTSim
     public:
 
         /// Constructor for CPUs
-        CPU(const string &name="",
-            const vector<double> &V= {},
-            const vector<unsigned int> &F= {},
-            CPUModel *pm = nullptr);
+        CPU(const string &name = "", const vector<volt_type> &V = {},
+            const vector<freq_type> &F = {}, CPUModel *pm = nullptr);
 
         virtual ~CPU();
 
@@ -100,7 +98,7 @@ namespace RTSim
         }
 
         virtual string toString() const {
-            double freq = getFrequency();
+            freq_type freq = getFrequency();
             return getName() + " freq " + to_string(freq);
         }
 
@@ -124,30 +122,30 @@ namespace RTSim
         /// Useful for debug
         virtual void setOPP(unsigned int newOPP);
 
-        virtual unsigned long int getFrequency() const;
+        virtual freq_type getFrequency() const;
 
-        virtual double getVoltage() const;
-
-        /// Returns the maximum power consumption obtainable with this
-        /// CPU
-        virtual double getMaxPowerConsumption();
+        virtual volt_type getVoltage() const;
 
         /// Returns the maximum power consumption obtainable with this
         /// CPU
-        virtual void setMaxPowerConsumption(double max_p);
+        virtual watt_type getMaxPowerConsumption();
+
+        /// Returns the maximum power consumption obtainable with this
+        /// CPU
+        virtual void setMaxPowerConsumption(watt_type max_p);
 
         /// Returns the current power consumption of the CPU If you
         /// need a normalized value between 0 and 1, you should divide
         /// this value using the getMaxPowerConsumption() function.
-        virtual double getCurrentPowerConsumption();
+        virtual watt_type getCurrentPowerConsumption();
 
         /// Returns the current power saving of the CPU
-        virtual double getCurrentPowerSaving();
+        virtual watt_type getCurrentPowerSaving();
 
         /** Sets a new speed for the CPU accordingly to the system
          *  load.  Returns the new speed.
          */
-        virtual double setSpeed(double newLoad);
+        virtual speed_type setSpeed(double newLoad);
 
         /**
          * Set the computation workload on the cpu
@@ -157,9 +155,9 @@ namespace RTSim
         virtual string getWorkload() const;
 
         /// Returns the current CPU speed (between 0 and 1)
-        virtual double getSpeed();
+        virtual speed_type getSpeed();
 
-        virtual double getSpeed(unsigned int opp);
+        virtual speed_type getSpeedByOPP(unsigned int opp);
 
         virtual unsigned long int getFrequencySwitching();
 
@@ -175,7 +173,7 @@ namespace RTSim
     ostream& operator<<(ostream &strm, CPU &a);
 
     bool operator==(const CPU& rhs, const CPU& lhs);
-    
+
     /**
      * The abstract CPU factory. Is the base class for every CPU factory which
      * will be implemented.
@@ -183,9 +181,9 @@ namespace RTSim
     class absCPUFactory {
 
     public:
-        virtual CPU* createCPU(const string &name="",
-                               const vector<double> &V= {},
-                               const vector<unsigned int> &F= {},
+        virtual CPU *createCPU(const string &name = "",
+                               const vector<volt_type> &V = {},
+                               const vector<freq_type> &F = {},
                                CPUModel *pm = nullptr) = 0;
         virtual ~absCPUFactory() {}
     };
@@ -207,10 +205,8 @@ namespace RTSim
         /*
              * Allocates a CPU and returns a pointer to it
              */
-        CPU* createCPU(const string &name="",
-                       const vector<double> &V= {},
-                       const vector<unsigned int> &F= {},
-                       CPUModel *pm = nullptr);
+        CPU *createCPU(const string &name = "", const vector<volt_type> &V = {},
+                       const vector<freq_type> &F = {}, CPUModel *pm = nullptr);
     };
 
     /**
@@ -254,7 +250,7 @@ namespace RTSim
   // built while realizing EnergyMRTKernel, which is a kinda self-adaptive kernel and thus needs to try different
   // OPPs to dispatch a task. Thus, those 2 concepts are tight. One aim was not to break the existing code written by others and
   // make their experiments work => don't touch others classes, or limit modifications.
-  // It seems I'm breaking Liskov Substitution Principle. Hope not too much... :) 
+  // It seems I'm breaking Liskov Substitution Principle. Hope not too much... :)
 
   class Island_BL;
   typedef enum { LITTLE=0, BIG, NUM_ISLANDS } IslandType;
@@ -313,32 +309,30 @@ namespace RTSim
     /// Enables or disables CPU
     void toggleDisabled() { _disabled = !_disabled; }
 
-    Island_BL* getIsland() { 
+    Island_BL* getIsland() {
         return _island;
     }
 
     IslandType getIslandType();
 
-    double getCurrentPowerConsumption()
-    {
+    watt_type getCurrentPowerConsumption() {
         updateCPUModel();
         return (_pm->getPower());
     }
 
-    double getPowerConsumption(double frequency);
+    watt_type getPowerConsumption(freq_type frequency);
 
-    virtual double getSpeed();
+    virtual speed_type getSpeed();
 
-    double getSpeed(double freq);
+    speed_type getSpeed(freq_type freq);
 
-    virtual double getSpeed(unsigned int opp);
+    virtual speed_type getSpeedByOPP(unsigned int opp);
 
-    unsigned long int getFrequency(unsigned int opp) const;
+    freq_type getFrequency(unsigned int opp) const;
 
-    virtual unsigned long int getFrequency() const;
+    virtual freq_type getFrequency() const;
 
-    virtual double getVoltage() const;
-    
+    virtual volt_type getVoltage() const;
   };
 
   class EnergyMRTKernel;
@@ -390,7 +384,7 @@ namespace RTSim
 
     vector<CPU_BL*> getProcessors() { return _cpus; }
 
-    double getVoltage() const {
+    volt_type getVoltage() const {
         return getStructOPP(getOPP()).voltage;
     }
 
@@ -427,7 +421,7 @@ namespace RTSim
         return false;
     }
 
-    unsigned int getOPPByFrequency(double frequency) const {
+    unsigned int getOPPByFrequency(freq_type frequency) const {
         assert(frequency > 0.0);
         for (int i = 0; i < _opps.size(); i++)
             if (_opps.at(i).frequency == frequency)
@@ -455,8 +449,8 @@ namespace RTSim
     }
 
     // static to oblige you to call this method first
-    static vector<struct OPP> buildOPPs(const vector<double> &V= {},
-                                        const vector<unsigned int> &F= {}) {
+    static vector<struct OPP> buildOPPs(const vector<volt_type> &V = {},
+                                        const vector<freq_type> &F = {}) {
         assert(V.size() > 0 && V.size() == F.size());
         vector<struct OPP> OPPs;
         for (int i = 0; i < V.size(); i ++)
@@ -476,17 +470,25 @@ namespace RTSim
     virtual void newRun() {}
     virtual void endRun() {}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wreturn-type"
     // functions of base class you shouldn't use
-    virtual unsigned long int getFrequencySwitching() { assert("Do not use it" == ""); }
-    virtual double getCurrentPowerConsumption() { assert("Do not use it" == ""); }
-    virtual void setMaxPowerConsumption(double e) { assert("Do not use it" == ""); }
-    virtual double getMaxConsumption() { assert("Do not use it" == "");  }
+    virtual unsigned long int getFrequencySwitching() {
+        assert("Do not use it" == "");
+    }
+    virtual double getCurrentPowerConsumption() {
+        assert("Do not use it" == "");
+    }
+    virtual void setMaxPowerConsumption(double e) {
+        assert("Do not use it" == "");
+    }
+    virtual double getMaxConsumption() { assert("Do not use it" == ""); }
     virtual void check() { assert("Do not use it" == ""); }
-
+#pragma GCC diagnostic pop
 };
 
 
-  
+
 } // namespace RTSim
 
 #endif
