@@ -78,7 +78,12 @@ int main(int argc, char *argv[])
 
             cout << "Creating CPU: " << cpu_name << endl;
 
-            CPUModel *pm = new CPUModelBP(V_little[V_little.size() - 1], F_little[F_little.size() - 1], max_frequency);
+            CPUModel *pm = new CPUModelBP(
+                OPP{
+                    F_little[F_little.size() - 1],
+                    V_little[V_little.size() - 1],
+                },
+                max_frequency);
             {
                 CPUModelBP::PowerModelBPParams idle_pp = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
                 CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};
@@ -135,7 +140,9 @@ int main(int argc, char *argv[])
 
             cout << "Creating CPU: " << cpu_name << endl;
 
-            CPUModel *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
+            CPUModel *pm = new CPUModelBP(
+                OPP{F_big[F_big.size() - 1], V_big[V_big.size() - 1]},
+                max_frequency);
             {
                 CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
                 CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};

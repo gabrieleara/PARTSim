@@ -1968,7 +1968,9 @@ void getCores(vector<CPU_BL*> &cpus_little, vector<CPU_BL*> &cpus_big, Island_BL
 
         cout << "Creating CPU_BL: " << cpu_name << endl;
 
-        CPUModelBP *pm = new CPUModelBP(V_big[V_big.size() - 1], F_big[F_big.size() - 1], max_frequency);
+        CPUModelBP *pm = new CPUModelBP(
+            OPP{F_big[F_big.size() - 1], V_big[V_big.size() - 1]},
+            max_frequency);
         {
             CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737,
                                                       55.8491, 1.00494e-9};

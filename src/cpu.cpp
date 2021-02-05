@@ -63,7 +63,7 @@ namespace RTSim
 
         // Setting speeds (basing upon frequencies)
         for (unsigned int opp = 0; opp < OPPs.size(); ++opp)
-            OPPs[opp].speed = getSpeedByOPP(opp);
+            speeds[opp] = getSpeedByOPP(opp);
     }
 
     CPU::~CPU()
@@ -129,14 +129,14 @@ namespace RTSim
             DBGPRINT("pwr: PowerSaving=on");
             DBGPRINT("pwr: currentOPP=" << currentOPP);
             for (int i=0; i < (int) OPPs.size(); i++)
-                if (OPPs[i].speed >= newLoad)
-                {
+                if (speeds[i] >= newLoad) {
                     if (i != currentOPP)
                         frequencySwitching++;
                     currentOPP = i;
-                    DBGPRINT("pwr: New OPP=" << currentOPP <<" New Speed=" << OPPs[currentOPP].speed);
+                    DBGPRINT("pwr: New OPP=" << currentOPP << " New Speed="
+                                             << speeds[currentOPP]);
 
-                    return OPPs[i].speed; //It returns the new speed
+                    return speeds[i]; // It returns the new speed
                 }
         }
         else
@@ -186,6 +186,8 @@ namespace RTSim
 
     void CPU::check()
     {
+
+#define __get_speed(iter) (speeds.begin() + (iter - OPPs.begin()))
         cout << "Checking CPU:" << cpuName << endl;;
         cout << "Max Power Consumption is :" << getMaxPowerConsumption() << endl;
         for (vector<OPP>::iterator iter = OPPs.begin(); iter != OPPs.end(); iter++)
@@ -193,14 +195,14 @@ namespace RTSim
             cout << "-OPP-" << endl;
             cout << "\tFrequency:" << (*iter).frequency << endl;
             cout << "\tVoltage:" << (*iter).voltage << endl;
-            cout << "\tSpeed:" << (*iter).speed << endl;
+            cout << "\tSpeed:" << *__get_speed(iter) << endl;
         }
         for (unsigned int i = 0; i < OPPs.size(); i++)
             cout << "Speed level" << getSpeedByOPP(i) << endl;
         for (vector<OPP>::iterator iter = OPPs.begin(); iter != OPPs.end(); iter++)
         {
-            cout << "Setting speed to " << (*iter).speed << endl;
-            setSpeed((*iter).speed);
+            cout << "Setting speed to " << *__get_speed(iter) << endl;
+            setSpeed(*__get_speed(iter));
             cout << "New speed is  " << getSpeed() << endl;
             cout << "Current OPP is  " << getOPP() << endl;
             cout << "Current Power Consumption is  " << getCurrentPowerConsumption() << endl;

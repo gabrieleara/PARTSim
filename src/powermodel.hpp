@@ -24,6 +24,7 @@ email                : l.pannocchi@gmail.com
 #include "class_utils.hpp"
 #include "cloneable.hpp"
 #include "memory.hpp"
+#include "opp.hpp"
 #include "sortedcont.hpp"
 
 namespace RTSim {
@@ -50,8 +51,7 @@ namespace RTSim {
         /// instantiated
         /// @param desc the descriptor of the CPUModel, used to set all its
         /// parameters before returning it to the user
-        /// @param v the initial voltage of the CPU (in Volts)
-        /// @param f the initial frequency of the CPU (in MHz)
+        /// @param opp the initial OPP of the CPU (in Volts and MHz)
         /// @param f_max the maximum frequency of the CPU (in MHz)
         ///
         /// @returns a new CPUModel (wrapped in a std::unique_ptr) generated
@@ -62,18 +62,17 @@ namespace RTSim {
         /// ready use this method.
         static std::unique_ptr<CPUModel>
         create(const std::string &key, const CPUPowerModelDescriptor &desc,
-               volt_type v = 0, freq_type f = 0, freq_type f_max = FREQ_MAX);
+               const OPP &opp = {}, freq_type f_max = FREQ_MAX);
 
         // =================================================
         // Constructors and destructors
         // =================================================
     public:
         /// @todo Add a proper description
-        /// @param v     the initial voltage of the CPU (in Volts)
-        /// @param f     the initial frequency of the CPU (in MHz)
+        /// @param opp   the initial OPP of the CPU (in Volts and MHz)
         /// @param f_max the maximum frequency of the CPU (in MHz)
-        CPUModel(watt_type v = 0, freq_type f = 0, freq_type f_max = FREQ_MAX) :
-            _V(v), _F(f), _F_max(f_max) {}
+        CPUModel(const OPP &opp = {}, freq_type f_max = FREQ_MAX) :
+            _V(opp.voltage), _F(opp.frequency), _F_max(f_max) {}
 
         DEFAULT_COPIABLE(CPUModel);
 
@@ -90,11 +89,13 @@ namespace RTSim {
         // =================================================
     public:
         /// Links this CPUModel to the given CPU
-        virtual void setCPU(CPU *c) {
+        /// @todo how about simply making the CPU a public attribyte?
+        void setCPU(CPU *c) {
             _cpu = c;
         }
 
         /// @returns a bare pointer the CPU linked to this CPUModel
+        /// @todo how about simply making the CPU a public attribyte?
         CPU *getCPU() const {
             return _cpu;
         }
@@ -102,16 +103,18 @@ namespace RTSim {
         // TODO: update power both times? Why not use a single method?
 
         /// Set the current voltage of the CPU (in Volts)
-        virtual void setVoltage(volt_type v) {
-            setOPP(_F, v);
+        void setVoltage(volt_type v) {
+            OPP opp(_F, v);
+            setOPP(opp);
         }
 
         /// Set the current frequency of the CPU (in MHz)
         ///
         /// @note Any value of @p f greater than the maximum allowed frequency
         /// will be capped to the maximum frequency value.
-        virtual void setFrequency(freq_type f) {
-            setOPP(f, _V);
+        void setFrequency(freq_type f) {
+            OPP opp(f, _V);
+            setOPP(opp);
         }
 
         /// Set the current Operating Performance Point (OPP)
@@ -119,11 +122,10 @@ namespace RTSim {
         /// @note Any value of @p f greater than the maximum allowed frequency
         /// will be capped to the maximum frequency value.
         ///
-        /// @param f the new frequency (in MHz)
-        /// @param v the new voltage (in Volts)
-        virtual void setOPP(freq_type f, volt_type v) {
-            _F = f;
-            _V = v;
+        /// @param opp the new OPP
+        void setOPP(const OPP &opp) {
+            _F = opp.frequency;
+            _V = opp.voltage;
 
             if (_F > _F_max)
                 _F = _F_max;
@@ -144,25 +146,30 @@ namespace RTSim {
         /// value).
         ///
         /// @param f_max the new maximum frequency to be used from now on
-        virtual void setFrequencyMax(freq_type f_max) {
+        void setFrequencyMax(freq_type f_max) {
             _F_max = f_max;
-            setOPP(_F, _V);
+            OPP opp(_F, _V);
+            setOPP(opp);
         }
 
         /// @returns the current frequency of the CPU in MHz
-        virtual freq_type getFrequency() const {
+        freq_type getFrequency() const {
             return _F; // / 1000;
         }
 
-        /// @returns the current voltage of the CPU in Volts
-        virtual volt_type getVoltage() const {
-            return _V; // / 1000;
+        /// @returns the maximum frequency of the CPU in MHz
+        freq_type getFrequencyMax() const {
+            return _F_max;
         }
 
-        /// @todo
-        virtual std::pair<freq_type, volt_type> getOPP() {
-            return std::make_pair<freq_type, volt_type>(getFrequency(),
-                                                        getVoltage());
+        /// @returns the current voltage of the CPU in Volts
+        volt_type getVoltage() const {
+            return _V;
+        }
+
+        /// @returns the current OPP
+        OPP getOPP() {
+            return OPP(_F, _V);
         }
 
         /// Checks what would be the power consumption when the triple given as
@@ -173,8 +180,8 @@ namespace RTSim {
         /// @param f desired frequency (in MHz)
         ///
         /// @returns the forshadowed power
-        virtual watt_type lookupPower(const std::string &wname, freq_type f,
-                                      volt_type v) const = 0;
+        virtual watt_type lookupPower(const std::string &wname,
+                                      const OPP &opp) const = 0;
 
         /// Checks what would be the task speedup when the triple given as input
         /// is selected for the current cpu.
@@ -184,8 +191,8 @@ namespace RTSim {
         /// @param f desired frequency (in MHz)
         ///
         /// @returns the forshadowed speedup
-        virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
-                                       volt_type v = 0) const = 0;
+        virtual speed_type lookupSpeed(const std::string &wname,
+                                       const OPP &opp) const = 0;
 
         /// Simple getter
         ///
@@ -199,7 +206,7 @@ namespace RTSim {
         ///
         /// @returns the current power consumption of the linked CPU
         virtual watt_type getPower() {
-            updatePower(); // TODO: remove
+            // updatePower(); // TODO: remove
             return _P;
         }
 
@@ -215,7 +222,7 @@ namespace RTSim {
         ///
         /// @returns the current speedup of the task running on the linked CPU
         virtual long double getSpeed() {
-            updateSpeed(); // TODO: remove
+            // updateSpeed(); // TODO: remove
             return _S;
         }
 
@@ -247,7 +254,7 @@ namespace RTSim {
         // =================================================
         // Data
         // =================================================
-    protected:
+    private:
         // Following values correspond to current task running on the linked CPU
 
         /// Voltage supply to the processor (Volts)
@@ -265,15 +272,14 @@ namespace RTSim {
         /// Current speedup ratio
         speed_type _S;
 
-    private:
+        /// Pointer to the related CPU
         CPU *_cpu = nullptr;
     };
 
     class CPUModelMinimal : public CPUModel {
     public:
-        CPUModelMinimal(volt_type v = 0, freq_type f = 0,
-                        freq_type f_max = FREQ_MAX) :
-            CPUModel(v, f, f_max){};
+        CPUModelMinimal(const OPP &opp = {}, freq_type f_max = FREQ_MAX) :
+            CPUModel(opp, f_max){};
 
         /// @returns a new instance of this class obtained by copy construction,
         /// wrapped in a std::unique_ptr
@@ -284,12 +290,11 @@ namespace RTSim {
         /// input is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp the desired OPP of the CPU (in Volts and MHz)
         ///
         /// @returns the forshadowed power
-        virtual watt_type lookupPower(const std::string &wname, freq_type f,
-                                      volt_type v) const override;
+        virtual watt_type lookupPower(const std::string &wname,
+                                      const OPP &opp) const override;
 
         /// Checks what would be the task speedup when the triple given as input
         /// is selected for the current cpu.
@@ -299,8 +304,8 @@ namespace RTSim {
         /// @param f desired frequency (in MHz)
         ///
         /// @returns the forshadowed speedup
-        virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
-                                       volt_type v = 0) const override;
+        virtual speed_type lookupSpeed(const std::string &wname,
+                                       const OPP &opp) const override;
     };
 
     class CPUModelBP : public CPUModel {
@@ -342,9 +347,8 @@ namespace RTSim {
         // Constructors and destructors
         // =================================================
     public:
-        CPUModelBP(volt_type v = 0, freq_type f = 0,
-                   freq_type f_max = FREQ_MAX) :
-            CPUModel(v, f, f_max) {}
+        CPUModelBP(const OPP &opp = {}, freq_type f_max = FREQ_MAX) :
+            CPUModel(opp, f_max) {}
 
         CLONEABLE(CPUModel, CPUModelBP, override);
 
@@ -367,28 +371,26 @@ namespace RTSim {
         /// input is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp the desired OPP of the CPU(in Volts and MHz)
         ///
         /// @returns the forshadowed power
-        virtual watt_type lookupPower(const std::string &wname, freq_type f,
-                                      volt_type v) const override;
+        virtual watt_type lookupPower(const std::string &wname,
+                                      const OPP &opp) const override;
 
         /// Checks what would be the task speedup when the triple given as input
         /// is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp the desired OPP of the CPU(in Volts and MHz)
         ///
         /// @returns the forshadowed speedup
-        virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
-                                       volt_type v = 0) const override;
+        virtual speed_type lookupSpeed(const std::string &wname,
+                                       const OPP &opp) const override;
 
         // =================================================
         // Data
         // =================================================
-    protected:
+    private:
         /// @todo
         std::map<std::string, PowerModelBPParams> _power_params;
         /// @todo
@@ -418,20 +420,6 @@ namespace RTSim {
         // Model parameters
         // =================================================
     public:
-        struct TBParamsIn {
-            freq_type freq;
-            volt_type volt;
-
-            friend bool operator<(TBParamsIn const &lhs,
-                                  TBParamsIn const &rhs) {
-                if (lhs.freq < rhs.freq)
-                    return true;
-                if (lhs.freq > rhs.freq)
-                    return false;
-                return lhs.volt < rhs.volt;
-            }
-        };
-
         struct TBParamsOut {
             watt_type power;
             speed_type speedup;
@@ -444,9 +432,8 @@ namespace RTSim {
         /// Constructs a new CPUModelTB.
         /// @note Some constructors for this class may throw exceptions!
         /// @todo Document properly exceptions
-        CPUModelTB(volt_type v = 0, freq_type f = 0,
-                   freq_type f_max = FREQ_MAX) :
-            CPUModel(v, f, f_max) {}
+        CPUModelTB(const OPP &opp = {}, freq_type f_max = FREQ_MAX) :
+            CPUModel(opp, f_max) {}
 
         /// @returns a new instance of this class obtained by copy construction,
         /// wrapped in a std::unique_ptr
@@ -469,36 +456,32 @@ namespace RTSim {
         /// @param params the pair of voltage/frequency values
         /// @param power the power estimation
         /// @param speedup the speedup estimation
-        ///
-        /// @todo use OPPs
         virtual void setWorkloadParams(const std::string &wname,
-                                       const TBParamsIn &params,
-                                       watt_type power, speed_type speedup);
+                                       const OPP &params, watt_type power,
+                                       speed_type speedup);
 
         /// Checks what would be the power consumption when the triple given as
         /// input is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp desired OPP (in Volts and MHz)
         ///
         /// @returns the forshadowed power
-        virtual watt_type lookupPower(const std::string &wname, freq_type f,
-                                      volt_type v) const override;
+        virtual watt_type lookupPower(const std::string &wname,
+                                      const OPP &opp) const override;
 
         /// Checks what would be the task speedup when the triple given as input
         /// is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp desired OPP (in Volts and MHz)
         ///
         /// @returns the forshadowed speedup
-        virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
-                                       volt_type v = 0) const override;
+        virtual speed_type lookupSpeed(const std::string &wname,
+                                       const OPP &opp) const override;
 
     protected:
-        using smap = sorted_map<TBParamsIn, TBParamsOut>;
+        using smap = sorted_map<OPP, TBParamsOut>;
         using map_map = std::map<std::string, smap>;
 
     protected:
@@ -541,29 +524,27 @@ namespace RTSim {
         /// input is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp desired volage (in Volts and MHz)
         ///
         /// @returns the forshadowed power
-        virtual watt_type lookupPower(const std::string &wname, freq_type f,
-                                      volt_type v) const override;
+        virtual watt_type lookupPower(const std::string &wname,
+                                      const OPP &opp) const override;
 
         /// Checks what would be the task speedup when the triple given as input
         /// is selected for the current cpu.
         ///
         /// @param wname the workload class of the task
-        /// @param v desired volage (in Volts)
-        /// @param f desired frequency (in MHz)
+        /// @param opp desired volage (in Volts and MHz)
         ///
         /// @returns the forshadowed speedup
-        virtual speed_type lookupSpeed(const std::string &wname, freq_type f,
-                                       volt_type v = 0) const override;
+        virtual speed_type lookupSpeed(const std::string &wname,
+                                       const OPP &opp) const override;
 
     private:
         template <class Codomain_fn, class Distance_fn,
                   class Codomain = long double>
-        Codomain lookupApproximate(const std::string &wname, freq_type f,
-                                   volt_type v, Codomain_fn codomain,
+        Codomain lookupApproximate(const std::string &wname, const OPP &opp,
+                                   Codomain_fn codomain,
                                    Distance_fn distance) const;
     };
 } // namespace RTSim

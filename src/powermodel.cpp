@@ -28,14 +28,14 @@ namespace RTSim {
     // TODO: Fake factory, convert to actual factory
     std::unique_ptr<CPUModel>
     CPUModel::create(const std::string &k, const CPUPowerModelDescriptor &desc,
-                     volt_type v, freq_type f, freq_type f_max) {
+                     const OPP &opp, freq_type f_max) {
         if (k == CPUModelMinimalParams::key) {
-            return std::make_unique<CPUModelMinimal>(v, f, f_max);
+            return std::make_unique<CPUModelMinimal>(opp, f_max);
         }
 
         if (k == CPUModelBPParams::key) {
             std::unique_ptr<CPUModelBP> bpp =
-                std::make_unique<CPUModelBP>(v, f, f_max);
+                std::make_unique<CPUModelBP>(opp, f_max);
 
             for (const auto &p : desc.params) {
                 const auto *pp = dynamic_cast<CPUModelBPParams *>(p.get());
@@ -62,14 +62,12 @@ namespace RTSim {
 
         if (k == CPUModelTBParams::key) {
             std::unique_ptr<CPUModelTB> tbp =
-                std::make_unique<CPUModelTB>(v, f, f_max);
+                std::make_unique<CPUModelTB>(opp, f_max);
 
             for (const auto &p : desc.params) {
                 const auto *pp = dynamic_cast<CPUModelTBParams *>(p.get());
 
-                CPUModelTB::TBParamsIn params;
-                params.freq = pp->freq;
-                params.volt = pp->volt;
+                OPP params = {pp->freq, pp->volt};
 
                 tbp->setWorkloadParams(pp->workload, params, pp->power,
                                        pp->speed);
@@ -82,13 +80,15 @@ namespace RTSim {
     }
 
     void CPUModel::updatePower() {
-        watt_type p = lookupPower(getCPU()->getWorkload(), _V, _F);
+        OPP opp{_F, _V};
+        watt_type p = lookupPower(getCPU()->getWorkload(), opp);
         if (!std::isnan(p))
             _P = p;
     }
 
     void CPUModel::updateSpeed() {
-        speed_type s = lookupSpeed(getCPU()->getWorkload(), _V, _F);
+        OPP opp{_F, _V};
+        speed_type s = lookupSpeed(getCPU()->getWorkload(), opp);
         if (!std::isnan(s))
             _S = s;
     }
@@ -99,14 +99,14 @@ namespace RTSim {
 
     // TODO: why did the old implementation set the frequency to KHz internally?
     // TODO: check formulae against measurement units
-    watt_type CPUModelMinimal::lookupPower(const string &, freq_type f,
-                                           volt_type v) const {
-        return (v * v) * f;
+    watt_type CPUModelMinimal::lookupPower(const string &,
+                                           const OPP &opp) const {
+        return (opp.voltage * opp.voltage) * opp.frequency;
     }
 
-    speed_type CPUModelMinimal::lookupSpeed(const string &, freq_type f,
-                                            volt_type) const {
-        return _F_max / f;
+    speed_type CPUModelMinimal::lookupSpeed(const string &,
+                                            const OPP &opp) const {
+        return speed_type(getFrequencyMax()) / speed_type(opp.frequency);
     }
 
     // =====================================================
@@ -116,10 +116,12 @@ namespace RTSim {
     // TODO: remember to require always at least two workload parameters (idle
     // and busy)
 
-    watt_type CPUModelBP::lookupPower(const std::string &workload, freq_type f,
-                                      volt_type v) const {
+    watt_type CPUModelBP::lookupPower(const std::string &workload,
+                                      const OPP &opp) const {
 
-        f *= 1000; // This model was trained using frequencies in KHz
+        // This model was trained using frequencies in KHz
+        const freq_type f = opp.frequency * 1000;
+        const volt_type v = opp.voltage;
 
         double K, eta, gamma, disp;
 
@@ -135,7 +137,7 @@ namespace RTSim {
         gamma = params.g;
 
         // Evaluation of the P_charge
-        P_charge = (K)*f * (v * v);
+        P_charge = K * f * (v * v);
 
         // Evaluation of the P_short
         P_short = eta * P_charge;
@@ -150,10 +152,11 @@ namespace RTSim {
         return P_leak + P_dyn + disp;
     }
 
-    speed_type CPUModelBP::lookupSpeed(const std::string &workload, freq_type f,
-                                       volt_type) const {
-
-        f *= 1000; // This model was trained using frequencies in KHz
+    speed_type CPUModelBP::lookupSpeed(const std::string &workload,
+                                       const OPP &opp) const {
+        // This model was trained using frequencies in KHz
+        const freq_type f = opp.frequency * 1000;
+        const volt_type v = opp.voltage;
 
         // TODO: asserts and all!
         assert(_speed_params.find(getCPU()->getWorkload()) !=
@@ -180,15 +183,14 @@ namespace RTSim {
     // CPUModelTB
     // =====================================================
 
-    void CPUModelTB::setWorkloadParams(const string &wname,
-                                       const TBParamsIn &params,
+    void CPUModelTB::setWorkloadParams(const string &wname, const OPP &params,
                                        watt_type power, speed_type speedup) {
         // NOTICE: this may accept duplicates if supplied
         TBParamsOut v;
         v.power = power;
         v.speedup = speedup;
 
-        std::pair<TBParamsIn, TBParamsOut> kv = std::make_pair(params, v);
+        std::pair<OPP, TBParamsOut> kv = std::make_pair(params, v);
         _map[wname].insert(kv);
     }
 
@@ -196,12 +198,8 @@ namespace RTSim {
     // even implemented them all, but the functions became more cryptic and I
     // didn't like them like that, result is the same
 
-    watt_type CPUModelTB::lookupPower(const string &wname, freq_type f,
-                                      volt_type v) const {
-        TBParamsIn key;
-        key.volt = v;
-        key.freq = f;
-
+    watt_type CPUModelTB::lookupPower(const string &wname,
+                                      const OPP &key) const {
         auto res_map = find_suitable_map(wname);
         if (res_map == _map.end())
             return 0;
@@ -214,12 +212,8 @@ namespace RTSim {
         return res->second.power;
     }
 
-    speed_type CPUModelTB::lookupSpeed(const string &wname, freq_type f,
-                                       volt_type v) const {
-        TBParamsIn key;
-        key.volt = v;
-        key.freq = f;
-
+    speed_type CPUModelTB::lookupSpeed(const string &wname,
+                                       const OPP &key) const {
         auto res_map = find_suitable_map(wname);
         if (res_map == _map.end())
             return 0;
@@ -236,23 +230,21 @@ namespace RTSim {
     // CPUModelTBApproximate
     // =====================================================
 
-    using Opp = typename CPUModelTB::TBParamsIn;
-
 #define cast(T, x) (static_cast<T>(x))
     template <class RT = long double>
-    static inline RT opp_power_distance(Opp x, Opp xi) {
-        return std::pow(cast(RT, x.volt) - cast(RT, xi.volt), 2) *
-               std::abs(cast(RT, x.freq) - cast(RT, xi.freq));
+    static inline RT opp_power_distance(OPP x, OPP xi) {
+        return std::pow(cast(RT, x.voltage) - cast(RT, xi.voltage), 2) *
+               std::abs(cast(RT, x.frequency) - cast(RT, xi.frequency));
     }
     template <class RT = long double>
-    static inline RT opp_speed_distance(Opp x, Opp xi) {
+    static inline RT opp_speed_distance(OPP x, OPP xi) {
         // TODO: hella not sure about this!
-        return std::pow(cast(RT, x.freq) - cast(RT, xi.freq), 2);
+        return std::pow(cast(RT, x.frequency) - cast(RT, xi.frequency), 2);
     }
 #undef cast
 
     template <class T>
-    static inline Opp to_domain(T v) {
+    static inline OPP to_domain(T v) {
         return v->first;
     }
 
@@ -268,12 +260,8 @@ namespace RTSim {
 
     template <class Codomain_fn, class Distance_fn, class Codomain>
     Codomain CPUModelTBApproximate::lookupApproximate(
-        const std::string &wname, freq_type f, volt_type v,
-        Codomain_fn codomain, Distance_fn distance) const {
-
-        TBParamsIn key;
-        key.volt = v;
-        key.freq = f;
+        const std::string &wname, const OPP &key, Codomain_fn codomain,
+        Distance_fn distance) const {
 
         auto res_map = this->find_suitable_map(wname);
         if (res_map == _map.end())
@@ -302,31 +290,28 @@ namespace RTSim {
         auto next = res;
         auto prev = res - 1;
 
-        return interpolate<Opp, long double>(key, prev, next,
+        return interpolate<OPP, long double>(key, prev, next,
                                              to_domain<smap::const_iterator>,
                                              codomain, distance);
     }
 
     watt_type CPUModelTBApproximate::lookupPower(const string &wname,
-                                                 freq_type f,
-                                                 volt_type v) const {
-        return lookupApproximate(wname, f, v,
+                                                 const OPP &opp) const {
+        return lookupApproximate(wname, opp,
                                  to_power<smap::const_iterator, long double>,
                                  opp_power_distance<long double>);
     }
 
     speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
-                                                  freq_type f,
-                                                  volt_type v) const {
-        return lookupApproximate(wname, f, v,
+                                                  const OPP &opp) const {
+        return lookupApproximate(wname, opp,
                                  to_speed<smap::const_iterator, long double>,
                                  opp_speed_distance<long double>);
     }
 
     /*
     watt_type CPUModelTBApproximate::lookupPower(const string &wname,
-                                                 freq_type f,
-                                                 volt_type v) const {
+                                                 const OPP &opp) const {
         TBParamsIn key;
         key.volt = v;
         key.freq = f;
@@ -359,14 +344,13 @@ namespace RTSim {
         auto next = res;
         auto prev = res - 1;
 
-        return interpolate<Opp, double_prec>(
+        return interpolate<OPP, double_prec>(
             key, prev, next, to_domain<decltype(prev)>,
             to_power<decltype(prev), double_prec>, opp_power_distance);
     }
 
     speed_type CPUModelTBApproximate::lookupSpeed(const string &wname,
-                                                  freq_type f,
-                                                  volt_type v) const {
+                                                  const OPP &opp) const {
         TBParamsIn key;
         key.volt = v;
         key.freq = f;
@@ -399,7 +383,7 @@ namespace RTSim {
         auto next = res;
         auto prev = res - 1;
 
-        return interpolate<Opp, double_prec>(
+        return interpolate<OPP, double_prec>(
             key, prev, next, to_domain<decltype(prev)>,
             to_speed<decltype(prev), double_prec>, opp_speed_distance);
     }

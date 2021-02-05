@@ -18,11 +18,12 @@
 #include <string>
 #include <vector>
 
-#include <trace.hpp>
-#include <timer.hpp>
-#include <powermodel.hpp>
 #include <abstask.hpp>
 #include <assert.h>
+#include <opp.hpp>
+#include <powermodel.hpp>
+#include <timer.hpp>
+#include <trace.hpp>
 
 #define _KERNEL_DBG_LEV "Kernel"
 
@@ -31,17 +32,6 @@ namespace RTSim
 
     using namespace std;
     using namespace MetaSim;
-
-    struct OPP {
-        /// Voltage of each step (in Volts)
-        volt_type voltage;
-
-        /// Frequency of each step (in MHz)
-        freq_type frequency;
-
-        /// The speed is a value between 0 and 1
-        speed_type speed;
-    };
 
     /**
      * \ingroup kernels
@@ -67,6 +57,7 @@ namespace RTSim
         string _workload;
 
         vector<OPP> OPPs;
+        vector<speed_type> speeds;
 
         /// Name of the CPU
         string cpuName;
