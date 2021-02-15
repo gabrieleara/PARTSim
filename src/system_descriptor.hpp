@@ -18,16 +18,16 @@ namespace RTSim {
         std::string scheduler_type;
     };
 
-    class CPUPowerModelDescriptor {
+    class CPUMDescriptor {
     public:
         std::string name;
         CPUModelParams::key_type type;
         std::vector<std::unique_ptr<CPUModelParams>> params;
 
     public:
-        CPUPowerModelDescriptor() = default;
-        DISABLE_COPY(CPUPowerModelDescriptor);
-        DEFAULT_MOVABLE(CPUPowerModelDescriptor);
+        CPUMDescriptor() = default;
+        DISABLE_COPY(CPUMDescriptor);
+        DEFAULT_MOVABLE(CPUMDescriptor);
     };
 
     class IslandDescriptor {
@@ -38,6 +38,7 @@ namespace RTSim {
         std::vector<volt_type> volts;
         std::vector<freq_type> freqs;
         std::string power_model;
+        std::string speed_model;
 
     public:
         IslandDescriptor() = default;
@@ -47,7 +48,7 @@ namespace RTSim {
 
     class SystemDescriptor {
     private:
-        using map_type = std::map<std::string, CPUPowerModelDescriptor>;
+        using map_type = std::map<std::string, CPUMDescriptor>;
         using vector_type = std::vector<IslandDescriptor>;
 
     public:

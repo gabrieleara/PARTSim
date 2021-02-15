@@ -12,6 +12,8 @@ namespace RTSim {
     const CPUModelParams::key_type CPUModelMinimalParams::key("minimal");
     const CPUModelParams::key_type CPUModelBPParams::key("balsini_pannocchi");
     const CPUModelParams::key_type CPUModelTBParams::key("table_based");
+    const CPUModelParams::key_type
+        CPUModelTBApproxParams::key("table_based_approx");
 
     // =====================================================
     // Utilities
@@ -71,17 +73,17 @@ namespace RTSim {
 
         // TODO: Check that the length is right
         auto pp = ptr->get(ATTR_POWER_PARAMS);
-        FROM_STR(bpp.power_params.d, pp->get(0)->get());
-        FROM_STR(bpp.power_params.e, pp->get(1)->get());
-        FROM_STR(bpp.power_params.g, pp->get(2)->get());
-        FROM_STR(bpp.power_params.k, pp->get(3)->get());
+        FROM_STR(bpp.params.power.d, pp->get(0)->get());
+        FROM_STR(bpp.params.power.e, pp->get(1)->get());
+        FROM_STR(bpp.params.power.g, pp->get(2)->get());
+        FROM_STR(bpp.params.power.k, pp->get(3)->get());
 
         // TODO: Check that the length is right
         auto sp = ptr->get(ATTR_SPEED_PARAMS);
-        FROM_STR(bpp.speed_params.a, sp->get(0)->get());
-        FROM_STR(bpp.speed_params.b, sp->get(1)->get());
-        FROM_STR(bpp.speed_params.c, sp->get(2)->get());
-        FROM_STR(bpp.speed_params.d, sp->get(3)->get());
+        FROM_STR(bpp.params.speed.a, sp->get(0)->get());
+        FROM_STR(bpp.params.speed.b, sp->get(1)->get());
+        FROM_STR(bpp.params.speed.c, sp->get(2)->get());
+        FROM_STR(bpp.params.speed.d, sp->get(3)->get());
 
         return bpp;
     }
@@ -92,15 +94,15 @@ namespace RTSim {
 
         bpp.workload = doc.at(FIELD_WORKLOAD, rix);
 
-        FROM_STR(bpp.power_params.d, doc.at(FIELD_POWER_D, rix));
-        FROM_STR(bpp.power_params.e, doc.at(FIELD_POWER_E, rix));
-        FROM_STR(bpp.power_params.g, doc.at(FIELD_POWER_G, rix));
-        FROM_STR(bpp.power_params.k, doc.at(FIELD_POWER_K, rix));
+        FROM_STR(bpp.params.power.d, doc.at(FIELD_POWER_D, rix));
+        FROM_STR(bpp.params.power.e, doc.at(FIELD_POWER_E, rix));
+        FROM_STR(bpp.params.power.g, doc.at(FIELD_POWER_G, rix));
+        FROM_STR(bpp.params.power.k, doc.at(FIELD_POWER_K, rix));
 
-        FROM_STR(bpp.speed_params.a, doc.at(FIELD_SPEED_A, rix));
-        FROM_STR(bpp.speed_params.b, doc.at(FIELD_SPEED_B, rix));
-        FROM_STR(bpp.speed_params.c, doc.at(FIELD_SPEED_C, rix));
-        FROM_STR(bpp.speed_params.d, doc.at(FIELD_SPEED_D, rix));
+        FROM_STR(bpp.params.speed.a, doc.at(FIELD_SPEED_A, rix));
+        FROM_STR(bpp.params.speed.b, doc.at(FIELD_SPEED_B, rix));
+        FROM_STR(bpp.params.speed.c, doc.at(FIELD_SPEED_C, rix));
+        FROM_STR(bpp.params.speed.d, doc.at(FIELD_SPEED_D, rix));
 
         return bpp;
     }
@@ -129,11 +131,24 @@ namespace RTSim {
     }
 
     // =====================================================
+    // CPUModelTBApproxParams
+    // =====================================================
+
+    // Not implemented! It would be a very big YAML table anyway!
+    template <>
+    CPUModelTBApproxParams createFrom(yaml::Object_ptr ptr);
+
+    template <>
+    CPUModelTBApproxParams createFrom(csv::CSVDocument &doc, size_t rix) {
+        return CPUModelTBApproxParams{createFrom<CPUModelTBParams>(doc, rix)};
+    }
+
+    // =====================================================
     // Factory methods implementation
     // =====================================================
 
     template <class T, class... Args>
-    static std::unique_ptr<T> uniqueFrom(Args &&... args) {
+    static std::unique_ptr<T> uniqueFrom(Args &&...args) {
         return std::make_unique<T>(createFrom<T>(std::forward<Args>(args)...));
     }
 
@@ -149,6 +164,9 @@ namespace RTSim {
         if (k == CPUModelTBParams::key)
             return uniqueFrom<CPUModelTBParams>(doc, rix);
 
+        if (k == CPUModelTBApproxParams::key)
+            return uniqueFrom<CPUModelTBApproxParams>(doc, rix);
+
         throw std::exception{}; // TODO:
     }
 
@@ -163,6 +181,10 @@ namespace RTSim {
         /*
             // Not implemented!
             if (k == CPUModelTBParams::key)
+                return uniqueFrom<CPUModelTBParams>(ptr);
+
+            // Not implemented!
+            if (k == CPUModelTBApproxParams::key)
                 return uniqueFrom<CPUModelTBParams>(ptr);
         */
 

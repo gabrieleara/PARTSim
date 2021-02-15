@@ -29,8 +29,8 @@ namespace RTSim {
     }
 
     template <>
-    CPUPowerModelDescriptor createFrom(yaml::Object_ptr ptr) {
-        CPUPowerModelDescriptor pm;
+    CPUMDescriptor createFrom(yaml::Object_ptr ptr) {
+        CPUMDescriptor pm;
 
         pm.name = ptr->get(ATTR_NAME)->get();
         pm.type = ptr->get(ATTR_TYPE)->get();
@@ -90,7 +90,7 @@ namespace RTSim {
         }
 
         for (auto pm : *descriptor_obj->get(ATTR_POWER_MODELS)) {
-            auto pmd = createFrom<CPUPowerModelDescriptor>(pm);
+            auto pmd = createFrom<CPUMDescriptor>(pm);
             power_models.emplace(pmd.name, std::move(pmd));
         }
     }
