@@ -5,27 +5,27 @@
 */
 
 #include <cstring>
-#include <string>
 #include <fstream>
+#include <string>
 
-#include <mrtkernel.hpp>
 #include <cpu.hpp>
 #include <edfsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <json_trace.hpp>
-#include <tracepower.hpp>
-#include <rttask.hpp>
 #include <instr.hpp>
+#include <json_trace.hpp>
+#include <jtrace.hpp>
+#include <mrtkernel.hpp>
 #include <powermodel.hpp>
+#include <rttask.hpp>
+#include <system_descriptor.hpp>
+#include <texttrace.hpp>
+#include <tracepower.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
 /* ./energy [OPP little] [OPP big] [workload] */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0;
     unsigned int OPP_big = 0;
     string workload = "bzip2";
@@ -68,56 +68,125 @@ int main(int argc, char *argv[])
         if (OPP_little >= V_little.size() || OPP_big >= V_big.size())
             exit(-1);
 
-        unsigned long int max_frequency = max(F_little[F_little.size() - 1], F_big[F_big.size() - 1]);
+        unsigned long int max_frequency =
+            max(F_little[F_little.size() - 1], F_big[F_big.size() - 1]);
 
-        /* ------------------------- Creating CPUs -------------------------*/
-        for (unsigned int i=0; i<4; ++i) {
+        /* ---------------------- Creating CPU Models ----------------------- */
+
+        CPUMDescriptor big_desc;
+        CPUMDescriptor little_desc;
+
+        big_desc.name = "balsini_pannocchi_big";
+        little_desc.name = "balsini_pannocchi_little";
+
+        big_desc.type = CPUModelBPParams::key;
+        little_desc.type = CPUModelBPParams::key;
+
+        /* --------------------- Creating LITTLE Models --------------------- */
+
+        std::unique_ptr<CPUModelBPParams> bpp;
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "idle";
+        bpp->params.power = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
+        bpp->params.speed = {1, 0, 0, 0};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "idle";
+        bpp->params.power = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
+        bpp->params.speed = {1, 0, 0, 0};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "bzip2";
+        bpp->params.power = {0.00775587, 33.376, 1.54585, 9.53439e-10};
+        bpp->params.speed = {0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "hash";
+        bpp->params.power = {0.00624673, 176.315, 1.72836, 1.77362e-10};
+        bpp->params.speed = {0.00645628, 3.37134e+6, 7.83177, 93459};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "encrypt";
+        bpp->params.power = {0.00676544, 26.2243, 5.6071, 5.34216e-10};
+        bpp->params.speed = {6.11496e-78, 3.32246e+6, 6.5652, 115759};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "decrypt";
+        bpp->params.power = {0.00629664, 87.1519, 2.93286, 2.80871e-10};
+        bpp->params.speed = {5.0154e-68, 3.31791e+6, 7.154, 112163};
+        little_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "cachekiller";
+        bpp->params.power = {0.0126737, 67.9915, 1.63949, 3.66185e-10};
+        bpp->params.speed = {1.20262, 352597, 2.03511, 169523};
+        little_desc.params.push_back(std::move(bpp));
+
+        /* ---------------------- Creating BIG Models ----------------------- */
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "idle";
+        bpp->params.power = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
+        bpp->params.speed = {1, 0, 0, 0};
+        big_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "bzip2";
+        bpp->params.power = {0.0407739, 12.022, 3.33367, 7.4577e-9};
+        bpp->params.speed = {0.17833, 1.63265e+6, 1.62033, 118803};
+        big_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "hash";
+        bpp->params.power = {0.0388215, 16.3205, 4.3418, 5.07039e-9};
+        bpp->params.speed = {0.017478, 1.93925e+6, 4.22469, 83048.3};
+        big_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "encrypt";
+        bpp->params.power = {0.0348728, 8.14399, 5.64344, 7.69915e-9};
+        bpp->params.speed = {8.39417e-34, 1.99222e+6, 3.33002, 96949.4};
+        big_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "decrypt";
+        bpp->params.power = {0.0320508, 25.8727, 3.27135, 4.11773e-9};
+        bpp->params.speed = {9.49471e-35, 1.98761e+6, 2.65652, 109497};
+        big_desc.params.push_back(std::move(bpp));
+
+        bpp = std::make_unique<CPUModelBPParams>();
+        bpp->workload = "cachekiller";
+        bpp->params.power = {0.086908, 9.17989, 2.5828, 7.64943e-9};
+        bpp->params.speed = {0.825212, 235044, 786.368, 25622.1};
+        big_desc.params.push_back(std::move(bpp));
+
+        /* ------------------- Instantiating actual CPUs -------------------- */
+
+        for (unsigned int i = 0; i < 4; ++i) {
             /* Create LITTLE CPUs */
             string cpu_name = "LITTLE_" + to_string(i);
-
             cout << "Creating CPU: " << cpu_name << endl;
 
-            CPUModel *pm = new CPUModelBP(OPP{F_little[F_little.size() - 1],
-                                              V_little[V_little.size() - 1]},
-                                          max_frequency);
-            {
-                CPUModelBP::PowerModelBPParams idle_pp = {0.00134845, 1.76307e-5, 124.535, 1.00399e-10};
-                CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("idle", idle_pp, idle_cp);
-
-                CPUModelBP::PowerModelBPParams bzip2_pp = {0.00775587, 33.376, 1.54585, 9.53439e-10};
-                CPUModelBP::SpeedModelBPParams bzip2_cp = {
-                    0.0256054, 2.9809e+6, 0.602631, 8.13712e+9};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("bzip2", bzip2_pp, bzip2_cp);
-
-                CPUModelBP::PowerModelBPParams hash_pp = {0.00624673, 176.315, 1.72836, 1.77362e-10};
-                CPUModelBP::SpeedModelBPParams hash_cp = {
-                    0.00645628, 3.37134e+6, 7.83177, 93459};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("hash", hash_pp, hash_cp);
-
-                CPUModelBP::PowerModelBPParams encrypt_pp = {0.00676544, 26.2243, 5.6071, 5.34216e-10};
-                CPUModelBP::SpeedModelBPParams encrypt_cp = {
-                    6.11496e-78, 3.32246e+6, 6.5652, 115759};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("encrypt", encrypt_pp, encrypt_cp);
-
-                CPUModelBP::PowerModelBPParams decrypt_pp = {0.00629664, 87.1519, 2.93286, 2.80871e-10};
-                CPUModelBP::SpeedModelBPParams decrypt_cp = {
-                    5.0154e-68, 3.31791e+6, 7.154, 112163};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("decrypt", decrypt_pp, decrypt_cp);
-
-                CPUModelBP::PowerModelBPParams cachekiller_pp = {0.0126737, 67.9915, 1.63949, 3.66185e-10};
-                CPUModelBP::SpeedModelBPParams cachekiller_cp = {
-                    1.20262, 352597, 2.03511, 169523};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
-            }
+            CPUModel *pm = CPUModel::create(little_desc, little_desc,
+                                            OPP{F_little[F_little.size() - 1],
+                                                V_little[V_little.size() - 1]},
+                                            max_frequency)
+                               .release();
 
             CPU *c = new CPU(cpu_name, V_little, F_little, pm);
-            pm->setCPU(c);
+            // pm->setCPU(c);
             cpus.push_back(c);
             c->setOPP(OPP_little);
             c->setWorkload("idle");
-            pm->setFrequencyMax(max_frequency);
-            TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+            // pm->setFrequencyMax(max_frequency);
+            TracePowerConsumption *power_trace =
+                new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
 
             EDFScheduler *edfsched = new EDFScheduler;
@@ -127,54 +196,25 @@ int main(int argc, char *argv[])
             kernels.push_back(kern);
         }
 
-        for (unsigned int i=0; i<4; ++i) {
+        for (unsigned int i = 0; i < 4; ++i) {
             /* Create big CPUs */
-
             string cpu_name = "BIG_" + to_string(i);
-
             cout << "Creating CPU: " << cpu_name << endl;
 
-            CPUModel *pm = new CPUModelBP(
-                OPP{F_big[F_big.size() - 1], V_big[V_big.size() - 1]},
-                max_frequency);
-            {
-                CPUModelBP::PowerModelBPParams idle_pp = {0.0162881, 0.00100737, 55.8491, 1.00494e-9};
-                CPUModelBP::SpeedModelBPParams idle_cp = {1, 0, 0, 0};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("idle", idle_pp, idle_cp);
-
-                CPUModelBP::PowerModelBPParams bzip2_pp = {0.0407739, 12.022, 3.33367, 7.4577e-9};
-                CPUModelBP::SpeedModelBPParams bzip2_cp = {0.17833, 1.63265e+6,
-                                                           1.62033, 118803};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("bzip2", bzip2_pp, bzip2_cp);
-
-                CPUModelBP::PowerModelBPParams hash_pp = {0.0388215, 16.3205, 4.3418, 5.07039e-9};
-                CPUModelBP::SpeedModelBPParams hash_cp = {0.017478, 1.93925e+6,
-                                                          4.22469, 83048.3};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("hash", hash_pp, hash_cp);
-
-                CPUModelBP::PowerModelBPParams encrypt_pp = {0.0348728, 8.14399, 5.64344, 7.69915e-9};
-                CPUModelBP::SpeedModelBPParams encrypt_cp = {
-                    8.39417e-34, 1.99222e+6, 3.33002, 96949.4};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("encrypt", encrypt_pp, encrypt_cp);
-
-                CPUModelBP::PowerModelBPParams decrypt_pp = {0.0320508, 25.8727, 3.27135, 4.11773e-9};
-                CPUModelBP::SpeedModelBPParams decrypt_cp = {
-                    9.49471e-35, 1.98761e+6, 2.65652, 109497};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("decrypt", decrypt_pp, decrypt_cp);
-
-                CPUModelBP::PowerModelBPParams cachekiller_pp = {0.086908, 9.17989, 2.5828, 7.64943e-9};
-                CPUModelBP::SpeedModelBPParams cachekiller_cp = {
-                    0.825212, 235044, 786.368, 25622.1};
-                dynamic_cast<CPUModelBP *>(pm)->setWorkloadParams("cachekiller", cachekiller_pp, cachekiller_cp);
-            }
+            CPUModel *pm = CPUModel::create(big_desc, big_desc,
+                                            OPP{F_big[F_big.size() - 1],
+                                                V_big[V_big.size() - 1]},
+                                            max_frequency)
+                               .release();
 
             CPU *c = new CPU(cpu_name, V_big, F_big, pm);
-            pm->setCPU(c);
+            // pm->setCPU(c);
             cpus.push_back(c);
             c->setOPP(OPP_big);
             c->setWorkload("idle");
-            pm->setFrequencyMax(max_frequency);
-            TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+            // pm->setFrequencyMax(max_frequency);
+            TracePowerConsumption *power_trace =
+                new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
 
             EDFScheduler *edfsched = new EDFScheduler;
@@ -231,18 +271,18 @@ int main(int argc, char *argv[])
             unsigned int old_opp;
             auto opp_size = cpu_type == "big" ? F_big.size() : F_little.size();
 
-            for (string wl : {"bzip2", "hash", "encrypt", "decrypt", "cachekiller"}) {
+            for (string wl :
+                 {"bzip2", "hash", "encrypt", "decrypt", "cachekiller"}) {
                 cpus[cpu]->setWorkload(wl);
 
                 string filename = "exec_" + wl + "_" + cpu_type + ".txt";
                 ofstream computing_file(filename);
 
                 old_opp = cpus[cpu]->getOPP();
-                for (unsigned int opp=0; opp<opp_size; ++opp) {
+                for (unsigned int opp = 0; opp < opp_size; ++opp) {
                     cpus[cpu]->setOPP(opp);
                     computing_file << cpus[cpu]->getFrequency() * 1000 << " "
-                                   << cpus[cpu]->getSpeed() * min_C[wl]
-                                      << endl;
+                                   << cpus[cpu]->getSpeed() * min_C[wl] << endl;
                 }
                 cpus[cpu]->setWorkload("idle");
                 cpus[cpu]->setOPP(old_opp);

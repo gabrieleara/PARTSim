@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <stdexcept>
 #include <type_traits>
 #include <vector>
 

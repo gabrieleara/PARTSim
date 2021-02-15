@@ -12,14 +12,17 @@ namespace RTSim {
             // Construct the appropriate CPUModel for each island and then
             // create copies for each CPU
 
-            auto cpumodel_des = sys_des.power_models.find(island.power_model);
-
-            if (cpumodel_des == sys_des.power_models.cend())
+            auto cpu_pmodel_des = sys_des.power_models.find(island.power_model);
+            if (cpu_pmodel_des == sys_des.power_models.cend())
                 throw std::exception{};
 
-            // TODO: default v, f, fmax for the island
-            std::shared_ptr<CPUModel> cpu_model_base_ptr =
-                CPUModel::create(island.power_model, cpumodel_des->second);
+            auto cpu_smodel_des = sys_des.power_models.find(island.power_model);
+            if (cpu_smodel_des == sys_des.power_models.cend())
+                throw std::exception{};
+
+            // TODO: default OPP and fmax for the island
+            std::shared_ptr<CPUModel> cpu_model_base_ptr = CPUModel::create(
+                cpu_pmodel_des->second, cpu_smodel_des->second);
 
             const string cpu_base_name = "CPU_" + island.name + "_";
 

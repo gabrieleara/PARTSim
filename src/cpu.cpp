@@ -12,9 +12,10 @@ email                : lipari@sssup.it
  *                                                                         *
  ***************************************************************************/
 
-#include <cpu.hpp>
 #include <assert.h>
+#include <cpu.hpp>
 #include <energyMRTKernel.hpp>
+#include <system_descriptor.hpp>
 
 namespace RTSim
 {
@@ -49,11 +50,19 @@ namespace RTSim
         // Creating the Energy Model class
         // and initialize it with the max values
         if (!pm) {
-            powmod = new CPUModelMinimal(OPPs[currentOPP].voltage, OPPs[currentOPP].frequency);
-            powmod->setFrequencyMax(OPPs[OPPs.size()-1].frequency);
+            CPUMDescriptor pmd;
+
+            // The minimal model doesn't actually come with params after all
+            // I can skip creating some
+            pmd.type = CPUModelMinimalParams::key;
+
+            powmod = CPUModel::create(pmd, pmd, OPPs[currentOPP],
+                                      OPPs[OPPs.size() - 1].frequency)
+                         .release();
         } else {
             powmod = pm;
-            pm->setCPU(this);
+            // pm->setCPU(this); // TODO: there's a single direction between
+            // CPUs and their models, not vice versa!
         }
 
         /* Use the maximum OPP by default */
