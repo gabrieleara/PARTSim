@@ -99,6 +99,11 @@ namespace RTSim {
 
         const auto i = findParams(workload);
         if (!foundParams(i)) {
+            // FIXME: if using setVoltage and setFrequency
+            // independently, this exception may be
+            // erroneously raised when there's no need for
+            // these parameters!
+            // TODO: some error message!
             throw std::exception{};
         }
 

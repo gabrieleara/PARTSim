@@ -43,7 +43,7 @@ namespace RTSim {
 
         /// @returns true if the iterator is "valid"
         bool foundParams(const citer_type &i) const {
-            return i == _params.cend();
+            return i != _params.cend();
         }
 
         /// @returns the params from a "valid" iterator

@@ -144,9 +144,10 @@ namespace RTSim {
         /// frequency will be capped to the maximum frequency value.
         ///
         /// @param opp the new OPP
-        void setOPP(const OPP &opp, const wclass_type &workload) {
+        void setOPP(const OPP &opp, const wclass_type &workload = "") {
             _opp = opp;
-            _workload = workload;
+            if (workload != "")
+                _workload = workload;
 
             if (_opp.frequency > _F_max)
                 _opp.frequency = _F_max;

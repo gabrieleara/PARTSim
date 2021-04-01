@@ -72,7 +72,7 @@ namespace RTSim
 
         // Setting speeds (basing upon frequencies)
         for (unsigned int opp = 0; opp < OPPs.size(); ++opp)
-            speeds[opp] = getSpeedByOPP(opp);
+            speeds.push_back(getSpeedByOPP(opp));
     }
 
     CPU::~CPU()
@@ -178,11 +178,7 @@ namespace RTSim
         if (!PowerSaving)
             return 1;
         assert(opp < OPPs.size() && opp >= 0);
-        int old_curr_opp = currentOPP;
-        setOPP(opp);
-        double s = getSpeed();
-        setOPP(old_curr_opp);
-        return s;
+        return powmod->lookupSpeed(OPPs[opp], getWorkload());
     }
 
     unsigned long int CPU::getFrequencySwitching()
@@ -264,8 +260,7 @@ namespace RTSim
     }
 
     void CPU::updateCPUModel() {
-        powmod->setVoltage(getVoltage());
-        powmod->setFrequency(getFrequency());
+        powmod->setOPP(OPPs[getOPP()], getWorkload());
     }
 
     // ------------------------------------------------------------- big little
