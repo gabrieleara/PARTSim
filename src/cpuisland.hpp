@@ -15,6 +15,27 @@
 // Nonetheless, associations between CPUs and CPUIslands are maintained
 // consistent by their respective destructors.
 
+// TODO: Constructors for these two classes are kind of arbitrary, the correct
+// way to instantiate these should be to use some kind of factory that manages
+// also their lifetime, but for now I'm using mostly-compatible constructors
+// with previous implementations.
+
+// TODO: Possibility to set a "fake" number of processors for the Island; the
+// number of processors is used in the calculation of the power consumption of
+// the individual CPUs, but as it is now it works correctly only if the Island
+// has actually the correct number of DISTINCT CPUs (adding multiple times the
+// same CPU will not work).
+
+// TODO: Mechanism to indicate the CPU capability (based on the speed, valid
+// only when using the Minimal CPU Model), used by (Energy)MRTKernel to select
+// automatically the operating condition of each CPU. Also, the mechanism to
+// select the desired OPP based on capability as well. In multi-core scenarios
+// (with multiple cores in the same island), this should take into account the
+// utilization of each CPU in the same island and not select an OPP which is
+// lower than the necessary for another CPU.
+
+// TODO: CPU capability
+
 namespace RTSim {
 
     using namespace MetaSim;
@@ -110,8 +131,8 @@ namespace RTSim {
 
         // TODO: do I need powersaving flag?
         // TODO: document parameters
-        CPUIsland(Type type = Type::GENERIC, std::string name = "",
-                  const std::vector<CPU *> &cpus = {},
+        CPUIsland(const std::vector<CPU *> &cpus = {},
+                  Type type = Type::GENERIC, std::string name = "",
                   const std::vector<OPP> &opps = {},
                   CPUModel *powermodel = nullptr) :
             Entity(type.toString() + "_" + name),
@@ -128,12 +149,23 @@ namespace RTSim {
         }
 
         // TODO: document parameters
-        CPUIsland(Type type = Type::GENERIC, std::string name = "",
-                  const std::vector<CPU *> &cpus = {},
+        CPUIsland(const std::vector<CPU *> &cpus = {},
+                  Type type = Type::GENERIC, std::string name = "",
                   const std::vector<volt_type> &V = {},
                   const std::vector<freq_type> &F = {},
                   CPUModel *powermodel = nullptr) :
-            CPUIsland(type, name, cpus, OPP::fromVectors(V, F), powermodel) {}
+            CPUIsland(cpus, type, name, OPP::fromVectors(V, F), powermodel) {}
+
+        CPUIsland(size_t num_cpus, Type type = Type::GENERIC,
+                  std::string name = "", const std::vector<OPP> &opps = {},
+                  CPUModel *powermodel = nullptr);
+
+        CPUIsland(size_t num_cpus, Type type = Type::GENERIC,
+                  std::string name = "", const std::vector<volt_type> &V = {},
+                  const std::vector<freq_type> &F = {},
+                  CPUModel *powermodel = nullptr) :
+            CPUIsland(num_cpus, type, name, OPP::fromVectors(V, F),
+                      powermodel) {}
 
         DISABLE_COPY(CPUIsland);
         DISABLE_MOVE(CPUIsland);
@@ -147,8 +179,8 @@ namespace RTSim {
         //     _opps(std::move(rhs._opps)),
         //     _current_opp(std::move(rhs._current_opp)),
         //     _frequency_switches(std::move(rhs._frequency_switches)) {
-        //     // This should remove all CPUs from rhs and add them to this island
-        //     for (auto cpu : rhs._cpus) {
+        //     // This should remove all CPUs from rhs and add them to this
+        //     island for (auto cpu : rhs._cpus) {
         //         cpu->setIsland(this);
         //     }
         // }
@@ -160,8 +192,8 @@ namespace RTSim {
         //     _opps = std::move(rhs._opps);
         //     _current_opp = std::move(rhs._current_opp);
         //     _frequency_switches = std::move(rhs._frequency_switches);
-        //     // This should remove all CPUs from rhs and add them to this island
-        //     for (auto cpu : rhs._cpus) {
+        //     // This should remove all CPUs from rhs and add them to this
+        //     island for (auto cpu : rhs._cpus) {
         //         cpu->setIsland(this);
         //     }
         // }
@@ -272,20 +304,24 @@ namespace RTSim {
         }
 
         /// @return the power consumption of the whole island
-        const watt_type getPower() const;
+        watt_type getPower() const;
+
+        size_t getFrequencySwitches() const {
+            return _frequency_switches;
+        }
 
         /// @returns whether at least one CPU on the island is busy
         bool busy() const;
 
-        virtual std::string toString() const {
+        std::string toString() const {
             return getName() + " freq " + std::to_string(getFrequency());
         }
 
         // NON-CONST METHODS
 
         // TODO: What is the purpose of these two methods?
-        virtual void newRun() {}
-        virtual void endRun() {}
+        virtual void newRun() override {}
+        virtual void endRun() override {}
 
         // TODO: to be used only during system initialization
         bool addCPU(CPU *cpu);
@@ -297,6 +333,8 @@ namespace RTSim {
         /// Sets the current OPP from index
         // TODO: track the number of frequency switches directly from here?
         void setOPP(size_t opp_index) {
+            assert(opp_index < _opps.size());
+
             if (_current_opp != opp_index) {
                 ++_frequency_switches;
                 _current_opp = opp_index;
@@ -355,7 +393,7 @@ namespace RTSim {
     ///
     class CPU : public Entity {
         // =================================================
-        // Freind declarations
+        // Friend declarations
         // =================================================
 
         // Needed only because the updateModel() method is marked as private
@@ -367,7 +405,9 @@ namespace RTSim {
     public:
         /// @todo: documentation
         CPU(const std::string &name, CPUIsland *island) :
-            Entity(name), _index(0), _workload("idle"), _island(island) {}
+            Entity(name), _index(0), _workload("idle"), _island(nullptr) {
+            setIsland(island);
+        }
 
         /// Constructs a new CPU (also default constructor)
         ///
@@ -396,7 +436,7 @@ namespace RTSim {
         /// by this method will keep existing forever...).
         CPU(const std::string &name = "", const std::vector<volt_type> &V = {},
             const std::vector<freq_type> &F = {}, CPUModel *pm = nullptr) :
-            CPU(name, new CPUIsland(CPUIsland::Type::GENERIC, name, {this}, V,
+            CPU(name, new CPUIsland({this}, CPUIsland::Type::GENERIC, name, V,
                                     F, pm)) {}
 
         DISABLE_COPY(CPU);
@@ -437,11 +477,16 @@ namespace RTSim {
             return _disabled;
         }
 
+        /// @returns whether the CPU is enabled.
+        bool enabled() const {
+            return !_disabled;
+        }
+
         /// @note disabled CPUs are considered not busy!
         /// @return whether the CPU is busy
         // TODO: do we need a separed setBusy method?
         bool busy() const {
-            return !disabled() || getWorkload() != "idle";
+            return !disabled() && getWorkload() != "idle";
         }
 
         /// @note forwards to the linked CPUIsland
@@ -484,9 +529,20 @@ namespace RTSim {
             return island->getVoltage();
         }
 
+        /// @note forwards to the linked CPUIsland
+        size_t getFrequencySwitches() const {
+            auto island = getIsland();
+            if (!island)
+                return 0;
+            return island->getFrequencySwitches();
+        }
+
         /// @return the current speed at which the workload
         /// is running
         speed_type getSpeed() const {
+            // TODO: check if this is ok
+            if (disabled())
+                return 0;
             return _cpu_speed;
         }
 
@@ -501,7 +557,7 @@ namespace RTSim {
         ///
         /// @todo: who provides this information?
         watt_type getPowerMax() const {
-            return _max_power_consumption;
+            return _max_power;
         }
 
         /// @return a copy of all OPPs higher than the given one
@@ -709,6 +765,10 @@ namespace RTSim {
 
         // NON-CONST METHODS
 
+        // TODO: What is the purpose of these two methods?
+        virtual void newRun() override {}
+        virtual void endRun() override {}
+
         /// Set the processor index
         void setIndex(int i) {
             _index = i;
@@ -737,6 +797,16 @@ namespace RTSim {
             return true;
         }
 
+        /// Disables current CPU.
+        void disable() {
+            _disabled = true;
+        }
+
+        /// Enables current CPU.
+        void enable() {
+            _disabled = false;
+        }
+
         /// Set the workload currently running on the CPU
         void setWorkload(std::string workload) {
             assert(!disabled());
@@ -755,7 +825,7 @@ namespace RTSim {
         /// Sets the maximum power consumption obtainable on this CPU
         /// @todo: who provides this information?
         void setPowerMax(watt_type max_p) {
-            _max_power_consumption = max_p;
+            _max_power = max_p;
         }
 
     private:
@@ -805,7 +875,7 @@ namespace RTSim {
         /// throughout the CPU lifetime
         ///
         /// @todo set externally but never used? check again
-        watt_type _max_power_consumption = 0;
+        watt_type _max_power = 0;
 
         /// Disables the CPU, so that schedulers will not
         /// assign tasks to it until it is set enabled
@@ -876,7 +946,7 @@ namespace RTSim {
         }
     }
 
-    inline const watt_type CPUIsland::getPower() const {
+    inline watt_type CPUIsland::getPower() const {
         if (_powermodel == nullptr)
             return 0;
 
@@ -894,6 +964,19 @@ namespace RTSim {
         }
 
         return power_cons;
+    }
+
+    inline CPUIsland::CPUIsland(size_t num_cpus, Type type, std::string name,
+                                const std::vector<OPP> &opps,
+                                CPUModel *powermodel) :
+        CPUIsland(std::vector<CPU *>{}, type, name, opps, powermodel) {
+        for (size_t i = 0; i < num_cpus; ++i) {
+            // This constructor will automatically add the
+            // CPU to the set of this island and avoid
+            // allocating a new CPUIsland for nothing.
+            auto c = new CPU("", this);
+            c->setIndex(i);
+        }
     }
 
     inline bool CPUIsland::removeCPU(CPU *cpu) {
