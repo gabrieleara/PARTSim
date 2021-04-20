@@ -136,7 +136,35 @@ namespace RTSim {
             CPUIsland(type, name, cpus, OPP::fromVectors(V, F), powermodel) {}
 
         DISABLE_COPY(CPUIsland);
-        DEFAULT_MOVABLE(CPUIsland);
+        DISABLE_MOVE(CPUIsland);
+
+        // Move construction (warning: pointers to the rhs
+        // object will be invalidated)
+        // CPUIsland(CPUIsland &&rhs) :
+        //     Entity(rhs.getName()),
+        //     _type(std::move(rhs._type)),
+        //     _powermodel(std::move(rhs._powermodel)),
+        //     _opps(std::move(rhs._opps)),
+        //     _current_opp(std::move(rhs._current_opp)),
+        //     _frequency_switches(std::move(rhs._frequency_switches)) {
+        //     // This should remove all CPUs from rhs and add them to this island
+        //     for (auto cpu : rhs._cpus) {
+        //         cpu->setIsland(this);
+        //     }
+        // }
+
+        // CPUIsland & operator=(CPUIsland &&rhs) {
+        //     Entity::operator=(std::move(rhs));
+        //     _type = std::move(rhs._type);
+        //     _powermodel = std::move(rhs._powermodel);
+        //     _opps = std::move(rhs._opps);
+        //     _current_opp = std::move(rhs._current_opp);
+        //     _frequency_switches = std::move(rhs._frequency_switches);
+        //     // This should remove all CPUs from rhs and add them to this island
+        //     for (auto cpu : rhs._cpus) {
+        //         cpu->setIsland(this);
+        //     }
+        // }
 
         virtual ~CPUIsland();
 
@@ -289,7 +317,6 @@ namespace RTSim {
 
         CPUModel *_powermodel;
 
-        // This should be a set!
         std::set<CPU *> _cpus;
 
         std::vector<OPP> _opps;
@@ -373,7 +400,7 @@ namespace RTSim {
                                     F, pm)) {}
 
         DISABLE_COPY(CPU);
-        DEFAULT_MOVABLE(CPU);
+        DISABLE_MOVE(CPU);
 
         virtual ~CPU() {
             // Remove association in associated CPUIsland
