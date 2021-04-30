@@ -63,21 +63,35 @@ namespace RTSim {
         /// Java enum types.
         struct Type {
         public:
-            enum _type { GENERIC = 0, BIG, LITTLE, UNKNOWN };
+            enum T { GENERIC = 0, BIG, LITTLE, UNKNOWN };
 
         private:
             /// Underlying value
-            _type t_;
+            T t_;
 
         public:
             /// Constructible only  from the given values
-            Type(_type t = _type::GENERIC) : t_(t) {}
+            Type(T t = T::GENERIC) : t_(t) {}
 
             /// Automatic conversion to the underlying enum,
             /// to enable its usage in switch-case scenarios
-            operator _type() const {
+            operator T() const {
                 return t_;
             }
+
+            /// Equality operator
+            bool operator==(const Type &rhs) {
+                return t_ == rhs.t_;
+            }
+
+            /// Inequality operator
+            bool operator!=(const Type &rhs) {
+                return t_ != rhs.t_;
+            }
+
+            // T operator()() const {
+            //     return T();
+            // }
 
         public:
             std::string toString() {
@@ -285,15 +299,15 @@ namespace RTSim {
             return getOPPIndexByFrequency(opp.frequency);
         }
 
-        /// @return a copy of all OPPs higher than the given one
+        /// @return a copy of all OPPs higher than *or equal to* the given one
         std::vector<OPP> getHigherOPPs(size_t opp_index) const {
             assert(opp_index < getOPPsize());
-            std::vector<OPP> slice(_opps.cbegin() + opp_index + 1,
+            std::vector<OPP> slice(_opps.cbegin() + opp_index,
                                    _opps.cend());
             return slice;
         }
 
-        /// @return a copy of all OPPs higher than the current one
+        /// @return a copy of all OPPs higher than *or equal to* the current one
         std::vector<OPP> getHigherOPPs() const {
             return getHigherOPPs(getOPPIndex());
         }
@@ -499,11 +513,29 @@ namespace RTSim {
 
         /// @note forwards to the linked CPUIsland
         // TODO: change name to getOPPIndex, like in CPUIsland
-        size_t getOPP() const {
+        size_t getOPPIndex() const {
             auto island = getIsland();
             if (!island)
                 return 0;
             return island->getOPPIndex();
+        }
+
+        /// @note forwards to the linked CPUIsland
+        // TODO: change name to getOPPIndex, like in CPUIsland
+        OPP getOPP() const {
+            auto island = getIsland();
+            if (!island)
+                return 0;
+            return island->getOPP();
+        }
+
+        /// @note forwards to the linked CPUIsland
+        // TODO: change name to getOPPIndex, like in CPUIsland
+        OPP getOPP(size_t opp_index) const {
+            auto island = getIsland();
+            if (!island)
+                return 0;
+            return island->getOPP(opp_index);
         }
 
         std::string getWorkload() const {
@@ -511,6 +543,22 @@ namespace RTSim {
             if (disabled())
                 return "idle";
             return _workload;
+        }
+
+        /// @note forwards to the linked CPUIsland
+        freq_type getFrequency(size_t opp_index) const {
+            auto island = getIsland();
+            if (!island)
+                return 0;
+            return island->getFrequency(opp_index);
+        }
+
+        /// @note forwards to the linked CPUIsland
+        volt_type getVoltage(size_t opp_index) const {
+            auto island = getIsland();
+            if (!island)
+                return 0;
+            return island->getVoltage(opp_index);
         }
 
         /// @note forwards to the linked CPUIsland
@@ -560,7 +608,7 @@ namespace RTSim {
             return _max_power;
         }
 
-        /// @return a copy of all OPPs higher than the given one
+        /// @return a copy of all OPPs higher than *or equal to* the given one
         std::vector<OPP> getHigherOPPs(size_t opp_index) const {
             auto island = getIsland();
             if (!island)
@@ -568,7 +616,7 @@ namespace RTSim {
             return island->getHigherOPPs(opp_index);
         }
 
-        /// @return a copy of all OPPs higher than the current one
+        /// @return a copy of all OPPs higher than *or equal to* the current one
         std::vector<OPP> getHigherOPPs() const {
             auto island = getIsland();
             if (!island)
@@ -1017,5 +1065,10 @@ namespace RTSim {
 } // namespace RTSim
 
 // TODO: implement factories for these CPUs
+
+namespace RTSim {
+    // using CPU_BL = CPU;
+    // using Island_BL = CPUIsland;
+} // namespace RTSim
 
 #endif // __RTSIM_CPUISLAND_HPP__

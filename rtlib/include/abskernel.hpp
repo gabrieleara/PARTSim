@@ -82,7 +82,7 @@ namespace RTSim {
         /** It sets the speed of the CPU accordingly to the
             new system load, and returns the new speed.
         */
-        virtual double setSpeed(double newLoad) = 0;
+      //   virtual double setSpeed(double newLoad) = 0;
 
         /** ??? */
         virtual bool isContextSwitching() const = 0;

@@ -9,7 +9,7 @@
 
 #include "class_utils.hpp"
 #include "csv.hpp"
-#include "memory.hpp"
+#include <memory.hpp>
 #include "powermodel.hpp"
 #include "yaml.hpp"
 // TODO: change slightly the factory.hpp and then use it for these objects

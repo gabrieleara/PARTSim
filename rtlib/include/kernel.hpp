@@ -330,8 +330,8 @@ namespace RTSim {
            speed of the CPU accordingly to the new system
            load, and returns the new speed.
         */
-        double setSpeed(double newLoad) 
-            {return (_cpu->setSpeed(newLoad));}
+      //   double setSpeed(double newLoad) 
+      //       {return (_cpu->setSpeed(newLoad));}
 
         /**
            Function inherited from AbsKernel. It says if the 

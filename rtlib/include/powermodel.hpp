@@ -16,7 +16,7 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include "class_utils.hpp"
 #include "cloneable.hpp"
-#include "memory.hpp"
+#include <memory.hpp>
 #include "opp.hpp"
 #include "sortedcont.hpp"
 

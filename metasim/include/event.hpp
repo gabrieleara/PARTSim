@@ -1,7 +1,7 @@
 #ifndef __EVENT_HPP__
 #define __EVENT_HPP__
 
-#include "memory.hpp"
+#include <memory.hpp>
 #include <deque>
 #include <iostream>
 #include <limits>

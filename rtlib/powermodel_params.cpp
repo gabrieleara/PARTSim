@@ -1,7 +1,7 @@
 #include <sstream>
 
 #include "consts.hpp"
-#include "memory.hpp"
+#include <memory.hpp>
 #include "powermodel_params.hpp"
 
 namespace RTSim {

@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "class_utils.hpp"
-#include "memory.hpp"
+#include <memory.hpp>
 #include "powermodel_params.hpp"
 #include "yaml.hpp"
 

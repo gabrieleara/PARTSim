@@ -28,7 +28,7 @@
 #ifndef __FACTORY_HPP__
 #define __FACTORY_HPP__
 
-#include "memory.hpp"
+#include <memory.hpp>
 #include <iostream>
 #include <map>
 #include <string>

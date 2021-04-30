@@ -28,7 +28,7 @@
 #ifndef __EXEINSTR_HPP__
 #define __EXEINSTR_HPP__
 
-#include "memory.hpp"
+#include <memory.hpp>
 
 //From metasim
 #include <debugstream.hpp>

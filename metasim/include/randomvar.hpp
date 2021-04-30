@@ -14,7 +14,7 @@
 #ifndef __RANDOMVAR_HPP__
 #define __RANDOMVAR_HPP__
 
-#include "memory.hpp"
+#include <memory.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>

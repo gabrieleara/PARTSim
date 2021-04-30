@@ -354,7 +354,7 @@ namespace RTSim {
             load, and returns the new speed. For this class,
             it does nothing and returns 0.
         */
-        virtual double setSpeed(double) { return 0; }
+        // virtual double setSpeed(double) { return 0; }
 
         /** 
             Function inherited from AbsRTTask. It refreshes the
