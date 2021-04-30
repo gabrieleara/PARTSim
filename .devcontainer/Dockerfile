@@ -11,6 +11,23 @@ RUN apt update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
+# Other development tools that I frequently use
+RUN apt update && export DEBIAN_FRONTEND=noninteractive \
+    && apt -y install silversearcher-ag expect \
+    && apt -y autoremove \
+    && apt -y clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Function that I use to search for stuff in the project
+RUN echo '\n\
+function search(){\n\
+    if [ $# -lt 1 ]; then\n\
+        ag\n\
+    else\n\
+        unbuffer ag --noheading "$@" | less -r\n\
+    fi\n\
+}' >>/home/vscode/.bashrc
+
 # [Optional] Uncomment this section to install additional packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
