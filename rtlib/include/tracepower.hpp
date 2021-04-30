@@ -2,6 +2,7 @@
 #define __TRACE_POWER_HPP__
 
 #include <cpu.hpp>
+#include <timer.hpp>
 
 namespace RTSim {
     /**

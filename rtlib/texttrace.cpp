@@ -4,8 +4,9 @@ namespace RTSim {
         using namespace std;
         using namespace MetaSim;
 
-    TextTrace::TextTrace(const string& name)
-		{
+        using CPU_BL = CPU;
+
+        TextTrace::TextTrace(const string &name) {
 			fd.open(name.c_str());
 		}
 

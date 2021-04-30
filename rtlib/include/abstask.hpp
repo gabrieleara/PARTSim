@@ -15,7 +15,7 @@
 #define __ABSTASK_HPP__
 
 #include <basetype.hpp>
-#include <cpu.hpp>
+// #include <cpu.hpp>
 
 namespace RTSim {
 

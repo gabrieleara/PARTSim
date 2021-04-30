@@ -25,14 +25,14 @@ namespace RTSim {
     {
         long double TPC = (totalPowerConsumed) / ((long double) counter ); 
         if (counter > 0)
-            return TPC/(cpu->getMaxPowerConsumption());
+            return TPC/(cpu->getPowerMax());
         return 0;
     }
 
     void TracePowerConsumption::action()
     {
         /* It periodically updates the variables: */
-        double currentPowerConsumption = cpu->getCurrentPowerConsumption();
+        double currentPowerConsumption = cpu->getPowerMax();
         totalPowerConsumed += currentPowerConsumption;
         counter++;
     

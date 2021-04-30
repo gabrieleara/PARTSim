@@ -1064,7 +1064,178 @@ namespace RTSim {
     }
 } // namespace RTSim
 
-// TODO: implement factories for these CPUs
+#include <queue>
+
+// TODO: These factories should be updated to the new CPUs
+namespace RTSim {
+    // =========================================================================
+    // class absCPUFactory
+    // =========================================================================
+
+    /// The abstract CPU factory.
+    ///
+    /// Base class for each CPU factory to be implemented.
+    class absCPUFactory {
+        // =================================================
+        // Constructors and destructors
+        // =================================================
+    public:
+        DEFAULT_VIRTUAL_DES(absCPUFactory);
+
+        // =================================================
+        // Methods
+        // =================================================
+    public:
+        /// Constructs a new CPU
+        ///
+        /// See CPU::CPU for more details about its
+        /// parameters and behavior.
+        virtual CPU *createCPU(const std::string &name = "",
+                               const std::vector<volt_type> &V = {},
+                               const std::vector<freq_type> &F = {},
+                               CPUModel *pm = nullptr) = 0;
+    };
+
+    // =========================================================================
+    // class uniformCPUFactory
+    // =========================================================================
+
+    /// A CPU factory that creates uniform CPUs, that is,
+    /// CPUs from a fixed set of names, provided upon
+    /// initialization of this factory.
+    ///
+    /// If more CPUs than the size of the names set on
+    /// initialization is created, the name parameter will
+    /// be used instead to set each CPU name.
+    ///
+    /// This class manages CPU indexes autonomously.
+    class uniformCPUFactory : public absCPUFactory {
+        // =================================================
+        // Constructors and destructors
+        // =================================================
+    public:
+        /// Creates a new uniformCPUFactory that will use
+        /// the given names to create the first n CPUs.
+        ///
+        /// CPUs after the nth will use the name parameter
+        /// to be initializated.
+        ///
+        /// @param names list of names to be used to
+        /// allocate the first n CPUs
+        /// @param n the length of the names array
+        uniformCPUFactory(std::string names[], int n);
+
+        /// Default constructor, same as providing no names
+        /// to the other constructor.
+        uniformCPUFactory() : uniformCPUFactory(nullptr, 0) {}
+        DEFAULT_VIRTUAL_DES(uniformCPUFactory);
+
+        // =================================================
+        // Methods
+        // =================================================
+    public:
+        /// Constructs a new CPU
+        ///
+        /// See CPU::CPU for more details about its
+        /// parameters and behavior.
+        ///
+        /// In addition, the name parameter is ignored for
+        /// the first n calls, with n specified on creation
+        /// of this factory.
+        virtual CPU *createCPU(const std::string &name = "",
+                               const std::vector<volt_type> &V = {},
+                               const std::vector<freq_type> &F = {},
+                               CPUModel *pm = nullptr) override;
+
+        // =================================================
+        // Data
+        // =================================================
+    private:
+        // TODO: document attributes
+        /// Names of all allocated CPUs
+        std::vector<std::string> _names;
+
+        /// Counts how many CPUs with fixed names have
+        /// already been created
+        int _count;
+
+        /// Index for each CPU
+        int _index;
+    };
+
+    inline uniformCPUFactory::uniformCPUFactory(std::string names[], int n) :
+        _count(0), _index(0), _names(n) {
+        for (size_t i = 0; i < _names.size(); ++i) {
+            _names[i] = names[i];
+        }
+    }
+
+    inline CPU *uniformCPUFactory::createCPU(const string &name,
+                                      const vector<volt_type> &V,
+                                      const vector<freq_type> &F,
+                                      CPUModel *pm) {
+        CPU *c = nullptr;
+
+        if (_count >= _names.size()) {
+            c = new CPU(name, V, F, pm);
+        } else {
+            c = new CPU(_names[_count++], V, F, pm);
+        }
+
+        c->setIndex(_index++);
+        return c;
+    }
+
+    // =========================================================================
+    // class customCPUFactory
+    // =========================================================================
+
+    /// A CPU factory that instead of creating new CPUs on
+    /// request stores a set of CPUs and provides then one
+    /// at a time, until there are no CPUs left.
+    class customCPUFactory : public absCPUFactory {
+        // =================================================
+        // Constructors and destructors
+        // =================================================
+    public:
+        customCPUFactory() = default;
+        DEFAULT_VIRTUAL_DES(customCPUFactory);
+
+        // =================================================
+        // Methods
+        // =================================================
+    public:
+        /// Adds another CPU to the set
+        void addCPU(CPU *c) {
+            _cpus.push(c);
+        }
+
+        /// All parameters provided to this method are
+        /// effectively ignored.
+        ///
+        /// @returns the pointer to one of the stored
+        /// pre-allocated CPUs, if the set is not already
+        /// empty, nullptr otherwise.
+        virtual CPU *createCPU(const string &name = "",
+                               const vector<double> &V = {},
+                               const vector<unsigned int> &F = {},
+                               CPUModel *pm = nullptr) override {
+            if (_cpus.empty())
+                return nullptr;
+
+            auto ret = _cpus.front();
+            _cpus.pop();
+            return ret;
+        }
+
+        // =================================================
+        // Data
+        // =================================================
+    private:
+        /// The list of CPUs to choose from. It behaves like a FIFO.
+        std::queue<CPU *> _cpus;
+    };
+}
 
 namespace RTSim {
     // using CPU_BL = CPU;

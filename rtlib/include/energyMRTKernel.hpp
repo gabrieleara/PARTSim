@@ -28,6 +28,10 @@ namespace RTSim {
   class CBServer;
   class CBServerCallingEMRTKernel;
 
+  using CPU_BL = CPU;
+  using Island_BL = CPUIsland;
+  using IslandType = CPUIsland::Type;
+
     /**
         \ingroup sched
 
@@ -257,7 +261,18 @@ namespace RTSim {
         }
 
         /// Get island big/little
-        Island_BL* getIsland(IslandType island) const { return _islands[island]; }
+        Island_BL* getIsland(IslandType island) const {
+          // return _islands[island];
+          switch(IslandType::T(island)) {
+            case IslandType::LITTLE:
+                return _islands[0];
+            case IslandType::BIG:
+                return _islands[1];
+            default:
+                assert(false);
+                return nullptr;
+            }
+        }
 
         bool isCBServer(AbsRTTask* t) const { return dynamic_cast<CBServerCallingEMRTKernel*>(t) != NULL; }
 
@@ -531,7 +546,7 @@ namespace RTSim {
 
         /// Is migration energetically convenient? True if power consumption decreases or is equal between cores
         bool isMigrationEnergConvenient(const MigrationProposal mp) {
-            return mp.to->getPowerConsumption(mp.to->getFrequency()) <= mp.from->getPowerConsumption(mp.from->getFrequency());
+            return mp.to->getPower(mp.to->getFrequency()) <= mp.from->getPower(mp.from->getFrequency());
         }
 
         /// Does migration break schedulability on the ending core?
