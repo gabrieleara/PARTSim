@@ -63,7 +63,12 @@ namespace RTSim {
         /// Java enum types.
         struct Type {
         public:
-            enum T { GENERIC = 0, BIG, LITTLE, UNKNOWN };
+            enum T {
+                GENERIC = 0,
+                BIG,
+                LITTLE,
+                UNKNOWN,
+            };
 
         private:
             /// Underlying value
@@ -88,6 +93,18 @@ namespace RTSim {
             bool operator!=(const Type &rhs) {
                 return t_ != rhs.t_;
             }
+
+            /// Equality operator for T
+            bool operator==(const T &rhs_t) {
+                return t_ == rhs_t;
+            }
+
+            /// Inequality operator for T
+            bool operator!=(const T &rhs_t) {
+                return t_ != rhs_t;
+            }
+
+            // TODO: add other operators!
 
             // T operator()() const {
             //     return T();
@@ -219,8 +236,7 @@ namespace RTSim {
         // =================================================
     public:
         // GETTERS
-        // TODO: rename to getType
-        Type getIslandType() const {
+        Type type() const {
             return _type;
         }
 
