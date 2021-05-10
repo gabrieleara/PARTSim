@@ -53,21 +53,20 @@ namespace RTSim {
         /**
          * @todo clear the maps!!
          */
-        void newRun();
-
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
     protected:
         /**
            Returns true if the resource can be locked, false otherwise
            (in such a case, the task should be blocked)
          */
-        virtual bool request(AbsRTTask *t, Resource *r, int n=1);
+        bool request(AbsRTTask *t, Resource *r, int n=1) override;
         
         /**
            Releases the resource.
          */
-        virtual void release(AbsRTTask *t, Resource *r, int n=1);
+        void release(AbsRTTask *t, Resource *r, int n=1) override;
 
     private:
         /// correspondence task / priority 

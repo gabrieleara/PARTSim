@@ -258,7 +258,6 @@ namespace RTSim {
             // cost->setMaximum(double(currentCost - execdTime));
 
         assert(tmp >= 0);
-#include <cstdio>
         printf("endEvt at %f + [%f-%f]/%f=%f\n", double(t), (double)currentCost, (double)actCycles, newSpeed, (double)tmp);
         //_endEvt.post(t + tmp);
         _endEvt.post(t + Tick(double(currentCost) / newSpeed));

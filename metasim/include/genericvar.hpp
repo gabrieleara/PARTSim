@@ -65,11 +65,11 @@ namespace MetaSim {
     public:
         GenericVar(const std::string &filename);
 
-        CLONEABLE(RandomVar, GenericVar)
+        CLONEABLE(RandomVar, GenericVar, override)
         
         static RandomVar *createInstance(std::vector<std::string> &par);
         
-        virtual double get(void);
+        double get(void) override;
 
   };
 

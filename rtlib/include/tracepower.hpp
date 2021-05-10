@@ -25,7 +25,7 @@ namespace RTSim {
         long double getAveragePowerConsumption();
 	
         /// Periodically updates the variables and writes some values in the file
-        void action();
+        void action() override;
     };
 
 }

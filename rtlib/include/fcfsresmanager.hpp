@@ -40,12 +40,12 @@ namespace RTSim {
          */
         FCFSResManager(const string &n = "");
  
-        virtual void newRun();
-        virtual void endRun();
+        void newRun() override;
+        void endRun() override;
  
     protected:
-        virtual bool request(AbsRTTask*, Resource*, int n=1);
-        virtual void release(AbsRTTask*, Resource*, int n=1); 
+        bool request(AbsRTTask*, Resource*, int n=1) override;
+        void release(AbsRTTask*, Resource*, int n=1) override;
     private:  
         map<Resource *, AbsRTTask *> _resAndCurrUsers;
         typedef deque<AbsRTTask *> BLOCKED_QUEUE;

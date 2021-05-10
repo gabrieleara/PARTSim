@@ -90,25 +90,25 @@ namespace RTSim {
                   const std::string &n = "");
         static Instr *createInstance(const std::vector<std::string> &par);
 
-        CLONEABLE(Instr, ExecInstr)
+        CLONEABLE(Instr, ExecInstr, override)
 
         virtual ~ExecInstr();
 
-      virtual string toString() const {
-        stringstream ss;
+      string toString() const override {
+        std::stringstream ss;
         ss << "ExecInstr wl: " << workload << " wcet: " << getWCET() << endl;
         return ss.str();
       }
 
         //Virtual methods from Instr
-        virtual void schedule() throw (InstrExc);
-        virtual void deschedule();
-        virtual void onEnd();
-        virtual void reset();
-        virtual Tick getDuration() const;
-        virtual Tick getWCET() const throw(RandomVar::MaxException);
-        virtual Tick getExecTime() const;
-        virtual inline double getActCycles() const override { return actCycles; }
+        void schedule() throw (InstrExc) override;
+        void deschedule() override;
+        void onEnd() override;
+        void reset() override;
+        Tick getDuration() const override;
+        Tick getWCET() const throw(RandomVar::MaxException) override;
+        Tick getExecTime() const override;
+        inline double getActCycles() const override { return actCycles; }
         virtual string getWorkload() const { return workload; }
 
         /* Commented, because the tracing mechanism has changed */
@@ -121,14 +121,14 @@ namespace RTSim {
 
 
         //From Entity...
-        virtual void newRun();
-        virtual void endRun();
+        void newRun() override;
+        void endRun() override;
 
 
         /** Function inherited from Instr. It refreshes the state of the
          *  executing instruction when a change of the CPU speed occurs.
          */
-        void refreshExec(double oldSpeed, double newSpeed);
+        void refreshExec(double oldSpeed, double newSpeed) override;
     };
 
     /**

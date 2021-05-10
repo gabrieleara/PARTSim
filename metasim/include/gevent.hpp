@@ -92,7 +92,7 @@ namespace MetaSim {
            
            \sa register_handler
         */
-        virtual void doit() { 
+        void doit() override {
             if ((_obj != NULL) && (_fun != NULL))
                 (_obj->*_fun)(this);
         }

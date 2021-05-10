@@ -375,11 +375,11 @@ namespace RTSim {
         _sched->notify(st);
     }
 
-    void MRTKernel::printState()
+    void MRTKernel::printState() const
     {
         Entity *task;
         cout << "MRTKernel::printstate(), time " << SIMUL.getTime() << " ";
-        for (ITCPU i=_m_currExe.begin(); i!=_m_currExe.end(); i++) {
+        for (auto i=_m_currExe.cbegin(); i!=_m_currExe.cend(); i++) {
             task = dynamic_cast<Entity *>(i->second);
             if (task != NULL) 
                 cout << i->first->getName() << " : " << task->getName() << "   ";
@@ -414,14 +414,14 @@ namespace RTSim {
         }
     }
 
-    void MRTKernel::print()
+    void MRTKernel::print() const
     {
         DBGPRINT("Executing");
-        for (ITCPU i = _m_currExe.begin(); i != _m_currExe.end(); ++i)
+        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); ++i)
             DBGPRINT_4("  [", i->first, "] --> ", taskname(i->second));
-        map<const AbsRTTask *, CPU *>::iterator j = _m_dispatched.begin();
+        auto j = _m_dispatched.cbegin();
         DBGPRINT("Dispatched");
-        for ( ; j != _m_dispatched.end(); ++j) 
+        for ( ; j != _m_dispatched.cend(); ++j) 
             DBGPRINT_4("  [", taskname(j->first), "] --> ", j->second);
     }
 

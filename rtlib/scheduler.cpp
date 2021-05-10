@@ -282,7 +282,7 @@ namespace RTSim {
             DBGPRINT_2(taskname((*it)->getTask()), " -> ");
     }
 
-    string Scheduler::toString() {
+    string Scheduler::toString() const {
         string s;
         priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
             _queue.begin();

@@ -135,7 +135,7 @@ namespace RTSim {
         /**
            Object to string. you should override this function in derived classes
          */
-        virtual string toString() const;
+        string toString() const override;
 
     protected:
         friend class ArrEvt;
@@ -279,18 +279,18 @@ namespace RTSim {
            - resets the instruction counter
            - resets the executed time counter
         */
-        virtual void newRun(); 
+        void newRun() override;
 
         /**
            Does nothing.
         */
-        virtual void endRun();
+        void endRun() override;
 
         /** 
             This functions activates the tasks (post the arrival event at
             the current time).
         */
-        virtual void activate();
+        void activate() override;
 
         /** This method is used to activate the task (posts the arrival
             event at the time specified in the parameter) 
@@ -368,10 +368,10 @@ namespace RTSim {
         void discardInstrs(bool selfDestruct = true);
 
         /** Returns the arrival time of the current instance */
-        Tick getArrival() const;
+        Tick getArrival() const override;
 
         /** Returns the arrival time of the previous instance */
-        Tick getLastArrival() const;
+        Tick getLastArrival() const override;
 
         /** Returns the executed time of the last (or current) instance */
         Tick getExecTime() const;
@@ -380,7 +380,13 @@ namespace RTSim {
         double getExecCycles() const;
 
         /** Returns the WCET in cycles, independently of CPU speed */
-        virtual double getMaxExecutionCycles(double capacity = 1.0) const { return _maxC; }
+        virtual double getMaxExecutionCycles(double capacity) const {
+            return _maxC;
+        }
+
+        double getMaxExecutionCycles() const override {
+            return getMaxExecutionCycles(1.0);
+        }
 
         Tick getMinIAT() const { return Tick(int_time->getMinimum());}
 
@@ -403,16 +409,19 @@ namespace RTSim {
            depending on CPU frequency
            This is a worst-case exec time at the supplied speed===capacity
          */
-        virtual inline double getWCET(double capacity) const {
+        inline double getWCET(double capacity) const override {
             double n = double(getWCET()) / capacity;
             //cout << endl << "\t\t\ttask::getwcet " << double(getWCET()) <<"/"<< capacity<<"="<<n<<endl;
             return n;
         }
 
-        virtual double getRemainingWCET(double capacity = 1.0) const;
+        double getRemainingWCET(double capacity = 1.0) const override;
 
-        Tick getDeadline() const {return _dl;}
-        Tick getRelDline() const {return _rdl;}
+        Tick getPeriod() const override {
+            throw std::runtime_error("You must override this method!");
+        }
+        Tick getDeadline() const override {return _dl;}
+        Tick getRelDline() const override {return _rdl;}
 
         /** 
             Change the interarrival time. Used to change the period or the
@@ -437,14 +446,14 @@ namespace RTSim {
 	
             @todo check if it calls the schedEvt.process()...
         */
-        virtual void schedule();
+        void schedule() override;
 
         /**
            From AbsTask interface...
 	
            @todo check if it calls the deschedEvt.process()...
         */
-        virtual void deschedule();
+        void deschedule() override;
 
         /** 
             Set the kernel for this task. Called by kernel.addTask(). If
@@ -457,13 +466,13 @@ namespace RTSim {
             for this task. To move a task from one kernel to another, call
             setKernel(0) before.
         */
-        void setKernel(AbsKernel *k) throw(KernAlreadySet);
+        void setKernel(AbsKernel *k) throw(KernAlreadySet) override;
 
         /** 
             Returns the kernel that contains this task. Can return 0
             if this taks does not belong to any kernel.
         */
-        AbsKernel *getKernel() { return _kernel; }
+        AbsKernel *getKernel() override { return _kernel; }
 
         task_state getState() { return state; }
 
@@ -473,12 +482,12 @@ namespace RTSim {
         /** 
             Returns true if the task is active.
         */
-        virtual bool isActive() const;
+        bool isActive() const override;
 
         /** 
             Returns true if the task is executing.
         */
-        virtual bool isExecuting() const;
+        bool isExecuting() const override;
 
         void setRelDline(const Tick& dl) {_rdl = dl;}
 
@@ -546,10 +555,12 @@ namespace RTSim {
             executing task when a change of the CPU speed occurs.
 
             @todo check which function calls this one.
-        */ 
-        void refreshExec(double oldSpeed, double newSpeed);
 
-        int getTaskNumber() const { return getID();}	
+            @todo NONE of the implementations of this method does anything!
+        */ 
+        void refreshExec(double oldSpeed, double newSpeed) override;
+
+        int getTaskNumber() const override { return getID();}	
 
         void setAbort(bool f) { deadEvt.setAbort(f); }
     };

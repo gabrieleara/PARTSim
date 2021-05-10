@@ -97,7 +97,7 @@ namespace RTSim {
     }
 
     string toString() const {
-      stringstream ss;
+      std::stringstream ss;
       ss << "Tasks migration histories:" << endl;
       ss << "Task\tTick\tEvt\t\tcpu\twl" << endl;
 
@@ -494,7 +494,6 @@ namespace RTSim {
             assert(cbs != NULL); assert(cpu != NULL);
 
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
-            #include <cstdio>
             // double u_active = double(cbs->getWCET(cpu->getSpeed())) / (double) cbs->getDeadline();
             // printf("\tu_active = %f/%f (wl: %s, speed: %f)\n", double(cbs->getWCET(cpu->getSpeed())), (double) cbs->getDeadline(), cpu->getWorkload().c_str(), cpu->getSpeed());
             // if (cbs->isKilled()) {
@@ -513,14 +512,14 @@ namespace RTSim {
             cout << "\tadded active utilization for " << cbs->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[cbs]) << endl;
         }
 
-        virtual void newRun() {}
+        void newRun() override {}
 
-        virtual void endRun() {
+        void endRun() override {
             for (auto& e : _queues)
                 empty(e.first);
         }
 
-        virtual string toString();
+        string toString() const override;
 
     };
 

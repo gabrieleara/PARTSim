@@ -29,8 +29,8 @@ namespace RTSim {
         class FIFOModel : public TaskModel {
         public:
             FIFOModel(AbsRTTask *t) : TaskModel(t) {}
-            Tick getPriority() const { return _rtTask->getArrival(); }
-            void changePriority(MetaSim::Tick)
+            Tick getPriority() const override { return _rtTask->getArrival(); }
+            void changePriority(MetaSim::Tick) override
                 {
                     cerr << "Warning! changePriority called on a FIFOModel" << endl;
                 }
@@ -44,9 +44,9 @@ namespace RTSim {
         */
         void addTask(AbsRTTask *t) throw(RTSchedExc);
 
-        void addTask(AbsRTTask *t, const std::string &p);
+        void addTask(AbsRTTask *t, const std::string &p) override;
 
-        void removeTask(AbsRTTask *t) {}
+        void removeTask(AbsRTTask *t) override {}
 
         static std::unique_ptr<FIFOScheduler> createInstance(const std::vector<std::string> &par);
 

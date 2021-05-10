@@ -61,7 +61,7 @@ namespace RTSim {
         TaskModel(AbsRTTask *t);
         virtual ~TaskModel();
 
-	string toString() const { return _rtTask->toString(); }
+        virtual string toString() const { return _rtTask->toString(); }
 
         /// Returns a pointer to the task
         AbsRTTask *getTask() { return _rtTask; }
@@ -266,13 +266,13 @@ namespace RTSim {
          */ 
         virtual AbsRTTask * getTaskN(unsigned int);
 
-	/// Returns all tasks in the scheduler
-	virtual vector<AbsRTTask*> getTasks() const { 
-		vector<AbsRTTask*> tt;
-		for (auto& elem : _tasks)
-			tt.push_back(elem.first);
-		return tt; 
-	}
+         /// Returns all tasks in the scheduler
+         virtual vector<AbsRTTask*> getTasks() const {
+            vector<AbsRTTask*> tt;
+            for (auto& elem : _tasks)
+               tt.push_back(elem.first);
+            return tt;
+         }
 
         /**
          * Returns the number of elements in queue.
@@ -305,10 +305,10 @@ namespace RTSim {
          */
         virtual void discardTasks(bool f);
  
-        virtual void newRun();
-        virtual void endRun();
+        void newRun() override;
+        void endRun() override;
         virtual void print();
-        virtual string toString();
+        string toString() const override;
 
     protected:
         /// pointer to the kernel

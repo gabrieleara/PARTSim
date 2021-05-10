@@ -17,16 +17,16 @@ namespace RTSim {
   CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
      const std::string &sched = "FIFOSched");
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
       
-        virtual Tick getBudget() const { return Q;}
-        virtual Tick getPeriod() const { return P;}
+        Tick getBudget() const override { return Q;}
+        Tick getPeriod() const override { return P;}
 
-        virtual Tick changeBudget(const Tick &n);
+        Tick changeBudget(const Tick &n) override;
 
         Tick changeQ(const Tick &n);
-        virtual double getVirtualTime();
+        double getVirtualTime() override;
         Tick get_remaining_budget() const; 
 
         policy_t get_policy() const { return idle_policy; }
@@ -43,7 +43,7 @@ namespace RTSim {
 
        @see Scheduler
       */
-      virtual void addTask(AbsRTTask &task, const std::string &params = "") {
+      void addTask(AbsRTTask &task, const std::string &params = "") override {
         Server::addTask(task, params);
 
         _yielding = false;
@@ -61,7 +61,6 @@ namespace RTSim {
             Task *tt = dynamic_cast<Task*>(tasks.at(i));
             //cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
             NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask*>(tt);
-            #include <cstdio>
             printf("%f > %f && %d || %f == %f\n", (double) tt->arrEvt.getTime(), (double) SIMUL.getTime(), !tt->isActive(), (double) tt->endEvt.getTime(), (double) SIMUL.getTime());
             if ( ( tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive() ) || tt->endEvt.getTime() == SIMUL.getTime() ) // todo make easier?
               continue;
@@ -104,8 +103,8 @@ namespace RTSim {
         }
 
         /// Server to human-readable string
-        virtual string toString() const { 
-          stringstream s; 
+        string toString() const override { 
+          std::stringstream s; 
           s << "\ttasks: [ " << sched_->toString() << "]" << (isYielding() ? " yielding":"") <<
             " (Q:" << getBudget() << ", P:" << getPeriod() << ")\tstatus: " << getStatusString();
           return s.str();
@@ -116,31 +115,31 @@ namespace RTSim {
     protected:
                 
         /// from idle to active contending (new work to do)
-        virtual void idle_ready();
+        void idle_ready() override;
 
         /// from active non contending to active contending (more work)
-        virtual void releasing_ready();
+        void releasing_ready() override;
                 
         /// from active contending to executing (dispatching)
-        virtual void ready_executing();
+        void ready_executing() override;
 
         /// from executing to active contenting (preemption)
-        virtual void executing_ready();
+        void executing_ready() override;
 
         /// from executing to active non contending (no more work)
-        virtual void executing_releasing();
+        void executing_releasing() override;
 
         /// from active non contending to idle (no lag)
-        virtual void releasing_idle();
+        void releasing_idle() override;
 
         /// from executing to recharging (budget exhausted)
-        virtual void executing_recharging();
+        void executing_recharging() override;
 
         /// from recharging to active contending (budget recharged)
-        virtual void recharging_ready();
+        void recharging_ready() override;
 
         /// from recharging to active contending (budget recharged)
-        virtual void recharging_idle();
+        void recharging_idle() override;
 
         virtual void onReplenishment(Event *e);
 
@@ -157,7 +156,8 @@ namespace RTSim {
         Tick Q,P,d;
         Tick cap; 
         Tick last_time;
-        Tick recharging_time;
+        // // Never used
+        // Tick recharging_time;
         int HR;
         
         /// replenishment: it is a pair of <t,b>, meaning that
@@ -207,13 +207,13 @@ namespace RTSim {
     class CBServerCallingEMRTKernel : public CBServer {
     protected:
       /// same as the parent releasing_idle() but also calls EMRTKernel
-      virtual void releasing_idle();
+      void releasing_idle() override;
 
       // same as parent, but also calls EMRTKernel
-      virtual void executing_releasing();
+      void executing_releasing() override;
 
       /// from executing to recharging (budget exhausted)
-      virtual void executing_recharging();
+      void executing_recharging() override;
 
     public:
       CBServerCallingEMRTKernel(Tick q, Tick p, Tick d, bool HR, const std::string &name, 
@@ -247,7 +247,7 @@ namespace RTSim {
       Tick getReplenishmentEvent() const { return _replEvt.getTime(); }
 
       /// Get WCET
-      virtual double getWCET(double capacity) const {
+      double getWCET(double capacity) const override {
         double wcet = 0.0;
  
         for (AbsRTTask* t : getTasks())
@@ -257,25 +257,25 @@ namespace RTSim {
         return wcet;
       }
 
-      virtual CPU* getProcessor(const AbsRTTask* t) const;
+      CPU* getProcessor(const AbsRTTask* t) const override;
 
       /// Get remaining WCET - practically WCET
-      virtual double getRemainingWCET(double capacity) const {
+      double getRemainingWCET(double capacity) const override {
         return getWCET(capacity);
       }
 
       /// Arrival event of task of server
-      virtual void onArrival(AbsRTTask *t) {
+      void onArrival(AbsRTTask *t) override {
         cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
         _yielding = false;
         Server::onArrival(t);
       }
 
       /// Task of server ends, callback
-      virtual void onEnd(AbsRTTask *t);
+      void onEnd(AbsRTTask *t) override;
 
       /// On deschedule event (of server - and of tasks in it)
-      virtual void onDesched(Event *e) {
+      void onDesched(Event *e) override {
         cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << endl;
         if (isEmpty())
             yield();
@@ -284,10 +284,10 @@ namespace RTSim {
       }
 
 
-      virtual void onReplenishment(Event *e);
+      void onReplenishment(Event *e) override;
 
       /// Object to human-readable string
-      virtual string toString() const {
+      string toString() const override {
         string s = "CBSCEMRTK " + getName() + ". " + CBServer::toString();
         return s;
       }

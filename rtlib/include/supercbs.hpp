@@ -58,7 +58,7 @@ namespace RTSim {
         public:
             ChangeBudgetEvt(SuperCBS *s1, Server *s2, double b) :
                 Event(), sp(s1), ss(s2), budget(b) {}
-            virtual void doit() { sp->onChangeBudget(this); }
+            void doit() override { sp->onChangeBudget(this); }
             Server *getServer() { return ss; }
             Tick getBudget() { return budget; }
         };
@@ -89,7 +89,7 @@ namespace RTSim {
            @return the effective increment (or decrement) in the
            budget.
         */
-        Tick changeBudget(Server *s, Tick delta_budget);
+        Tick changeBudget(Server *s, Tick delta_budget) override;
 
         /**
            Adds a new server to the SchedPoint algorithm. The servers
@@ -98,10 +98,10 @@ namespace RTSim {
            @param s reference to the server
 
         */
-        void addServer(Server *s);
+        void addServer(Server *s) override;
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
     };
 

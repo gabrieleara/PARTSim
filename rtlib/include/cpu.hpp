@@ -94,7 +94,7 @@ namespace RTSim {
             // }
 
         public:
-            std::string toString() {
+            std::string toString() const {
                 switch (t_) {
                 case GENERIC:
                     return "Island_Generic";
@@ -327,15 +327,15 @@ namespace RTSim {
         /// @returns whether at least one CPU on the island is busy
         bool busy() const;
 
-        std::string toString() const {
+        std::string toString() const override {
             return getName() + " freq " + std::to_string(getFrequency());
         }
 
         // NON-CONST METHODS
 
         // TODO: What is the purpose of these two methods?
-        virtual void newRun() override {}
-        virtual void endRun() override {}
+        void newRun() override {}
+        void endRun() override {}
 
         // TODO: to be used only during system initialization
         bool addCPU(CPU *cpu);
@@ -624,7 +624,7 @@ namespace RTSim {
             return island->getHigherOPPs();
         }
 
-        std::string toString() const {
+        std::string toString() const override {
             return getName() + " freq " + std::to_string(getFrequency());
         }
 
@@ -814,8 +814,8 @@ namespace RTSim {
         // NON-CONST METHODS
 
         // TODO: What is the purpose of these two methods?
-        virtual void newRun() override {}
-        virtual void endRun() override {}
+        void newRun() override {}
+        void endRun() override {}
 
         /// Set the processor index
         void setIndex(int i) {

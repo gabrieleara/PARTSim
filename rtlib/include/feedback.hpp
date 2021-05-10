@@ -25,8 +25,8 @@ namespace RTSim {
 
         virtual void notify(const Tick &exec_time) = 0;
 
-        virtual void newRun() = 0;
-        virtual void endRun() = 0;
+        void newRun() override = 0;
+        void endRun() override = 0;
     };
 }
 

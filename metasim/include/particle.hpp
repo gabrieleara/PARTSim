@@ -99,7 +99,7 @@ namespace MetaSim {
 
         virtual ~Particle() {}
     
-        virtual void probe() {
+        void probe() override {
             staptr_->probe(*evtptr_);
         }
 
@@ -108,7 +108,7 @@ namespace MetaSim {
            to force type of event. This is not clean, but for the
            moment I could not find anything better than this.
          */
-        virtual void clone_to(Event &e) {
+        void clone_to(Event &e) override {
             E& ent = static_cast<E&>(e);
             std::unique_ptr< ParticleInterface > p(new Particle<E, S>(ent, *staptr_));
             ent.addParticle(std::move(p));

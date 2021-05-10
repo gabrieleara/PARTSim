@@ -41,12 +41,12 @@ namespace RTSim {
             _kernel(k),
             _cpu(c),
             _task(0) {};
-        CPU * getCPU() { return &_cpu; }
+        CPU * getCPU() const { return &_cpu; }
         void setTask(AbsRTTask *t) {_task = t; }
-        AbsRTTask *getTask() { return _task; }
-        virtual void doit() = 0;
-        virtual string toString() {
-            stringstream ss;
+        AbsRTTask *getTask() const { return _task; }
+        void doit() override = 0;
+        string toString() const override {
+            std::stringstream ss;
             ss << taskname(getTask()) << " " << getCPU()->getName() << " at " << getTime();
             return ss.str(); 
         }
@@ -63,9 +63,9 @@ namespace RTSim {
     class BeginDispatchMultiEvt : public DispatchMultiEvt {
     public:
         BeginDispatchMultiEvt(MRTKernel &k, CPU &c);
-        virtual void doit();
-        virtual string toString() { 
-            stringstream ss ;
+        void doit() override;
+        string toString() const override {
+            std::stringstream ss ;
             ss << "BeginDMEvt " << DispatchMultiEvt::toString();
             return ss.str();
         } 
@@ -81,9 +81,9 @@ namespace RTSim {
     class EndDispatchMultiEvt : public DispatchMultiEvt {
     public:
         EndDispatchMultiEvt(MRTKernel &k, CPU &c);
-        virtual void doit();
-        virtual string toString() {
-            stringstream ss ;
+        void doit() override;
+        string toString() const override {
+            std::stringstream ss ;
             ss << "EndDMEvt " << DispatchMultiEvt::toString();
             return ss.str();
         }
@@ -215,13 +215,13 @@ namespace RTSim {
            
            Spcify the scheduling parameters in param.
          */
-        virtual void addTask(AbsRTTask &t, const std::string &param = "");
+        void addTask(AbsRTTask &t, const std::string &param = "") override;
 
         // inherited from RTKernel
-        virtual void onArrival(AbsRTTask *);
-        virtual void suspend(AbsRTTask *);
-        // virtual void activate(AbsRTTask *); //same as RTKernel
-        virtual void onEnd(AbsRTTask *);
+        void onArrival(AbsRTTask *) override;
+        void suspend(AbsRTTask *) override;
+        // void activate(AbsRTTask *) override; //same as RTKernel
+        void onEnd(AbsRTTask *) override;
 
         /** 
             Dispatching on a given CPU. 
@@ -242,7 +242,7 @@ namespace RTSim {
             free processor, then we call the other dispatch,
             specifying on which processor we need to schedule.
          */
-        virtual void dispatch();
+        void dispatch() override;
 
         virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
         virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
@@ -254,13 +254,13 @@ namespace RTSim {
          * Returns a pointer to the CPU on which t is running (NULL if
          * t is not running on any CPU)
          */
-        virtual CPU *getProcessor(const AbsRTTask *) const;
+        CPU *getProcessor(const AbsRTTask *) const override;
 
         /**
          * Returns a pointer to the CPU on which t was running (NULL if
          * t was not running on any CPU)
          */
-        virtual CPU *getOldProcessor(const AbsRTTask *) const;
+        CPU *getOldProcessor(const AbsRTTask *) const override;
 
         /**
            Returns a vector containing the pointers to the processors.
@@ -278,10 +278,10 @@ namespace RTSim {
             _migrationDelay = t;
         }
 
-        virtual void newRun();
-        virtual void endRun();
-        virtual void print();
-        virtual void printState();
+        void newRun() override;
+        void endRun() override;
+        void print() const override;
+        void printState() const override;
 
         /** 
          *  Returns a pointer to the task which is executing on given
@@ -295,7 +295,7 @@ namespace RTSim {
          Each element of the vector corresponds to the name of a
          different running task.
          */
-        virtual std::vector<std::string> getRunningTasks();
+        std::vector<std::string> getRunningTasks() override;
     };
 } // namespace RTSim
 

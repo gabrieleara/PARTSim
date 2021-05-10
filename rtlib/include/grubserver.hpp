@@ -48,8 +48,8 @@ namespace RTSim {
        
         double getActiveUtilization() { return active_u; }
  
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
     };
     
     class Grub : public Server {
@@ -70,52 +70,52 @@ namespace RTSim {
         Grub(Tick q, Tick p, const std::string &name, const std::string &sched = "FIFOSched");
         ~Grub();
 
-        Tick getBudget() const;
-        Tick getPeriod() const;
+        Tick getBudget() const override;
+        Tick getPeriod() const override;
         double getUtil() const;
 
 	void updateBudget();
 	void startAccounting();
 
-        Tick changeBudget(const Tick &new_budget);
+        Tick changeBudget(const Tick &new_budget) override;
 
-	double getVirtualTime() { return vtime.get_value(); }
+	double getVirtualTime() override { return vtime.get_value(); }
 
-	void newRun();
-	void endRun();
+	void newRun() override;
+	void endRun() override;
 
     // todo correct?
-    virtual double getWCET(double capacity) const { return Q; }
+    double getWCET(double capacity) const override { return Q; }
 
     protected:
 	void onIdle(Event *evt);
 
         /// from idle to active contending (new work to do)
-        void idle_ready();
+        void idle_ready() override;
 
         /// from active non contending to active contending (more work)
-        void releasing_ready();
+        void releasing_ready() override;
                 
         /// from active contending to executing (dispatching)
-        void ready_executing();
+        void ready_executing() override;
 
         /// from executing to active contenting (preemption)
-        void executing_ready();
+        void executing_ready() override;
 
         /// from executing to active non contending (no more work)
-        void executing_releasing();
+        void executing_releasing() override;
 
         /// from active non contending to idle (no lag)
-        void releasing_idle();
+        void releasing_idle() override;
 
         /// from executing to recharging (budget exhausted)
-        void executing_recharging();
+        void executing_recharging() override;
 
         /// from recharging to active contending (budget recharged)
-        void recharging_ready();
+        void recharging_ready() override;
 
         /// from recharging to idle (nothing remains to be done)
-        void recharging_idle();
+        void recharging_idle() override;
     };
 }
 

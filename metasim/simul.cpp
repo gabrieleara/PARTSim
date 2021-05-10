@@ -26,7 +26,7 @@ namespace MetaSim {
     public:
       MsgEvt(const string &msg, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10)
         : Event(p), _msg(msg) {  }
-      virtual void doit() {
+      void doit() override {
         DBGPRINT(_msg);
         cout << _msg << endl;
       }
@@ -248,7 +248,7 @@ namespace MetaSim {
     // wrappers for debug entry/exit
     void Simulation::dbgEnter(string lev, string header)
     {
-        stringstream ss;    
+        std::stringstream ss;
         
         ss << "t = [" << globTime << "] --> " + header;
 //string h = "t = [" + string(globTime) + "] --> " + header; 

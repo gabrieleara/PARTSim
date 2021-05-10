@@ -32,7 +32,7 @@ namespace RTSim {
         DBGPRINT_2("HR ", HR);
         cap = Q;
         last_time = 0;
-        recharging_time = 0;
+        // recharging_time = 0;
         status = IDLE;
         capacity_queue.clear();
         if (vtime.get_status() == CapacityTimer::RUNNING) vtime.stop();

@@ -41,7 +41,7 @@ namespace RTSim {
         PeriodicTask(Tick iat, Tick rdl, Tick ph = 0,
                      const std::string &name = "", long qs = 100);
 	
-        inline Tick getPeriod() const { return period; }
+        inline Tick getPeriod() const override { return period; }
 	
 	
         /** Used to build tasks with the Factory.  The string
@@ -69,12 +69,12 @@ namespace RTSim {
         /**
            Object to string. you should override this function in derived classes
          */
-        virtual string toString() const;
+        string toString() const override;
 
         /// Returns deadline. Assumption is DL = period
-        virtual Tick getRelDline() const override { return getPeriod(); }
+        Tick getRelDline() const override { return getPeriod(); }
 
-        virtual double getMaxExecutionCycles() const { return getWCET(1.0); }
+        double getMaxExecutionCycles() const override { return getWCET(1.0); }
     };
 
 
@@ -93,21 +93,21 @@ namespace RTSim {
         NonPeriodicTask(Tick iat, Tick rdl, Tick ph = 0,
                      const std::string &name = "", long qs = 100) : PeriodicTask(iat, rdl, ph, name, qs) {};
     
-        virtual void onEndInstance(Event *e) {
+        void onEndInstance(Event *e) override {
             Task::onEndInstance(e);
 
             cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
             endRun();
         }
 
-        virtual void onKill(Event *e) {
+        void onKill(Event *e) override {
             Task::onKill(e);
 
             cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
             endRun();
         }
 
-        virtual string toString() const;
+        string toString() const override;
 
     };
 

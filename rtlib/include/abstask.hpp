@@ -116,7 +116,7 @@ namespace RTSim {
     /**
       returns the task period
       */
-    virtual Tick getPeriod() const { return Tick(0.0); };
+    virtual Tick getPeriod() const = 0;
 
     /**  
       returns the Task ID.
@@ -124,10 +124,10 @@ namespace RTSim {
     virtual int getTaskNumber() const = 0;
 
     /// get WCET scaled with capacity, big-little
-    virtual double getWCET(double capacity) const { return 0.0; };
+    virtual double getWCET(double capacity) const = 0;
 
     /// get remaining WCET scaled with capacity, big-little
-    virtual double getRemainingWCET(double capacity = 1.0) const { return 0.0; };
+    virtual double getRemainingWCET(double capacity = 1.0) const = 0;
 
     template<class Trace>
     void setTrace(Trace* tr) {  tr->attachToTask(*this);  }

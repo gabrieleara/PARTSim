@@ -78,8 +78,8 @@ namespace RTSim {
         /// returns the resource owner
         AbsRTTask* getOwner() const;
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
     };
 

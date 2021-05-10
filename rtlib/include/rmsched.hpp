@@ -45,7 +45,7 @@ namespace RTSim {
                 else return _rtTask->getRelDline(); 
             }
 
-            void changePriority(MetaSim::Tick p) {
+            void changePriority(MetaSim::Tick p) override {
                 if (p == _rtTask->getRelDline()) 
                     extP = false;
                 else { 
@@ -63,9 +63,9 @@ namespace RTSim {
          */
         void addTask(AbsRTTask* task) throw (RTSchedExc);
 
-        void addTask(AbsRTTask *t, const std::string &p);
+        void addTask(AbsRTTask *t, const std::string &p) override;
 
-        void removeTask(AbsRTTask *t) { }
+        void removeTask(AbsRTTask *t) override { }
     };
 
 }

@@ -99,7 +99,6 @@ namespace RTSim {
     double EnergyMRTKernel::getUtilization(AbsRTTask* task, double capacity) const {
         double util = ceil(task->getRemainingWCET(capacity)) / double(task->getPeriod());
 
-#include <cstdio>
         printf("\t\t\tgetUtilization of considered task %f/%f (capacity=%f)=%f\n",task->getRemainingWCET(capacity), double(task->getPeriod()), capacity, util);
         return util;
     }
@@ -256,7 +255,7 @@ namespace RTSim {
         cout << b << endl;
     }
 
-    void EnergyMRTKernel::printState(bool alsoQueues, bool alsoCBSStatus) {
+    void EnergyMRTKernel::printState(bool alsoQueues, bool alsoCBSStatus) const {
         cout << "t=" << SIMUL.getTime() << " State of scheduler:" << endl << "Running tasks:" << endl << "\t";
         for (CPU_BL *c : getProcessors()) {
           AbsRTTask *t = _queues->getRunningTask(c);
@@ -273,7 +272,7 @@ namespace RTSim {
             for (const auto& elem : _envelopes) {
                 cout << "- " << elem.second->toString();
                 if (elem.second->getStatus() == ServerStatus::RELEASING) {
-                    cout << ". util_active=" << to_string(_queues->getUtilization_active(elem.second)) <<
+                    cout << ". util_active=" << std::to_string(_queues->getUtilization_active(elem.second)) <<
                         " expires at t=" << elem.second->getVirtualTime();
                 }
                 cout << endl;
@@ -812,7 +811,7 @@ namespace RTSim {
                 iOldPow = oldUtilizationIsland * c->getPowerConsumption(frequency);
 
                 // todo remove after debug
-                // #include <cstdio>
+                // 
 
                 printf("\t\t\tnew = [(util_isl_newFreq) %f + (util_new_task) %f] * (pow_newFreq) %.17g=%f, old: (util_isl_curFreq) %f * (pow_curFreq) %.17g=%f\n",
                     newUtilizationIsland, utilization_t, c->getPowerConsumption(newFreq),

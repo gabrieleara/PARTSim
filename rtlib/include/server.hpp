@@ -162,7 +162,7 @@ namespace RTSim {
         /**
            Returns the period
         */
-        virtual Tick getPeriod() const = 0;
+        Tick getPeriod() const override = 0;
 
 
         /**
@@ -200,20 +200,20 @@ namespace RTSim {
              Inherited from AbsRTTask. This function is called
              when the server is selected to execute. 
         */ 
-        virtual void schedule();
+        void schedule() override;
 
         /**  
              Inherited from AbsRTTask. This function is called
              when the server is selected to
              execute. Implemented here.
         */ 
-        virtual void deschedule();
+        void deschedule() override;
 
         /** 
             Inherited from AbsRTTask. Cannot be called here
             (throws an exception). 
         */
-        virtual void activate() throw (ServerExc) {
+        void activate() throw (ServerExc) override {
             throw ServerExc("cannot call activate() on a server",
                             "Server::activate()");
         }
@@ -222,25 +222,25 @@ namespace RTSim {
             Inherited from AbsRTTask. Returns the arrival time
             of the current istance
         */
-        virtual Tick getArrival() const;
+        Tick getArrival() const override;
 
         /** 
             Inherited from AbsRTTask. Returns the arrival time
             of the previous istance
         */
-        virtual Tick getLastArrival() const;
+        Tick getLastArrival() const override;
 
         /** 
             Inherited from AbsRTTask. Set the kernel for this
             server.
         */
-        virtual void setKernel(AbsKernel *k);
+        void setKernel(AbsKernel *k) override;
 
         /** 
             Inherited from AbsRTTask. Returns the kernel for this
             server 
         */
-        virtual AbsKernel *getKernel() { return kernel; }
+        AbsKernel *getKernel() override { return kernel; }
 
 /*------------------------------------------------------------------*/
 
@@ -254,36 +254,36 @@ namespace RTSim {
 
         /** Inherited from AbsRTTask. Returns the current
             absolute deadline */
-        virtual Tick getDeadline() const;
+        Tick getDeadline() const override;
 
         /** Inherited from AbsRTTask. Returns the current
             relative deadline (if any)*/
-        virtual Tick getRelDline() const;
+        Tick getRelDline() const override;
 
 
         /** Inherited from AbsKernel. Activates a task in the
             server */
-        virtual void activate(AbsRTTask*);
+        void activate(AbsRTTask*) override;
 
         /** Inherited from AbsKernel. Suspend a task in the
             server */
-        virtual void suspend(AbsRTTask*);
+        void suspend(AbsRTTask*) override;
 
         /** 
             Inherited from AbsKernel. Dispatch a task in the
             server
         */
-        virtual void dispatch();
+        void dispatch() override;
 
         /** 
             Inherited from AbsKernel. Calls the corresponding
             function of RTKernel*/
-        virtual CPU *getProcessor(const AbsRTTask *) const;
+        CPU *getProcessor(const AbsRTTask *) const override;
 
         /** 
             Inherited from AbsKernel. Calls the corresponding
             function of RTKernel*/
-        virtual CPU *getOldProcessor(const AbsRTTask *) const;
+        CPU *getOldProcessor(const AbsRTTask *) const override;
 
         /** 
             Inherited from AbsKernel. 
@@ -294,7 +294,7 @@ namespace RTSim {
             Server), in other servers they can be aperiodic
             (e.g. CBS or Grub).
         */            
-        virtual void onArrival(AbsRTTask *t);
+        void onArrival(AbsRTTask *t) override;
 
         /** 
             Inherited from AbsKernel. 
@@ -302,7 +302,7 @@ namespace RTSim {
             This function is invoked every time the server has
             completed its current backlog.
         */
-        virtual void onEnd(AbsRTTask *t);
+        void onEnd(AbsRTTask *t) override;
 
         virtual void onDispatch(Event *);
 
@@ -338,15 +338,15 @@ namespace RTSim {
         /** print the server status (only for debugging) */
         inline std::string getStatusString() const { return status_string[status];}
 
-        void newRun(); 
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
         /** 
             Function inherited from AbsKernel. It should
             return the current speed of the CPU. For the
             server class, it currently returns 1.
         */
-        virtual double getSpeed() const { return 1; }
+        double getSpeed() const override { return 1; }
   
         /** 
             Function inherited from AbsKernel. It sets the
@@ -364,15 +364,15 @@ namespace RTSim {
                     
             @todo check that this is actually what we expect.
         */ 
-        virtual void refreshExec(double, double) {}
+        void refreshExec(double, double) override {}
 
-        virtual bool isActive() const { return (status != IDLE); }
+        bool isActive() const override { return (status != IDLE); }
                 
-        virtual bool isExecuting() const { return (status == EXECUTING); }
+        bool isExecuting() const override { return (status == EXECUTING); }
 
-        virtual int getTaskNumber() const { return getID();}
+        int getTaskNumber() const override { return getID();}
 
-        virtual bool isContextSwitching() const { return false; }
+        bool isContextSwitching() const override { return false; }
 
     };
 } // namespace RTSim

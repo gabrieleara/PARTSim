@@ -333,6 +333,9 @@ namespace MetaSim {
                 (*it)->print();
         }
 
+        virtual std::string toString() const {
+            return ">Please override Event::toString<";
+        }
     };
 
 }

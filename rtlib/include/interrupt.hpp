@@ -95,8 +95,8 @@ namespace RTSim {
      */
     void onTrigger(Event *);
 
-    void newRun();
-    void endRun();
+    void newRun() override;
+    void endRun() override;
   };
 
 } // namespace RTSim

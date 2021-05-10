@@ -26,8 +26,8 @@ namespace RTSim {
 	 */
         Tick get_intercept(const Tick &v) const;
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
     private:
         Tick last_time;
         //Tick value;

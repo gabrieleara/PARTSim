@@ -25,21 +25,21 @@ namespace RTSim {
     {
     public:
         DispatchEvt(RTKernel* k) : KernelEvt(k) {}
-	virtual void doit();
+        void doit() override;
     };
 
     class BeginDispatchEvt : public KernelEvt
     {
     public:
         BeginDispatchEvt(RTKernel* k) : KernelEvt(k) {}
-	virtual void doit();
+        void doit() override;
     };
 
     class EndDispatchEvt : public KernelEvt
     {
     public:
         EndDispatchEvt(RTKernel* k) : KernelEvt(k) {}
-	virtual void doit();
+        void doit() override;
     };
 
 }

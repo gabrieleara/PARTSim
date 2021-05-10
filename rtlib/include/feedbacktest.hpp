@@ -28,9 +28,9 @@ namespace RTSim {
 
         void addSample(int d);
 
-        virtual void notify(const Tick &exec_time);
-        virtual void newRun();
-        virtual void endRun();
+        void notify(const Tick &exec_time) override;
+        void newRun() override;
+        void endRun() override;
     };
 }
 

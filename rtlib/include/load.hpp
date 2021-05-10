@@ -305,10 +305,10 @@ namespace RTSim {
               tGCD(gcd), minT(m) {}
         virtual ~IATGen() {}
         void bind(RandomTaskSetFactory *ts);
-        virtual Tick getMin(int i) const;
-        virtual Tick getAvg(int i) const;
-        virtual Tick getMax(int i) const;
-        virtual bool generate();
+        Tick getMin(int i) const override;
+        Tick getAvg(int i) const override;
+        Tick getMax(int i) const override;
+        bool generate() override;
     };
   
     /** 
@@ -330,9 +330,9 @@ namespace RTSim {
         CTGen(Tick c = CMIN_DEF) : iatGen(0), minC(c) {}
         virtual ~CTGen() {}
         void bind(RandomTaskSetFactory *ts, IATGen *i);
-        virtual Tick getMin(int i) const;
-        virtual Tick getAvg(int i) const;
-        virtual Tick getMax(int i) const;
+        Tick getMin(int i) const override;
+        Tick getAvg(int i) const override;
+        Tick getMax(int i) const override;
         virtual void sinthesize(Task *t, int i);
         virtual void rebuild();
     };
@@ -353,7 +353,7 @@ namespace RTSim {
                     Tick gcd = GCD_DEF) :
             IATGen(t1,t2,m,gcd) {}
         virtual  ~ConstIATGen() {}
-        virtual bool generate();
+        bool generate() override;
     };
 
     /**
@@ -380,9 +380,9 @@ namespace RTSim {
                       double d = DELTA_DEF) : 
             IATGen(t1,t2,m,gcd), delta(d) {}
         virtual ~UniformIATGen() {}
-        virtual bool generate();
-        virtual Tick getMin(int i)  const;
-        virtual Tick getMax(int i)  const;
+        bool generate() override;
+        Tick getMin(int i) const override;
+        Tick getMax(int i) const override;
     };
 
     /**
@@ -406,7 +406,7 @@ namespace RTSim {
                   Tick gcd = GCD_DEF,
                   double d = DELTA_DEF) :
             UniformIATGen(t1,t2,m,gcd,d) {}
-        virtual Tick getMax(int i) const { return getAvg(i); }
+        Tick getMax(int i) const override { return getAvg(i); }
     };
 
     /**
@@ -428,15 +428,15 @@ namespace RTSim {
                   Tick gcd = GCD_DEF,
                   double d = DELTA_DEF) :
             UniformIATGen(t1,t2,m,gcd,d) {}
-        virtual Tick getMin(int i) const { return getAvg(i); }
+        Tick getMin(int i) const override { return getAvg(i); }
     };
 
     /** Generates constant computation times */
     class ConstCTGen : public CTGen {
     public:  
         ConstCTGen(Tick c = CMIN_DEF) : CTGen(c) {}
-        virtual bool generate();
-        virtual void sinthesize(Task *t, int i);
+        bool generate() override;
+        void sinthesize(Task *t, int i) override;
     };
 
     /** 
@@ -460,9 +460,9 @@ namespace RTSim {
         UniformCTGen(Tick cmin = CMIN_DEF, double d = DELTA_DEF) :
             CTGen(cmin), delta(d) {}
         virtual ~UniformCTGen();
-        virtual bool generate();
-        virtual Tick getMin(int i) const;
-        virtual Tick getMax(int i) const;
+        bool generate() override;
+        Tick getMin(int i) const override;
+        Tick getMax(int i) const override;
     };
 
     /** 
@@ -478,7 +478,7 @@ namespace RTSim {
          */ 
         MaxCTGen(Tick c = CMIN_DEF, double d = DELTA_DEF) :
             UniformCTGen(c,d) {}
-        virtual Tick getMax(int i) const { return getAvg(i); }
+        Tick getMax(int i) const override { return getAvg(i); }
     };
 
     /** 
@@ -494,7 +494,7 @@ namespace RTSim {
          */ 
         MinCTGen(Tick c = CMIN_DEF, double d = DELTA_DEF) :
             UniformCTGen(c,d) {}
-        virtual Tick getMin(int i) const { return getAvg(i); }
+        Tick getMin(int i) const override { return getAvg(i); }
     };
 
 
@@ -513,9 +513,9 @@ namespace RTSim {
         DTGen() : iatGen(0), ctGen(0) {}
         virtual ~DTGen() {}
         void bind(RandomTaskSetFactory *ts, IATGen *i, CTGen *c);
-        virtual Tick getMin(int i) const; 
-        virtual Tick getAvg(int i) const; 
-        virtual Tick getMax(int i) const; 
+        Tick getMin(int i) const override; 
+        Tick getAvg(int i) const override;
+        Tick getMax(int i) const override; 
     };
 
 
@@ -529,7 +529,7 @@ namespace RTSim {
     public:
         DlineEquPeriodDTGen() : DTGen() {}
         virtual ~DlineEquPeriodDTGen() {}
-        virtual bool generate();
+        bool generate() override;
     };
 
 
@@ -548,7 +548,7 @@ namespace RTSim {
         SporadicDTGen(Tick d = DMIN_DEF, double dl = DELTA_DEF) : 
             DTGen(), minD(d),delta(dl) {}
         virtual ~SporadicDTGen() {}
-        virtual bool generate();
+        bool generate() override;
     };
 
     /**
@@ -564,7 +564,7 @@ namespace RTSim {
     public:
         RandomDTGen(double x, double y=1) : DTGen(), _min(x), _max(y) {}
         virtual ~RandomDTGen() {}
-        virtual bool generate();
+        bool generate() override;
     };
 
     /**
@@ -580,9 +580,9 @@ namespace RTSim {
         OffsetGen() : iatGen(0) {}
         virtual ~OffsetGen() {}
         void bind(RandomTaskSetFactory *ts, IATGen *i);
-        virtual Tick getMin(int i) const; 
-        virtual Tick getAvg(int i) const; 
-        virtual Tick getMax(int i) const; 
+        Tick getMin(int i) const override;
+        Tick getAvg(int i) const override;
+        Tick getMax(int i) const override;
     };
 
     /**
@@ -599,7 +599,7 @@ namespace RTSim {
         RandomOffsetGen(int step=1, bool islimit=false, int limit=1) : 
             OffsetGen(), _step(step), _limit(limit), _islimit(islimit) {}
         virtual ~RandomOffsetGen() {}
-        virtual bool generate();
+        bool generate() override;
     };
 
 } // namespace RTsim 

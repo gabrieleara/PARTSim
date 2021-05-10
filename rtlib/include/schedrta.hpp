@@ -63,7 +63,7 @@ namespace RTSim {
            @return the effective increment (or decrement) in the
            budget.
         */
-        Tick changeBudget(Server *s, Tick delta_budget);
+        Tick changeBudget(Server *s, Tick delta_budget) override;
 
         /**
            Adds a new server to the SchedRTA algorithm. The servers
@@ -72,13 +72,13 @@ namespace RTSim {
            @param s reference to the server
 
         */
-        void addServer(Server *s);
+        void addServer(Server *s) override;
 
       /*This function is called to update the vector utilization**/
       void updateU(int task,Tick req);
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
         void updateResponseTimes();
         Tick computeResponseTime(int i) const;

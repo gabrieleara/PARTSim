@@ -84,11 +84,11 @@ namespace RTSim {
         Instr(Task *f, const std::string &n = "") : Entity(n), _father(f) {}
         virtual ~Instr() {}
 
-	virtual string toString() const  {
-		return "Instr::toString()"; 
-	}
-	        
-	/**
+        string toString() const override {
+            return "Instr::toString()";
+        }
+
+        /**
            For copying polymorphic instructions
          */
         BASE_CLONEABLE(Instr)
@@ -153,8 +153,8 @@ namespace RTSim {
         //virtual void setTrace(Trace*) = 0;
 
         // virtual methods from entity
-        virtual void newRun() = 0;
-        virtual void endRun() = 0;  
+        void newRun() override = 0;
+        void endRun() override = 0;
 
         /** 
             It refreshes the state of the executing instruction 
@@ -173,7 +173,7 @@ namespace RTSim {
     public:
         EndInstrEvt(Instr * in) : 
             MetaSim::Event(Event::_DEFAULT_PRIORITY-3), _instr(in) {} 
-        virtual void doit();
+        void doit() override;
         Instr* getInstruction() const;        
     };
 } // namespace RTSim 

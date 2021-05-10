@@ -22,30 +22,30 @@ namespace RTSim {
         
         SuspendInstr(Task *f, MetaSim::Tick delay);
 
-        CLONEABLE(Instr, SuspendInstr)
+        CLONEABLE(Instr, SuspendInstr, override)
         
         static SuspendInstr * createInstance(std::vector<std::string> &par);
         
-        virtual void schedule();
-        virtual void deschedule();
-        virtual Tick getExecTime() const { return 0;};
-        virtual double getActCycles() const { return 0.0; }
-        virtual Tick getDuration() const { return 0;};
-        virtual Tick getWCET() const throw(RandomVar::MaxException) { return 0; }
-        virtual void reset() {}
+        void schedule() override;
+        void deschedule() override;
+        Tick getExecTime() const override { return 0;};
+        double getActCycles() const override { return 0.0; }
+        Tick getDuration() const override { return 0;};
+        Tick getWCET() const throw(RandomVar::MaxException) override { return 0; }
+        void reset() override {}
         virtual void setTrace(Trace *);
 
         Tick getDelay() const { return delay; }
         
         void onSuspend(MetaSim::Event *evt);
         void onEnd(MetaSim::Event *evt);
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
         
         /** Function inherited from clss Instr.It refreshes the state 
          *  of the executing instruction when a change of the CPU speed occurs. 
          */ 
-        virtual void refreshExec(double, double){}
+        void refreshExec(double, double) override {}
     };
 }
 

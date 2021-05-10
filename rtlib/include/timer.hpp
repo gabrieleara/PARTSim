@@ -32,16 +32,16 @@ namespace RTSim {
 	virtual void reArm() = 0;
 	virtual void action() = 0;
 	virtual void onTrigger(MetaSim::Event *);
-	virtual void newRun();
-	virtual void endRun();
+	void newRun() override;
+	void endRun() override;
     };
 
     class PeriodicTimer : public Timer {
 	MetaSim::Tick _period;
     public:
 	PeriodicTimer(MetaSim::Tick p, const std::string &n= "", int prio = 16); 
-	virtual void reArm();
-	virtual void action();
+	void reArm() override;
+	void action() override;
     };
 
 } // RTSim

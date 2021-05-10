@@ -243,12 +243,14 @@ namespace MetaSim {
         static void init(size_t n);
         void init();
 
-        /// automatically called at the end of the run, 
+        /// automatically called at the end of the run,
         /// collects all stats.
+        /// @todo why is this static? is this correct?
         static void endRun();
 
-        /// automatically called at the beginning of the run, 
+        /// automatically called at the beginning of the run,
         /// prepare the int values
+        /// @todo why is this static? is this correct?
         static void newRun();
 
         /// automatically called at the end of the sim, 
@@ -306,30 +308,30 @@ namespace MetaSim {
             {
             }
 
-        virtual void record(double a) 
+        void record(double a) override
             { 
                 if (chkTransitory()) return;
                 _val = std::max(_val, a);
             }
-        virtual void initValue() { _val = _ini; }
+        void initValue() override { _val = _ini; }
     };
 
     /// Computes the min value
     class StatMin : public BaseStat {
         double _ini;
     public:
-        StatMin(std::string name = "", 
+        StatMin(std::string name = "",
                 double i = std::numeric_limits<double>::max()) : 
             BaseStat(name), _ini(i)
             {
             }
 
-        virtual void record(double a) 
+        void record(double a) override
             { 
                 if (chkTransitory()) return;
                 _val = std::min(_val, a);
             }
-        virtual void initValue() { _val = _ini; }
+        void initValue() override { _val = _ini; }
     };
 
     /// Computes a mean value X_m = (Sigma{X_i}i=1,N)/N
@@ -338,19 +340,19 @@ namespace MetaSim {
         double _ini;
         double _count;
     public:
-        StatMean(std::string name = "", 
+        StatMean(std::string name = "",
                  double i = 0) : 
             BaseStat(name), _ini(i), _count(0) 
             {
             }
 
-        virtual void record(double a)
+        void record(double a) override
             {
                 if (chkTransitory()) return;
                 _val = _val * _count + a;
                 _val /= ++_count;
             };
-        virtual void initValue() { _val = _ini; _count = 0; };
+        void initValue() override { _val = _ini; _count = 0; };
     };
 
     /// Computes the quadratic mean value 
@@ -366,7 +368,7 @@ namespace MetaSim {
             {
             }
 
-        virtual void initValue() { _val = _ini; _count = 0; };
+        void initValue() override { _val = _ini; _count = 0; };
     };
 
 
@@ -385,13 +387,13 @@ namespace MetaSim {
             { 
             }
 
-        virtual void record(double increment)
+        void record(double increment) override
             {
                 if (chkTransitory()) return;
                 _val += increment;
             }
   
-        virtual void initValue() { _val = _ini; }
+        void initValue() override { _val = _ini; }
     };
 
 
@@ -413,14 +415,14 @@ namespace MetaSim {
             { 
             }
     
-        virtual void record(double value)
+        void record(double value) override
             {
                 if (chkTransitory()) return;
                 _den += 1;
                 if (value > 0.0) _num += 1;
                 _val = _num / _den;
             }
-        virtual void initValue() 
+        void initValue() override
             { 
                 _val = _ini;
                 _num = _ini;

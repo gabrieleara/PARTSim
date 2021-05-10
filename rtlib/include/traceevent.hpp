@@ -121,21 +121,20 @@ namespace RTSim {
 
     virtual ~TraceTaskEvent() {}
 
-    virtual unsigned int getSize() const
+    unsigned int getSize() const override
     {return TraceEvent::getSize() + sizeof(_task);}
 
     int getTask() const {return _task;}
  
-    virtual string print();
+    string print() override;
 
-    virtual string getDescription();
+    string getDescription() override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
  
-    virtual void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    virtual bool equals(TraceEvent* e);
-
+    bool equals(TraceEvent *e) override;
   };
 
   class TraceArrEvent: public TraceTaskEvent
@@ -159,18 +158,18 @@ namespace RTSim {
     TraceCPUEvent(int type, int time, int task, int cpu)
       :TraceTaskEvent(type, time, task), _cpu(cpu) {}
 
-    virtual unsigned int getSize() const
+    unsigned int getSize() const override
     {return TraceTaskEvent::getSize() + sizeof(_cpu);}
 
     int getCPU() const {return _cpu;}
 
-    virtual string print();
+    string print() override;
 
-    virtual string getDescription();
+    string getDescription() override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    virtual void read(ifstream& in);
+    void read(ifstream& in) override;
 
   };
 
@@ -218,23 +217,23 @@ namespace RTSim {
 
     virtual ~TraceDlinePostEvent() {}
 
-    virtual unsigned int getSize() const
+    unsigned int getSize() const override
     {return TraceTaskEvent::getSize() + sizeof(_taskD) + sizeof(_taskD2);}
 
     int getTaskD() const {return _taskD;}
     int getTaskD2() const {return _taskD2;}
 
-    string print();
+    string print() override;
 
-    string getDescription();
+    string getDescription() override;
 
-    bool somethingToDraw(int t);
+    bool somethingToDraw(int t) override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    bool equals(TraceEvent* e);
+    bool equals(TraceEvent* e) override;
 
   };
 
@@ -251,22 +250,22 @@ namespace RTSim {
 
     virtual ~TraceDlineSetEvent() {}
  
-    virtual unsigned int getSize() const
+    unsigned int getSize() const override
     {return TraceTaskEvent::getSize() + sizeof(_taskD);}
 
     int getTaskD() const {return _taskD;}
 
-    string print();
+    string print() override;
 
-    string getDescription();
+    string getDescription() override;
 
-    bool somethingToDraw(int t);
+    bool somethingToDraw(int t) override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    bool equals(TraceEvent* e);
+    bool equals(TraceEvent* e) override;
 
   };      
 
@@ -283,19 +282,19 @@ namespace RTSim {
 
     virtual ~TraceWaitEvent() {}
 
-    virtual unsigned int getSize() const;
+    unsigned int getSize() const override;
 
     string getResource() const {return _res;}
 
-    string print();
+    string print() override;
 
-    string getDescription();
+    string getDescription() override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    bool equals(TraceEvent* e);
+    bool equals(TraceEvent* e) override;
 
   };
 
@@ -312,19 +311,19 @@ namespace RTSim {
 
     virtual ~TraceSignalEvent() {}
 
-    virtual unsigned int getSize() const;
+    unsigned int getSize() const override;
 
     string getResource() const {return _res;}
 
-    string print();
+    string print() override;
 
-    string getDescription();
+    string getDescription() override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    bool equals(TraceEvent* e);
+    bool equals(TraceEvent* e) override;
 
   };
 
@@ -351,17 +350,17 @@ namespace RTSim {
 
     virtual ~TraceNameEvent() {}
 
-    virtual unsigned int getSize() const;
+    unsigned int getSize() const override;
 
     string getName() {return _name;}
 
-    string getDescription();
+    string getDescription() override;
 
-    virtual void write(ofstream& f);
+    void write(ofstream& f) override;
 
-    void read(ifstream& in);
+    void read(ifstream& in) override;
 
-    bool equals(TraceEvent* e);
+    bool equals(TraceEvent* e) override;
 
   };
 

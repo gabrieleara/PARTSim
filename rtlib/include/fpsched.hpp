@@ -44,12 +44,12 @@ namespace RTSim {
 
         public:
             FPModel(AbsRTTask *t, Tick p) : TaskModel(t), _prio(p) {}
-            Tick getPriority() const { return _prio; }
+            Tick getPriority() const override { return _prio; }
 
             /// @todo: check the type
             void setPriority(Tick p) { _prio = p; }
 
-            void changePriority(Tick p) { setPriority(p); }
+            void changePriority(Tick p) override { setPriority(p); }
         };
 
 
@@ -71,9 +71,9 @@ namespace RTSim {
         */
         void addTask(AbsRTTask *t, int prio) throw(RTSchedExc);
 
-        void addTask(AbsRTTask *t, const std::string &p);
+        void addTask(AbsRTTask *t, const string &p) override;
 
-        void removeTask(AbsRTTask *t) {}
+        void removeTask(AbsRTTask *t) override {}
                         
         static FPScheduler *createInstance(vector<string> &par);
 

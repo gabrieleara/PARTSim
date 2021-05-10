@@ -73,11 +73,11 @@ namespace RTSim {
                 const std::vector<double>& Omegaplus, 
                 const std::vector<double>& Omegaminus, const std::string &name) throw(WrongParameterSize);
 		
-		virtual void newRun();
+		void newRun() override;
 		
 		//Pop RelDline and Mode values and updates the task instruction queue correctly 
 		//(selecting instructions corresponding to the mode value)
-		virtual void handleArrival(Tick arr);
+		void handleArrival(Tick arr) override;
 
 		//post arrEvt for this task with mode and rdl values.
 		virtual void activate(int mode, Tick rdl) throw (ModeOutOfIndex);
@@ -111,6 +111,11 @@ namespace RTSim {
 		std::vector<double> getOmegaMinus(){
 			return OmegaMinus;
 		}
+
+		// TODO: remove and see what happens
+		Tick getPeriod() const override {
+            return 0;
+        }
 
 		virtual Tick getWCET(int index) const throw (ModeOutOfIndex);
 

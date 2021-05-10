@@ -44,7 +44,7 @@ namespace RTSim {
 		        string frequency_str = "";
 		      
 		        if (dynamic_cast<CPU_BL*>(c))
-		          	frequency_str = "freq " + to_string(dynamic_cast<CPU_BL*>(c)->getFrequency());
+		          	frequency_str = "freq " + std::to_string(dynamic_cast<CPU_BL*>(c)->getFrequency());
 
 				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << frequency_str << " abs WCET "
 					<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;

@@ -58,13 +58,13 @@ namespace RTSim {
             RRModel(AbsRTTask* t) : TaskModel(t), _rrSlice(1) {}
             virtual ~RRModel() {}
 
-            virtual Tick getPriority() const;
-            virtual void changePriority(Tick p);
+            Tick getPriority() const override;
+            void changePriority(Tick p) override;
 
             /**
                Returns the slice size (in number of ticks)
             */
-            Tick getRRSlice() {return _rrSlice;}
+            Tick getRRSlice() const {return _rrSlice;}
 
             /** 
                 Sets the slice size to s (in number of ticks)
@@ -75,9 +75,9 @@ namespace RTSim {
                This function returns true if the round has expired for the
                currently executing thread.
             */
-            bool isRoundExpired();
+            bool isRoundExpired() const;
 
-            string toString();
+            string toString() const override;
         };
     
         int defaultSlice;
@@ -115,7 +115,7 @@ namespace RTSim {
         /**
            Notify to recompute the round
         */
-        virtual void notify(AbsRTTask* task);
+        void notify(AbsRTTask* task) override;
 
         /**
            This is called by the event rrEvt.
@@ -124,11 +124,11 @@ namespace RTSim {
 
         void addTask(AbsRTTask *t) throw(RRSchedExc);
 
-        void addTask(AbsRTTask *t, const std::string &p);
+        void addTask(AbsRTTask *t, const string &p) override;
 
-        void removeTask(AbsRTTask *t) {}
+        void removeTask(AbsRTTask *t) override {}
 
-        string toString();
+        string toString() const override;
 
         static RRScheduler *createInstance(vector<string> &par);
     };

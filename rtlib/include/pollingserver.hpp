@@ -28,45 +28,45 @@ namespace RTSim {
         PollingServer(Tick q, Tick p, const std::string &name, 
                       const std::string &sched = "FIFOSched");
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
 
-        virtual Tick getBudget() const { return Q;}
-        virtual Tick getPeriod() const { return P;}
+        Tick getBudget() const override { return Q;}
+        Tick getPeriod() const override { return P;}
 
-        Tick changeBudget(const Tick &n);
+        Tick changeBudget(const Tick &n) override;
 
         /** @todo to be completed */
-        virtual double getVirtualTime() {return 0;}
+        double getVirtualTime() override {return 0;}
 
     protected:
                 
         /// from idle to active contending (new work to do)
-        virtual void idle_ready();
+        void idle_ready() override;
 
         /// from active non contending to active contending (more work)
-        virtual void releasing_ready();
+        void releasing_ready() override;
                 
         /// from active contending to executing (dispatching)
-        virtual void ready_executing();
+        void ready_executing() override;
 
         /// from executing to active contenting (preemption)
-        virtual void executing_ready();
+        void executing_ready() override;
 
         /// from executing to active non contending (no more work)
-        virtual void executing_releasing();
+        void executing_releasing() override;
 
         /// from active non contending to idle (no lag)
-        virtual void releasing_idle();
+        void releasing_idle() override;
 
         /// from executing to recharging (budget exhausted)
-        virtual void executing_recharging();
+        void executing_recharging() override;
 
         /// from recharging to active contending (budget recharged)
-        virtual void recharging_ready();
+        void recharging_ready() override;
 
         /// from recharging to active contending (budget recharged)
-        virtual void recharging_idle();
+        void recharging_idle() override;
     };
 }
 

@@ -66,7 +66,7 @@ namespace RTSim {
         SparePot(const string &name);
         ~SparePot();
         
-        void addServer(Server *s);
+        void addServer(Server *s) override;
     
         /**
            This function requests a change (positive or negative) to
@@ -78,15 +78,15 @@ namespace RTSim {
            @return the effective increment (or decrement) in the
            budget.
         */
-        Tick changeBudget(Server *s, Tick delta_budget);
+        Tick changeBudget(Server *s, Tick delta_budget) override;
 
         /**
            It takes budget and period of the spare pot
          */
         void compute_matrix(Tick b, Tick p);
 
-        void newRun();
-        void endRun();
+        void newRun() override;
+        void endRun() override;
     protected:
 
         /**
@@ -122,7 +122,7 @@ namespace RTSim {
         public:
             ChangeBudgetEvt(SparePot *s1, SporadicServer *s2, Tick b) :
                 Event(EndEvt::_END_EVT_PRIORITY + 4), sp(s1), ss(s2), budget(b) {}
-            virtual void doit() { sp->onChangeBudget(this); }
+            void doit() override { sp->onChangeBudget(this); }
             SporadicServer *getServer() { return ss; }
             Tick getBudget() { return budget; }
         };

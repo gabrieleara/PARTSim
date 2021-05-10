@@ -43,7 +43,7 @@ namespace RTSim {
 
         int getCPU() {return _cpu;}
         void setCPU(int cpu) {_cpu = cpu;}
-        virtual string toString() const { return " at " + to_string(double(getTime())) + "\n"; }
+        string toString() const override { return " at " + std::to_string(double(getTime())) + "\n"; }
     };
 
     /// arrival event for a task
@@ -52,8 +52,8 @@ namespace RTSim {
     {
     public:
         ArrEvt(Task* t) :TaskEvt(t) {}
-        virtual void doit();
-        virtual string toString() const { return "arrEvt " + TaskEvt::toString(); }
+        void doit() override;
+        string toString() const override { return "arrEvt " + TaskEvt::toString(); }
     };
 
     /// end of instance event
@@ -63,7 +63,7 @@ namespace RTSim {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
         EndEvt(Task* t) :TaskEvt(t, _END_EVT_PRIORITY) {}
-        virtual void doit();
+        void doit() override;
     };
     
     /// when a task is killed
@@ -73,7 +73,7 @@ namespace RTSim {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
         KillEvt(Task* t) :TaskEvt(t, _END_EVT_PRIORITY) {}
-        virtual void doit();
+        void doit() override;
     };
 
     /// when the event is triggered, the task starts executing on processor
@@ -82,7 +82,7 @@ namespace RTSim {
     {
     public:
         SchedEvt(Task* t) : TaskEvt(t) {}
-        virtual void doit();
+        void doit() override;
     };
 
     /// when this event is triggered, the task does not 
@@ -92,7 +92,7 @@ namespace RTSim {
     {
     public:
         DeschedEvt(Task* t) :TaskEvt(t) {}
-        virtual void doit();
+        void doit() override;
     };
 
     /// to handle buffered arrivals
@@ -101,7 +101,7 @@ namespace RTSim {
     {
     public:
         FakeArrEvt(Task* t) :TaskEvt(t) { setPriority(_DEFAULT_PRIORITY - 1); }
-        virtual void doit();
+        void doit() override;
     };
 
     /** 
@@ -116,7 +116,7 @@ namespace RTSim {
 
     public:
         DlineSetEvt(Task* t) :TaskEvt(t) {}
-        virtual void doit() {}
+        void doit() override {}
         void setDline(Tick d) {_dline = d;}
         Tick getDline() {return _dline;}
 
@@ -134,7 +134,7 @@ namespace RTSim {
         DeadEvt(Task* t, bool abort, bool kill)
             : TaskEvt(t, _DEAD_EVT_PRIORITY), _abort(abort), _kill(kill) {}
 
-        virtual void doit();  
+        void doit() override;  
         void setAbort(bool f) {_abort = f;}
         void setKill(bool f) {_kill = f;}
     };

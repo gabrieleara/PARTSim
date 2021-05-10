@@ -21,12 +21,11 @@ namespace RTSim {
 
         void addServer(Server *serv, Scheduler *sched);
 
-        virtual bool request(AbsRTTask *t, Resource *r, int n=1);
-        virtual void release(AbsRTTask *t, Resource *r, int n=1);
+        bool request(AbsRTTask *t, Resource *r, int n=1) override;
+        void release(AbsRTTask *t, Resource *r, int n=1) override;
     };
 
 }
 
 
 #endif
-

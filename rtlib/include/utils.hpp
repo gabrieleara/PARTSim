@@ -71,7 +71,7 @@ namespace RTSim {
         static string toString(const vector<double> vec) {
             string s = "[";
             for (double d : vec)
-                s += to_string(d) + ", ";
+                s += std::to_string(d) + ", ";
             return s + "]";
         }
     };

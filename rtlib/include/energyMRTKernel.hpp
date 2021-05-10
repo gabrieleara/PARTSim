@@ -73,7 +73,7 @@ namespace RTSim {
 
            Migration is specifically meant for big-littles. It updates task WCET
         */
-        virtual void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) {
+        void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) override {
             CBServerCallingEMRTKernel *cbs = dynamic_cast<CBServerCallingEMRTKernel*>(t);
             assert(cbs != NULL); assert(original != NULL); assert(final != NULL);
             cout << "\t\tEMCS::" << __func__ << "()" << endl;
@@ -92,26 +92,26 @@ namespace RTSim {
         }
 
         /// Remove a specific task from a core queue
-        virtual void removeFromQueue(CPU_BL* c, AbsRTTask* t) {
+        void removeFromQueue(CPU_BL* c, AbsRTTask* t) override {
             MultiCoresScheds::removeFirstFromQueue(c); //todo bug? first...
             _opps.erase(t);
             assert(_opps.find(t) == _opps.end());
         }
 
         /// Empties a core queue
-        virtual void empty(CPU_BL* c) {
+        void empty(CPU_BL* c) override {
             vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
             MultiCoresScheds::empty(c);
             for (AbsRTTask* t : tasks)
                 _opps.erase(t);
         }
 
-        virtual void makeRunning(AbsRTTask* t, CPU_BL* c) {
+        void makeRunning(AbsRTTask* t, CPU_BL* c) override {
             MultiCoresScheds::makeRunning(t, c);
             c->setOPP(getOPP(c));
         }
 
-        virtual void endRun() {
+        void endRun() override {
             MultiCoresScheds::endRun();
             _opps.clear();
         }
@@ -124,17 +124,17 @@ namespace RTSim {
             return maxOPP;
         }
 
-        string toString(CPU_BL* c) {
+        string toString(CPU_BL* c) const {
             vector<AbsRTTask*> tasks = getAllTasksInQueue(c);
-            stringstream ss;
+            std::stringstream ss;
             int i = 1;
             for (AbsRTTask* t : tasks)
                 ss << "\t\t" << i++ << ") " << t->toString() << endl;
             return ss.str();
         }
 
-        virtual string toString() {
-            stringstream ss;
+        string toString() const override {
+            std::stringstream ss;
             ss << "EnergyMultiCoresScheds::toString(), t=" << SIMUL.getTime() << ":" << endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
@@ -416,7 +416,7 @@ namespace RTSim {
             processor, chosen smartly, for arrived tasks, then we call the other dispatch,
             confirming the dispatch process.
          */
-        virtual void dispatch();
+        void dispatch() override;
 
         /**
            This function only calls dispatch(CPU_BL*) and assigns a task to a CPU_BL,
@@ -442,7 +442,7 @@ namespace RTSim {
             new task there. EnergyMRTKernel, instead, allows CPUs to have a queue
             of tasks. Info about task is needed
          */
-        virtual void dispatch(CPU* c) {}
+        void dispatch(CPU* c) override {}
 
         /// Returns the enveloped RTask of CBS server
         AbsRTTask* getEnveloped(AbsRTTask* cbs) const {
@@ -592,20 +592,20 @@ namespace RTSim {
          * Begins the dispatch process (context switch). The task is dispatched, but not
          * executed yet. Its execution on its CPU_BL starts with onEndDispatchMulti()
          */
-        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
+        void onBeginDispatchMulti(BeginDispatchMultiEvt* e) override;
 
         /**
          *  First a task is dispatched, but not executed yet, in the
          *  onBeginDispatchMulti. Then, in the onEndDispatchMulti, its execution starts
          *  on the processor.
          */
-        virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
+        void onEndDispatchMulti(EndDispatchMultiEvt* e) override;
 
         /// called when OPP changes on an island
         void onOppChanged(unsigned int curropp, Island_BL* island);
 
         ///Invoked when a task ends
-        virtual void onEnd(AbsRTTask* t);
+        void onEnd(AbsRTTask* t) override;
 
         void onExecutingRecharging(CBServer *cbs) {
           cout << "EMRTK::" << __func__ << "()" << endl;
@@ -729,12 +729,12 @@ namespace RTSim {
          */
         void onRound(AbsRTTask* finishingTask);
 
-        virtual void newRun() {
+        void newRun() override {
             MRTKernel::newRun();
             _queues->newRun();
         }
 
-        virtual void endRun() {
+        void endRun() override {
             MRTKernel::endRun();
             _queues->endRun();
         }
@@ -774,9 +774,9 @@ namespace RTSim {
           cout << "EMRTK_CBS_MIGRATE_AFTER_END: " << EMRTK_CBS_MIGRATE_AFTER_END << endl;
         }
 
-        virtual void printState() { printState(false); }
+        void printState() const override { printState(false); }
 
-        void printState(bool alsoQueues, bool alsoCBSStatus = false);
+        void printState(bool alsoQueues, bool alsoCBSStatus = false) const;
 
         bool manageForcedDispatch(AbsRTTask*);
 

@@ -144,7 +144,7 @@ namespace RTSim {
 
            @see dispatch
         */
-        virtual void activate(AbsRTTask*);
+        void activate(AbsRTTask*) override;
 
         /**
            Removes the task from the ready queue. If the task
@@ -153,7 +153,7 @@ namespace RTSim {
            task is simply removed from the ready queue, and
            nothing happens to the executing task.
         */
-        virtual void suspend(AbsRTTask*);
+        void suspend(AbsRTTask*) override;
 
         /**
            Compares _currExe with the first task in the ready
@@ -161,7 +161,7 @@ namespace RTSim {
            switch. The corresponding schedule and deschedule
            functions of the two tasks are called.
         */
-        virtual void dispatch();
+        void dispatch() override;
 
         virtual void onBeginDispatch(Event* e);
         virtual void onEndDispatch(Event* e);
@@ -174,7 +174,7 @@ namespace RTSim {
 
            @see refresh
         */
-        virtual void onArrival(AbsRTTask*);
+        void onArrival(AbsRTTask*) override;
 
         /**
            This function is invoked from the task onEnd
@@ -185,7 +185,7 @@ namespace RTSim {
 
            @see refresh
         */
-        virtual void onEnd(AbsRTTask*);
+        void onEnd(AbsRTTask*) override;
     
         /**
            Calls the refresh method of the scheduler to
@@ -257,7 +257,7 @@ namespace RTSim {
            case, it will always return the same CPU, since we
            are on a single processor platform.
         */
-        virtual CPU* getProcessor(const AbsRTTask* t) const;
+        CPU* getProcessor(const AbsRTTask* t) const override;
 
         /**
            Returns a pointer to the CPU on which t was runnig last.
@@ -265,7 +265,7 @@ namespace RTSim {
            always return the same CPU, since we are on a single
            processor platform.
         */
-        virtual CPU* getOldProcessor(const AbsRTTask* t) const;
+        CPU* getOldProcessor(const AbsRTTask* t) const override;
 
         AbsRTTask* getCurrExe() const;
 
@@ -300,7 +300,7 @@ namespace RTSim {
            function is invoked. In this case, it just puts the
            _currExe pointer to NULL.
         */ 
-        virtual void newRun();
+        void newRun() override;
     
         /**
            This function is common to all Entity
@@ -308,7 +308,7 @@ namespace RTSim {
            function is invoked. In this case, it just puts the
            _currExe pointer to NULL.
         */   
-        virtual void endRun();
+        void endRun() override;
     
         /**
            Prints the status of the objects on the DEBUG
@@ -323,7 +323,7 @@ namespace RTSim {
            Function inherited from AbsKernel. It returns the
            current speed of the CPU.
         */
-        double getSpeed() const {return (_cpu->getSpeed());}
+        double getSpeed() const override {return (_cpu->getSpeed());}
   
         /**
            Function inherited from AbsKernel. It sets the
@@ -337,7 +337,7 @@ namespace RTSim {
            Function inherited from AbsKernel. It says if the 
            kernel is currently in context switch mode.
         */
-        virtual bool isContextSwitching() const 
+        bool isContextSwitching() const override
             { return _isContextSwitching; }
 
         /**
@@ -352,7 +352,7 @@ namespace RTSim {
            It returns the name of the task (std::string) stored in a
            std::vector<std::string>.
            This solution is proposed to be compliant with the multi
-           core kernel, for which there could be more than one task 
+           core kernel, for which there could be more than one task
            running at the same time.
         */
         virtual std::vector<std::string> getRunningTasks();

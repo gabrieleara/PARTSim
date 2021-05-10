@@ -33,8 +33,8 @@ namespace RTSim {
 
     public:
         EDFModel(AbsRTTask* t);
-        Tick getPriority() const;
-        void changePriority(Tick p);
+        Tick getPriority() const override;
+        void changePriority(Tick p) override;
     };
 
 
@@ -55,9 +55,9 @@ namespace RTSim {
          */
         void addTask(AbsRTTask* task) throw (RTSchedExc);
 
-        void addTask(AbsRTTask* task, const std::string &p); 
+        void addTask(AbsRTTask* task, const string &p) override;
 
-        void removeTask(AbsRTTask* task);
+        void removeTask(AbsRTTask* task) override;
 
         static EDFScheduler *createInstance(vector<string> &par);
 
@@ -65,7 +65,7 @@ namespace RTSim {
          * Admission test for a task t on a CPU c
          * @return true if t is admissible on c
          */
-        virtual bool isAdmissible(CPU* c, vector<AbsRTTask*> tasks, AbsRTTask* toBeAdmitted);
+        bool isAdmissible(CPU* c, vector<AbsRTTask*> tasks, AbsRTTask* toBeAdmitted) override;
 
         };
 

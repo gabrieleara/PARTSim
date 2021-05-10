@@ -8,7 +8,7 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace std;
     
-    bool RRScheduler::RRModel::isRoundExpired()
+    bool RRScheduler::RRModel::isRoundExpired() const
     {
         Task* t = dynamic_cast<Task*>(_rtTask);
         
@@ -20,8 +20,8 @@ namespace RTSim {
         return false;
     }
 
-    string RRScheduler::RRModel::toString() {
-        string s = "RRModel for " + _rtTask->toString() + ", slice " + to_string(double(getRRSlice())) + ", expired: " + (isRoundExpired() ? "yes" : "no");
+    string RRScheduler::RRModel::toString() const {
+        string s = "RRModel for " + _rtTask->toString() + ", slice " + std::to_string(double(getRRSlice())) + ", expired: " + (isRoundExpired() ? "yes" : "no");
         return s;
     }
 
@@ -169,7 +169,7 @@ namespace RTSim {
         DBGPRINT_2("Slice parameter: ", p); 
         if (p == "") slice = defaultSlice;
         else {
-            stringstream ss(p);
+            std::stringstream ss(p);
             ss >> slice;
         }
 
@@ -179,14 +179,14 @@ namespace RTSim {
         
     }
 
-    string RRScheduler::toString() {
+    string RRScheduler::toString() const {
       return Scheduler::toString();
     }
 
     RRScheduler *RRScheduler::createInstance(vector<string> &par)    
     {
         int slice;
-        stringstream ss(par[0]);
+        std::stringstream ss(par[0]);
         ss >> slice;
         return new RRScheduler(slice);
     }

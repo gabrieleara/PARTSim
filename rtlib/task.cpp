@@ -65,7 +65,7 @@ namespace RTSim {
     }
 
     string Task::getStateString() {
-        string s = to_string(double(SIMUL.getTime())) + " ";
+        string s = std::to_string(double(SIMUL.getTime())) + " ";
         switch (getState()) {
             case TSK_IDLE:
             s += "idle";
@@ -653,13 +653,12 @@ namespace RTSim {
         // todo keep track of task migrations and do as in ExecInstr::refreshExec(
         Tick alreadyExecdCycles = Tick(double(getExecTime()) * capacity);
         double n = double(getWCET() - alreadyExecdCycles) / capacity;
-#include <cstdio>
         //printf("%s (%f-%f)/%f=%f\n", __func__, double(getWCET()), double(alreadyExecdCycles), capacity, n);
         return n;
     }
 
     string Task::toString() const {
-        stringstream ss;
+        std::stringstream ss;
         ss << getName() << " arr " << getArrival() << " DL " << getDeadline() << " WCET " + getWCET();
         return ss.str();
     }

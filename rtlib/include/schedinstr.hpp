@@ -45,7 +45,7 @@ namespace RTSim {
         SchedIEvt(Task* t, SchedInstr* in) :TaskEvt(t, _DEFAULT_PRIORITY - 1), ti(in)
             {}
         SchedInstr *getInstr() { return ti; } 
-        virtual void doit() {}
+        void doit() override {}
     };
 
     /** 
@@ -68,20 +68,20 @@ namespace RTSim {
          //      @param f is a pointer to the task containing the pseudo
          //      instruction
          */
-        SchedInstr(Task * f, const std::string& s, const std::string &n = "");
+        SchedInstr(Task * f, const string& s, const string &n = "");
 
-        CLONEABLE(Instr, SchedInstr)
+        CLONEABLE(Instr, SchedInstr, override)
        
         static std::unique_ptr<SchedInstr> createInstance(const std::vector<std::string> &par);
 
         ///Virtual methods from Instr
-        virtual void schedule();
-        virtual void deschedule();
-        virtual Tick getExecTime() const { return 0; }
-        virtual double getActCycles() const { return 0.0; }
-        virtual Tick getDuration() const { return 0; }
-        virtual Tick getWCET() const throw(RandomVar::MaxException) { return 0; }
-        virtual void reset() {}
+        void schedule() override;
+        void deschedule() override;
+        Tick getExecTime() const override { return 0; }
+        double getActCycles() const override { return 0.0; }
+        Tick getDuration() const override { return 0; }
+        Tick getWCET() const throw(RandomVar::MaxException) override { return 0; }
+        void reset() override {}
 
         template <class TraceClass>
         void setTrace(TraceClass &trace_obj) {
@@ -89,15 +89,15 @@ namespace RTSim {
             attach_stat(trace_obj, _threEvt);
         }
 
-        virtual void onEnd();
-        virtual void newRun() {}
-        virtual void endRun();
+        void onEnd() override;
+        void newRun() override {}
+        void endRun() override;
 
 
         /** Function inherited from clss Instr.It refreshes the state 
          *  of the executing instruction when a change of the CPU speed occurs. 
          */ 
-        virtual void refreshExec(double, double){}
+        void refreshExec(double, double) override {}
 
     };
 

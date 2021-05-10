@@ -135,7 +135,7 @@ namespace MetaSim {
                 :Exc("Maximum value cannot be computed for this variable type", cl) {}
             MaxException(std::string m, std::string cl) :Exc(m, cl) {}
             virtual ~MaxException() throw() {}
-            virtual const char* what() const throw()
+            const char* what() const throw() override
                 { return _what.c_str(); }
 
         };
@@ -199,14 +199,14 @@ namespace MetaSim {
     public:
         DeltaVar(double a) : RandomVar(), _var(a) {}
 
-        CLONEABLE(RandomVar, DeltaVar)
+        CLONEABLE(RandomVar, DeltaVar, override)
 
         static std::unique_ptr<DeltaVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get() { return _var; }
-        virtual double getMaximum() throw(MaxException) {return _var;}
-        virtual double getMinimum() throw(MaxException) {return _var;}
-        virtual void   setMaximum(double v) throw(MaxException) { _var = v;}
+        double get() override { return _var; }
+        double getMaximum() throw(MaxException) override {return _var;}
+        double getMinimum() throw(MaxException) override {return _var;}
+        void   setMaximum(double v) throw(MaxException) override { _var = v;}
     };
 
     /**
@@ -218,13 +218,13 @@ namespace MetaSim {
         UniformVar(double min, double max)
             : RandomVar(), _min(min), _max(max) {}
 
-        CLONEABLE(RandomVar, UniformVar)
+        CLONEABLE(RandomVar, UniformVar, override)
 
         static std::unique_ptr<UniformVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
-        virtual double getMaximum() throw(MaxException) {return _max;}
-        virtual double getMinimum() throw(MaxException) {return _min;}
+        double get() override;
+        double getMaximum() throw(MaxException) override {return _max;}
+        double getMinimum() throw(MaxException) override {return _min;}
     };
 
     /**
@@ -235,15 +235,15 @@ namespace MetaSim {
         ExponentialVar(double m) :
             UniformVar(0, 1), _lambda(m) {}
 
-        CLONEABLE(RandomVar, ExponentialVar)
+        CLONEABLE(RandomVar, ExponentialVar, override)
 
         static std::unique_ptr<ExponentialVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
+        double get() override;
 
-        virtual double getMaximum() throw(MaxException)
+        double getMaximum() throw(MaxException) override
             {throw MaxException("ExponentialVar");}
-        virtual double getMinimum() throw(MaxException)
+        double getMinimum() throw(MaxException) override
             {return 0;}
     };
 
@@ -258,14 +258,14 @@ namespace MetaSim {
         WeibullVar(double l, double k, RandomGen *g = nullptr) :
             UniformVar(0, 1), _l(l), _k(k) {}
 
-        CLONEABLE(RandomVar, WeibullVar)
+        CLONEABLE(RandomVar, WeibullVar, override)
 
         static std::unique_ptr<WeibullVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
+        double get() override;
 
-        virtual double getMaximum() throw(MaxException) { throw MaxException("WeibullVar"); }
-        virtual double getMinimum() throw(MaxException) { return 0; }
+        double getMaximum() throw(MaxException) override { throw MaxException("WeibullVar"); }
+        double getMinimum() throw(MaxException) override { return 0; }
     };
 
     /**
@@ -276,15 +276,15 @@ namespace MetaSim {
         ParetoVar(double m, double k) :
             UniformVar(0,1), _mu(m), _order(k) {};
 
-        CLONEABLE(RandomVar, ParetoVar)
+        CLONEABLE(RandomVar, ParetoVar, override)
 
         static std::unique_ptr<ParetoVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
+        double get() override;
 
-        virtual double getMaximum() throw(MaxException)
+        double getMaximum() throw(MaxException) override
             {throw MaxException("ExponentialVar");}
-        virtual double getMinimum() throw(MaxException)
+        double getMinimum() throw(MaxException) override
             {throw MaxException("ExponentialVar");}
     };
 
@@ -302,14 +302,14 @@ namespace MetaSim {
             UniformVar(0, 1), _mu(m), _sigma(s), _yes(false)
             {}
 
-        CLONEABLE(RandomVar, NormalVar)
+        CLONEABLE(RandomVar, NormalVar, override)
 
         static std::unique_ptr<NormalVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
-        virtual double getMaximum() throw(MaxException)
+        double get() override;
+        double getMaximum() throw(MaxException) override
             {throw MaxException("NormalVar");}
-        virtual double getMinimum() throw(MaxException)
+        double getMinimum() throw(MaxException) override
             {throw MaxException("NormalVar");}
     };
 
@@ -323,15 +323,15 @@ namespace MetaSim {
         PoissonVar(double l) :
             UniformVar(0, 1), _lambda(l) {}
 
-        CLONEABLE(RandomVar, PoissonVar)
+        CLONEABLE(RandomVar, PoissonVar, override)
 
         static std::unique_ptr<PoissonVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
+        double get() override;
 
-        virtual double getMaximum() throw(MaxException)
+        double getMaximum() throw(MaxException) override
       {throw MaxException("PoissonVar");}
-        virtual double getMinimum() throw(MaxException)
+        double getMinimum() throw(MaxException) override
             {throw MaxException("PoissonVar");}
     };
 
@@ -351,13 +351,13 @@ namespace MetaSim {
         DetVar(std::vector<double> &a);
         DetVar(double a[], int s);
 
-        CLONEABLE(RandomVar, DetVar)
+        CLONEABLE(RandomVar, DetVar, override)
 
         static std::unique_ptr<DetVar> createInstance(std::vector<std::string> &par);
 
-        virtual double get();
-        virtual double getMaximum() throw(MaxException);
-        virtual double getMinimum() throw(MaxException);
+        double get() override;
+        double getMaximum() throw(MaxException) override;
+        double getMinimum() throw(MaxException) override;
 
     };
     //@}

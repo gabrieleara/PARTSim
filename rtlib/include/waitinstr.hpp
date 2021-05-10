@@ -32,7 +32,7 @@ namespace RTSim {
         WaitEvt(Task* t, WaitInstr* in) :TaskEvt(t, _DEFAULT_PRIORITY - 3), wi(in)
             {}
         WaitInstr *getInstr() { return wi; } 
-        virtual void doit() {}
+        void doit() override {}
     };
 
     /**
@@ -46,7 +46,7 @@ namespace RTSim {
         SignalInstr *si;
     public:
         SignalEvt(Task* t, SignalInstr* in) : TaskEvt(t), si(in) {} 
-        virtual void doit() {}
+        void doit() override {}
         SignalInstr *getInstr() { return si; }
     };
 
@@ -78,20 +78,20 @@ namespace RTSim {
         */
         WaitInstr(Task * f, const std::string &r, int nr=1, const std::string &n= "");
 
-        CLONEABLE(Instr, WaitInstr)
+        CLONEABLE(Instr, WaitInstr, override)
         
         static std::unique_ptr<WaitInstr> createInstance(std::vector<std::string> &par);
 
         ///Virtual methods from Instr
-        virtual void schedule();
-        virtual void deschedule();
-        virtual Tick getExecTime() const { return 0; }
-        virtual double getActCycles() const override { return 0.0; }
-        virtual Tick getDuration() const { return 0; }
-        virtual Tick getWCET() const throw(RandomVar::MaxException) { return 0; }
+        void schedule() override;
+        void deschedule() override;
+        Tick getExecTime() const override { return 0; }
+        double getActCycles() const override { return 0.0; }
+        Tick getDuration() const override { return 0; }
+        Tick getWCET() const throw(RandomVar::MaxException) override { return 0; }
         std::string getResource() const { return _res; }
         int getNumOfResources() const { return _numberOfRes; }
-        virtual void reset() {}
+        void reset() override {}
         
         template <class TraceClass>
         void setTrace(TraceClass &trace_object) {
@@ -99,15 +99,15 @@ namespace RTSim {
             attach_stat(trace_object, _waitEvt);
         }
 
-        virtual void onEnd();
-        virtual void newRun() {};
-        virtual void endRun();
+        void onEnd() override;
+        void newRun() override {};
+        void endRun() override;
 
 
         /** Function inherited from clss Instr.It refreshes the state 
          *  of the executing instruction when a change of the CPU speed occurs. 
          */ 
-        virtual void refreshExec(double, double){}
+        void refreshExec(double, double) override {}
 
     };
 
@@ -140,18 +140,18 @@ namespace RTSim {
         */
         SignalInstr(Task *f, const std::string &r, int nr=1, const std::string & n= "");
 
-        CLONEABLE(Instr, SignalInstr)
+        CLONEABLE(Instr, SignalInstr, override)
         
         static std::unique_ptr<SignalInstr> createInstance(std::vector<std::string> &par);
 
         ///Virtual methods from Instr
-        virtual void schedule();
-        virtual void deschedule();
-        virtual Tick getExecTime() const { return 0; }
-        virtual double getActCycles() const override { return 0.0; }
-        virtual Tick getDuration() const { return 0; }
-        virtual Tick getWCET() const throw(RandomVar::MaxException) {return 0;}
-        virtual void reset() {}
+        void schedule() override;
+        void deschedule() override;
+        Tick getExecTime() const override { return 0; }
+        double getActCycles() const override { return 0.0; }
+        Tick getDuration() const override { return 0; }
+        Tick getWCET() const throw(RandomVar::MaxException) override {return 0;}
+        void reset() override {}
         //virtual void setTrace(Trace *);
 
         template <class TraceClass>
@@ -162,15 +162,15 @@ namespace RTSim {
 
         string getResource() const { return _res; }
         int getNumOfResources() const { return _numberOfRes; }
-        virtual void onEnd();
-        virtual void newRun() {};
-        virtual void endRun();
+        void onEnd() override;
+        void newRun() override {};
+        void endRun() override;
 
 
         /** Function inherited from clss Instr.It refreshes the state 
          *  of the executing instruction when a change of the CPU speed occurs. 
          */ 
-        virtual void refreshExec(double, double) {}
+        void refreshExec(double, double) override {}
 
     };
 
