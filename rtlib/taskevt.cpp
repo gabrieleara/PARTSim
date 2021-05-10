@@ -21,7 +21,9 @@
 #include <cstdlib>
 
 namespace RTSim {
-    
+    using std::cout;
+    using std::endl;
+
     void ArrEvt::doit()
     {
         _task->onArrival(this);

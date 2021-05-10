@@ -1,7 +1,6 @@
 #include <texttrace.hpp>
 
 namespace RTSim {
-        using namespace std;
         using namespace MetaSim;
 
         using CPU_BL = CPU;
@@ -20,7 +19,7 @@ namespace RTSim {
 			Task* tt = e.getTask();
             fd << "[Time:" << SIMUL.getTime() << "]\t";  
             fd << tt->getName() << " arrived at " 
-            << tt->getArrival() << endl;                
+            << tt->getArrival() << std::endl;                
 		}
 
 		void TextTrace::probe(EndEvt& e)
@@ -28,7 +27,7 @@ namespace RTSim {
 			Task* tt = e.getTask();
 			fd << "[Time:" << SIMUL.getTime() << "]\t";
 			fd << tt->getName()<<" ended, its arrival was " << tt->getArrival() << ", its period was "
-                           << tt->getPeriod() << ", RespTime/Period is " << double(SIMUL.getTime() - tt->getArrival()) / (double)tt->getPeriod() << endl;
+                           << tt->getPeriod() << ", RespTime/Period is " << double(SIMUL.getTime() - tt->getArrival()) / (double)tt->getPeriod() << std::endl;
 		}
 
 		void TextTrace::probe(SchedEvt& e)
@@ -37,7 +36,7 @@ namespace RTSim {
 			fd << "[Time:" << SIMUL.getTime() << "]\t";  
 			/* todo sostituire con questa versione 
 			fd << tt->getName()<<" scheduled its arrival was " 
-				<< tt->getArrival() << endl; 
+				<< tt->getArrival() << std::endl; 
 				*/
 			CPU* c = tt->getKernel()->getProcessor(tt);
 			if (c!= NULL) {
@@ -47,7 +46,7 @@ namespace RTSim {
 		          	frequency_str = "freq " + std::to_string(dynamic_cast<CPU_BL*>(c)->getFrequency());
 
 				fd << tt->getName()<<" scheduled on CPU " << c->getName() << " " << c->getSpeed() << frequency_str << " abs WCET "
-					<< tt->getWCET() << " its arrival was " << tt->getArrival() << endl;
+					<< tt->getWCET() << " its arrival was " << tt->getArrival() << std::endl;
       }
 		}
   
@@ -56,7 +55,7 @@ namespace RTSim {
 			Task* tt = e.getTask();
 			fd << "[Time:" << SIMUL.getTime() << "]\t";  
 			fd << tt->getName()<<" descheduled its arrival was " 
-				<< tt->getArrival() << endl;
+				<< tt->getArrival() << std::endl;
 		}
 
 		void TextTrace::probe(DeadEvt& e)
@@ -65,7 +64,7 @@ namespace RTSim {
 
 			fd << "[Time:" << SIMUL.getTime() << "]\t";  
 			fd << tt->getName()<<" missed its arrival was " 
-				<< tt->getArrival() << endl;
+				<< tt->getArrival() << std::endl;
 		}
 
 		void TextTrace::probe(KillEvt& e)
@@ -74,7 +73,7 @@ namespace RTSim {
 
 			fd << "[Time:" << SIMUL.getTime() << "]\t";  
 			fd << tt->getName()<<" killed its arrival was " 
-				<< tt->getArrival() << endl;
+				<< tt->getArrival() << std::endl;
 		}
 
                 void TextTrace::attachToTask(AbsRTTask &t)

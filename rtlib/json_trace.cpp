@@ -3,9 +3,8 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
-    
+    using std::endl;
 
     JSONTrace::JSONTrace(const string& name)
     {

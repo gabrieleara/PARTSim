@@ -15,7 +15,6 @@
 #include <genericvar.hpp>
 #include <factory.hpp>
 
-using namespace std;
 
 namespace MetaSim {
     

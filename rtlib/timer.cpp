@@ -16,7 +16,6 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
 
     Timer::Timer(const std::string &n, int p) : 

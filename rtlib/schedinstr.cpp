@@ -18,7 +18,8 @@
 
 namespace RTSim {
 
-    using namespace std;
+    using std::unique_ptr;
+    using std::vector;
 
     SchedInstr::SchedInstr(const SchedInstr &si)
         : Instr(si), _endEvt(this), _threEvt(si.getTask(), this) 

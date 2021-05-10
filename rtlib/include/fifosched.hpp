@@ -32,7 +32,7 @@ namespace RTSim {
             Tick getPriority() const override { return _rtTask->getArrival(); }
             void changePriority(MetaSim::Tick) override
                 {
-                    cerr << "Warning! changePriority called on a FIFOModel" << endl;
+                    std::cerr << "Warning! changePriority called on a FIFOModel" << std::endl;
                 }
         };
 

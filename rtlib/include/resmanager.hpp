@@ -29,7 +29,6 @@ namespace RTSim {
     class Resource;
     class AbsKernel;
 
-//   using namespace std;
     using namespace MetaSim;
 
     /** 

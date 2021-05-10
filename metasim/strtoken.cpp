@@ -3,7 +3,8 @@
 
 namespace parse_util {
 
-    using namespace std;
+    using std::string;
+    using std::vector;
 
     //removes the spaces at the beginning and at the end of the string
     string remove_spaces(const string &tk)

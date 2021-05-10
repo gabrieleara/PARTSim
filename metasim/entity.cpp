@@ -20,7 +20,7 @@
 
 namespace MetaSim {
 
-    using namespace std;
+    using std::map;
 
     map<int, Entity*> Entity::_globMap;
     map<string, Entity *> Entity::_index;
@@ -113,7 +113,7 @@ namespace MetaSim {
         return res;
     }
 
-  ostream& operator<<(ostream& out, Entity& e) {
+  std::ostream& operator<<(std::ostream& out, Entity& e) {
     return out << e.toString();
   }
 

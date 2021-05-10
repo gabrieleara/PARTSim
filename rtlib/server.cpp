@@ -9,7 +9,6 @@
 
 namespace RTSim {
     using namespace MetaSim;
-    using namespace std;
     using namespace parse_util;
 
     string Server::status_string[] = {"IDLE",
@@ -175,7 +174,7 @@ namespace RTSim {
     void Server::onBudgetExhausted(Event *e)
     {
         DBGENTER(_SERVER_DBG_LEV);
-        cout << "t=" << SIMUL.getTime() << " Server::" << __func__ << "() " << endl;
+        std::cout << "t=" << SIMUL.getTime() << " Server::" << __func__ << "() " << std::endl;
 
         assert(status == EXECUTING);
 

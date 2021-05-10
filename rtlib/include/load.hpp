@@ -22,6 +22,8 @@
 
 namespace RTSim {
 
+    using std::vector;
+
     /** 
         \ingroup util
 
@@ -301,7 +303,7 @@ namespace RTSim {
         static const Tick TMIN_DEF;
 
         IATGen(Tick t1, Tick t2, Tick m = TMIN_DEF, Tick gcd = GCD_DEF)
-            : avg(), tMin(max(t1,m)), tMax(t2),  
+            : avg(), tMin(std::max(t1,m)), tMax(t2),  
               tGCD(gcd), minT(m) {}
         virtual ~IATGen() {}
         void bind(RandomTaskSetFactory *ts);

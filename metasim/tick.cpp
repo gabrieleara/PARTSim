@@ -21,7 +21,8 @@
 
 namespace MetaSim {
 
-    using namespace std;
+    using std::string;
+
     using namespace parse_util;
 
     Tick::unit_t Tick::default_unit = Tick::nanosec;

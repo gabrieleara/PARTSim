@@ -29,7 +29,7 @@
 namespace RTSim {
 
     using namespace MetaSim;
-    using namespace std;
+    using std::map;
 
   /**
      Manages tasks migration among cores, remembering what they executed and how long.
@@ -98,12 +98,12 @@ namespace RTSim {
 
     string toString() const {
       std::stringstream ss;
-      ss << "Tasks migration histories:" << endl;
-      ss << "Task\tTick\tEvt\t\tcpu\twl" << endl;
+      ss << "Tasks migration histories:" << std::endl;
+      ss << "Task\tTick\tEvt\t\tcpu\twl" << std::endl;
 
       for (const auto &elem : _tasks_history) {
         ss << taskname(elem.task) << "\t" << double(elem.tick) << 
-          "\t" << mapEventType(elem.evt) << "\t" << (elem.cpu == NULL ? "" : elem.cpu->getName()) << "\t" << elem.wl << endl;
+          "\t" << mapEventType(elem.evt) << "\t" << (elem.cpu == NULL ? "" : elem.cpu->getName()) << "\t" << elem.wl << std::endl;
       }
       return ss.str();
     }
@@ -155,7 +155,7 @@ namespace RTSim {
         MRTKernel* _kernel;
 
         // CBS: task -> cpu, virtual time (= time to forget its active utilization), u_active
-        map<AbsRTTask*, tuple<CPU*, Tick, double>> _active_utilizations;
+        map<AbsRTTask*, std::tuple<CPU*, Tick, double>> _active_utilizations;
 
 
         /// Post begin event for a task on a core
@@ -179,7 +179,7 @@ namespace RTSim {
               when = _endEvts[c]->getTime();
             dropEvt(c, t);
             postBeginEvt(c, t, when);
-            cout << "t = " << SIMUL.getTime() << ", ctx switch set at " << double(when) << " for " << taskname(t) << endl;
+            std::cout << "t = " << SIMUL.getTime() << ", ctx switch set at " << double(when) << " for " << taskname(t) << std::endl;
         }
 
         /// Transition from running to ready on core c
@@ -194,7 +194,7 @@ namespace RTSim {
 
             _running_tasks.erase(c);
             oldTask->deschedule();
-            //cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << endl;
+            //std::cout << "t = " << SIMUL.getTime() << ", " << taskname(oldTask) << " descheduled" << std::endl;
         }
 
         /// Add a task to the scheduler of a core. @see insertTask
@@ -323,7 +323,7 @@ namespace RTSim {
         void onEnd(AbsRTTask *t, CPU* c) {
           assert(c != NULL); assert(t != NULL);
 
-          cout << "\t" << c->getName() << " has now wl: " << c->getWorkload() << ", speed: " << c->getSpeed() << endl << endl;
+          std::cout << "\t" << c->getName() << " has now wl: " << c->getWorkload() << ", speed: " << c->getSpeed() << std::endl << std::endl;
 
           // check if there is consistency still
           AbsRTTask *tt = getRunningTask(c);
@@ -343,7 +343,7 @@ namespace RTSim {
         */
         virtual void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) {
             assert(t != NULL); assert(original != NULL); assert(final != NULL);
-            cout << "\t\tMCS::" << __func__ << "() migrate " << t->toString() << " from " << original->toString() << " to " << final->toString() << endl;
+            std::cout << "\t\tMCS::" << __func__ << "() migrate " << t->toString() << " from " << original->toString() << " to " << final->toString() << std::endl;
 
             try {
                 removeFromQueue(original, t);
@@ -357,18 +357,18 @@ namespace RTSim {
 
         void onExecutingRecharging(CBServer *cbs) {
             // same as onReleasingIdle()
-            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
+            std::cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << std::endl;
             
             forgetU_active(cbs);
         }
 
         void onExecutingReleasing(CPU* cpu, CBServer *cbs) {
-            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
+            std::cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << std::endl;
             assert(cbs != NULL); assert(cpu != NULL);
 
             saveU_active(cpu, cbs);
 
-            cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() << (cbs->getTasks().size() > 0 ? " - first one: " + cbs->getTasks().at(0)->toString() : "") << endl;
+            std::cout << "\tCBS server has now #tasks=" << cbs->getTasks().size() << (cbs->getTasks().size() > 0 ? " - first one: " + cbs->getTasks().at(0)->toString() : "") << std::endl;
         }
 
         /**
@@ -376,7 +376,7 @@ namespace RTSim {
           Returns the core where the CBS server was
           */
         CPU* onReleasingIdle(CBServer* cbs) { // todo is it better to use onVirtualTimeReached(CBServer* cbs) and method remains the same?
-            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
+            std::cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << std::endl;
             
             CPU* c = forgetU_active(cbs);
             assert(c != NULL);
@@ -385,7 +385,7 @@ namespace RTSim {
 
         /// cbs recharging itself
         void onReplenishment(CBServer *cbs) {
-            cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << endl;
+            std::cout << "t=" << SIMUL.getTime() << " MCS::" << __func__ << "() for " << cbs->getName() << std::endl;
 
             //if (SIMUL.getTime() == cbs->getPeriod())
               forgetU_active(cbs);
@@ -408,7 +408,7 @@ namespace RTSim {
 
         /// When task in CBS server ends
         void onTaskInServerEnd(AbsRTTask* t, CPU* cpu, CBServer* cbs) {
-          cout << "MCS::" << __func__ << "() for " << cbs->getName() << endl;
+          std::cout << "MCS::" << __func__ << "() for " << cbs->getName() << std::endl;
           assert(t != NULL); assert(cbs != NULL); assert(cpu != NULL);
 
           // saveU_active (cpu, cbs);
@@ -425,7 +425,7 @@ namespace RTSim {
             assert(c != NULL);
             AbsRTTask *t = getFirst(c);
             // todo rem 
-            cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << endl;
+            std::cout << __func__ << "() " << (t == NULL ? "" : t->toString() + " on ") << c->getName() << std::endl;
 
             if (shouldDeschedule(c, t))
                 makeReady(c);
@@ -447,11 +447,11 @@ namespace RTSim {
         void yield(CPU* c) {
             assert(c != NULL); // running task might have already ended 
 
-            cout << "\tCore status: " << _queues[c]->toString() << endl;
+            std::cout << "\tCore status: " << _queues[c]->toString() << std::endl;
             AbsRTTask *nextReady = getFirstReady(c);
             if (nextReady != NULL) {
               //todo remove
-              cout << "\tYielding in favour of " << nextReady->toString() << endl;
+              std::cout << "\tYielding in favour of " << nextReady->toString() << std::endl;
               AbsRTTask* runningTask = getRunningTask(c);
               if (runningTask != NULL) {
                 makeReady(c);
@@ -474,8 +474,8 @@ namespace RTSim {
           double u_active = 0.0;
 
           for (const auto& elem : _active_utilizations)
-            if (get<0>(elem.second) == cpu)
-              u_active += get<2>(elem.second);
+            if (std::get<0>(elem.second) == cpu)
+              u_active += std::get<2>(elem.second);
 
           assert (u_active >= 0.0);
           return u_active;
@@ -485,12 +485,12 @@ namespace RTSim {
         double getUtilization_active(AbsRTTask* t) {
           assert (t != NULL);
 
-          return get<2>(_active_utilizations[t]);
+          return std::get<2>(_active_utilizations[t]);
         }
 
         /// Save U_active of an ending task t
         void saveU_active(CPU* cpu, CBServer* cbs) {
-            cout << "MCS::" << __func__ << "() " << endl;
+            std::cout << "MCS::" << __func__ << "() " << std::endl;
             assert(cbs != NULL); assert(cpu != NULL);
 
             // todo: e se il task e' migrato? allora sommo le utilizzazioni parziali, che e' facile
@@ -505,11 +505,11 @@ namespace RTSim {
             // a better map is by cpu, but then cpus can collide
             Tick vt = Tick(cbs->getVirtualTime());
             if ( double(vt) < double(SIMUL.getTime()) ) {
-              cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << endl;
+              std::cout << "\tvt = " << vt << " <= simul time = " << SIMUL.getTime() << " => skip" << std::endl;
               return;
             }
-            _active_utilizations[cbs] = make_tuple(cpu, vt, u_active);
-            cout << "\tadded active utilization for " << cbs->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << get<1>(_active_utilizations[cbs]) << endl;
+            _active_utilizations[cbs] = std::make_tuple(cpu, vt, u_active);
+            std::cout << "\tadded active utilization for " << cbs->getName() << " cpu " << cpu->toString() << " U_act " << u_active << ", cancel at t=" << std::get<1>(_active_utilizations[cbs]) << std::endl;
         }
 
         void newRun() override {}

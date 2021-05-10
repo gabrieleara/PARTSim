@@ -285,7 +285,7 @@ namespace RTSim {
 
             // First, reduce the current capacity
             Tick delta = Q-n;
-            Tick x = min(delta, cap);
+            Tick x = std::min(delta, cap);
             DBGVAR(delta);
             DBGVAR(x);
 
@@ -296,9 +296,9 @@ namespace RTSim {
             DBGVAR(delta);
 
             // if there is some delta left, reduce the capacity queue
-            list<repl_t>::iterator i= capacity_queue.begin();
+            std::list<repl_t>::iterator i= capacity_queue.begin();
             while (delta > 0 && i!=capacity_queue.end()) {
-                Tick x = min(delta, i->second);
+                Tick x = std::min(delta, i->second);
                 i->second -= x;
                 delta -= x;
                 DBGPRINT_2("Capacity queue dec, now delta is: ", delta);
@@ -309,7 +309,7 @@ namespace RTSim {
             i = repl_queue.begin();
             Tick last_repl_time = repl_queue.begin()->first;
             while (delta>0 && i!=repl_queue.end()) {
-                Tick x = min(delta, i->second);
+                Tick x = std::min(delta, i->second);
                 i->second -= x;
                 delta -= x;
                 DBGPRINT_2("Repl queue dec, now delta is: ", delta);
@@ -368,4 +368,3 @@ namespace RTSim {
         return 0;
     }
 }
-

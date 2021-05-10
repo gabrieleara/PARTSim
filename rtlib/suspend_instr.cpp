@@ -4,8 +4,9 @@
 #include "suspend_instr.hpp"
 
 namespace RTSim {
-    using namespace std;
     using namespace MetaSim;
+
+    using std::vector;
 
     SuspendInstr::SuspendInstr(Task *f, Tick d) :
         Instr(f), 

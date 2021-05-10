@@ -1170,9 +1170,9 @@ namespace RTSim {
         }
     }
 
-    inline CPU *uniformCPUFactory::createCPU(const string &name,
-                                      const vector<volt_type> &V,
-                                      const vector<freq_type> &F,
+    inline CPU *uniformCPUFactory::createCPU(const std::string &name,
+                                      const std::vector<volt_type> &V,
+                                      const std::vector<freq_type> &F,
                                       CPUModel *pm) {
         CPU *c = nullptr;
 
@@ -1216,9 +1216,9 @@ namespace RTSim {
         /// @returns the pointer to one of the stored
         /// pre-allocated CPUs, if the set is not already
         /// empty, nullptr otherwise.
-        virtual CPU *createCPU(const string &name = "",
-                               const vector<double> &V = {},
-                               const vector<unsigned int> &F = {},
+        virtual CPU *createCPU(const std::string &name = "",
+                               const std::vector<double> &V = {},
+                               const std::vector<unsigned int> &F = {},
                                CPUModel *pm = nullptr) override {
             if (_cpus.empty())
                 return nullptr;

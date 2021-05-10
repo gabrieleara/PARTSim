@@ -44,14 +44,14 @@ namespace RTSim {
     class EnergyMultiCoresScheds : public MultiCoresScheds {
     private:
         /// OPP needed by tasks
-        map<AbsRTTask*, pair<CPU_BL*, unsigned int>> _opps;
+        map<AbsRTTask*, std::pair<CPU_BL*, unsigned int>> _opps;
 
       //      multimap<AbsRTTask*, pair<Tick, CPU_BL*> > _tasks_history; // Tasks history: task tt run on core c at time t
 
     public:
         EnergyMultiCoresScheds(MRTKernel* kernel, vector<CPU*> &cpus, vector<Scheduler*> &s, const string& name);
 
-        ~EnergyMultiCoresScheds() { cout << __func__ << endl; }
+        ~EnergyMultiCoresScheds() { std::cout << __func__ << std::endl; }
 
         /**
          * Add a task to the queue of a core. Use instead
@@ -63,7 +63,7 @@ namespace RTSim {
         virtual void insertTask(AbsRTTask* t, CPU_BL* c, unsigned int opp) {
             assert(opp >= 0 && opp < c->getIsland()->getOPPsize());
             MultiCoresScheds::insertTask(t, c);
-            _opps[t] = make_pair(c, opp);
+            _opps[t] = std::make_pair(c, opp);
         }
 
         /**
@@ -76,7 +76,7 @@ namespace RTSim {
         void onMigrationFinished(AbsRTTask* t, CPU* original, CPU* final) override {
             CBServerCallingEMRTKernel *cbs = dynamic_cast<CBServerCallingEMRTKernel*>(t);
             assert(cbs != NULL); assert(original != NULL); assert(final != NULL);
-            cout << "\t\tEMCS::" << __func__ << "()" << endl;
+            std::cout << "\t\tEMCS::" << __func__ << "()" << std::endl;
 
             final->setWorkload(Utils::getTaskWorkload(t));
             Tick newBudget = Tick(ceil(cbs->getFirstTask()->getWCET(final->getSpeed()))); 
@@ -129,20 +129,20 @@ namespace RTSim {
             std::stringstream ss;
             int i = 1;
             for (AbsRTTask* t : tasks)
-                ss << "\t\t" << i++ << ") " << t->toString() << endl;
+                ss << "\t\t" << i++ << ") " << t->toString() << std::endl;
             return ss.str();
         }
 
         string toString() const override {
             std::stringstream ss;
-            ss << "EnergyMultiCoresScheds::toString(), t=" << SIMUL.getTime() << ":" << endl;
+            ss << "EnergyMultiCoresScheds::toString(), t=" << SIMUL.getTime() << ":" << std::endl;
             for (const auto& q : _queues) {
                 string qs = toString(dynamic_cast<CPU_BL *>(q.first));
                 if (qs == "")
-                    ss << "\tEmpty queue for " << q.first->getName() << endl << endl;
+                    ss << "\tEmpty queue for " << q.first->getName() << std::endl << std::endl;
                 else {
-                    ss << "\t" << q.first->getName() << " ( freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ", u_active: " << getUtilization_active(q.first) << " ):" << endl;
-                    ss << qs << endl;
+                    ss << "\t" << q.first->getName() << " ( freq: " << q.first->getFrequency() << ", wl:" << q.first->getWorkload() << ", speed: " << q.first->getSpeed() << ", u_active: " << getUtilization_active(q.first) << " ):" << std::endl;
+                    ss << qs << std::endl;
                 }
             }
             return ss.str();
@@ -219,10 +219,10 @@ namespace RTSim {
         EnergyMultiCoresScheds *_queues;
 
         /// for debug, if you want to force a certain choice of cores and frequencies and how many times to dispatch
-        map<AbsRTTask*, tuple<CPU_BL*, unsigned int, unsigned int>> _m_forcedDispatch;
+        map<AbsRTTask*, std::tuple<CPU_BL*, unsigned int, unsigned int>> _m_forcedDispatch;
 
         /// for debug, list of discarded tasks and how many times to discard them
-        map<AbsRTTask*, tuple<unsigned int>> _discardedTasks;
+        map<AbsRTTask*, std::tuple<unsigned int>> _discardedTasks;
 
         /// Temporarily migrated tasks, ie tasks migrated until arrival or deadline new core or scheduling on original core
         vector<MigrationProposal> _temporarilyMigrated;
@@ -305,19 +305,19 @@ namespace RTSim {
             consumption is the same because it is the same island, so same cache and frequency.
             */
           if (!EMRTK_TEMPORARILY_MIGRATE_VTIME && !EMRTK_TEMPORARILY_MIGRATE_END) {
-            cout << "\tTemporary migrations disabled => skip" << endl;
+            std::cout << "\tTemporary migrations disabled => skip" << std::endl;
             return false;
           }
 
-          cout << "\tEMRTK::" << __func__ << "()" << endl;
+          std::cout << "\tEMRTK::" << __func__ << "()" << std::endl;
           MigrationProposal migrationProposal = balanceLoad(endingCPU, {});
           
           if (migrationProposal.task == NULL) {
-            cout << "\tNo temporary migration (by balancing) possible. skip" << endl;
+            std::cout << "\tNo temporary migration (by balancing) possible. skip" << std::endl;
             return false;
           }
 
-          cout << "\tTemporarily migrated " << migrationProposal.task->toString() << " from " << migrationProposal.from->toString() << " to " << migrationProposal.to->toString() << endl;
+          std::cout << "\tTemporarily migrated " << migrationProposal.task->toString() << " from " << migrationProposal.from->toString() << " to " << migrationProposal.to->toString() << std::endl;
           _temporarilyMigrated.push_back(migrationProposal);
           migrationProposal.to->setWorkload(Utils::getTaskWorkload(migrationProposal.task));
           _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
@@ -326,7 +326,7 @@ namespace RTSim {
 
         /// Remove tasks temporarily migrated task to core 'to'
         void removeTaskTemporarilyMigrated(CPU_BL *to) {
-          cout << "\tEMRTK::" << __func__ << "() to core=" << to->toString() << endl;
+          std::cout << "\tEMRTK::" << __func__ << "() to core=" << to->toString() << std::endl;
           for (int i = 0; i < _temporarilyMigrated.size(); i++) {
             if (_temporarilyMigrated.at(i).to == to) {
               MigrationProposal mp = _temporarilyMigrated.at(i);
@@ -373,7 +373,7 @@ namespace RTSim {
         EnergyMRTKernel(vector<Scheduler*> &qs, Scheduler *s, Island_BL* big, Island_BL* little, const string &name = "");
 
         virtual ~EnergyMRTKernel() {
-          cout << "~EnergyMRTKernel" << endl;
+          std::cout << "~EnergyMRTKernel" << std::endl;
           delete _islands[0];
           delete _islands[1];
 
@@ -557,18 +557,18 @@ namespace RTSim {
             
             string starting_wl = endingCPU->getWorkload();
             endingCPU->setWorkload(Utils::getTaskWorkload(task_m));
-            cout << "\tEMRTK::" << __func__ << "()" << endl;
+            std::cout << "\tEMRTK::" << __func__ << "()" << std::endl;
             
             double utilCore = getUtilization(endingCPU, endingCPU->getSpeed());
             bool safe = (double) task_m->getWCET(1.0) / endingCPU->getSpeed() <= (1 - utilCore) * double(task_m->getDeadline() - SIMUL.getTime()); // remaining utilization of migrated task > 1 - U_core (remaining core util)
 
             if (!safe)
-                cout << "\t\tNot safe to migrate " << task_m->toString() << " into " << endingCPU->toString() << " => pick next ready" << endl;
+                std::cout << "\t\tNot safe to migrate " << task_m->toString() << " into " << endingCPU->toString() << " => pick next ready" << std::endl;
             else
-                cout << "\t\tMigration safe " << task_m->toString() << mp.from->toString() << " -> " << endingCPU->toString() << endl;
+                std::cout << "\t\tMigration safe " << task_m->toString() << mp.from->toString() << " -> " << endingCPU->toString() << std::endl;
 
-            cout << "\t\t\t" << endingCPU->toString() << " " << endingCPU->getWorkload() << " " << endingCPU->getFrequency() << endl;
-            cout << "\t\t\tCalculation: " << (double) task_m->getWCET(1.0) / endingCPU->getSpeed() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ")? if yes, unsafe" << endl;  
+            std::cout << "\t\t\t" << endingCPU->toString() << " " << endingCPU->getWorkload() << " " << endingCPU->getFrequency() << std::endl;
+            std::cout << "\t\t\tCalculation: " << (double) task_m->getWCET(1.0) / endingCPU->getSpeed() << " > (" << 1 - utilCore << ") * (" << task_m->getDeadline() << " - " << SIMUL.getTime() << ")? if yes, unsafe" << std::endl;  
 
             endingCPU->setWorkload(starting_wl);
             return safe;
@@ -608,19 +608,19 @@ namespace RTSim {
         void onEnd(AbsRTTask* t) override;
 
         void onExecutingRecharging(CBServer *cbs) {
-          cout << "EMRTK::" << __func__ << "()" << endl;
+          std::cout << "EMRTK::" << __func__ << "()" << std::endl;
 
           _queues->onExecutingRecharging(cbs);
         }
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing
         void onExecutingReleasing(CBServer* cbs) {
-          cout << "EMRTK::" << __func__ << "()" << endl;
+          std::cout << "EMRTK::" << __func__ << "()" << std::endl;
           CPU *cpu = getOldProcessor(cbs);
 
           // for some reason, here task has wl idle, wrongly (should be kept until the end of this function). reset:
           cpu->setWorkload(Utils::getTaskWorkload(cbs));
-          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << endl;
+          std::cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << std::endl;
           
           _queues->onExecutingReleasing(cpu, cbs);
 
@@ -630,7 +630,7 @@ namespace RTSim {
                 If the task on a CBS server ends and the server gets empty,
                 schedule ready tasks on the core (i.e., deschedule & schedule server)
                 */
-              cout << "\tServer's got empty. Server yields (= schedule a ready task of core)" << endl;
+              std::cout << "\tServer's got empty. Server yields (= schedule a ready task of core)" << std::endl;
               _queues->yield(cpu);
               cbs->yield(); // server might still have higher priority and thus still get scheduled (=> 2 running tasks on cpu)
           }
@@ -639,7 +639,7 @@ namespace RTSim {
                 Schedule ready task on core
                 */
               assert (cbs->getStatus() == ServerStatus::RELEASING);
-              cout << "CBS enveloping periodic tasks enabled => schedule ready on " << cpu->getName() << endl;
+              std::cout << "CBS enveloping periodic tasks enabled => schedule ready on " << cpu->getName() << std::endl;
               _queues->schedule(cpu);
           }
 
@@ -649,7 +649,7 @@ namespace RTSim {
         /// Callback, when CBS server is killed. It expects the tasks inside the CBS server still alive.
         void onCBSKilled(AbsRTTask* t, CPU_BL* cpu, CBServerCallingEMRTKernel* cbs) {
           assert (cpu != NULL); assert(cbs != NULL);
-          cout << "EMRTK::" << __func__ << "() for " << cbs->toString() << endl;
+          std::cout << "EMRTK::" << __func__ << "() for " << cbs->toString() << std::endl;
 
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
           _queues->onEnd(cbs, cpu);
@@ -657,17 +657,17 @@ namespace RTSim {
 
         /// Callback called when a task on a CBS CEMRTK. goes executing -> releasing (virtual time ends)
         void onReleasingIdle(CBServer *cbs) {
-          cout << "EMRTK::" << __func__ << "()" << endl;
+          std::cout << "EMRTK::" << __func__ << "()" << std::endl;
           CPU_BL* endingCPU = dynamic_cast<CPU_BL*>(_queues->onReleasingIdle(cbs)); // forget U_active
           AbsRTTask* oldTask = getRunningTask(endingCPU);
 
           if (!getReadyTasks(endingCPU).empty()) {
-            cout << "\tCore already has some ready tasks. Scheduling one of those" << endl;
+            std::cout << "\tCore already has some ready tasks. Scheduling one of those" << std::endl;
             _queues->schedule(endingCPU);
             return;
           }
           if (!EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END) {
-            cout << "\tEMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END disabled" << endl;
+            std::cout << "\tEMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END disabled" << std::endl;
             return;
           }
 
@@ -688,7 +688,7 @@ namespace RTSim {
           }
 
           if (task_m != NULL) {
-              cout << "\tConfirmed migration of " << task_m->toString() << " into " << endingCPU->toString() << endl;
+              std::cout << "\tConfirmed migration of " << task_m->toString() << " into " << endingCPU->toString() << std::endl;
               _queues->onMigrationFinished(migrationProposal.task, migrationProposal.from, migrationProposal.to);
           }
           else // core would be idle. No ready on core and no migrable tasks found
@@ -696,7 +696,7 @@ namespace RTSim {
         }
 
         void onReplenishment(CBServer *cbs) {
-          cout << "EMRTK::" << __func__ << "()" << endl;
+          std::cout << "EMRTK::" << __func__ << "()" << std::endl;
           _queues->onReplenishment(cbs);
           dispatch();
         }
@@ -705,9 +705,9 @@ namespace RTSim {
         void onTaskInServerEnd(AbsRTTask* t, CPU_BL* cpu, CBServer* cbs) {
           assert (t != NULL); assert (cpu != NULL); assert(cbs != NULL);
 
-          cout << "\tEMRTK::" << __func__ << "()" << endl;
+          std::cout << "\tEMRTK::" << __func__ << "()" << std::endl;
           _queues->onTaskInServerEnd(t, cpu, cbs); // save util active
-          cout << __func__ << "() cbs is empty? " << cbs->isEmpty() << endl;
+          std::cout << __func__ << "() cbs is empty? " << cbs->isEmpty() << std::endl;
           if (cbs->isEmpty())
             onEnd(cbs);
         }
@@ -715,12 +715,12 @@ namespace RTSim {
         /// Callback, when a task gets running on a core
         void onTaskGetsRunning(AbsRTTask *t, CPU_BL* cpu) {
           assert (t != NULL); assert (cpu != NULL);
-          cout << "EMRTK::" << __func__ << "() " << taskname(t) << " on " << cpu->getName() << endl;
+          std::cout << "EMRTK::" << __func__ << "() " << taskname(t) << " on " << cpu->getName() << std::endl;
 
-          cout << "\t" << cpu->getName() << " had wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl;
+          std::cout << "\t" << cpu->getName() << " had wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << std::endl;
           cpu->setWorkload(Utils::getTaskWorkload(t));
           assert (cpu->getWorkload() != "");
-          cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << endl << endl;
+          std::cout << "\t" << cpu->getName() << " has now wl: " << cpu->getWorkload() << ", speed: " << cpu->getSpeed() << ", freq: " << cpu->getFrequency() << std::endl << std::endl;
         }
 
         /**
@@ -756,7 +756,7 @@ namespace RTSim {
 
         void printEnvelopes() const {
           for (auto& elem : _envelopes)
-            cout << elem.first->toString() << " -> " << elem.second->toString() << endl;
+            std::cout << elem.first->toString() << " -> " << elem.second->toString() << std::endl;
         }
 
         void printMap();
@@ -764,14 +764,14 @@ namespace RTSim {
         void printBool(bool b);
 
         void printPolicies() const {
-          cout << "EMRTK_BALANCE_ENABLED: " << EMRTK_BALANCE_ENABLED << endl;
-          cout << "EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << endl;
-          cout << "EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << endl; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
-          cout << "EMRTK_CBS_YIELD_ENABLED: " << EMRTK_CBS_YIELD_ENABLED << endl;
+          std::cout << "EMRTK_BALANCE_ENABLED: " << EMRTK_BALANCE_ENABLED << std::endl;
+          std::cout << "EMRTK_LEAVE_LITTLE3_ENABLED: " << EMRTK_LEAVE_LITTLE3_ENABLED << std::endl;
+          std::cout << "EMRTK_MIGRATE_ENABLED: " << EMRTK_MIGRATE_ENABLED << std::endl; /// Migrations enabled? (if disabled, its dependencies won't work, e.g. EMRTK_CBS_MIGRATE_AFTER_END)
+          std::cout << "EMRTK_CBS_YIELD_ENABLED: " << EMRTK_CBS_YIELD_ENABLED << std::endl;
 
-          cout << "EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED: " << EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED          << endl; /// CBS server enveloping periodic tasks?
-          cout << "EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END: " << EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END   << endl; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
-          cout << "EMRTK_CBS_MIGRATE_AFTER_END: " << EMRTK_CBS_MIGRATE_AFTER_END << endl;
+          std::cout << "EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED: " << EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED          << std::endl; /// CBS server enveloping periodic tasks?
+          std::cout << "EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END: " << EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END   << std::endl; /// After task ends its virtual time, it can be migrated (requires CBS_ENVELOPING)
+          std::cout << "EMRTK_CBS_MIGRATE_AFTER_END: " << EMRTK_CBS_MIGRATE_AFTER_END << std::endl;
         }
 
         void printState() const override { printState(false); }
@@ -786,8 +786,8 @@ namespace RTSim {
           assert (t != NULL);
 
           if (_discardedTasks.find(t) != _discardedTasks.end()) {
-            get<0>(_discardedTasks[t])--;
-            if (get<0>(_discardedTasks[t]) == 0)
+            std::get<0>(_discardedTasks[t])--;
+            if (std::get<0>(_discardedTasks[t]) == 0)
               _discardedTasks.erase(t);
             return true;
           }

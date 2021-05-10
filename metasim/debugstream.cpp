@@ -17,12 +17,11 @@
 #include <debugstream.hpp>
 #include <simul.hpp>
 
-using namespace std;
 
 namespace MetaSim {
 
     DebugStream::DebugStream() : 
-        _os(&cerr),
+        _os(&std::cerr),
         _autodelete(false),
         _isDebug(false),
         _isDebugAll(false),
@@ -51,7 +50,7 @@ namespace MetaSim {
     {
         if (_autodelete) delete _os;
         _autodelete = true;
-        _os = new ofstream(filename); 
+        _os = new std::ofstream(filename); 
     }
 
     void DebugStream::enable(std::string s) 
@@ -91,7 +90,7 @@ namespace MetaSim {
         enter(s);
         if (filter()) {
             indent();
-            (*_os) << header << endl;
+            (*_os) << header << std::endl;
             resetIndent();
             _indentLevel++;
         }
@@ -139,7 +138,7 @@ namespace MetaSim {
         } 
     }
 
-    ostream& DebugStream::getStream() 
+    std::ostream& DebugStream::getStream() 
     { 
         return *_os; 
     }

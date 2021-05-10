@@ -27,7 +27,7 @@
 
 namespace RTSim {
 
-  using namespace std;
+  using std::cerr;
 
   const string TraceEvent::evt_name[] = {
     "ARRIVAL", "SCHEDULE", "DESCHEDULE", "END", "DLINE POSTPONED",

@@ -35,9 +35,8 @@
 #include <baseexc.hpp>
 #include <basetype.hpp>
 
-using namespace std;
-
 namespace MetaSim {
+    using std::string;
 
 #define _ENTITY_DBG_LEV "Entity"
 
@@ -191,7 +190,7 @@ namespace MetaSim {
         virtual void endRun() = 0;
     };
 
-  ostream& operator<<(ostream& out, Entity& e);
+  std::ostream& operator<<(std::ostream& out, Entity& e);
 
 }
 #endif

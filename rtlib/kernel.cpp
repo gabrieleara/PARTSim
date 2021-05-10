@@ -24,7 +24,8 @@
 
 namespace RTSim {
 
-    using namespace std;
+    using std::cout;
+    using std::endl;
 
     RTKernel::RTKernel(Scheduler *s, const std::string& name, CPU* c) 
         : Entity(name),

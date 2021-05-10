@@ -3,7 +3,6 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
 
 
@@ -74,4 +73,3 @@ namespace RTSim {
         attach_stat(*this, t.deadEvt);
     }
 }
-

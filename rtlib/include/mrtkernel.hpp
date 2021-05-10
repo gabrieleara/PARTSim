@@ -29,6 +29,9 @@ namespace RTSim {
     class MRTKernel;
     class CBServer;
 
+    using std::map;
+    using std::vector;
+
     // Interface
     class DispatchMultiEvt : public Event {
     protected:

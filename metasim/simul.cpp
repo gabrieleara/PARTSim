@@ -19,7 +19,9 @@
 #include <simul.hpp>
 
 namespace MetaSim {
-    using namespace std;
+    using std::cerr;
+    using std::cout;
+    using std::endl;
 
     class MsgEvt : public Event {
       string _msg;

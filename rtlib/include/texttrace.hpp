@@ -28,12 +28,13 @@
 #include <taskevt.hpp>
 
 namespace RTSim {
-    using namespace std;
+
     using namespace MetaSim;
-    
+
+    using std::map;
     class TextTrace {
     protected:
-        ofstream fd;
+        std::ofstream fd;
     public:
         TextTrace(const string& name);
         
@@ -53,7 +54,7 @@ namespace RTSim {
         
         void attachToTask(AbsRTTask &t);
     };
-    
+
     class VirtualTrace {
         map<string, int> *results;
     public:

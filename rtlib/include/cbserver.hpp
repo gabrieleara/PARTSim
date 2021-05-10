@@ -54,12 +54,12 @@ namespace RTSim {
 
         /// Returns all tasks active in the server TODO IT MAY BE WRONG, but I cannot rely on sched_ (erase not working?)!!
         vector<AbsRTTask*> getTasks() const {
-          //cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << endl;
+          //std::cout << "CBServerCallingEMRTKernel::" << __func__ << "()" << std::endl;
           vector<AbsRTTask*> res;
           vector<AbsRTTask*> tasks = getAllTasks();
           for (int i = 0; i < tasks.size(); i++) {
             Task *tt = dynamic_cast<Task*>(tasks.at(i));
-            //cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << endl;
+            //std::cout << "\t" << tt->toString() << " arrtime " << tt->arrEvt.getTime() << std::endl;
             NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask*>(tt);
             printf("%f > %f && %d || %f == %f\n", (double) tt->arrEvt.getTime(), (double) SIMUL.getTime(), !tt->isActive(), (double) tt->endEvt.getTime(), (double) SIMUL.getTime());
             if ( ( tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive() ) || tt->endEvt.getTime() == SIMUL.getTime() ) // todo make easier?
@@ -69,10 +69,10 @@ namespace RTSim {
             res.push_back(tt);
           }
 
-          //cout << "\t-----------\n\tCBS::gettasks() t=" << SIMUL.getTime() << endl;
+          //std::cout << "\t-----------\n\tCBS::gettasks() t=" << SIMUL.getTime() << std::endl;
           //for (AbsRTTask* t:res)
-          //  cout << "\t\t" << t->toString() << endl;
-          //cout << "\tend tasks"<<endl;
+          //  std::cout << "\t\t" << t->toString() << std::endl;
+          //std::cout << "\tend tasks"<<std::endl;
 
           return res;
         }
@@ -196,7 +196,6 @@ namespace RTSim {
         bool _killed = false;
     };
 
-
     /**
       CBS server augmented specifically for EnergyMRTKernel.
       EMRTK. needs to know WCET to compute utilizations, and some callbacks to
@@ -266,7 +265,7 @@ namespace RTSim {
 
       /// Arrival event of task of server
       void onArrival(AbsRTTask *t) override {
-        cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << endl;
+        std::cout << "CBServerCallingEMRTKernel::" << __func__ << "(). " << t->toString() << std::endl;
         _yielding = false;
         Server::onArrival(t);
       }
@@ -276,7 +275,7 @@ namespace RTSim {
 
       /// On deschedule event (of server - and of tasks in it)
       void onDesched(Event *e) override {
-        cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << endl;
+        std::cout << "CBServerCallingEMRTKernel is empty? " << isEmpty() << std::endl;
         if (isEmpty())
             yield();
         else // could happend with non-periodic tasks
@@ -292,13 +291,13 @@ namespace RTSim {
         return s;
       }
 
-      /// Prints (cout) all events of CBS Server
+      /// Prints (std::cout) all events of CBS Server
       virtual void printEvts() const {
-        cout << endl << toString();
-        cout << "_bandExEvt: " << _bandExEvt.getTime() << ", ";
-        cout << "_rechargingEvt: " << _rechargingEvt.getTime() << ", ";
-        cout << "_idleEvt: " << _idleEvt.getTime() << ", ";
-        cout << endl << endl;
+        std::cout << std::endl << toString();
+        std::cout << "_bandExEvt: " << _bandExEvt.getTime() << ", ";
+        std::cout << "_rechargingEvt: " << _rechargingEvt.getTime() << ", ";
+        std::cout << "_idleEvt: " << _idleEvt.getTime() << ", ";
+        std::cout << std::endl << std::endl;
       } 
 
     };

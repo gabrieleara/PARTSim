@@ -24,11 +24,14 @@
 #include <task.hpp>
 
 namespace RTSim {
-    
-    using namespace std;
     using namespace MetaSim;
     using namespace parse_util;
-    
+
+    using std::cout;
+    using std::endl;
+    using std::unique_ptr;
+    using std::vector;
+
     Task::~Task()
     {
         DBGENTER(_TASK_DBG_LEV);
@@ -664,7 +667,7 @@ namespace RTSim {
     }
 
     /// to string operator
-    ostream& operator<<(ostream &strm, Task &a) {
+    std::ostream& operator<<(std::ostream &strm, Task &a) {
         strm << a.toString();
         return strm;
     }

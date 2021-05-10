@@ -85,7 +85,7 @@ namespace RTSim {
             @param n is the instruction name
         */
         ExecInstr(Task *f,
-                  unique_ptr<RandomVar> c,
+                  std::unique_ptr<RandomVar> c,
                   const std::string &wl= "",
                   const std::string &n = "");
         static Instr *createInstance(const std::vector<std::string> &par);
@@ -96,7 +96,7 @@ namespace RTSim {
 
       string toString() const override {
         std::stringstream ss;
-        ss << "ExecInstr wl: " << workload << " wcet: " << getWCET() << endl;
+        ss << "ExecInstr wl: " << workload << " wcet: " << getWCET() << std::endl;
         return ss.str();
       }
 

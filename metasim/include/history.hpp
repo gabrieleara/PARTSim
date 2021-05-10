@@ -115,7 +115,6 @@ public:
 #ifdef __TEST__
 #include <iostream>
 
-using namespace std;
 
 template <class C>
 void print(C& c)

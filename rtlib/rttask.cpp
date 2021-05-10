@@ -1,6 +1,8 @@
 #include "rttask.hpp"
 
 namespace RTSim {
+    using std::unique_ptr;
+
     PeriodicTask::PeriodicTask(Tick iat)
         : Task(unique_ptr<RandomVar>(new DeltaVar(iat)), iat, 0, "", 1000), period(iat) 
     {

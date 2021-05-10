@@ -7,7 +7,6 @@
 
 namespace RTSim {
 
-    using namespace std;
 
     CapacityTimer::CapacityTimer() : Entity(""), 
                                      last_time(0), 

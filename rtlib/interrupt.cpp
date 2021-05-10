@@ -32,7 +32,6 @@
 
 namespace RTSim {
 
-  using namespace std;
   using namespace MetaSim;
 
     Interrupt::Interrupt(RandomVar *iat, 

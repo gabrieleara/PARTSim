@@ -2,7 +2,7 @@
 #include <trace.hpp>
 
 namespace MetaSim {
-    using namespace std;
+    using std::ios;
 
     const char * const Trace::Exc::_NO_OPEN = "File is not open";
 

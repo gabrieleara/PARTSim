@@ -19,7 +19,8 @@
 
 namespace RTSim {
 
-    using namespace std;
+    using std::unique_ptr;
+    using std::vector;
 
     WaitInstr::WaitInstr(Task * f, const string &r, int nr, const string &n)
         : Instr(f, n), _res(r), _endEvt(this), 

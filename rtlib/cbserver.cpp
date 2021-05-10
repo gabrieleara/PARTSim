@@ -7,6 +7,9 @@ namespace RTSim {
 
     using namespace MetaSim;
 
+    using std::cout;
+    using std::endl;
+
     CBServer::CBServer(Tick q, Tick p,Tick d, bool HR, const std::string &name,
                const std::string &s) :
         Server(name, s),

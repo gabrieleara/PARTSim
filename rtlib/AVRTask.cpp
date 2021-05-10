@@ -10,9 +10,10 @@ email                : simoncelli.stefano@hotmail.it
 
 namespace RTSim {
 
-	using namespace std;
 	using namespace MetaSim;
-	using namespace RTSim;
+
+    using std::unique_ptr;
+    using std::vector;
 
 	AVRTask::~AVRTask() {
         //std::cout << "Inside delete" << endl;

@@ -18,9 +18,9 @@
 #include <threinstr.hpp>
 
 namespace RTSim {
+    using std::unique_ptr;
+    using std::vector;
 
-    using namespace std;
-    
     ThreInstr::ThreInstr(Task * f, int th, const string &n)
         : Instr(f, n), _endEvt(this), _threEvt(f, this), _th(th)  
     {}

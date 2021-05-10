@@ -17,6 +17,8 @@
 
 namespace RTSim {
 
+    using std::cout;
+
     EDFModel::EDFModel(AbsRTTask* t) :TaskModel(t), extP(false) {
     }
 

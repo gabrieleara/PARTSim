@@ -265,12 +265,12 @@ namespace RTSim {
         */
         virtual ~Task();
 
-	    friend ostream& operator<<(ostream &strm, Task &a);
+	    friend std::ostream& operator<<(std::ostream &strm, Task &a);
 
         /**
            For the abstract factory
         */
-        static std::unique_ptr<Task> createInstance(const vector<string> &par);
+        static std::unique_ptr<Task> createInstance(const std::vector<std::string> &par);
 
         /**
            Initializes the internal task structures at the beginning of each run.
@@ -439,7 +439,7 @@ namespace RTSim {
             of the random variable with another function. This function
             should not return anything.
         */
-        unique_ptr<RandomVar> changeIAT(std::unique_ptr<RandomVar> iat);
+        std::unique_ptr<RandomVar> changeIAT(std::unique_ptr<RandomVar> iat);
 
         /** 
             From AbsTask interface...
@@ -570,7 +570,7 @@ namespace RTSim {
     std::string taskname(const AbsRTTask *t);
 
     /// to string operator
-    ostream& operator<<(ostream &strm, Task &a);
+    std::ostream& operator<<(std::ostream &strm, Task &a);
 
 } // namespace RTSim
 

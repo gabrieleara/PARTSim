@@ -24,8 +24,9 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
+    using std::cout;
+    using std::endl;
 
     template<class IT>
     void clean_mapcontainer(IT b, IT e)

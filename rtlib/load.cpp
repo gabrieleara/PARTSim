@@ -19,6 +19,11 @@
 namespace RTSim {
 
     using namespace MetaSim;
+    using std::cerr;
+    using std::cout;
+    using std::endl;
+    using std::unique_ptr;
+    using std::vector;
 
     const char* const RandomTaskSetFactory::Exc::_SET_GEN =
         "The set was already generated.";
@@ -301,7 +306,7 @@ namespace RTSim {
         for (int i = 0; i < taskSet->size(); i++) {
             UniformVar x(_min, _max);
             va[i] = Tick::round(x.get() * double(iatGen->getMin(i)));
-            va[i] = max(ctGen->getMax(i), va[i]);
+            va[i] = std::max(ctGen->getMax(i), va[i]);
         }
         return true;
     }
@@ -322,7 +327,7 @@ namespace RTSim {
     {
         for (int i = 0; i < taskSet->size(); i++) {
             int mylimit = (int) (iatGen->getMin(i)/_step);
-            if (_islimit) mylimit = min(mylimit, _limit/_step);
+            if (_islimit) mylimit = std::min(mylimit, _limit/_step);
             UniformVar r(0,mylimit);
             va[i] = Tick::round(r.get()) * _step;
         }

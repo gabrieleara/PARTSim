@@ -36,12 +36,15 @@
 
 namespace MetaSim {
 
-    using namespace std;
     using namespace parse_util;
+
+    using std::map;
+    using std::string;
+    using std::vector;
 
     static const double PDF_ERR = 0.00000000001;
 
-    void GenericVar::readPDF(ifstream &f, int mode)
+    void GenericVar::readPDF(std::ifstream &f, int mode)
     {
         int n;
         double p;
@@ -70,7 +73,7 @@ namespace MetaSim {
         }
 
         if (sum < (1.0 - PDF_ERR)) {
-            cerr << "Warning: PDF values sum to " << sum << " < 1\n";
+            std::cerr << "Warning: PDF values sum to " << sum << " < 1\n";
             if (mode == 0) {
                 _pdf[n] += (1 - sum);
             } else {
@@ -83,7 +86,7 @@ namespace MetaSim {
     GenericVar::GenericVar(const std::string &fileName) : 
         UniformVar(0, 1)
     {
-        ifstream inFile(fileName.c_str());
+        std::ifstream inFile(fileName.c_str());
 
         if (!inFile.is_open()) {
             string errMsg = Exc::_FILEOPEN  + string(fileName) + "\n";

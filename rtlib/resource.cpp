@@ -27,7 +27,6 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
 
     Resource::Resource(const string &n, int nr) :

@@ -6,8 +6,6 @@
 
 namespace RTSim {
 
-    using namespace std;
-
     /// Rate-monotonic ordering
     static bool less_rm(const SchedRTA::ServerInfo & s1, const SchedRTA::ServerInfo & s2) {
 	return s1.p_server->getPeriod() < s2.p_server->getPeriod();

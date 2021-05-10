@@ -2,10 +2,10 @@
 #include <grubserver.hpp>
 #include <iostream>
 
-using namespace std;
-
 namespace RTSim {
-    
+    using std::cout;
+    using std::endl;
+
     GrubSupervisor::GrubSupervisor(const std::string &name) : 
 	Entity(name),
 	servers(),

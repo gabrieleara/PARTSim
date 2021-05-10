@@ -25,6 +25,8 @@ namespace RTSim {
 
     using namespace MetaSim;
 
+    using std::vector;
+
     class AbsKernel;
 
     

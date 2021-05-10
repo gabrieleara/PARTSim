@@ -17,6 +17,8 @@
 
 namespace RTSim {
 
+    using std::unique_ptr;
+
     void FIFOScheduler::addTask(AbsRTTask *task) throw(RTSchedExc)
     {
         FIFOModel *model = new FIFOModel(task); 	

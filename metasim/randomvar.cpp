@@ -29,8 +29,11 @@
 
 namespace MetaSim {
 
-    using namespace std;
     using namespace parse_util;
+
+    using std::string;
+    using std::unique_ptr;
+    using std::vector;
 
     RandomGen RandomVar::_stdgen(1);
 
@@ -265,7 +268,7 @@ namespace MetaSim {
         _array()
     {
         DBGENTER(_RANDOMVAR_DBG_LEV);
-        ifstream inFile;
+        std::ifstream inFile;
         double v;
 
         DBGPRINT_2("Reading from ", filename);

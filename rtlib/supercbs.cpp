@@ -6,7 +6,6 @@
 
 namespace RTSim {
 
-    using namespace std;
 
     void SuperCBS::addServer(Server *s)
     {
@@ -79,7 +78,7 @@ namespace RTSim {
             DBGPRINT("in the future"); 
             if (delta_budget < 0) {
                 last_change_time = 
-                    max(last_change_time, s->changeBudget(delta_budget + s->getBudget()));
+                    std::max(last_change_time, s->changeBudget(delta_budget + s->getBudget()));
                 DBGPRINT_2("delta_budget < 0, new change time at ", last_change_time);
             }
             else if (delta_budget > 0) {

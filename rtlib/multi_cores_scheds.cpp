@@ -19,7 +19,6 @@
 
 namespace RTSim {
     using namespace MetaSim;
-    using namespace std;
 
     string MigrationManager::mapEventType(enum EventType e) const {
         string res;

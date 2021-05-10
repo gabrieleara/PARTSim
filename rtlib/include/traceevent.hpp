@@ -28,7 +28,8 @@
 
 namespace RTSim {
 
-  using namespace std;
+  using std::ifstream;
+  using std::ofstream;
 
   class Desc
   {

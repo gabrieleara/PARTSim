@@ -36,8 +36,9 @@
 
 namespace RTSim {
 
-  using namespace std;
   using namespace MetaSim;
+
+  using std::vector;
 
   class Task;
 

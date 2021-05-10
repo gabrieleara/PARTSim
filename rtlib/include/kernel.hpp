@@ -92,7 +92,7 @@ namespace RTSim {
         CPU *_cpu;
     
         /// List of the tasks.
-        deque<AbsRTTask *> _handled;
+        std::deque<AbsRTTask *> _handled;
 
         bool _isContextSwitching;
     

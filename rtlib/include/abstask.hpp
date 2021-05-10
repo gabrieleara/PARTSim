@@ -19,8 +19,9 @@
 
 namespace RTSim {
 
-  using namespace std;
   using namespace MetaSim;
+
+  using std::string;
 
   class AbsKernel;
 

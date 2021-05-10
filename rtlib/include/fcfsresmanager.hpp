@@ -23,6 +23,8 @@
 
 namespace RTSim {
 
+    using std::map;
+
     class AbsRTTask;
     class Task;
 
@@ -48,7 +50,7 @@ namespace RTSim {
         void release(AbsRTTask*, Resource*, int n=1) override;
     private:  
         map<Resource *, AbsRTTask *> _resAndCurrUsers;
-        typedef deque<AbsRTTask *> BLOCKED_QUEUE;
+        typedef std::deque<AbsRTTask *> BLOCKED_QUEUE;
         map<Resource *, BLOCKED_QUEUE> _blocked;
     };
 

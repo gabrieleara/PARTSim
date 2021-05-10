@@ -18,9 +18,11 @@
 #include <climits>
 
 namespace RTSim {
-
-    using namespace std;
     using namespace MetaSim;
+
+    using std::cerr;
+    using std::endl;
+    using std::map;
 
     TaskModel::TaskModel(AbsRTTask* t)
         : _rtTask(t), active(false), 

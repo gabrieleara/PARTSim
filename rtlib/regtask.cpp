@@ -21,7 +21,6 @@
 
 namespace RTSim {
 
-  using namespace std;
 
   const string TaskName("Task");
   const string PeriodicTaskName("PeriodicTask");

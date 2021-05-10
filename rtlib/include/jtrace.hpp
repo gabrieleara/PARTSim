@@ -30,7 +30,6 @@
 
 namespace RTSim {
 
-  using namespace std;
   using namespace MetaSim;
 
   /* 

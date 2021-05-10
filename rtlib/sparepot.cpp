@@ -3,7 +3,9 @@
 #include <sparepot.hpp> 
 
 namespace RTSim {
-    using namespace std;
+    using std::cerr;
+    using std::endl;
+
     SparePot::SparePot(const string &name) : Entity(name),
                                              server_vector(),
                                              servers(),
@@ -103,7 +105,7 @@ namespace RTSim {
                 double rate = eta[i][j];
                 DBGVAR(rate);
                 for (unsigned int h=i+1; h<server_vector.size(); h++) { 
-                    rate = min(rate, eta[h][j]/eta[h][i]);
+                    rate = std::min(rate, eta[h][j]/eta[h][i]);
                     DBGVAR(eta[h][j]/eta[h][i]);
                     DBGVAR(rate);
                 }
@@ -173,7 +175,7 @@ namespace RTSim {
             for (int j=index; j>=0 && delta_budget>0; j--) {
                 if (delta[j] > 0) {
                     DBGVAR(coeff[index][j]);
-                    double x = min(delta_budget, coeff[index][j]*delta[j]);
+                    double x = std::min(delta_budget, coeff[index][j]*delta[j]);
                     pi[index][j] = pi[index][j] + x;
                     pi[j][index] = pi[j][index] + x/coeff[index][j];
 
@@ -196,7 +198,7 @@ namespace RTSim {
         else if (delta_budget < 0) {
             DBGPRINT("Negative part");
             for (int j=0; j<index && delta_budget < 0; j++) {
-                double x = min(pi[index][j], -delta_budget);
+                double x = std::min(pi[index][j], -delta_budget);
                 pi[index][j] = pi[index][j] - x;
                 pi[j][index] = pi[j][index] - x/coeff[index][j];
 
@@ -239,7 +241,7 @@ namespace RTSim {
         else {
             DBGPRINT("in the future"); 
             if (ret < 0) {
-                last_change_time = max(last_change_time, 
+                last_change_time = std::max(last_change_time, 
                                        s->changeBudget(Tick::ceil(ret)+s->getBudget()));
                 DBGPRINT_2("ret < 0, new change time at ", last_change_time);
             }

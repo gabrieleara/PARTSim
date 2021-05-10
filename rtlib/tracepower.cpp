@@ -1,7 +1,6 @@
 #include "tracepower.hpp"
 
 namespace RTSim {
-    using namespace std;
     
     TracePowerConsumption::TracePowerConsumption(CPU* c, Tick period, const string &filename) : 
         PeriodicTimer(period), TraceAscii(filename), counter(0),totalPowerSaved(0),totalPowerConsumed(0) 

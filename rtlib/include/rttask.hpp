@@ -25,8 +25,9 @@
 
 namespace RTSim {
 
-    using namespace std;
     using namespace MetaSim;
+
+    using std::vector;
 
     /**
        Models a simple periodic task. It's a simpler interface to
@@ -96,14 +97,14 @@ namespace RTSim {
         void onEndInstance(Event *e) override {
             Task::onEndInstance(e);
 
-            cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
+            std::cout << __func__ << "(): non-periodic task => endrun for " << toString() << std::endl;
             endRun();
         }
 
         void onKill(Event *e) override {
             Task::onKill(e);
 
-            cout << __func__ << "(): non-periodic task => endrun for " << toString() << endl;
+            std::cout << __func__ << "(): non-periodic task => endrun for " << toString() << std::endl;
             endRun();
         }
 

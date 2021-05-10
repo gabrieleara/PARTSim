@@ -23,10 +23,8 @@
 #include <simul.hpp>
 #include <functional>
 
-using namespace std;
 
 namespace MetaSim {
-
     double BaseStat::_TDistr[MAX_DISTR];
     size_t BaseStat::_totalNumOfExp = 0;
     size_t BaseStat::_expNum = 0;
@@ -103,7 +101,7 @@ namespace MetaSim {
         _endOfSim = false;
         _initFlag = true;
         for_each(_statList.begin(), _statList.end(),
-                 mem_fun(&BaseStat::init));
+                 std::mem_fn(&BaseStat::init));
     }
   
     void BaseStat::init()
@@ -145,7 +143,7 @@ namespace MetaSim {
     void BaseStat::endRun()
     {
         for_each(_statList.begin(), _statList.end(),
-                 mem_fun(&BaseStat::collect));
+                 std::mem_fn(&BaseStat::collect));
         if (++_expNum >= MAX_RUN)
             throw Exc(TOO_MUCH_RUNS);
     }
@@ -161,7 +159,7 @@ namespace MetaSim {
     void BaseStat::newRun()
     {
         for_each(_statList.begin(), _statList.end(),
-                 mem_fun(&BaseStat::initValue));
+                 std::mem_fn(&BaseStat::initValue));
     }
 
     //
@@ -232,16 +230,16 @@ namespace MetaSim {
 
     void BaseStat::printAll()
     {
-        for_each(BaseStat::begin(), BaseStat::end(), mem_fun(&BaseStat::print));
+        for_each(BaseStat::begin(), BaseStat::end(), std::mem_fn(&BaseStat::print));
     }	 
   
     void BaseStat::print()
     {
-        cout << "[" << getName()
-             << "]:" << getMean()
-             << "  (Conf[95%]=" << getConfInterval(BaseStat::C95)
-             << ")" 
-             << endl;
+        std::cout << "[" << getName()
+                  << "]:" << getMean()
+                  << "  (Conf[95%]=" << getConfInterval(BaseStat::C95)
+                  << ")"
+                  << std::endl;
     }
   
     /* Output class 
@@ -258,15 +256,15 @@ namespace MetaSim {
         BaseStat::List::const_iterator i  = BaseStat::begin();
         while (i != BaseStat::end()) {
             BaseStat* p = *i;
-            cout << "Name: " << p->getName() << endl;
+            std::cout << "Name: " << p->getName() << std::endl;
 
             if (p->getName() != "") {
-                ofstream f(p->getName().c_str());
+                std::ofstream f(p->getName().c_str());
 
                 if (!f.is_open())
                     throw Exc("Cannot open file " + p->getName());
 
-                f << "# " << p->getName() << endl;
+                f << "# " << p->getName() << std::endl;
             }
             ++i;
         }
@@ -300,15 +298,15 @@ namespace MetaSim {
                           "TableOutput",
                           "basestat.cpp");
 
-        ofstream f(_fname.c_str());
-        f << message << endl;
+        std::ofstream f(_fname.c_str());
+        f << message << std::endl;
 
         BaseStat::List::const_iterator i  = BaseStat::begin();
         BaseStat* p = *i;
         while (p != NULL) {
             f << p->getName() << "\t\t | "
               << p->getMean() << "\t\t | "
-              << p->getConfInterval() << endl;
+              << p->getConfInterval() << std::endl;
             ++i;
             p = *i;
         }
@@ -343,7 +341,7 @@ int main()
     int i,j;
 
     try {  
-        cout << "Insert n (n > 3): ";
+        std::cout << "Insert n (n > 3): ";
         cin >> n;
         BaseStat::init(n);
     
@@ -363,7 +361,7 @@ int main()
     
         BaseStat::printall();
     } catch (exception& e) {
-        cout << "Exception: " << e.what() << endl;
+        std::cout << "Exception: " << e.what() << std::endl;
     }
 
 } // namespace MetaSim
