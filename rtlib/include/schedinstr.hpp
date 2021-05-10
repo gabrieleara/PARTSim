@@ -17,11 +17,11 @@
 #include <string>
 #include <vector>
 
-//From METASIM
+// From METASIM
 #include <event.hpp>
 #include <factory.hpp>
 
-//From RTLIB
+// From RTLIB
 #include <instr.hpp>
 #include <taskevt.hpp>
 
@@ -37,50 +37,62 @@ namespace RTSim {
 
        event for threshold instr
     */
-    class SchedIEvt : public TaskEvt
-    {
+    class SchedIEvt : public TaskEvt {
     protected:
-        SchedInstr * ti;
+        SchedInstr *ti;
+
     public:
-        SchedIEvt(Task* t, SchedInstr* in) :TaskEvt(t, _DEFAULT_PRIORITY - 1), ti(in)
-            {}
-        SchedInstr *getInstr() { return ti; } 
+        SchedIEvt(Task *t, SchedInstr *in) :
+            TaskEvt(t, _DEFAULT_PRIORITY - 1),
+            ti(in) {}
+        SchedInstr *getInstr() {
+            return ti;
+        }
         void doit() override {}
     };
 
-    /** 
+    /**
         \ingroup instr
 
         Simple classes which model instruction to set a preemption threshold
         @author Francesco Prosperi
-        @see Instr 
+        @see Instr
     */
     class SchedInstr : public Instr {
-        EndInstrEvt _endEvt; 
+        EndInstrEvt _endEvt;
         SchedIEvt _threEvt;
 
         // Copy constructor
-        SchedInstr(const SchedInstr &si); 
-        
+        SchedInstr(const SchedInstr &si);
+
     public:
         /**
          //      This is the constructor of the SchedInstr.
          //      @param f is a pointer to the task containing the pseudo
          //      instruction
          */
-        SchedInstr(Task * f, const string& s, const string &n = "");
+        SchedInstr(Task *f, const string &s, const string &n = "");
 
         CLONEABLE(Instr, SchedInstr, override)
-       
-        static std::unique_ptr<SchedInstr> createInstance(const std::vector<std::string> &par);
 
-        ///Virtual methods from Instr
+        static std::unique_ptr<SchedInstr>
+            createInstance(const std::vector<std::string> &par);
+
+        /// Virtual methods from Instr
         void schedule() override;
         void deschedule() override;
-        Tick getExecTime() const override { return 0; }
-        double getActCycles() const override { return 0.0; }
-        Tick getDuration() const override { return 0; }
-        Tick getWCET() const throw(RandomVar::MaxException) override { return 0; }
+        Tick getExecTime() const override {
+            return 0;
+        }
+        double getActCycles() const override {
+            return 0.0;
+        }
+        Tick getDuration() const override {
+            return 0;
+        }
+        Tick getWCET() const throw(RandomVar::MaxException) override {
+            return 0;
+        }
         void reset() override {}
 
         template <class TraceClass>
@@ -93,14 +105,12 @@ namespace RTSim {
         void newRun() override {}
         void endRun() override;
 
-
-        /** Function inherited from clss Instr.It refreshes the state 
-         *  of the executing instruction when a change of the CPU speed occurs. 
-         */ 
+        /** Function inherited from clss Instr.It refreshes the state
+         *  of the executing instruction when a change of the CPU speed occurs.
+         */
         void refreshExec(double, double) override {}
-
     };
 
-} //namespace RTSim
+} // namespace RTSim
 
 #endif

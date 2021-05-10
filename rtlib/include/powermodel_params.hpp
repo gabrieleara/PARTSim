@@ -1,4 +1,4 @@
-// #include "yaml.hpp"
+// #include <yaml.hpp>
 
 #ifndef __POWERMODEL_PARAMS_HPP__
 #define __POWERMODEL_PARAMS_HPP__
@@ -7,18 +7,18 @@
 #include <string>
 #include <vector>
 
-#include "class_utils.hpp"
-#include "csv.hpp"
+#include <class_utils.hpp>
+#include <csv.hpp>
+#include <powermodel.hpp>
+#include <yaml.hpp>
 #include <memory.hpp>
-#include "powermodel.hpp"
-#include "yaml.hpp"
 // TODO: change slightly the factory.hpp and then use it for these objects
 
 namespace RTSim {
-    using watt_type = double;        /// Represents power in Watts
-    using volt_type = double;        /// Represents voltage in Volts
-    using freq_type = unsigned int;  /// Represents frequency in MHz
-    using speed_type = double;       /// Represents speedup ratio
+    using watt_type = double; /// Represents power in Watts
+    using volt_type = double; /// Represents voltage in Volts
+    using freq_type = unsigned int; /// Represents frequency in MHz
+    using speed_type = double; /// Represents speedup ratio
     using wclass_type = std::string; /// Represents the workload class of a task
 
     // Base class, empty
@@ -96,7 +96,8 @@ namespace RTSim {
 
     public:
         CPUModelBPParams(const std::string &workload, const Params &params) :
-            workload(workload), params{params} {}
+            workload(workload),
+            params{params} {}
     };
 
     // Parameter class for CPUModelTB
@@ -136,11 +137,11 @@ namespace RTSim {
     };
 
     extern std::unique_ptr<CPUModelParams>
-    createCPUModelParams(CPUModelParams::key_type k, csv::CSVDocument &doc,
-                         size_t rix);
+        createCPUModelParams(CPUModelParams::key_type k, csv::CSVDocument &doc,
+                             size_t rix);
 
     extern std::unique_ptr<CPUModelParams>
-    createCPUModelParams(CPUModelParams::key_type k, yaml::Object_ptr ptr);
+        createCPUModelParams(CPUModelParams::key_type k, yaml::Object_ptr ptr);
 
 } // namespace RTSim
 

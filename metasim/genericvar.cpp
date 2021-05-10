@@ -27,7 +27,7 @@
  *
  * Revision 1.2  2003/04/24 14:56:14  lipari
  * *** empty log message ***
- * 
+ *
  */
 #include <cmath>
 
@@ -44,14 +44,13 @@ namespace MetaSim {
 
     static const double PDF_ERR = 0.00000000001;
 
-    void GenericVar::readPDF(std::ifstream &f, int mode)
-    {
+    void GenericVar::readPDF(std::ifstream &f, int mode) {
         int n;
         double p;
         double sum;
 
         sum = 0;
-        while(!f.eof()) {
+        while (!f.eof()) {
             f >> n;
             f >> p;
 #ifdef __DEBUG__
@@ -80,31 +79,27 @@ namespace MetaSim {
                 _pdf[1] += (1 - sum);
             }
         }
-    }    
+    }
 
-
-    GenericVar::GenericVar(const std::string &fileName) : 
-        UniformVar(0, 1)
-    {
+    GenericVar::GenericVar(const std::string &fileName) : UniformVar(0, 1) {
         std::ifstream inFile(fileName.c_str());
 
         if (!inFile.is_open()) {
-            string errMsg = Exc::_FILEOPEN  + string(fileName) + "\n";
+            string errMsg = Exc::_FILEOPEN + string(fileName) + "\n";
             throw Exc(errMsg, "GenericVar");
         }
 
         readPDF(inFile);
     }
 
-    double GenericVar::get()
-    {
+    double GenericVar::get() {
         double v, CDF;
         map<int, double>::iterator i;
 
         v = UniformVar::get();
         CDF = 0;
 
-        for(i = _pdf.begin(); i != _pdf.end(); i++) {
+        for (i = _pdf.begin(); i != _pdf.end(); i++) {
             CDF = CDF + i->second;
             if (CDF > v) {
                 return i->first;
@@ -115,14 +110,12 @@ namespace MetaSim {
         /* It means that v > 1 or that lim_{i -> \infty} CDF < 1... */
         throw Exc("Panic", "GenericVar");
     }
-    
-    RandomVar *GenericVar::createInstance(vector<string> &par)
-    {
-        if (par.size() != 1) 
+
+    RandomVar *GenericVar::createInstance(vector<string> &par) {
+        if (par.size() != 1)
             throw ParseExc("Wrong number of parameters", "GenericVar");
-        
+
         return new GenericVar(par[0]);
     }
-
 
 } // namespace MetaSim

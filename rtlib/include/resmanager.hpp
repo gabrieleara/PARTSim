@@ -21,7 +21,7 @@
 #include <entity.hpp>
 #include <scheduler.hpp>
 
-#define _RESMAN_DBG_LEV  "ResMan"
+#define _RESMAN_DBG_LEV "ResMan"
 
 namespace RTSim {
 
@@ -31,33 +31,34 @@ namespace RTSim {
 
     using namespace MetaSim;
 
-    /** 
+    /**
         \ingroup resman
-        Generic resource manager. A specific resource manager should be derived 
+        Generic resource manager. A specific resource manager should be derived
         from this class.
-      
+
         @todo: add simple documentation for this class.
-      
+
         @see Resource
     */
     class ResManager : public Entity {
         friend class RTKernel;
+
     public:
         /** Constructor of ResManager */
         ResManager(const std::string &n = "");
-  
+
         virtual ~ResManager();
 
         /**
            Adds the resource to the set of resources managed by the Resource
            Manager.  should check if the resource is already present in such
-           set 
-       
+           set
+
            @param name resource name;
-           @param n number of unit (for supporting multi-unit resources), 
+           @param n number of unit (for supporting multi-unit resources),
            by default is 1.
         */
-        virtual void addResource(const std::string &name, int n=1);
+        virtual void addResource(const std::string &name, int n = 1);
 
         /**
          * Function called by a task instr (the WaitInstr) to perform an
@@ -73,13 +74,13 @@ namespace RTSim {
          * @param name resource name
          * @param n number of units (by default is 1).
          */
-        bool request(AbsRTTask *t, const std::string &name, int n=1);
+        bool request(AbsRTTask *t, const std::string &name, int n = 1);
 
         /**
          * Function called by a task instr to perform the release of a
          * specific resource. The consequence of this call could be the
-         * reactivation of one or more suspended tasks.  
-   
+         * reactivation of one or more suspended tasks.
+
          * @todo Should check if the resource is among the ones handled by
          * this manager, and was locked before
 
@@ -87,22 +88,22 @@ namespace RTSim {
          * @param name resource name
          * @param n number of units (by default is 1).
          */
-        void release(AbsRTTask *t, const std::string &name, int n=1);
+        void release(AbsRTTask *t, const std::string &name, int n = 1);
 
         /*
          * Function called to specify that task t uses the resource called
          * name. This function is not necessary in simple resource managers,
          * like FCFSResManager. It is useful for PCRManager, for computing
-         * the ceilings! 
+         * the ceilings!
 
          * @todo Maybe, it should be moved in PCR, then!!
          *
          * @see PCRManager
          */
-        // virtual void addUser(AbsRTTask *t, const std::string &name, int n=1) = 0;
+        // virtual void addUser(AbsRTTask *t, const std::string &name, int n=1)
+        // = 0;
 
     protected:
-
         AbsKernel *_kernel;
         Scheduler *_sched;
 
@@ -117,9 +118,9 @@ namespace RTSim {
 
         std::vector<Resource *> _res;
 
-        virtual bool request(AbsRTTask *t, Resource *r, int n=1) = 0;
-        virtual void release(AbsRTTask *t, Resource *r, int n=1) = 0;
+        virtual bool request(AbsRTTask *t, Resource *r, int n = 1) = 0;
+        virtual void release(AbsRTTask *t, Resource *r, int n = 1) = 0;
     };
-} // namespace RTSim 
+} // namespace RTSim
 
 #endif

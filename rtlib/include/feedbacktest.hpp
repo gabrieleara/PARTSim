@@ -1,8 +1,8 @@
 #ifndef __FEEDBACKTEST_H__
 #define __FEEDBACKTEST_H__
 
-#include <vector>
 #include <feedback.hpp>
+#include <vector>
 
 /// to be generalized
 #include <sparepot.hpp>
@@ -20,6 +20,7 @@ namespace RTSim {
         int index;
         Supervisor *sp;
         SporadicServer *ss;
+
     public:
         FeedbackTestModule(const std::string &name);
         ~FeedbackTestModule();
@@ -32,6 +33,6 @@ namespace RTSim {
         void newRun() override;
         void endRun() override;
     };
-}
+} // namespace RTSim
 
 #endif

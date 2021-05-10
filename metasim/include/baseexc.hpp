@@ -14,9 +14,9 @@
 #ifndef __BASEEXC_HPP__
 #define __BASEEXC_HPP__
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
 
 namespace MetaSim {
 
@@ -39,33 +39,31 @@ namespace MetaSim {
     public:
         /** Constructor.
          *  @param message contains the error message.
-         *  @param cl contains the name of the class where the exception has been
-         *  raised.
+         *  @param cl contains the name of the class where the exception has
+         * been raised.
          *  @param md contains the name of the module where the exception
          *  has been raised.
          */
-        BaseExc(const std::string &message,
-                const std::string &cl="unknown",
-                const std::string &md="unknown") :
-          std::runtime_error("")
-              {
-                  std::stringstream ss;
-                  ss << "Class=" << cl
-                     << " Module=" << md
-                     << " Message:" << message;
-                  static_cast<std::runtime_error&>(*this) = std::runtime_error(ss.str());
-              }
+        BaseExc(const std::string &message, const std::string &cl = "unknown",
+                const std::string &md = "unknown") :
+            std::runtime_error("") {
+            std::stringstream ss;
+            ss << "Class=" << cl << " Module=" << md << " Message:" << message;
+            static_cast<std::runtime_error &>(*this) =
+                std::runtime_error(ss.str());
+        }
 
         virtual ~BaseExc() throw() {}
     };
 
-
     // a couple of useful macros
-#define DECL_EXC(EXC, CLASS) \
-    class EXC : public BaseExc { public: \
-            EXC(const std::string &m) : BaseExc(m, CLASS, __FILE__) {} }
+#define DECL_EXC(EXC, CLASS)                                                   \
+    class EXC : public BaseExc {                                               \
+    public:                                                                    \
+        EXC(const std::string &m) : BaseExc(m, CLASS, __FILE__) {}             \
+    }
 
-#define THROW_EXC(EXC, MSG) throw EXC(MSG  ":" __LINE__)
+#define THROW_EXC(EXC, MSG) throw EXC(MSG ":" __LINE__)
 
 } // namespace MetaSim
 

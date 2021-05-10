@@ -32,9 +32,9 @@
 
 namespace MetaSim {
 
-    RandomVar* parsevar(const std::string &str);
+    RandomVar *parsevar(const std::string &str);
     void __regrandvar_init();
 
-} // MetaSim
+} // namespace MetaSim
 
 #endif

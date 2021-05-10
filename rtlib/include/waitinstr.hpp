@@ -4,11 +4,11 @@
 #include <string>
 #include <vector>
 
-//From metasim
+// From metasim
 #include <event.hpp>
 #include <factory.hpp>
 
-//From RTLIB
+// From RTLIB
 #include <instr.hpp>
 #include <taskevt.hpp>
 
@@ -24,14 +24,17 @@ namespace RTSim {
 
        event for wait instr
     */
-    class WaitEvt : public TaskEvt
-    {
+    class WaitEvt : public TaskEvt {
     protected:
-        WaitInstr * wi;
+        WaitInstr *wi;
+
     public:
-        WaitEvt(Task* t, WaitInstr* in) :TaskEvt(t, _DEFAULT_PRIORITY - 3), wi(in)
-            {}
-        WaitInstr *getInstr() { return wi; } 
+        WaitEvt(Task *t, WaitInstr *in) :
+            TaskEvt(t, _DEFAULT_PRIORITY - 3),
+            wi(in) {}
+        WaitInstr *getInstr() {
+            return wi;
+        }
         void doit() override {}
     };
 
@@ -40,27 +43,29 @@ namespace RTSim {
 
        event for signal instr
     */
-    class SignalEvt : public TaskEvt
-    {
+    class SignalEvt : public TaskEvt {
     protected:
         SignalInstr *si;
+
     public:
-        SignalEvt(Task* t, SignalInstr* in) : TaskEvt(t), si(in) {} 
+        SignalEvt(Task *t, SignalInstr *in) : TaskEvt(t), si(in) {}
         void doit() override {}
-        SignalInstr *getInstr() { return si; }
+        SignalInstr *getInstr() {
+            return si;
+        }
     };
 
-    /** 
+    /**
         \ingroup instr
 
-        Simple classes which model wait and signal instruction to use a resource 
+        Simple classes which model wait and signal instruction to use a resource
         @author Fabio Rossi and Giuseppe Lipari
-        @see Instr 
+        @see Instr
     */
 
     class WaitInstr : public Instr {
         string _res;
-        EndInstrEvt _endEvt; 
+        EndInstrEvt _endEvt;
         WaitEvt _waitEvt;
         int _numberOfRes;
 
@@ -76,23 +81,37 @@ namespace RTSim {
            @param nr is the number of resources being taken
            @param n is the instruction name
         */
-        WaitInstr(Task * f, const std::string &r, int nr=1, const std::string &n= "");
+        WaitInstr(Task *f, const std::string &r, int nr = 1,
+                  const std::string &n = "");
 
         CLONEABLE(Instr, WaitInstr, override)
-        
-        static std::unique_ptr<WaitInstr> createInstance(std::vector<std::string> &par);
 
-        ///Virtual methods from Instr
+        static std::unique_ptr<WaitInstr>
+            createInstance(std::vector<std::string> &par);
+
+        /// Virtual methods from Instr
         void schedule() override;
         void deschedule() override;
-        Tick getExecTime() const override { return 0; }
-        double getActCycles() const override { return 0.0; }
-        Tick getDuration() const override { return 0; }
-        Tick getWCET() const throw(RandomVar::MaxException) override { return 0; }
-        std::string getResource() const { return _res; }
-        int getNumOfResources() const { return _numberOfRes; }
+        Tick getExecTime() const override {
+            return 0;
+        }
+        double getActCycles() const override {
+            return 0.0;
+        }
+        Tick getDuration() const override {
+            return 0;
+        }
+        Tick getWCET() const throw(RandomVar::MaxException) override {
+            return 0;
+        }
+        std::string getResource() const {
+            return _res;
+        }
+        int getNumOfResources() const {
+            return _numberOfRes;
+        }
         void reset() override {}
-        
+
         template <class TraceClass>
         void setTrace(TraceClass &trace_object) {
             attach_stat(trace_object, _endEvt);
@@ -100,30 +119,28 @@ namespace RTSim {
         }
 
         void onEnd() override;
-        void newRun() override {};
+        void newRun() override{};
         void endRun() override;
 
-
-        /** Function inherited from clss Instr.It refreshes the state 
-         *  of the executing instruction when a change of the CPU speed occurs. 
-         */ 
+        /** Function inherited from clss Instr.It refreshes the state
+         *  of the executing instruction when a change of the CPU speed occurs.
+         */
         void refreshExec(double, double) override {}
-
     };
 
     /**
        \ingroup instr
 
-       Simple class which models signal instruction to use a resource. 
+       Simple class which models signal instruction to use a resource.
        @author Fabio Rossi and Giuseppe Lipari
-       @see Instr 
+       @see Instr
     */
 
     class SignalInstr : public Instr {
         string _res;
         EndInstrEvt _endEvt;
         SignalEvt _signalEvt;
- 
+
         int _numberOfRes;
 
         SignalInstr(const SignalInstr &other);
@@ -138,21 +155,31 @@ namespace RTSim {
            @param nr is the number of resources being taken
            @param n is the instruction name
         */
-        SignalInstr(Task *f, const std::string &r, int nr=1, const std::string & n= "");
+        SignalInstr(Task *f, const std::string &r, int nr = 1,
+                    const std::string &n = "");
 
         CLONEABLE(Instr, SignalInstr, override)
-        
-        static std::unique_ptr<SignalInstr> createInstance(std::vector<std::string> &par);
 
-        ///Virtual methods from Instr
+        static std::unique_ptr<SignalInstr>
+            createInstance(std::vector<std::string> &par);
+
+        /// Virtual methods from Instr
         void schedule() override;
         void deschedule() override;
-        Tick getExecTime() const override { return 0; }
-        double getActCycles() const override { return 0.0; }
-        Tick getDuration() const override { return 0; }
-        Tick getWCET() const throw(RandomVar::MaxException) override {return 0;}
+        Tick getExecTime() const override {
+            return 0;
+        }
+        double getActCycles() const override {
+            return 0.0;
+        }
+        Tick getDuration() const override {
+            return 0;
+        }
+        Tick getWCET() const throw(RandomVar::MaxException) override {
+            return 0;
+        }
         void reset() override {}
-        //virtual void setTrace(Trace *);
+        // virtual void setTrace(Trace *);
 
         template <class TraceClass>
         void setTrace(TraceClass &trace_object) {
@@ -160,20 +187,22 @@ namespace RTSim {
             attach_stat(trace_object, _signalEvt);
         }
 
-        string getResource() const { return _res; }
-        int getNumOfResources() const { return _numberOfRes; }
+        string getResource() const {
+            return _res;
+        }
+        int getNumOfResources() const {
+            return _numberOfRes;
+        }
         void onEnd() override;
-        void newRun() override {};
+        void newRun() override{};
         void endRun() override;
 
-
-        /** Function inherited from clss Instr.It refreshes the state 
-         *  of the executing instruction when a change of the CPU speed occurs. 
-         */ 
+        /** Function inherited from clss Instr.It refreshes the state
+         *  of the executing instruction when a change of the CPU speed occurs.
+         */
         void refreshExec(double, double) override {}
-
     };
 
-} //namespace RTSim
+} // namespace RTSim
 
 #endif

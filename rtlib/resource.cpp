@@ -33,61 +33,47 @@ namespace RTSim {
         Entity(n),
         _total(nr),
         _available(nr),
-        _owner(0)
-    { 
-    }
+        _owner(0) {}
 
     Resource::Resource(const Resource &r) :
-        Entity(r.getName()+"_copy"), 
+        Entity(r.getName() + "_copy"),
         _total(r.total()),
         _available(r.total()),
-        _owner(0)
-    { 
-    }
+        _owner(0) {}
 
-    void Resource::lock(AbsRTTask *t, int n)
-    { 
+    void Resource::lock(AbsRTTask *t, int n) {
         _available -= n;
         _owner = t;
     }
 
-    void Resource::unlock(int n)
-    { 
+    void Resource::unlock(int n) {
         _available += n;
         _owner = 0;
     }
 
-    bool Resource::isLocked() const
-    { 
+    bool Resource::isLocked() const {
         return (_available == 0);
-    }     
+    }
 
-    int  Resource::available() const
-    { 
+    int Resource::available() const {
         return _available;
     }
 
-    int  Resource::total() const
-    { 
+    int Resource::total() const {
         return _total;
     }
 
-    void Resource::newRun()
-    {
-    }
+    void Resource::newRun() {}
 
-    void Resource::endRun()
-    {
-    }
+    void Resource::endRun() {}
 
-//     void Resource::setOwner(AbsRTTask* t)
-//     {
-//         owner = t;
-//     }
+    //     void Resource::setOwner(AbsRTTask* t)
+    //     {
+    //         owner = t;
+    //     }
 
-    AbsRTTask* Resource::getOwner()const
-    {
+    AbsRTTask *Resource::getOwner() const {
         return _owner;
     }
 
-}
+} // namespace RTSim

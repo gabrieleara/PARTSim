@@ -3,8 +3,8 @@
 
 #include <vector>
 
-#include <supervisor.hpp>
 #include <server.hpp>
+#include <supervisor.hpp>
 
 namespace RTSim {
     using namespace MetaSim;
@@ -15,16 +15,20 @@ namespace RTSim {
         struct ServerInfo {
             Server *p_server;
             Tick Q, P, R;
-            ServerInfo(Server *s) : p_server(s), Q(s->getBudget()), P(s->getPeriod()), R(0) { }
+            ServerInfo(Server *s) :
+                p_server(s),
+                Q(s->getBudget()),
+                P(s->getPeriod()),
+                R(0) {}
         };
 
-      /* Added by ROd to modify the budget like in schedpoints*/
+        /* Added by ROd to modify the budget like in schedpoints*/
 
         typedef std::vector<Tick> row_t;
 
         typedef std::vector<double> u_row_t;
 
-      /******************************************************/
+        /******************************************************/
 
     protected:
         std::vector<ServerInfo> servers;
@@ -33,21 +37,19 @@ namespace RTSim {
 
         // these are the original periods of each task/server
         row_t period;
-        
+
         // these are the actual WCET/budgets of each task/server
         row_t wcet;
-        
+
         u_row_t U;
 
-      /**********************************************************/
+        /**********************************************************/
 
         // not implemented
-        
-        SchedRTA(const SchedRTA&);
 
+        SchedRTA(const SchedRTA &);
 
     public:
-
         SchedRTA(const string &name);
         ~SchedRTA();
 
@@ -56,7 +58,7 @@ namespace RTSim {
         /**
            This function requests a change (positive or negative) to
            the budget of the server. The function is usually called
-           from a feedback module. 
+           from a feedback module.
 
            @param delta_budget increment (or decrement) in the budget
 
@@ -74,8 +76,8 @@ namespace RTSim {
         */
         void addServer(Server *s) override;
 
-      /*This function is called to update the vector utilization**/
-      void updateU(int task,Tick req);
+        /*This function is called to update the vector utilization**/
+        void updateU(int task, Tick req);
 
         void newRun() override;
         void endRun() override;
@@ -86,6 +88,6 @@ namespace RTSim {
         Tick searchBudget(int i);
         bool tryBudget(int i, Tick b);
     };
-}
+} // namespace RTSim
 
 #endif

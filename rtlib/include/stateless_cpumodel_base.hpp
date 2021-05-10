@@ -17,10 +17,10 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 #include <limits>
 #include <string>
 
-#include "class_utils.hpp"
-#include "cloneable.hpp"
+#include <class_utils.hpp>
+#include <cloneable.hpp>
+#include <opp.hpp>
 #include <memory.hpp>
-#include "opp.hpp"
 
 namespace RTSim {
     // Forward declarations
@@ -30,8 +30,8 @@ namespace RTSim {
     // using volt_type = double;       /// Represents voltage in Volts
     // using freq_type = unsigned int; /// Represents frequency in MHz
 
-    using watt_type = double;        /// Represents power in Watts
-    using speed_type = double;       /// Represents speedup ratio
+    using watt_type = double; /// Represents power in Watts
+    using speed_type = double; /// Represents speedup ratio
     using wclass_type = std::string; /// Represents the workload class of a task
 
     constexpr freq_type FREQ_MAX = std::numeric_limits<freq_type>::max();
@@ -92,7 +92,7 @@ namespace RTSim {
         /// @todo Placeholder, until the integration with the GenericFactory
         /// is ready use this method.
         static std::unique_ptr<StatelessCPUModel>
-        create(const CPUMDescriptor &desc);
+            create(const CPUMDescriptor &desc);
 
         // =================================================
         // Constructors and destructors
@@ -151,8 +151,8 @@ namespace RTSim {
         CLONEABLE(base_type, cls_name);                                        \
                                                                                \
         virtual value_type                                                     \
-        lookupValue(const OPP &opp, const wclass_type &workload,               \
-                    freq_type f_max = FREQ_MAX) const override;                \
+            lookupValue(const OPP &opp, const wclass_type &workload,           \
+                        freq_type f_max = FREQ_MAX) const override;            \
     }
 
 #define MODEL_CLASS(cls_name, ...)                                             \
@@ -165,7 +165,7 @@ namespace RTSim {
 #define MODEL_CREATE(cls_name)                                                 \
     template <ModelType model_type>                                            \
     std::unique_ptr<StatelessCPUModel<model_type>>                             \
-    cls_name<model_type>::create(const CPUMDescriptor &desc) {                 \
+        cls_name<model_type>::create(const CPUMDescriptor &desc) {             \
         return std::make_unique<cls_name<model_type>>(desc);                   \
     }
 

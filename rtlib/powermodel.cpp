@@ -1,13 +1,13 @@
 
-#include "powermodel.hpp"
+#include <powermodel.hpp>
 
-#include "stateless_cpumodel_base.hpp"
-#include "stateless_cpumodel_bp.hpp"
-#include "stateless_cpumodel_minimal.hpp"
-#include "stateless_cpumodel_tb.hpp"
-#include "stateless_cpumodel_tbapprox.hpp"
+#include <stateless_cpumodel_base.hpp>
+#include <stateless_cpumodel_bp.hpp>
+#include <stateless_cpumodel_minimal.hpp>
+#include <stateless_cpumodel_tb.hpp>
+#include <stateless_cpumodel_tbapprox.hpp>
 
-#include "system_descriptor.hpp"
+#include <system_descriptor.hpp>
 
 namespace RTSim {
     // =====================================================
@@ -16,7 +16,7 @@ namespace RTSim {
 
     template <ModelType model_type>
     std::unique_ptr<StatelessCPUModel<model_type>>
-    StatelessCPUModel<model_type>::create(const CPUMDescriptor &desc) {
+        StatelessCPUModel<model_type>::create(const CPUMDescriptor &desc) {
         if (desc.type == CPUModelMinimalParams::key) {
             return MinimalCPUModel<model_type>::create(desc);
         }

@@ -1,8 +1,8 @@
 #ifndef __RTSIM_OPP_H__
 #define __RTSIM_OPP_H__
 
-#include <vector>
 #include <cassert>
+#include <vector>
 
 namespace RTSim {
     // TODO: move these somewhere else
@@ -38,8 +38,8 @@ namespace RTSim {
         }
 
         static std::vector<OPP>
-        fromVectors(const std::vector<volt_type> &V = {},
-                    const std::vector<freq_type> &F = {}) {
+            fromVectors(const std::vector<volt_type> &V = {},
+                        const std::vector<freq_type> &F = {}) {
             return fromIters(V.cbegin(), V.cend(), F.cbegin(), F.cend());
         }
     };

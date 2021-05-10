@@ -16,12 +16,12 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <map>
 
-#include "powermodel_params.hpp"
-#include "stateless_cpumodel_base.hpp"
-#include "stateless_cpumodel_param.hpp"
+#include <powermodel_params.hpp>
+#include <stateless_cpumodel_base.hpp>
+#include <stateless_cpumodel_param.hpp>
 
 // TODO: use only key and params vector
-#include "system_descriptor.hpp"
+#include <system_descriptor.hpp>
 
 namespace RTSim {
     // =====================================================
@@ -55,17 +55,17 @@ namespace RTSim {
 
     template <ModelType model_type>
     static typename ModelTypeToBPParamsType<model_type>::params_type
-    convertBPParams(const CPUModelBPParams &);
+        convertBPParams(const CPUModelBPParams &);
 
     template <>
     typename ModelTypeToBPParamsType<ModelType::Power>::params_type
-    convertBPParams<ModelType::Power>(const CPUModelBPParams &pp) {
+        convertBPParams<ModelType::Power>(const CPUModelBPParams &pp) {
         return pp.params.power;
     }
 
     template <>
     typename ModelTypeToBPParamsType<ModelType::Speed>::params_type
-    convertBPParams<ModelType::Speed>(const CPUModelBPParams &pp) {
+        convertBPParams<ModelType::Speed>(const CPUModelBPParams &pp) {
         return pp.params.speed;
     }
 
@@ -90,9 +90,9 @@ namespace RTSim {
 
     template <>
     BPCPUModel<ModelType::Power>::value_type
-    BPCPUModel<ModelType::Power>::lookupValue(const OPP &opp,
-                                              const wclass_type &workload,
-                                              freq_type) const {
+        BPCPUModel<ModelType::Power>::lookupValue(const OPP &opp,
+                                                  const wclass_type &workload,
+                                                  freq_type) const {
         // This model was trained using frequencies in KHz
         const freq_type f = opp.frequency * 1000;
         const volt_type v = opp.voltage;
@@ -134,9 +134,9 @@ namespace RTSim {
 
     template <>
     BPCPUModel<ModelType::Speed>::value_type
-    BPCPUModel<ModelType::Speed>::lookupValue(const OPP &opp,
-                                              const wclass_type &workload,
-                                              freq_type) const {
+        BPCPUModel<ModelType::Speed>::lookupValue(const OPP &opp,
+                                                  const wclass_type &workload,
+                                                  freq_type) const {
         // This model was trained using frequencies in KHz
         const freq_type f = opp.frequency * 1000;
         const volt_type v = opp.voltage;

@@ -50,20 +50,19 @@ namespace RTSim {
 
        Exceptions for the instructions
     */
-    class InstrExc: public BaseExc
-    {
-    public: 
-        InstrExc(const string &msg, const string &cl)
-            :BaseExc(msg, cl, "InstrExc") {}
+    class InstrExc : public BaseExc {
+    public:
+        InstrExc(const string &msg, const string &cl) :
+            BaseExc(msg, cl, "InstrExc") {}
     };
 
     /**
        \ingroup instr
- 
+
        The base class for every pseudo instruction. Pseudo-instructions
        represents the code that a task executes. An instruction is identified
-       by an execution time (possibly random) and by a certain optional 
-       functionality. 
+       by an execution time (possibly random) and by a certain optional
+       functionality.
 
        A task contains a list of instructions, that are executed in
        sequence.
@@ -72,12 +71,12 @@ namespace RTSim {
 
        @todo Implement labels, and non-sequential constructs.
     */
-    class Instr: public Entity {
+    class Instr : public Entity {
     protected:
-        Task* _father;
-        
+        Task *_father;
+
         // copy constructor hidden
-        Instr(const Instr&);
+        Instr(const Instr &);
 
     public:
         typedef string BASE_KEY_TYPE;
@@ -93,34 +92,36 @@ namespace RTSim {
          */
         BASE_CLONEABLE(Instr)
 
-        /** 
+        /**
          * Returns a ponter to that task which ownes this instruction.
-         */ 
-        Task* getTask() const { return _father; }
-  
-        /** 
+         */
+        Task *getTask() const {
+            return _father;
+        }
+
+        /**
          * Called when the instruction is scheduled.
          */
         virtual void schedule() = 0;
-  
-        /** 
+
+        /**
          * Called when the instruction  is descheduled.
          */
         virtual void deschedule() = 0;
-  
-        /** 
+
+        /**
          * Called upon the instruction end event
          */
         virtual void onEnd() {}
 
-        /** 
+        /**
             This method permits to kill a task which is currently
             executing. It resets the internal state of the executing
             instruction.
 
             This is currently used only by the fault-tolerant scheduling
             algorithms.
-        */ 
+        */
         virtual void reset() = 0;
 
         /**
@@ -132,8 +133,8 @@ namespace RTSim {
         virtual Tick getExecTime() const = 0;
 
         /**
-           Returns how many cycles have been consumed by the instruction from the last
-           reset(), taking care of CPU speeds over time.
+           Returns how many cycles have been consumed by the instruction from
+           the last reset(), taking care of CPU speeds over time.
 
            NOTE: the resetExecdTime is now implicit!!!!
          */
@@ -150,32 +151,34 @@ namespace RTSim {
         virtual Tick getWCET() const throw(RandomVar::MaxException) = 0;
 
         // Commented because the tracing mechanism has changed wildily
-        //virtual void setTrace(Trace*) = 0;
+        // virtual void setTrace(Trace*) = 0;
 
         // virtual methods from entity
         void newRun() override = 0;
         void endRun() override = 0;
 
-        /** 
-            It refreshes the state of the executing instruction 
-            when a change of the CPU speed occurs. 
-        */ 
+        /**
+            It refreshes the state of the executing instruction
+            when a change of the CPU speed occurs.
+        */
         virtual void refreshExec(double oldSpeed, double newSpeed) = 0;
     };
 
     /**
        \ingroup instr
-     
+
        End event for instructions
     */
     class EndInstrEvt : public MetaSim::Event {
         Instr *_instr;
+
     public:
-        EndInstrEvt(Instr * in) : 
-            MetaSim::Event(Event::_DEFAULT_PRIORITY-3), _instr(in) {} 
+        EndInstrEvt(Instr *in) :
+            MetaSim::Event(Event::_DEFAULT_PRIORITY - 3),
+            _instr(in) {}
         void doit() override;
-        Instr* getInstruction() const;        
+        Instr *getInstruction() const;
     };
-} // namespace RTSim 
+} // namespace RTSim
 
 #endif

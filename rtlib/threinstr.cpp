@@ -21,45 +21,44 @@ namespace RTSim {
     using std::unique_ptr;
     using std::vector;
 
-    ThreInstr::ThreInstr(Task * f, int th, const string &n)
-        : Instr(f, n), _endEvt(this), _threEvt(f, this), _th(th)  
-    {}
+    ThreInstr::ThreInstr(Task *f, int th, const string &n) :
+        Instr(f, n),
+        _endEvt(this),
+        _threEvt(f, this),
+        _th(th) {}
 
-    ThreInstr::ThreInstr(const ThreInstr &other) 
-        : Instr(other), _endEvt(this), _threEvt(other.getTask(), this), _th(other.getThres())
-    {
-    }
-   
-    unique_ptr<ThreInstr> ThreInstr::createInstance(const vector<string> &par)
-    {
+    ThreInstr::ThreInstr(const ThreInstr &other) :
+        Instr(other),
+        _endEvt(this),
+        _threEvt(other.getTask(), this),
+        _th(other.getThres()) {}
+
+    unique_ptr<ThreInstr> ThreInstr::createInstance(const vector<string> &par) {
         int th = stoi(par[0]);
-        unique_ptr<ThreInstr> ptr(new ThreInstr(dynamic_cast<Task*>(Entity::_find(par[1])), th));
-        
+        unique_ptr<ThreInstr> ptr(
+            new ThreInstr(dynamic_cast<Task *>(Entity::_find(par[1])), th));
+
         return ptr;
     }
 
-    void ThreInstr::endRun() 
-    {
-        _endEvt.drop(); 
+    void ThreInstr::endRun() {
+        _endEvt.drop();
         _threEvt.drop();
     }
 
-    void ThreInstr::schedule()
-    {
+    void ThreInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
         DBGPRINT("Scheduling ThreInstr named: " << getName());
 
         _endEvt.post(SIMUL.getTime());
     }
 
-    void ThreInstr::deschedule()
-    {
-        DBGTAG(_INSTR_DBG_LEV,"ThreInstr::deschedule()");
+    void ThreInstr::deschedule() {
+        DBGTAG(_INSTR_DBG_LEV, "ThreInstr::deschedule()");
         _endEvt.drop();
     }
 
-    void ThreInstr::onEnd() 
-    {
+    void ThreInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
         DBGPRINT("Ending ThreInstr named: " << getName());
@@ -68,7 +67,8 @@ namespace RTSim {
 
         RTKernel *k = dynamic_cast<RTKernel *>(_father->getKernel());
 
-        if (k == NULL) throw BaseExc("Kernel not found!");
+        if (k == NULL)
+            throw BaseExc("Kernel not found!");
 
         DBGPRINT("Before lowing threshold for task " << _father->getName());
 
@@ -77,6 +77,6 @@ namespace RTSim {
 
         DBGPRINT("After raising threshold for task " << _father->getName());
 
-        _threEvt.process();    
+        _threEvt.process();
     }
-}
+} // namespace RTSim

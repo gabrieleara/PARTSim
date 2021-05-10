@@ -11,53 +11,48 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <timer.hpp>
 #include <simul.hpp>
+#include <timer.hpp>
 
 namespace RTSim {
 
     using namespace MetaSim;
 
-    Timer::Timer(const std::string &n, int p) : 
-	Entity(n), _triggerEvt(this, &Timer::onTrigger, p) 
-    {
-    }
+    Timer::Timer(const std::string &n, int p) :
+        Entity(n),
+        _triggerEvt(this, &Timer::onTrigger, p) {}
 
-    void Timer::newRun() 
-    {
-	onTrigger(NULL);
+    void Timer::newRun() {
+        onTrigger(NULL);
     }
 
     void Timer::endRun() {
-	_triggerEvt.drop();
+        _triggerEvt.drop();
     }
 
     void Timer::onTrigger(MetaSim::Event *) {
-	DBGENTER(_TIMER_DBG_LEV);
+        DBGENTER(_TIMER_DBG_LEV);
 
-	_triggerEvt.drop();
-	lastTrigger = SIMUL.getTime();
-	action();
+        _triggerEvt.drop();
+        lastTrigger = SIMUL.getTime();
+        action();
 
-	DBGPRINT("Timer fired at "<<lastTrigger);
+        DBGPRINT("Timer fired at " << lastTrigger);
 
-	reArm();
+        reArm();
     }
 
-    PeriodicTimer::PeriodicTimer(Tick p, const std::string &n, int prio) 
-	: Timer(n, prio), _period(p) 
-    {
-    }
+    PeriodicTimer::PeriodicTimer(Tick p, const std::string &n, int prio) :
+        Timer(n, prio),
+        _period(p) {}
 
     void PeriodicTimer::reArm() {
-	Tick t = SIMUL.getTime();
-	_triggerEvt.post(t+_period);
-	DBGENTER(_TIMER_DBG_LEV);
-	DBGPRINT_2("Timer rearmed at ", (t+_period));
-    
-
+        Tick t = SIMUL.getTime();
+        _triggerEvt.post(t + _period);
+        DBGENTER(_TIMER_DBG_LEV);
+        DBGPRINT_2("Timer rearmed at ", (t + _period));
     }
 
-    void PeriodicTimer::action() {};
+    void PeriodicTimer::action(){};
 
-}
+} // namespace RTSim

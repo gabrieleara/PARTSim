@@ -21,31 +21,23 @@ namespace RTSim {
 
     using namespace MetaSim;
 
+    PIRManager::PIRManager(const string &n) : ResManager(n) {}
 
-    PIRManager::PIRManager(const string &n) : ResManager(n)
-    {
-    }
+    //     void PIRManager::setScheduler(Scheduler *s)
+    //     {
+    //         _sched = s;
+    //     }
 
-//     void PIRManager::setScheduler(Scheduler *s)
-//     {
-//         _sched = s;
-//     }
+    void PIRManager::newRun() {}
 
-    void PIRManager::newRun()
-    {
-    }
+    void PIRManager::endRun() {}
 
-    void PIRManager::endRun()
-    {
-    }
-
-    bool PIRManager::request(AbsRTTask *t, Resource *r, int n)
-    {
+    bool PIRManager::request(AbsRTTask *t, Resource *r, int n) {
         bool ret;
 
         DBGENTER(_PIRESMAN_DBG_LEV);
 
-        TaskModel* taskModel = _sched->find(t);
+        TaskModel *taskModel = _sched->find(t);
 
         if (taskModel == NULL) {
             throw BaseExc("Cannot find task model!");
@@ -56,11 +48,11 @@ namespace RTSim {
             DBGPRINT("Resource is locked");
             // Task that owns the resource
             AbsRTTask *owner = dynamic_cast<AbsRTTask *>(r->getOwner());
-            TaskModel* ownerModel = _sched->find(owner);
+            TaskModel *ownerModel = _sched->find(owner);
 
             if (ownerModel == NULL) {
                 throw BaseExc("Cannot find owner model!");
-            }   
+            }
 
             // remove the owner from the scheduler. It is not executing.
             _sched->extract(owner);
@@ -77,10 +69,9 @@ namespace RTSim {
 
             // push the blocked task into the blocked queue
             blocked[r->getName()].insert(taskModel);
-    
+
             ret = false;
-        }
-        else {
+        } else {
             // save owner's priority
             DBGPRINT("Storing old priority");
 
@@ -89,40 +80,34 @@ namespace RTSim {
                 PRIORITY_MAP mm;
                 mm[r->getName()] = taskModel->getPriority();
                 oldPriorities[t] = mm;
-            }
-            else {
-                (oldPriorities[t])[r->getName()] = taskModel->getPriority(); 
+            } else {
+                (oldPriorities[t])[r->getName()] = taskModel->getPriority();
             }
 
             r->lock(t);
             ret = true;
         }
 
-        
-
         return ret;
     }
 
-    void PIRManager::release(AbsRTTask *t, Resource *r, int n)
-    {
-        TaskModel* taskModel = _sched->find(t);
+    void PIRManager::release(AbsRTTask *t, Resource *r, int n) {
+        TaskModel *taskModel = _sched->find(t);
 
         DBGENTER(_PIRESMAN_DBG_LEV);
 
         r->unlock();
         // see if there is any blocked task
-        if (!blocked[r->getName()].empty()) 
-        {
+        if (!blocked[r->getName()].empty()) {
             TaskModel *newTaskModel = blocked[r->getName()].front();
             blocked[r->getName()].erase(newTaskModel);
             _kernel->suspend(t);
             taskModel->changePriority((oldPriorities[t])[r->getName()]);
-            if (t->isActive()) _kernel->activate(t);
+            if (t->isActive())
+                _kernel->activate(t);
             _kernel->activate(newTaskModel->getTask());
             r->lock(newTaskModel->getTask());
         }
-
-        
     }
 
 } // namespace RTSim

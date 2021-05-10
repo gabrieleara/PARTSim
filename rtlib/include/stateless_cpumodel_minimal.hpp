@@ -16,7 +16,7 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <map>
 
-#include "stateless_cpumodel_base.hpp"
+#include <stateless_cpumodel_base.hpp>
 
 namespace RTSim {
     // =====================================================
@@ -46,17 +46,17 @@ namespace RTSim {
 
     template <>
     MinimalCPUModel<ModelType::Power>::value_type
-    MinimalCPUModel<ModelType::Power>::lookupValue(const OPP &opp,
-                                                   const wclass_type &,
-                                                   freq_type) const {
+        MinimalCPUModel<ModelType::Power>::lookupValue(const OPP &opp,
+                                                       const wclass_type &,
+                                                       freq_type) const {
         return (opp.voltage * opp.voltage) * opp.frequency;
     }
 
     template <>
     MinimalCPUModel<ModelType::Speed>::value_type
-    MinimalCPUModel<ModelType::Speed>::lookupValue(const OPP &opp,
-                                                   const wclass_type &,
-                                                   freq_type f_max) const {
+        MinimalCPUModel<ModelType::Speed>::lookupValue(const OPP &opp,
+                                                       const wclass_type &,
+                                                       freq_type f_max) const {
         return speed_type(f_max) / speed_type(opp.frequency);
     }
 

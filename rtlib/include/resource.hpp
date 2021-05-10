@@ -35,28 +35,26 @@ namespace RTSim {
 
     class AbsRTTask;
 
-    /** 
+    /**
         \ingroup resman
 
         Very simple class that models a resource shared by two or more
         tasks. Every task should use this resource only through a critical
         section surrounded by wait and signal instructions.
-    
+
         @see ResManager, WaitInstr, SignalInstr
     */
-    class Resource: public Entity
-    {
+    class Resource : public Entity {
     protected:
         int _total;
         int _available;
 
-        AbsRTTask* _owner;
+        AbsRTTask *_owner;
 
     public:
-  
         /// simple constructor
-        Resource(const string& n, int nr = 1);
-        
+        Resource(const string &n, int nr = 1);
+
         /// copy constructor
         Resource(const Resource &r);
 
@@ -68,7 +66,7 @@ namespace RTSim {
 
         /// checks if the resource is locked
         bool isLocked() const;
-        
+
         /// returns how many resource units are available
         int available() const;
 
@@ -76,11 +74,10 @@ namespace RTSim {
         int total() const;
 
         /// returns the resource owner
-        AbsRTTask* getOwner() const;
+        AbsRTTask *getOwner() const;
 
         void newRun() override;
         void endRun() override;
-
     };
 
 } // namespace RTSim

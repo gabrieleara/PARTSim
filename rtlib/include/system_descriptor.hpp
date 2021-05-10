@@ -5,10 +5,10 @@
 #include <string>
 #include <vector>
 
-#include "class_utils.hpp"
+#include <class_utils.hpp>
+#include <powermodel_params.hpp>
+#include <yaml.hpp>
 #include <memory.hpp>
-#include "powermodel_params.hpp"
-#include "yaml.hpp"
 
 namespace RTSim {
 

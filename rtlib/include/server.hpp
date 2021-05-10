@@ -16,14 +16,14 @@
 
 #include <baseexc.hpp>
 #include <entity.hpp>
-#include <simul.hpp>
 #include <gevent.hpp>
+#include <simul.hpp>
 
 #include <abskernel.hpp>
 #include <abstask.hpp>
-#include <task.hpp>
-#include <scheduler.hpp>
 #include <resmanager.hpp>
+#include <scheduler.hpp>
+#include <task.hpp>
 
 #define _SERVER_DBG_LEV "server"
 
@@ -33,29 +33,25 @@ namespace RTSim {
 
     class CPU;
 
-    /// Enumeration of possible server states 
-    typedef enum {IDLE, 
-                  READY, 
-                  EXECUTING,
-                  RELEASING, 
-                  RECHARGING} ServerStatus;
-  
+    /// Enumeration of possible server states
+    typedef enum { IDLE, READY, EXECUTING, RELEASING, RECHARGING } ServerStatus;
+
     class ServerExc : public BaseExc {
     public:
-        ServerExc(const string& m, const string& cl) : 
-            BaseExc(m,cl,"Server") {};
+        ServerExc(const string &m, const string &cl) :
+            BaseExc(m, cl, "Server"){};
     };
 
-    /** 
+    /**
         @ingroup server
 
         This class implement a generic aperiodic server. Examples are:
-        - for dynamic priority: 
-        * the CBS (COnstant Bandwidth Server), 
-        * the GRUB (Greedy Reclaimation of Unused Bandwidth), 
-        * its Power-Aware version (GRUB-PA), 
+        - for dynamic priority:
+        * the CBS (COnstant Bandwidth Server),
+        * the GRUB (Greedy Reclaimation of Unused Bandwidth),
+        * its Power-Aware version (GRUB-PA),
         * the SHRUB algorithm (Shared Reclamation of Unused
-        Bandwidth), 
+        Bandwidth),
         * the CASH algorithm (...), etc.
         - for fixed priority:
         * the Sporadic Server
@@ -74,20 +70,20 @@ namespace RTSim {
         @todo Implement other algorithms, like Sporadic Server
         (fixed priority and Dynamic priority versions), Deferrable
         Server, etc. Need to implement TBS as well.
-      
+
         @todo simplify the interface (now it is too fat)
     */
-    class Server :
-        virtual public AbsRTTask, virtual public AbsKernel,
-        public Entity {
-    protected:    
+    class Server : virtual public AbsRTTask,
+                   virtual public AbsKernel,
+                   public Entity {
+    protected:
         static string status_string[];
-    
+
         Tick arr;
         Tick last_arr;
         ServerStatus status;
-        Tick dline;   // relative deadline
-        Tick abs_dline;  // absolute deadline
+        Tick dline; // relative deadline
+        Tick abs_dline; // absolute deadline
 
         std::vector<AbsRTTask *> tasks;
 
@@ -105,20 +101,24 @@ namespace RTSim {
         GEvent<Server> _dispatchEvt;
 
         std::unique_ptr<Scheduler> sched_;
-                
-        AbsRTTask *currExe_;
-                
-        /** Sets the current relative deadline (if any)*/
-        inline void setDeadline(Tick d) { dline = d; }
 
-        inline void setAbsDead(Tick d) { abs_dline = d; }
+        AbsRTTask *currExe_;
+
+        /** Sets the current relative deadline (if any)*/
+        inline void setDeadline(Tick d) {
+            dline = d;
+        }
+
+        inline void setAbsDead(Tick d) {
+            abs_dline = d;
+        }
 
         /// from idle to active contending (new work to do)
         virtual void idle_ready() = 0;
 
         /// from active non contending to active contending (more work)
         virtual void releasing_ready() = 0;
-                
+
         /// from active contending to executing (dispatching)
         virtual void ready_executing() = 0;
 
@@ -141,9 +141,8 @@ namespace RTSim {
         virtual void recharging_idle() = 0;
 
     public:
-
-        /** 
-            The constructor. 
+        /**
+            The constructor.
             @param name server name
             @param s scheduler (for hierarchical scheduling servers)
         */
@@ -158,17 +157,16 @@ namespace RTSim {
            Get budget
         */
         virtual Tick getBudget() const = 0;
-      
+
         /**
            Returns the period
         */
         Tick getPeriod() const override = 0;
 
-
         /**
            Dynamically changes the budget.
 
-           @param new_budget  the new budget. Can be higher or lower than the 
+           @param new_budget  the new budget. Can be higher or lower than the
            current one
 
            @return the function returns the time at which the new budget
@@ -188,7 +186,7 @@ namespace RTSim {
         /**
            Add a new task to this server, with parameters
            specified in params.
-                   
+
            @params task the task to be added
            @params the scheduling parameters
 
@@ -196,57 +194,59 @@ namespace RTSim {
         */
         virtual void addTask(AbsRTTask &task, const std::string &params = "");
 
-        /**  
+        /**
              Inherited from AbsRTTask. This function is called
-             when the server is selected to execute. 
-        */ 
+             when the server is selected to execute.
+        */
         void schedule() override;
 
-        /**  
+        /**
              Inherited from AbsRTTask. This function is called
              when the server is selected to
              execute. Implemented here.
-        */ 
+        */
         void deschedule() override;
 
-        /** 
+        /**
             Inherited from AbsRTTask. Cannot be called here
-            (throws an exception). 
+            (throws an exception).
         */
-        void activate() throw (ServerExc) override {
+        void activate() throw(ServerExc) override {
             throw ServerExc("cannot call activate() on a server",
                             "Server::activate()");
         }
-    
-        /** 
+
+        /**
             Inherited from AbsRTTask. Returns the arrival time
             of the current istance
         */
         Tick getArrival() const override;
 
-        /** 
+        /**
             Inherited from AbsRTTask. Returns the arrival time
             of the previous istance
         */
         Tick getLastArrival() const override;
 
-        /** 
+        /**
             Inherited from AbsRTTask. Set the kernel for this
             server.
         */
         void setKernel(AbsKernel *k) override;
 
-        /** 
+        /**
             Inherited from AbsRTTask. Returns the kernel for this
-            server 
+            server
         */
-        AbsKernel *getKernel() override { return kernel; }
+        AbsKernel *getKernel() override {
+            return kernel;
+        }
 
-/*------------------------------------------------------------------*/
+        /*------------------------------------------------------------------*/
 
-        /** 
+        /**
             this is used to deal with resource management at the
-            global level (not inside the server, but outside!) 
+            global level (not inside the server, but outside!)
 
             @todo think about interaction between local and global resman!
         */
@@ -260,44 +260,43 @@ namespace RTSim {
             relative deadline (if any)*/
         Tick getRelDline() const override;
 
-
         /** Inherited from AbsKernel. Activates a task in the
             server */
-        void activate(AbsRTTask*) override;
+        void activate(AbsRTTask *) override;
 
         /** Inherited from AbsKernel. Suspend a task in the
             server */
-        void suspend(AbsRTTask*) override;
+        void suspend(AbsRTTask *) override;
 
-        /** 
+        /**
             Inherited from AbsKernel. Dispatch a task in the
             server
         */
         void dispatch() override;
 
-        /** 
+        /**
             Inherited from AbsKernel. Calls the corresponding
             function of RTKernel*/
         CPU *getProcessor(const AbsRTTask *) const override;
 
-        /** 
+        /**
             Inherited from AbsKernel. Calls the corresponding
             function of RTKernel*/
         CPU *getOldProcessor(const AbsRTTask *) const override;
 
-        /** 
-            Inherited from AbsKernel. 
+        /**
+            Inherited from AbsKernel.
 
             This function is invoked every time an arrival
             event is triggered for this object. In periodic
             servers, arrivals are periodic (e.g. in Polling
             Server), in other servers they can be aperiodic
             (e.g. CBS or Grub).
-        */            
+        */
         void onArrival(AbsRTTask *t) override;
 
-        /** 
-            Inherited from AbsKernel. 
+        /**
+            Inherited from AbsKernel.
 
             This function is invoked every time the server has
             completed its current backlog.
@@ -306,49 +305,54 @@ namespace RTSim {
 
         virtual void onDispatch(Event *);
 
-        /** 
+        /**
             This function is invoked every time the server
             capacity is exhausted
         */
         virtual void onBudgetExhausted(Event *);
 
         virtual void onSched(Event *);
-                
+
         virtual void onDesched(Event *);
 
-        /** 
+        /**
             This function is invoked if the server deadline is
             missed.  Should never happen! This will throw an
             exception.
         */
         void onDlineMiss(Event *);
 
-        /** 
+        /**
             This function is invoked every time the server
-            capacity has to be refilled. 
+            capacity has to be refilled.
         */
         virtual void onRecharging(Event *);
-
 
         /**
            This function returns the current server status.
         */
-        inline ServerStatus getStatus() const { return status; }
-  
+        inline ServerStatus getStatus() const {
+            return status;
+        }
+
         /** print the server status (only for debugging) */
-        inline std::string getStatusString() const { return status_string[status];}
+        inline std::string getStatusString() const {
+            return status_string[status];
+        }
 
         void newRun() override;
         void endRun() override;
 
-        /** 
+        /**
             Function inherited from AbsKernel. It should
             return the current speed of the CPU. For the
             server class, it currently returns 1.
         */
-        double getSpeed() const override { return 1; }
-  
-        /** 
+        double getSpeed() const override {
+            return 1;
+        }
+
+        /**
             Function inherited from AbsKernel. It sets the
             speed of the CPU accordingly to the new system
             load, and returns the new speed. For this class,
@@ -356,24 +360,31 @@ namespace RTSim {
         */
         // virtual double setSpeed(double) { return 0; }
 
-        /** 
+        /**
             Function inherited from AbsRTTask. It refreshes the
             state of the executing task when a change of the
             CPU speed occurs.  In this class, this function
             does nothing.
-                    
+
             @todo check that this is actually what we expect.
-        */ 
+        */
         void refreshExec(double, double) override {}
 
-        bool isActive() const override { return (status != IDLE); }
-                
-        bool isExecuting() const override { return (status == EXECUTING); }
+        bool isActive() const override {
+            return (status != IDLE);
+        }
 
-        int getTaskNumber() const override { return getID();}
+        bool isExecuting() const override {
+            return (status == EXECUTING);
+        }
 
-        bool isContextSwitching() const override { return false; }
+        int getTaskNumber() const override {
+            return getID();
+        }
 
+        bool isContextSwitching() const override {
+            return false;
+        }
     };
 } // namespace RTSim
 

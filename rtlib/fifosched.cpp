@@ -11,37 +11,35 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <factory.hpp>
 #include <fifosched.hpp>
 #include <kernel.hpp>
-#include <factory.hpp>
 
 namespace RTSim {
 
     using std::unique_ptr;
 
-    void FIFOScheduler::addTask(AbsRTTask *task) throw(RTSchedExc)
-    {
-        FIFOModel *model = new FIFOModel(task); 	
+    void FIFOScheduler::addTask(AbsRTTask *task) throw(RTSchedExc) {
+        FIFOModel *model = new FIFOModel(task);
 
-        if (find(task) != NULL) 
+        if (find(task) != NULL)
             throw RTSchedExc("Element already present");
-	
+
         _tasks[task] = model;
     }
 
-    void FIFOScheduler::addTask(AbsRTTask* task, const std::string &p)
-    {
-        if (!dynamic_cast<AbsRTTask *>(task)) 
+    void FIFOScheduler::addTask(AbsRTTask *task, const std::string &p) {
+        if (!dynamic_cast<AbsRTTask *>(task))
             throw RTSchedExc("Cannot add a AbsRTTask to FIFO");
         // ignoring parameters
         addTask(dynamic_cast<AbsRTTask *>(task));
     }
 
-    unique_ptr<FIFOScheduler> FIFOScheduler::createInstance(const vector<string> &par)
-    {
+    unique_ptr<FIFOScheduler>
+        FIFOScheduler::createInstance(const vector<string> &par) {
         // todo: check the parameters (i.e. to set the default
         // time quantum)
         return unique_ptr<FIFOScheduler>(new FIFOScheduler);
     }
 
-}
+} // namespace RTSim

@@ -17,9 +17,9 @@
 #include <map>
 
 #include <baseexc.hpp>
+#include <gevent.hpp>
 #include <plist.hpp>
 #include <simul.hpp>
-#include <gevent.hpp>
 
 #include <scheduler.hpp>
 
@@ -31,31 +31,28 @@ namespace RTSim {
 
     class RTKernel;
 
-    /** 
+    /**
         \ingroup sched
-        
-        Round Robin scheduler. 
-    */
-    class RRScheduler: public Scheduler
-    {
-    protected:
 
+        Round Robin scheduler.
+    */
+    class RRScheduler : public Scheduler {
+    protected:
         /**
-           \ingroup sched 
+           \ingroup sched
         */
         class RRSchedExc : public BaseExc {
         public:
-            RRSchedExc(string msg) : 
+            RRSchedExc(string msg) :
                 BaseExc(msg, "RoundRobinScheduler", "rrsched.cpp") {}
         };
 
         class RRModel : public TaskModel {
         protected:
-            Tick _rrSlice;      
+            Tick _rrSlice;
 
         public:
-            
-            RRModel(AbsRTTask* t) : TaskModel(t), _rrSlice(1) {}
+            RRModel(AbsRTTask *t) : TaskModel(t), _rrSlice(1) {}
             virtual ~RRModel() {}
 
             Tick getPriority() const override;
@@ -64,12 +61,16 @@ namespace RTSim {
             /**
                Returns the slice size (in number of ticks)
             */
-            Tick getRRSlice() const {return _rrSlice;}
+            Tick getRRSlice() const {
+                return _rrSlice;
+            }
 
-            /** 
+            /**
                 Sets the slice size to s (in number of ticks)
             */
-            void setRRSlice(Tick s) {_rrSlice = s;}
+            void setRRSlice(Tick s) {
+                _rrSlice = s;
+            }
 
             /**
                This function returns true if the round has expired for the
@@ -79,43 +80,46 @@ namespace RTSim {
 
             string toString() const override;
         };
-    
+
         int defaultSlice;
 
-      /**
-         Introduced for the Multi Cores Queues, it prevents the scheduler
-         to send events to its kernel and to post round events, if enabled = false
-       */
+        /**
+           Introduced for the Multi Cores Queues, it prevents the scheduler
+           to send events to its kernel and to post round events, if enabled =
+           false
+         */
         bool _enabled = true;
-    public:
 
+    public:
         // events must be public, (part of the interface)
         GEvent<RRScheduler> _rrEvt;
-        
+
         /** Constructor */
         RRScheduler(int defSlice);
 
         void disable() {
-          _enabled = false;
+            _enabled = false;
         }
 
-        bool isEnabled() { return _enabled; }
+        bool isEnabled() {
+            return _enabled;
+        }
 
         /**
            This function returns true if the round has expired for the
            given task.
         */
-        bool isRoundExpired(AbsRTTask* t);
+        bool isRoundExpired(AbsRTTask *t);
 
         /**
            Set the Round Robin slice.
         */
-        virtual void setRRSlice(AbsRTTask* task, Tick slice);
+        virtual void setRRSlice(AbsRTTask *task, Tick slice);
 
         /**
            Notify to recompute the round
         */
-        void notify(AbsRTTask* task) override;
+        void notify(AbsRTTask *task) override;
 
         /**
            This is called by the event rrEvt.

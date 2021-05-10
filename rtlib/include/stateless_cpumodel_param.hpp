@@ -14,7 +14,7 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 #ifndef __STATELESSMODELS_PARAM_HPP__
 #define __STATELESSMODELS_PARAM_HPP__
 
-#include "stateless_cpumodel_base.hpp"
+#include <stateless_cpumodel_base.hpp>
 
 namespace RTSim {
     // =====================================================

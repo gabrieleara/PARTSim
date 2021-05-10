@@ -28,9 +28,9 @@
 #ifndef __FACTORY_HPP__
 #define __FACTORY_HPP__
 
-#include <memory.hpp>
 #include <iostream>
 #include <map>
+#include <memory.hpp>
 #include <string>
 #include <vector>
 
@@ -38,15 +38,15 @@ typedef std::string defaultIDKeyType;
 
 // The abstract factory itself.
 // Implemented using the Singleton pattern
-template <class manufacturedObj, typename classIDKey=defaultIDKeyType>
-class genericFactory
-{
+template <class manufacturedObj, typename classIDKey = defaultIDKeyType>
+class genericFactory {
     // a BASE_CREATE_FN is a function that takes no parameters
     // and returns an unique_ptr<> to a manufactuedObj.  Note that
     // we use no parameters, but you could add them
     // easily enough to allow overloaded ctors, e.g.:
     //   typedef std::unique_ptr<manufacturedObj> (*BASE_CREATE_FN)(int);
-    typedef std::unique_ptr<manufacturedObj> (*BASE_CREATE_FN)(std::vector<std::string> &par);
+    typedef std::unique_ptr<manufacturedObj> (*BASE_CREATE_FN)(
+        std::vector<std::string> &par);
 
     // FN_REGISTRY is the registry of all the BASE_CREATE_FN
     // pointers registered.  Functions are registered using the
@@ -57,10 +57,9 @@ class genericFactory
     // Singleton implementation - private ctor & copying, with
     // no implementation on the copying.
     genericFactory();
-    genericFactory(const genericFactory&); // Not implemented
-    genericFactory &operator=(const genericFactory&); // Not implemented
+    genericFactory(const genericFactory &); // Not implemented
+    genericFactory &operator=(const genericFactory &); // Not implemented
 public:
-
     // Singleton access.
     static genericFactory &instance();
 
@@ -70,7 +69,9 @@ public:
     void regCreateFn(const classIDKey &, BASE_CREATE_FN);
 
     // Create a new class of the type specified by className.
-    std::unique_ptr<manufacturedObj> create(const classIDKey &className, std::vector<std::string> &parms) const;
+    std::unique_ptr<manufacturedObj>
+        create(const classIDKey &className,
+               std::vector<std::string> &parms) const;
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -78,16 +79,14 @@ public:
 // the implementation is self-explanatory.
 
 template <class manufacturedObj, typename classIDKey>
-genericFactory<manufacturedObj, classIDKey>::genericFactory()
-{
-}
+genericFactory<manufacturedObj, classIDKey>::genericFactory() {}
 
 template <class manufacturedObj, typename classIDKey>
-genericFactory<manufacturedObj, classIDKey> &genericFactory<manufacturedObj, classIDKey>::instance()
-{
-  // Note that this is not thread-safe!
-  static genericFactory theInstance;
-  return theInstance;
+genericFactory<manufacturedObj, classIDKey> &
+    genericFactory<manufacturedObj, classIDKey>::instance() {
+    // Note that this is not thread-safe!
+    static genericFactory theInstance;
+    return theInstance;
 }
 
 // Register the creation function.  This simply associates the classIDKey
@@ -95,42 +94,42 @@ genericFactory<manufacturedObj, classIDKey> &genericFactory<manufacturedObj, cla
 // value, which is used to allow static initialization of the registry.
 // See example implementations in base.cpp and derived.cpp
 template <class manufacturedObj, typename classIDKey>
-void genericFactory<manufacturedObj, classIDKey>::regCreateFn(const classIDKey &clName, BASE_CREATE_FN func)
-{
-  registry[clName]=func;
+void genericFactory<manufacturedObj, classIDKey>::regCreateFn(
+    const classIDKey &clName, BASE_CREATE_FN func) {
+    registry[clName] = func;
 }
 
 // The create function simple looks up the class ID, and if it's in the list,
 // the statement "(*i).second();" calls the function.
 template <class manufacturedObj, typename classIDKey>
-std::unique_ptr<manufacturedObj> genericFactory<manufacturedObj, classIDKey>::create(const classIDKey &className, std::vector<std::string> &parms) const
-{
-  std::unique_ptr<manufacturedObj> ret(nullptr);
+std::unique_ptr<manufacturedObj>
+    genericFactory<manufacturedObj, classIDKey>::create(
+        const classIDKey &className, std::vector<std::string> &parms) const {
+    std::unique_ptr<manufacturedObj> ret(nullptr);
 
-  typename FN_REGISTRY::const_iterator regEntry=registry.find(className);
-  if (regEntry != registry.end()) {
-    return (*regEntry).second(parms);
-  }
-  return ret;
+    typename FN_REGISTRY::const_iterator regEntry = registry.find(className);
+    if (regEntry != registry.end()) {
+        return (*regEntry).second(parms);
+    }
+    return ret;
 }
 
 // Helper template to make registration painless and simple.
-template <class ancestorType,
-          class manufacturedObj,
-          typename classIDKey=defaultIDKeyType>
+template <class ancestorType, class manufacturedObj,
+          typename classIDKey = defaultIDKeyType>
 class registerInFactory {
-  public:
-  static std::unique_ptr<ancestorType> createInstance(std::vector<std::string> &par)
-  {
-    return std::unique_ptr<ancestorType>(manufacturedObj::createInstance(par));
-  }
-  registerInFactory(const classIDKey &id)
-  {
-    genericFactory<ancestorType>::instance().regCreateFn(id, createInstance);
-  }
+public:
+    static std::unique_ptr<ancestorType>
+        createInstance(std::vector<std::string> &par) {
+        return std::unique_ptr<ancestorType>(
+            manufacturedObj::createInstance(par));
+    }
+    registerInFactory(const classIDKey &id) {
+        genericFactory<ancestorType>::instance().regCreateFn(id,
+                                                             createInstance);
+    }
 };
 
 #define FACT(xxx) genericFactory<xxx>::instance()
-
 
 #endif

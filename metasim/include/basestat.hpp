@@ -14,12 +14,12 @@
 #ifndef __BASESTAT_HPP__
 #define __BASESTAT_HPP__
 
+#include <algorithm>
 #include <fstream>
 #include <limits>
 #include <list>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 #include <basetype.hpp>
 
@@ -41,17 +41,17 @@ namespace MetaSim {
 
        The class tree is the following:
        <pre>
-       # lev 0             BaseStat                      
-       #                /     |       \                  
-       #               /      |        \                 
-       #              /       |         \                
-       # lev 1     StatMax   StatMin   StatMean ...       
-       #           /   \                                  
-       #          /     \                                
+       # lev 0             BaseStat
+       #                /     |       \
+       #               /      |        \
+       #              /       |         \
+       # lev 1     StatMax   StatMin   StatMean ...
+       #           /   \
+       #          /     \
        @{
-       # lev 2 StatTask1 StatTask2  ...     ...           
+       # lev 2 StatTask1 StatTask2  ...     ...
        #
-       </pre>      
+       </pre>
        Level 0 (BaseStat) cannot be changed: it implements the functions
        for doing statistic: it is initialized with the number of
        experiments to be done, and has an array where the data are
@@ -65,7 +65,7 @@ namespace MetaSim {
        value during an experiment. The user can add his own classes to
        this level, and he must implement the record() function and the
        initValue() function.
-   
+
        Level 2 implements the probe() for a single event. The user must
        write entirely this level, depending on the variable he needs to
        measure. When implementing a class of this level, the user must
@@ -83,10 +83,10 @@ namespace MetaSim {
        </pre>
        @{
     */
-    ///  The basic statistical class. 
+    ///  The basic statistical class.
     class BaseStat {
     public:
-        typedef std::list<BaseStat*> List;
+        typedef std::list<BaseStat *> List;
 
     private:
         static const int MAX_DISTR = 10000;
@@ -97,7 +97,6 @@ namespace MetaSim {
         static List _statList;
 
     protected:
-
         /**
            \ingroup metasim_exc
 
@@ -106,12 +105,12 @@ namespace MetaSim {
         */
         class Exc : public BaseExc {
         public:
-            Exc(const std::string s = "Unknown Exc", 
+            Exc(const std::string s = "Unknown Exc",
                 const std::string c = "BaseStat",
-                const std::string m = "basestat.hpp") : 
+                const std::string m = "basestat.hpp") :
                 BaseExc(s, c, m) {}
         };
-    
+
         /// name of the stat object
         std::string _name;
 
@@ -122,20 +121,22 @@ namespace MetaSim {
         typedef std::vector<double> Experiments;
         Experiments _exper;
 
-        /** called at the end of the run, puts the current 
+        /** called at the end of the run, puts the current
             value in the array of experiments. */
         inline void collect() {
-            if (_exper.size() <= _expNum) _exper.push_back(_val);
-            else _exper[_expNum] = _val;
+            if (_exper.size() <= _expNum)
+                _exper.push_back(_val);
+            else
+                _exper[_expNum] = _val;
         }
 
-        // System-Wide data & functions needed to be visible 
+        // System-Wide data & functions needed to be visible
         // also to other kind of stats!
         /// lenght of the transitory.
         static Tick _transitory;
 
         /// used to see if the base stat class has been
-        /// initialized. (???) 
+        /// initialized. (???)
         static bool _initFlag;
 
         /// t-student function
@@ -151,61 +152,70 @@ namespace MetaSim {
         /// Constructors: enqueues the object in the global stat list
         BaseStat(std::string n = "");
         virtual ~BaseStat();
-  
-        typedef List::const_iterator iterator;
-        static inline iterator begin() { return _statList.begin(); }
-        static inline iterator end() { return _statList.end(); }
 
-        /** 
-            Level 1 function: it is called by the probe() (level 2) 
+        typedef List::const_iterator iterator;
+        static inline iterator begin() {
+            return _statList.begin();
+        }
+        static inline iterator end() {
+            return _statList.end();
+        }
+
+        /**
+            Level 1 function: it is called by the probe() (level 2)
         */
         virtual void record(double) = 0;
         virtual void initValue() = 0;
-  
-        /** 
-            level 2 function: called by the event action() method. 
+
+        /**
+            level 2 function: called by the event action() method.
 
             DEPRECATED.
 
             @todo remove this function. Not very OO, because it takes a generic
-            event, and most of the times we must do a dynamic_cast<>. 
+            event, and most of the times we must do a dynamic_cast<>.
             By now it is deprecated.
-            Must be substituted by non-virtual probe methods that take the 
+            Must be substituted by non-virtual probe methods that take the
             typed event object as parameters (see particle.hpp).
         */
-        virtual void probe(Event *e) {};
+        virtual void probe(Event *e){};
 
-        /** 
+        /**
             This function links the statistical probe to the correct events
             associated with a given entity.
 
             DEPRECATED.
-	
+
             @todo remove this function. Not very OO, because it forces to use
-            dynamic casts. By now it is deprecated. Substituted by 
+            dynamic casts. By now it is deprecated. Substituted by
             addParticle() (see particle.hpp).
         */
         virtual void attach(Entity *e) {}
 
         /*--------------------------------------------*/
-    
+
         /**
            Returns the name of this stat.
         */
-        inline std::string getName() { return _name; }
+        inline std::string getName() {
+            return _name;
+        }
 
         /**
            Returns the current value of the stat object.
         */
-        inline double getValue() { return _val; }
+        inline double getValue() {
+            return _val;
+        }
 
         /**
            Returns the data collected in the last run
         */
         inline double getLastValue() {
-            if (_expNum > 0) 
-                return _exper[_expNum-1]; 
-            else return 0;
+            if (_expNum > 0)
+                return _exper[_expNum - 1];
+            else
+                return 0;
         }
 
         /// Returns the mean value
@@ -215,31 +225,30 @@ namespace MetaSim {
         double getVariance();
 
         /// possible values for the confidence intervals
-        enum CONFIDENCE_INTERVAL {
-            C90 = 90,
-            C95 = 95
-        };
+        enum CONFIDENCE_INTERVAL { C90 = 90, C95 = 95 };
 
-        /** Returns the 90% or 95% confidence interval 
-            because of the underlying implementation 
+        /** Returns the 90% or 95% confidence interval
+            because of the underlying implementation
             of the t_student() function, which has
             been pre-calculated only for 90% and 95%
             values
-	
+
             @param c  can be C90 or C95 */
         double getConfInterval(CONFIDENCE_INTERVAL c = C95);
-	
+
         /*--------------------------------------------*/
 
         // debug!!
-        inline size_t getExpNum() { return _expNum; }
-        static void printAll();	
+        inline size_t getExpNum() {
+            return _expNum;
+        }
+        static void printAll();
         void print();
 
-        /** 
-            Must be called before the first run. 
+        /**
+            Must be called before the first run.
             @param n number of runs.
-        */ 
+        */
         static void init(size_t n);
         void init();
 
@@ -253,14 +262,14 @@ namespace MetaSim {
         /// @todo why is this static? is this correct?
         static void newRun();
 
-        /// automatically called at the end of the sim, 
+        /// automatically called at the end of the sim,
         /// write the files.
         static void endSim();
 
         /// specify how long the transitory will be
         /// data collected during transitory is discarded
         static void setTransitory(Tick t);
-    
+
         /// check if we are currently inside the transitory
         static bool chkTransitory();
     };
@@ -293,45 +302,49 @@ namespace MetaSim {
        getMean()	: get the mean value (over all the experiments)
        getConfInterval() : get the dim of the conf. interval relative to
        a (0 < a < 1). Typically, a = .9;
-		    
+
     */
 
     /** @name Some typical statistic classes (level 1) */
     //@{
-    /// Computes the max value 
+    /// Computes the max value
     class StatMax : public BaseStat {
         double _ini;
-    public:
-        StatMax(std::string name = "", 
-                double i = std::numeric_limits<double>::min()) : 
-            BaseStat(name), _ini(i)
-            {
-            }
 
-        void record(double a) override
-            { 
-                if (chkTransitory()) return;
-                _val = std::max(_val, a);
-            }
-        void initValue() override { _val = _ini; }
+    public:
+        StatMax(std::string name = "",
+                double i = std::numeric_limits<double>::min()) :
+            BaseStat(name),
+            _ini(i) {}
+
+        void record(double a) override {
+            if (chkTransitory())
+                return;
+            _val = std::max(_val, a);
+        }
+        void initValue() override {
+            _val = _ini;
+        }
     };
 
     /// Computes the min value
     class StatMin : public BaseStat {
         double _ini;
+
     public:
         StatMin(std::string name = "",
-                double i = std::numeric_limits<double>::max()) : 
-            BaseStat(name), _ini(i)
-            {
-            }
+                double i = std::numeric_limits<double>::max()) :
+            BaseStat(name),
+            _ini(i) {}
 
-        void record(double a) override
-            { 
-                if (chkTransitory()) return;
-                _val = std::min(_val, a);
-            }
-        void initValue() override { _val = _ini; }
+        void record(double a) override {
+            if (chkTransitory())
+                return;
+            _val = std::min(_val, a);
+        }
+        void initValue() override {
+            _val = _ini;
+        }
     };
 
     /// Computes a mean value X_m = (Sigma{X_i}i=1,N)/N
@@ -339,38 +352,43 @@ namespace MetaSim {
     protected:
         double _ini;
         double _count;
-    public:
-        StatMean(std::string name = "",
-                 double i = 0) : 
-            BaseStat(name), _ini(i), _count(0) 
-            {
-            }
 
-        void record(double a) override
-            {
-                if (chkTransitory()) return;
-                _val = _val * _count + a;
-                _val /= ++_count;
-            };
-        void initValue() override { _val = _ini; _count = 0; };
+    public:
+        StatMean(std::string name = "", double i = 0) :
+            BaseStat(name),
+            _ini(i),
+            _count(0) {}
+
+        void record(double a) override {
+            if (chkTransitory())
+                return;
+            _val = _val * _count + a;
+            _val /= ++_count;
+        };
+        void initValue() override {
+            _val = _ini;
+            _count = 0;
+        };
     };
 
-    /// Computes the quadratic mean value 
+    /// Computes the quadratic mean value
     /// X2_m = (Sigma{X_i^2}i=1,N)/(N*(N-1))
     class StatSqrMean : public BaseStat {
     protected:
         double _ini;
         double _count;
+
     public:
-        StatSqrMean(std::string name = "", 
-                    double i = 0) : 
-            BaseStat(name), _ini(i), _count(0) 
-            {
-            }
+        StatSqrMean(std::string name = "", double i = 0) :
+            BaseStat(name),
+            _ini(i),
+            _count(0) {}
 
-        void initValue() override { _val = _ini; _count = 0; };
+        void initValue() override {
+            _val = _ini;
+            _count = 0;
+        };
     };
-
 
     /// Counts the number of occurrences of an event.
     /**
@@ -380,25 +398,25 @@ namespace MetaSim {
     class StatCount : public BaseStat {
     protected:
         double _ini;
-    public:
-        StatCount(std::string name = "", 
-                  double i = 0) : 
-            BaseStat(name), _ini(i) 
-            { 
-            }
 
-        void record(double increment) override
-            {
-                if (chkTransitory()) return;
-                _val += increment;
-            }
-  
-        void initValue() override { _val = _ini; }
+    public:
+        StatCount(std::string name = "", double i = 0) :
+            BaseStat(name),
+            _ini(i) {}
+
+        void record(double increment) override {
+            if (chkTransitory())
+                return;
+            _val += increment;
+        }
+
+        void initValue() override {
+            _val = _ini;
+        }
     };
 
-
     /// Computes the percentage of occurrences of an event
-    /** 
+    /**
      *  Computes the percentage of times the record is called with a value
      *  greater than 0. For example, if record is called as: record(1),
      *  record(1), record(0), the value is 2/3.
@@ -407,48 +425,46 @@ namespace MetaSim {
     protected:
         double _ini;
         double _num, _den;
-    public:
-        StatPercent(std::string name = "", 
-                    double i = 0) : 
-            BaseStat(name), _ini(i), _num(i),
-            _den(std::max(1.0, i))
-            { 
-            }
-    
-        void record(double value) override
-            {
-                if (chkTransitory()) return;
-                _den += 1;
-                if (value > 0.0) _num += 1;
-                _val = _num / _den;
-            }
-        void initValue() override
-            { 
-                _val = _ini;
-                _num = _ini;
-                _den = std::max(1.0,_ini);
-            }
-        int getNumSamples() 
-            {
-                return _den;
-            }
-    };
 
+    public:
+        StatPercent(std::string name = "", double i = 0) :
+            BaseStat(name),
+            _ini(i),
+            _num(i),
+            _den(std::max(1.0, i)) {}
+
+        void record(double value) override {
+            if (chkTransitory())
+                return;
+            _den += 1;
+            if (value > 0.0)
+                _num += 1;
+            _val = _num / _den;
+        }
+        void initValue() override {
+            _val = _ini;
+            _num = _ini;
+            _den = std::max(1.0, _ini);
+        }
+        int getNumSamples() {
+            return _den;
+        }
+    };
 
     /// Produces output in gnuplot format
     /**
-       Output for gnuplot. This class open a file for each statistical object   
+       Output for gnuplot. This class open a file for each statistical object
        and on each file write:
 
        <ul>
        <li> the parameters of the simulation (passed to output())
-       <li> the mean 
+       <li> the mean
        <li> the confidence interval at .9
        </ul>
 
        Just call
 
-       <pre> GnuPlotOutput::init(); </pre> 
+       <pre> GnuPlotOutput::init(); </pre>
 
        before the simulation and call
 
@@ -457,38 +473,33 @@ namespace MetaSim {
        after each simulation. The format string is the same as printf.
        There can be more than one parameter, and of different types!
     */
-    class GnuPlotOutput {    
-    public :
+    class GnuPlotOutput {
+    public:
         class Exc : public BaseExc {
         public:
-            Exc(const std::string s, 
-                const std::string c = "GnuPlotOutput",
-                const std::string m = "basestat.hpp") : 
+            Exc(const std::string s, const std::string c = "GnuPlotOutput",
+                const std::string m = "basestat.hpp") :
                 BaseExc(s, c, m) {}
         };
         static void init();
-        //static void write(char *fmt ...);    
+        // static void write(char *fmt ...);
 
         template <typename T>
-        static void write(const T& t)
-            {
-                BaseStat::iterator i  = BaseStat::begin();
+        static void write(const T &t) {
+            BaseStat::iterator i = BaseStat::begin();
 
-                while (i != BaseStat::end()) {
-                    BaseStat* p = *i;
-                    if (p->getName() != "") {
-                        std::ofstream f(p->getName().c_str(),
-                                        std::ios::app);
-                        if (!f.is_open())
-                            throw Exc("Cannot open file " + p->getName());	
-                        f << t << '\t' << p->getMean() 
-                          << '\t' << p->getConfInterval()
-                          << std::endl;
-                    }
-                    ++i;
+            while (i != BaseStat::end()) {
+                BaseStat *p = *i;
+                if (p->getName() != "") {
+                    std::ofstream f(p->getName().c_str(), std::ios::app);
+                    if (!f.is_open())
+                        throw Exc("Cannot open file " + p->getName());
+                    f << t << '\t' << p->getMean() << '\t'
+                      << p->getConfInterval() << std::endl;
                 }
+                ++i;
             }
-
+        }
     };
 
     /**
@@ -497,12 +508,13 @@ namespace MetaSim {
     class TableOutput {
         static bool _created;
         static std::string _fname;
+
     public:
         void init(std::string filename);
         void write(std::string message);
     };
-    /*@}*/ 
-    /*@}*/ 
-} 
+    /*@}*/
+    /*@}*/
+} // namespace MetaSim
 
 #endif

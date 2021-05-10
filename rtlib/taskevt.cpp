@@ -16,55 +16,46 @@
  *
  * $Log$
  */
+#include <cstdlib>
 #include <task.hpp>
 #include <taskevt.hpp>
-#include <cstdlib>
 
 namespace RTSim {
     using std::cout;
     using std::endl;
 
-    void ArrEvt::doit()
-    {
+    void ArrEvt::doit() {
         _task->onArrival(this);
     }
-    
-    void EndEvt::doit()
-    {
+
+    void EndEvt::doit() {
         _task->onEndInstance(this);
     }
-    
-    void KillEvt::doit()
-    {
+
+    void KillEvt::doit() {
         _task->onKill(this);
     }
-    
-    void SchedEvt::doit()
-    {
+
+    void SchedEvt::doit() {
         _task->onSched(this);
     }
-    
-    void DeschedEvt::doit()
-    {
+
+    void DeschedEvt::doit() {
         _task->onDesched(this);
     }
-    
-    void FakeArrEvt::doit()
-    {
+
+    void FakeArrEvt::doit() {
         _task->onFakeArrival(this);
     }
-    
-    void DeadEvt::doit()
-    {
-        if (_abort)
-        {
+
+    void DeadEvt::doit() {
+        if (_abort) {
             cout << "Simulation aborted!!!" << endl;
             exit(-1);
         }
-        if (_kill && _task->isActive() == true)
-        {
+        if (_kill && _task->isActive() == true) {
             _task->killInstance();
         }
     }
-    
+
 } // namespace RTSim

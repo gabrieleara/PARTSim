@@ -32,63 +32,50 @@
 
 namespace RTSim {
 
-    FCFSResManager::FCFSResManager(const string &n) : ResManager(n)
-    {
-    }
- 
-    void FCFSResManager::newRun() 
-    {
-    }
+    FCFSResManager::FCFSResManager(const string &n) : ResManager(n) {}
 
-    void FCFSResManager::endRun() 
-    {
-    }
- 
-    bool FCFSResManager::request(AbsRTTask *t, Resource *r, int n) 
-    { 
+    void FCFSResManager::newRun() {}
+
+    void FCFSResManager::endRun() {}
+
+    bool FCFSResManager::request(AbsRTTask *t, Resource *r, int n) {
         DBGENTER(_FCFS_RES_MAN_DBG_LEV);
 
         bool ret;
 
         if (r->isLocked()) {
-            DBGPRINT("Suspending task ");  
+            DBGPRINT("Suspending task ");
             _kernel->suspend(t);
-            _blocked[r].push_back(t); 
+            _blocked[r].push_back(t);
             ret = false;
-        } 
-        else {
+        } else {
             DBGPRINT("Locking resource");
             r->lock(t);
-//             r->setOwner(t);
+            //             r->setOwner(t);
             _resAndCurrUsers[r] = t;
             ret = true;
         }
 
-        
         return ret;
     }
 
-    void FCFSResManager::release(AbsRTTask *t, Resource *r, int n) 
-    { 
+    void FCFSResManager::release(AbsRTTask *t, Resource *r, int n) {
         DBGENTER(_FCFS_RES_MAN_DBG_LEV);
 
         DBGPRINT("Unlocking resource ");
 
         r->unlock();
-        //r->setOwner(0);
+        // r->setOwner(0);
         _resAndCurrUsers[r] = NULL;
         if (!_blocked[r].empty()) {
-    
             DBGPRINT("Relocking resource");
 
             r->lock(_blocked[r].front());
-            //r->setOwner(_blocked[r].front());
+            // r->setOwner(_blocked[r].front());
             _resAndCurrUsers[r] = _blocked[r].front();
             _kernel->activate(_blocked[r].front());
-            _blocked[r].pop_front(); 
+            _blocked[r].pop_front();
         }
-
-        
     }
 
-}
+} // namespace RTSim

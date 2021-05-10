@@ -16,8 +16,8 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <map>
 
-#include "powermodel_params.hpp"
-#include "stateless_cpumodel_tb.hpp"
+#include <powermodel_params.hpp>
+#include <stateless_cpumodel_tb.hpp>
 
 namespace RTSim {
     // =====================================================
@@ -58,10 +58,9 @@ namespace RTSim {
     // Both method implementations for power and speed are the same!
     template <ModelType model_type>
     typename TBApproxCPUModel<model_type>::value_type
-    TBApproxCPUModel<model_type>::lookupValue(const OPP &opp,
-                                              const wclass_type &workload,
-                                              freq_type) const {
-
+        TBApproxCPUModel<model_type>::lookupValue(const OPP &opp,
+                                                  const wclass_type &workload,
+                                                  freq_type) const {
         long double (*distance_fn)(const OPP &, const OPP &);
         switch (model_type) {
         case ModelType::Power:

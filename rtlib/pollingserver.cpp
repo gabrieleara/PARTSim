@@ -1,4 +1,4 @@
-#include "pollingserver.hpp"
+#include <pollingserver.hpp>
 
 #include <cassert>
 
@@ -13,32 +13,25 @@ namespace RTSim {
         P(p),
         cap(0),
         last_time(0),
-        recharging_time(0)
-    {
+        recharging_time(0) {
         DBGENTER(_SERVER_DBG_LEV);
         dline = p;
         DBGPRINT(s);
-        
     }
 
-    void PollingServer::newRun()
-    {
+    void PollingServer::newRun() {
         cap = 0;
         last_time = 0;
         recharging_time = 0;
         status = IDLE;
     }
 
+    void PollingServer::endRun() {}
 
-    void PollingServer::endRun()
-    {
-    }
-
-    void PollingServer::idle_ready()
-    {
+    void PollingServer::idle_ready() {
         DBGENTER(_SERVER_DBG_LEV);
 
-        assert (status == IDLE);
+        assert(status == IDLE);
 
         status = READY;
         cap = Q;
@@ -49,102 +42,80 @@ namespace RTSim {
 
         _dlineMissEvt.setPriority(Event::_DEFAULT_PRIORITY + 2);
         _dlineMissEvt.post(recharging_time);
-        
-        
     }
 
-    void PollingServer::releasing_ready()
-    {
+    void PollingServer::releasing_ready() {
         assert(false); // should not be here!
     }
 
-    void PollingServer::ready_executing()
-    {
+    void PollingServer::ready_executing() {
         DBGENTER(_SERVER_DBG_LEV);
 
         status = EXECUTING;
 
         last_time = SIMUL.getTime();
         _bandExEvt.post(last_time + cap);
-
-        
     }
 
-    void PollingServer::executing_ready()
-    {
+    void PollingServer::executing_ready() {
         DBGENTER(_SERVER_DBG_LEV);
 
         status = READY;
-        
+
         cap -= SIMUL.getTime() - last_time;
         _bandExEvt.drop();
-
-        
     }
 
-    void PollingServer::executing_releasing()
-    {
+    void PollingServer::executing_releasing() {
         DBGENTER(_SERVER_DBG_LEV);
 
-        status = RECHARGING;  // go immediately to recharging, instead
+        status = RECHARGING; // go immediately to recharging, instead
         cap = 0;
         _bandExEvt.drop();
-
-        
     }
 
-    void PollingServer::releasing_idle()
-    {
+    void PollingServer::releasing_idle() {
         assert(false); // should not be here!
     }
 
-    void PollingServer::executing_recharging()
-    {
+    void PollingServer::executing_recharging() {
         DBGENTER(_SERVER_DBG_LEV);
 
         status = RECHARGING;
         cap = 0;
         _bandExEvt.drop();
-
-        
     }
 
-    void PollingServer::recharging_ready()
-    {
+    void PollingServer::recharging_ready() {
         DBGENTER(_SERVER_DBG_LEV);
 
         status = READY;
         cap = Q;
         recharging_time = SIMUL.getTime() + P;
-        _rechargingEvt.post(recharging_time);               
+        _rechargingEvt.post(recharging_time);
         _dlineMissEvt.drop();
-//         _dlineMissEvt.setPriority(Event::_DEFAULT_PRIORITY + 2);
+        //         _dlineMissEvt.setPriority(Event::_DEFAULT_PRIORITY + 2);
         _dlineMissEvt.post(recharging_time);
-
-        
     }
 
-    void PollingServer::recharging_idle()
-    {
+    void PollingServer::recharging_idle() {
         status = IDLE;
         _dlineMissEvt.drop();
     }
 
-    Tick PollingServer::changeBudget(const Tick &n)
-    {
+    Tick PollingServer::changeBudget(const Tick &n) {
         Tick ret;
         DBGENTER(_SERVER_DBG_LEV);
-        
+
         if (n >= Q) {
             Q = n;
             ret = SIMUL.getTime();
-        }
-        else if (n > 0) {
+        } else if (n > 0) {
             Q = n;
             ret = recharging_time;
         }
-        
+
         return ret;
     }
 
-}
+} // namespace RTSim

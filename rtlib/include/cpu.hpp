@@ -302,8 +302,7 @@ namespace RTSim {
         /// @return a copy of all OPPs higher than *or equal to* the given one
         std::vector<OPP> getHigherOPPs(size_t opp_index) const {
             assert(opp_index < getOPPsize());
-            std::vector<OPP> slice(_opps.cbegin() + opp_index,
-                                   _opps.cend());
+            std::vector<OPP> slice(_opps.cbegin() + opp_index, _opps.cend());
             return slice;
         }
 
@@ -419,7 +418,10 @@ namespace RTSim {
     public:
         /// @todo: documentation
         CPU(const std::string &name, CPUIsland *island) :
-            Entity(name), _index(0), _workload("idle"), _island(nullptr) {
+            Entity(name),
+            _index(0),
+            _workload("idle"),
+            _island(nullptr) {
             setIsland(island);
         }
 
@@ -693,7 +695,6 @@ namespace RTSim {
         /// only to the island power consumption
         watt_type getPowerByOPP(size_t opp_index,
                                 const std::string &workload) const {
-
             auto island = getIsland();
             if (!island)
                 return 0;
@@ -1164,16 +1165,18 @@ namespace RTSim {
     };
 
     inline uniformCPUFactory::uniformCPUFactory(std::string names[], int n) :
-        _count(0), _index(0), _names(n) {
+        _count(0),
+        _index(0),
+        _names(n) {
         for (size_t i = 0; i < _names.size(); ++i) {
             _names[i] = names[i];
         }
     }
 
     inline CPU *uniformCPUFactory::createCPU(const std::string &name,
-                                      const std::vector<volt_type> &V,
-                                      const std::vector<freq_type> &F,
-                                      CPUModel *pm) {
+                                             const std::vector<volt_type> &V,
+                                             const std::vector<freq_type> &F,
+                                             CPUModel *pm) {
         CPU *c = nullptr;
 
         if (_count >= _names.size()) {
@@ -1235,7 +1238,7 @@ namespace RTSim {
         /// The list of CPUs to choose from. It behaves like a FIFO.
         std::queue<CPU *> _cpus;
     };
-}
+} // namespace RTSim
 
 namespace RTSim {
     // using CPU_BL = CPU;

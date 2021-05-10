@@ -21,7 +21,7 @@
 #include <resmanager.hpp>
 #include <scheduler.hpp>
 
-#define _PIRESMAN_DBG_LEV  "piresman"
+#define _PIRESMAN_DBG_LEV "piresman"
 
 namespace RTSim {
 
@@ -38,18 +38,17 @@ namespace RTSim {
        changing the priority of a task.
     */
     class PIRManager : public ResManager {
-//         Scheduler *_sched;
+        //         Scheduler *_sched;
     public:
-
         /**
          * Constructor
          */
         PIRManager(const std::string &n = "");
-  
+
         /**
          * Sets the scheduler for this resmanager
          */
-//         void setScheduler(Scheduler *s);
+        //         void setScheduler(Scheduler *s);
 
         /**
          * @todo clear the maps!!
@@ -62,20 +61,21 @@ namespace RTSim {
            Returns true if the resource can be locked, false otherwise
            (in such a case, the task should be blocked)
          */
-        bool request(AbsRTTask *t, Resource *r, int n=1) override;
-        
+        bool request(AbsRTTask *t, Resource *r, int n = 1) override;
+
         /**
            Releases the resource.
          */
-        void release(AbsRTTask *t, Resource *r, int n=1) override;
+        void release(AbsRTTask *t, Resource *r, int n = 1) override;
 
     private:
-        /// correspondence task / priority 
+        /// correspondence task / priority
         typedef map<std::string, int> PRIORITY_MAP;
-        
-        /// Blocked tasks, ordered by priority. 
+
+        /// Blocked tasks, ordered by priority.
         /// There is one such queue for each resource
-        typedef priority_list<TaskModel *, TaskModel::TaskModelCmp> BLOCKED_QUEUE;
+        typedef priority_list<TaskModel *, TaskModel::TaskModelCmp>
+            BLOCKED_QUEUE;
 
         // Stores the old task priorities
         map<AbsRTTask *, PRIORITY_MAP> oldPriorities;
@@ -83,6 +83,6 @@ namespace RTSim {
         // stores the blocked tasks for each resource, ordered by priority
         map<string, BLOCKED_QUEUE> blocked;
     };
-}
+} // namespace RTSim
 
 #endif

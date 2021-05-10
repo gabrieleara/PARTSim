@@ -21,11 +21,11 @@
 #include <simul.hpp>
 #include <strtoken.hpp>
 
+#include <exeinstr.hpp>
+#include <assert.h>
 #include <cpu.hpp>
 #include <exeinstr.hpp>
 #include <task.hpp>
-#include <assert.h>
-#include "exeinstr.hpp"
 
 namespace RTSim {
 
@@ -37,11 +37,10 @@ namespace RTSim {
     using std::unique_ptr;
     using std::vector;
 
-    ExecInstr::ExecInstr(Task *f,
-                         unique_ptr<RandomVar> c,
-                         const string &wl,
+    ExecInstr::ExecInstr(Task *f, unique_ptr<RandomVar> c, const string &wl,
                          const string &n) :
-        Instr(f, n), isBegOfInstr(false),
+        Instr(f, n),
+        isBegOfInstr(false),
         cost(std::move(c)),
         workload(wl),
         execdTime(0),
@@ -49,115 +48,102 @@ namespace RTSim {
         actCycles(0),
         lastTime(0),
         executing(false),
-        _endEvt(this) 
-    {
-        DBGTAG(_INSTR_DBG_LEV,"ExecInstr constructor");
-        cout << "wl: " << wl<<endl;
+        _endEvt(this) {
+        DBGTAG(_INSTR_DBG_LEV, "ExecInstr constructor");
+        cout << "wl: " << wl << endl;
     }
 
-    
-    ExecInstr::ExecInstr(const ExecInstr &other) : 
-        Instr(other), isBegOfInstr(false),
+    ExecInstr::ExecInstr(const ExecInstr &other) :
+        Instr(other),
+        isBegOfInstr(false),
         cost(other.cost->clone()),
         execdTime(0),
         currentCost(0),
         actCycles(0),
         lastTime(0),
         executing(false),
-        _endEvt(this)
-    {
+        _endEvt(this) {
         DBGTAG(_INSTR_DBG_LEV, "ExecInstr copy constructor");
     }
 
-    
-    ExecInstr::~ExecInstr()
-    {
+    ExecInstr::~ExecInstr() {
         DBGTAG(_INSTR_DBG_LEV, "ExecInstr::~ExecInstr() called");
-    }    
-    
+    }
 
-    Instr *ExecInstr::createInstance(const vector<string> &par)
-    {
+    Instr *ExecInstr::createInstance(const vector<string> &par) {
         Instr *temp = 0;
 
         Task *task = dynamic_cast<Task *>(Entity::_find(par[par.size() - 1]));
-        //if (isdigit((par[0].c_str())[0])) {
+        // if (isdigit((par[0].c_str())[0])) {
         if (isdigit(par[0][0])) {
             temp = new FixedInstr(task, atoi(par[0].c_str()));
-        }
-        else {
+        } else {
             string token = get_token(par[0]);
             string p = get_param(par[0]);
             vector<string> parms = split_param(p);
 
-            unique_ptr<RandomVar> var(FACT(RandomVar).create(token,parms));
-    
-            if (var.get() == 0) throw ParseExc("ExecInstr", par[0]);
-            
+            unique_ptr<RandomVar> var(FACT(RandomVar).create(token, parms));
+
+            if (var.get() == 0)
+                throw ParseExc("ExecInstr", par[0]);
+
             temp = new ExecInstr(task, std::move(var));
         }
         return temp;
     }
 
-    void ExecInstr::newRun() 
-    {
+    void ExecInstr::newRun() {
         actCycles = lastTime = 0;
         isBegOfInstr = true;
         execdTime = 0;
         executing = false;
     }
 
-    void ExecInstr::endRun() 
-    {
+    void ExecInstr::endRun() {
         _endEvt.drop();
     }
 
-    Tick ExecInstr::getExecTime() const 
-    {
+    Tick ExecInstr::getExecTime() const {
         Tick t = SIMUL.getTime();
-        if (executing) return (execdTime + t - lastTime);
-        else return execdTime;
+        if (executing)
+            return (execdTime + t - lastTime);
+        else
+            return execdTime;
     }
 
-    Tick ExecInstr::getDuration() const 
-    { 
-        return (Tick)cost->get();
+    Tick ExecInstr::getDuration() const {
+        return (Tick) cost->get();
     }
 
-    Tick ExecInstr::getWCET() const throw(RandomVar::MaxException)
-    {
-      Tick wcet;
-      // todo code not flexible and only applies to Uniform distrib
-      if (dynamic_cast<UniformVar*>(cost.get()) != NULL)
-        wcet = (Tick) cost->get();
-      else
-        wcet = (Tick) cost->getMaximum();
+    Tick ExecInstr::getWCET() const throw(RandomVar::MaxException) {
+        Tick wcet;
+        // todo code not flexible and only applies to Uniform distrib
+        if (dynamic_cast<UniformVar *>(cost.get()) != NULL)
+            wcet = (Tick) cost->get();
+        else
+            wcet = (Tick) cost->getMaximum();
         return wcet;
     }
 
     // Attention: here you decide when the WCET ends!
-    void ExecInstr::schedule() throw (InstrExc)
-    {
+    void ExecInstr::schedule() throw(InstrExc) {
         DBGENTER(_INSTR_DBG_LEV);
 
         Tick t = SIMUL.getTime();
         lastTime = t;
         executing = true;
 
-        if (isBegOfInstr) {  
-            DBGPRINT_3("Initializing ExecInstr ",
-                       getName(), 
+        if (isBegOfInstr) {
+            DBGPRINT_3("Initializing ExecInstr ", getName(),
                        " at first schedule.");
-            DBGPRINT_2("Time executed during the prev. instance: ", 
-                       execdTime);
+            DBGPRINT_2("Time executed during the prev. instance: ", execdTime);
 
             execdTime = 0;
             actCycles = 0;
             isBegOfInstr = false;
             currentCost = Tick(cost->get());
 
-            DBGPRINT_2("Time to execute for this instance: ",
-                       currentCost);
+            DBGPRINT_2("Time to execute for this instance: ", currentCost);
         }
 
         CPU *p = _father->getCPU();
@@ -167,24 +153,28 @@ namespace RTSim {
 
         double currentSpeed = p->getSpeed();
 
-
         DBGPRINT_2("father ", _father->toString());
         DBGPRINT_2("CPU ", p->getName());
-        DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles, "Current speed ", currentSpeed);
-        DBGPRINT_4(" result ", ((double)currentCost - actCycles)/currentSpeed, " to tick ", ceil( ((double)currentCost - actCycles)/currentSpeed) );
+        DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles,
+                   "Current speed ", currentSpeed);
+        DBGPRINT_4(" result ",
+                   ((double) currentCost - actCycles) / currentSpeed,
+                   " to tick ",
+                   ceil(((double) currentCost - actCycles) / currentSpeed));
         Tick tmp = 0;
-        if (((double)currentCost) > actCycles * currentSpeed)
-            tmp = (Tick) ceil( ((double)currentCost - actCycles * currentSpeed)/currentSpeed);
+        if (((double) currentCost) > actCycles * currentSpeed)
+            tmp =
+                (Tick) ceil(((double) currentCost - actCycles * currentSpeed) /
+                            currentSpeed);
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 
-        DBGPRINT("Setting endEvt for " << _father->toString() << " at t=" << t+tmp);
+        DBGPRINT("Setting endEvt for " << _father->toString()
+                                       << " at t=" << t + tmp);
         DBGPRINT("End of ExecInstr::schedule() ");
-        
     }
 
-    void ExecInstr::deschedule()
-    {
+    void ExecInstr::deschedule() {
         Tick t = SIMUL.getTime();
 
         DBGENTER(_INSTR_DBG_LEV);
@@ -194,15 +184,15 @@ namespace RTSim {
 
         if (executing) {
             CPU *p = _father->getOldCPU();
-            if (!dynamic_cast<CPU *>(p)) 
-                throw InstrExc("No CPU!", 
-                               "ExeInstr::deschedule()");
+            if (!dynamic_cast<CPU *>(p))
+                throw InstrExc("No CPU!", "ExeInstr::deschedule()");
 
             p->setWorkload("idle");
 
             double currentSpeed = p->getSpeed();
 
-            actCycles += ((double)(t - lastTime))*currentSpeed;// number of cycles
+            actCycles +=
+                ((double) (t - lastTime)) * currentSpeed; // number of cycles
             execdTime += (t - lastTime); // number of time ticks
             lastTime = t;
         }
@@ -210,12 +200,11 @@ namespace RTSim {
     }
 
     // void ExecInstr::setTrace(Trace *t) {
-    //     attach_stat(*t, _endEvt); 
+    //     attach_stat(*t, _endEvt);
     //     //_endEvt.addTrace(t);
     // }
 
-    void ExecInstr::onEnd() 
-    {
+    void ExecInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
         DBGPRINT("Ending ExecInstr named: " << getName());
 
@@ -229,12 +218,10 @@ namespace RTSim {
 
         DBGPRINT("internal data set... now calling the _father->onInstrEnd()");
 
-        _father->onInstrEnd();        
+        _father->onInstrEnd();
     }
 
-
-    void ExecInstr::reset() 
-    {
+    void ExecInstr::reset() {
         DBGENTER(_INSTR_DBG_LEV);
 
         actCycles = lastTime = 0;
@@ -248,41 +235,37 @@ namespace RTSim {
     void ExecInstr::refreshExec(double oldSpeed, double newSpeed) {
         Tick t = SIMUL.getTime();
         _endEvt.drop();
-        actCycles += ((double)(t - lastTime))*oldSpeed;
+        actCycles += ((double) (t - lastTime)) * oldSpeed;
         execdTime += (t - lastTime);
         lastTime = t;
 
-        //if (isBegOfInstr)
+        // if (isBegOfInstr)
         //    currentCost = getDuration();
 
         Tick tmp = 0;
-        if (((double)currentCost) > actCycles)
-            tmp = (Tick) ceil ((double(currentCost) - actCycles) / newSpeed);
-            //tmp = (Tick) ceil (double(currentCost - execdTime) / newSpeed);
-            // cost->setMaximum(double(currentCost - execdTime));
+        if (((double) currentCost) > actCycles)
+            tmp = (Tick) ceil((double(currentCost) - actCycles) / newSpeed);
+        // tmp = (Tick) ceil (double(currentCost - execdTime) / newSpeed);
+        // cost->setMaximum(double(currentCost - execdTime));
 
         assert(tmp >= 0);
-        printf("endEvt at %f + [%f-%f]/%f=%f\n", double(t), (double)currentCost, (double)actCycles, newSpeed, (double)tmp);
+        printf("endEvt at %f + [%f-%f]/%f=%f\n", double(t),
+               (double) currentCost, (double) actCycles, newSpeed,
+               (double) tmp);
         //_endEvt.post(t + tmp);
         _endEvt.post(t + Tick(double(currentCost) / newSpeed));
     }
 
     /*---------------------------- */
 
-    FixedInstr::FixedInstr(Task *t,
-                           Tick duration,
-                           const string &wl,
+    FixedInstr::FixedInstr(Task *t, Tick duration, const string &wl,
                            const std::string &n) :
-        ExecInstr(t,
-                  unique_ptr<DeltaVar>(new DeltaVar(duration)),
-                  wl,
-                  n)
-    {}
+        ExecInstr(t, unique_ptr<DeltaVar>(new DeltaVar(duration)), wl, n) {}
 
-    unique_ptr<Instr> FixedInstr::createInstance(const vector<string> &par)
-    {
+    unique_ptr<Instr> FixedInstr::createInstance(const vector<string> &par) {
         Task *task = dynamic_cast<Task *>(Entity::_find(par[par.size() - 1]));
         string workload = par.size() <= 2 ? "" : par[1];
-        return unique_ptr<FixedInstr>(new FixedInstr(task, stoi(par[0]), workload));
+        return unique_ptr<FixedInstr>(
+            new FixedInstr(task, stoi(par[0]), workload));
     }
-}
+} // namespace RTSim

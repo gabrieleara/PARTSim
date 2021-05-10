@@ -14,11 +14,11 @@
 #include <strtoken.hpp>
 
 #include <exeinstr.hpp>
-#include <threinstr.hpp>
-#include <schedinstr.hpp>
-#include <waitinstr.hpp>
-#include <suspend_instr.hpp>
 #include <reginstr.hpp>
+#include <schedinstr.hpp>
+#include <suspend_instr.hpp>
+#include <threinstr.hpp>
+#include <waitinstr.hpp>
 
 namespace RTSim {
     const Instr::BASE_KEY_TYPE ExecName("delay");
@@ -35,42 +35,40 @@ namespace RTSim {
 
     const Instr::BASE_KEY_TYPE SuspendName("suspend");
 
-    /** 
+    /**
         This namespace should never be used by the user. Contains
         functions to initialize the abstract factory that builds
         instructions @see Task::insertCode()
-    */ 
-    namespace __instr_stub
-    {
+    */
+    namespace __instr_stub {
         static registerInFactory<Instr, ExecInstr, Instr::BASE_KEY_TYPE>
-        registerMe1(ExecName);
-                
+            registerMe1(ExecName);
+
         static registerInFactory<Instr, FixedInstr, Instr::BASE_KEY_TYPE>
-        registerMe2(FixedName);
+            registerMe2(FixedName);
 
         static registerInFactory<Instr, WaitInstr, Instr::BASE_KEY_TYPE>
-        registerWait1(WaitName1);
-                
+            registerWait1(WaitName1);
+
         static registerInFactory<Instr, WaitInstr, Instr::BASE_KEY_TYPE>
-        registerWait2(WaitName2);
-                
+            registerWait2(WaitName2);
+
         static registerInFactory<Instr, SignalInstr, Instr::BASE_KEY_TYPE>
-        registerSignal1(SignalName1);
-                
+            registerSignal1(SignalName1);
+
         static registerInFactory<Instr, SignalInstr, Instr::BASE_KEY_TYPE>
-        registerSignal2(SignalName2);
+            registerSignal2(SignalName2);
 
         static registerInFactory<Instr, ThreInstr, Instr::BASE_KEY_TYPE>
-        registerThre(ThreName);
-                
+            registerThre(ThreName);
+
         static registerInFactory<Instr, SchedInstr, Instr::BASE_KEY_TYPE>
-        registerSchedule(ScheduleName);
+            registerSchedule(ScheduleName);
 
         static registerInFactory<Instr, SuspendInstr, Instr::BASE_KEY_TYPE>
-        registerSuspend(SuspendName);
-    }
+            registerSuspend(SuspendName);
+    } // namespace __instr_stub
 
     void __reginstr_init() {}
 
 } // namespace RTSim
-

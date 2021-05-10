@@ -23,12 +23,12 @@
 namespace MetaSim {
     /**
        \ingroup metasim_util
-     
+
        Helper class used to manipulate the debug output.
     */
     class DebugStream {
     private:
-        std::ostream* _os;
+        std::ostream *_os;
         bool _autodelete;
         bool _isDebug;
         bool _isDebugAll;
@@ -42,12 +42,12 @@ namespace MetaSim {
 
     public:
         DebugStream();
-        ~DebugStream(); 
+        ~DebugStream();
 
         /**
          * Set the debug stream.
          */
-        void setStream(std::ostream& o);
+        void setStream(std::ostream &o);
 
         /**
          * Open the file specified by the string filename and set it as a
@@ -68,30 +68,30 @@ namespace MetaSim {
 
         /**
          *  Enters in the specified debug level. From this point until
-         *  the next call to enter(), every output on the debug stream 
+         *  the next call to enter(), every output on the debug stream
          *  is considered belonging to the current debug level.
          */
         void enter(std::string s);
 
         /**
          *  Enters in the specified debug level and output the header string.
-         *  From this point until the next call to enter(), every output on the 
-         *  debug stream is considered in the the current debug level. 
+         *  From this point until the next call to enter(), every output on the
+         *  debug stream is considered in the the current debug level.
          */
         void enter(std::string s, std::string header);
 
         /**
          *  Exits from the current debug level.
-         */  
+         */
         void exit();
 
         /**
-         * Enables output from tick t 
+         * Enables output from tick t
          */
         void setTransitory(Tick t);
 
-        /** 
-         * Enables output from tick t1 to t2 
+        /**
+         * Enables output from tick t1 to t2
          */
         void setTransitory(Tick t1, Tick t2);
 
@@ -104,8 +104,7 @@ namespace MetaSim {
 
     /** Template definition of operator << on DebugStream */
     template <class T>
-    inline DebugStream& operator<<(DebugStream &s, T obj) 
-    {
+    inline DebugStream &operator<<(DebugStream &s, T obj) {
         if (s.filter()) {
             s.indent();
             s.getStream() << obj;
@@ -113,13 +112,14 @@ namespace MetaSim {
         return s;
     }
 
-    /** The following specialization is useful for intercepting the endl 
+    /** The following specialization is useful for intercepting the endl
         modifier and properly handle the indenting. */
-    inline DebugStream& operator<<(DebugStream &s, 
-                                   DebugStream& (*f)(DebugStream&)) 
-    {
-        if (s.filter()) return f(s);
-        else return s;
+    inline DebugStream &operator<<(DebugStream &s,
+                                   DebugStream &(*f)(DebugStream &) ) {
+        if (s.filter())
+            return f(s);
+        else
+            return s;
     }
 } // namespace MetaSim
 
@@ -128,16 +128,15 @@ namespace std {
        \ingroup metasim_util
 
        Specialization of endl: must be in namespace std
-       to override the standard endl() function 
+       to override the standard endl() function
     */
-    inline MetaSim::DebugStream& endl(MetaSim::DebugStream &s) 
-    {
+    inline MetaSim::DebugStream &endl(MetaSim::DebugStream &s) {
         if (s.filter()) {
             s.resetIndent();
             s.getStream() << std::endl;
         }
         return s;
     }
-}
+} // namespace std
 
 #endif // __DEBUGSTREAM_HPP__

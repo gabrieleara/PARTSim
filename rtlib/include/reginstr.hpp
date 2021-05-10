@@ -5,6 +5,6 @@ namespace RTSim {
     void __reginstr_init();
     void __regsched_init();
     void __regtask_init();
-}
+} // namespace RTSim
 
 #endif

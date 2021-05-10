@@ -108,6 +108,3 @@ TEST_CASE("Thresholds 3 tasks", "[thresholds, test2]")
 
     SIMUL.endSingleRun();
 }
-
-
-

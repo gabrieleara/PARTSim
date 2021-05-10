@@ -17,10 +17,9 @@
 #include <debugstream.hpp>
 #include <simul.hpp>
 
-
 namespace MetaSim {
 
-    DebugStream::DebugStream() : 
+    DebugStream::DebugStream() :
         _os(&std::cerr),
         _autodelete(false),
         _isDebug(false),
@@ -30,63 +29,59 @@ namespace MetaSim {
         _dbgLevels(),
         _dbgStack(),
         _t1(0),
-        _t2(MAXTICK)
-    {    
+        _t2(MAXTICK) {}
+
+    DebugStream::~DebugStream() {
+        if (_autodelete)
+            delete _os;
     }
 
-    DebugStream::~DebugStream()
-    { 
-        if (_autodelete) delete _os;
-    }
-
-    void DebugStream::setStream(std::ostream& o)
-    {
-        if (_autodelete) delete _os;
+    void DebugStream::setStream(std::ostream &o) {
+        if (_autodelete)
+            delete _os;
         _autodelete = false;
-        _os = &o; 
+        _os = &o;
     }
 
-    void DebugStream::setStream(const char *filename)
-    {
-        if (_autodelete) delete _os;
+    void DebugStream::setStream(const char *filename) {
+        if (_autodelete)
+            delete _os;
         _autodelete = true;
-        _os = new std::ofstream(filename); 
+        _os = new std::ofstream(filename);
     }
 
-    void DebugStream::enable(std::string s) 
-    {
-        if (s == "All") _isDebugAll = true;
+    void DebugStream::enable(std::string s) {
+        if (s == "All")
+            _isDebugAll = true;
         else {
             _dbgLevels.push_back(s);
         }
     }
 
-    void DebugStream::disable(std::string s) 
-    {
-        if (s == "All") _isDebugAll = false;
+    void DebugStream::disable(std::string s) {
+        if (s == "All")
+            _isDebugAll = false;
         else {
-            std::vector<std::string>::iterator i = 
-                find(_dbgLevels.begin(),_dbgLevels.end(),s);
-            if (i != _dbgLevels.end()) _dbgLevels.erase(i);
+            std::vector<std::string>::iterator i =
+                find(_dbgLevels.begin(), _dbgLevels.end(), s);
+            if (i != _dbgLevels.end())
+                _dbgLevels.erase(i);
         }
     }
 
-    void DebugStream::enter(std::string s) 
-    {
+    void DebugStream::enter(std::string s) {
         _dbgStack.push_back(_isDebug);
-        std::vector<std::string>::iterator i = 
+        std::vector<std::string>::iterator i =
             find(_dbgLevels.begin(), _dbgLevels.end(), s);
-        if (i == _dbgLevels.end()
-            || (SIMUL.getTime() < _t1) 
-            || (SIMUL.getTime() > _t2)) 
+        if (i == _dbgLevels.end() || (SIMUL.getTime() < _t1) ||
+            (SIMUL.getTime() > _t2))
             _isDebug = false;
         else
             _isDebug = true;
         _isIndenting = true;
     }
 
-    void DebugStream::enter(std::string s, std::string header) 
-    {
+    void DebugStream::enter(std::string s, std::string header) {
         enter(s);
         if (filter()) {
             indent();
@@ -96,8 +91,7 @@ namespace MetaSim {
         }
     }
 
-    void DebugStream::exit() 
-    {
+    void DebugStream::exit() {
         if (filter()) {
             _indentLevel--;
         }
@@ -106,41 +100,36 @@ namespace MetaSim {
         _isIndenting = true;
     }
 
-    void DebugStream::setTransitory(Tick t)
-    {
+    void DebugStream::setTransitory(Tick t) {
         _t1 = t;
     }
 
-    void DebugStream::setTransitory(Tick t1, Tick t2)
-    {
+    void DebugStream::setTransitory(Tick t1, Tick t2) {
         _t1 = t1;
         _t2 = t2;
     }
 
-    bool DebugStream::filter() const
-    { 
+    bool DebugStream::filter() const {
         if (_isDebug || _isDebugAll)
             return true;
-        else return false;
+        else
+            return false;
     }
 
-    void DebugStream::resetIndent() 
-    { 
-        _isIndenting = true; 
-    } 
+    void DebugStream::resetIndent() {
+        _isIndenting = true;
+    }
 
-    void DebugStream::indent() 
-    { 
+    void DebugStream::indent() {
         if (_isIndenting) {
-            for (int i = 0; i < _indentLevel; ++i) 
+            for (int i = 0; i < _indentLevel; ++i)
                 (*_os) << "  ";
             _isIndenting = false;
-        } 
+        }
     }
 
-    std::ostream& DebugStream::getStream() 
-    { 
-        return *_os; 
+    std::ostream &DebugStream::getStream() {
+        return *_os;
     }
 
 } // namespace MetaSim

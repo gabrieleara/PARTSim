@@ -33,53 +33,41 @@ namespace RTSim {
 
     using namespace MetaSim;
 
-    ResManager::ResManager(const string &n) : Entity(n), 
-                                              _kernel(0), 
-                                              _res()
-    {
-    }
+    ResManager::ResManager(const string &n) : Entity(n), _kernel(0), _res() {}
 
-    ResManager::~ResManager()
-    {
-        std::vector<Resource *>::iterator i= _res.begin();
-        for (;i != _res.end();i++) delete *i;
+    ResManager::~ResManager() {
+        std::vector<Resource *>::iterator i = _res.begin();
+        for (; i != _res.end(); i++)
+            delete *i;
 
         // delete the resource list
         _res.clear();
     }
 
-    void ResManager::setKernel(AbsKernel *k, Scheduler *s) 
-    {
+    void ResManager::setKernel(AbsKernel *k, Scheduler *s) {
         _kernel = k;
         _sched = s;
     }
 
-    void ResManager::addResource(const string &name, int n)
-    { 
+    void ResManager::addResource(const string &name, int n) {
         Resource *r = new Resource(name, n);
         _res.push_back(r);
     }
 
-    bool ResManager::request(AbsRTTask *t, const string &name, int n) 
-    {
+    bool ResManager::request(AbsRTTask *t, const string &name, int n) {
         DBGENTER(_RESMAN_DBG_LEV);
 
-        Resource *r = dynamic_cast<Resource *>( Entity::_find(name) );
-        bool ret = request(t,r,n);
-
-        
+        Resource *r = dynamic_cast<Resource *>(Entity::_find(name));
+        bool ret = request(t, r, n);
 
         return ret;
     }
 
-    void ResManager::release(AbsRTTask *t, const string &name, int n)
-    {
+    void ResManager::release(AbsRTTask *t, const string &name, int n) {
         DBGENTER(_RESMAN_DBG_LEV);
 
-        Resource *r = dynamic_cast<Resource *>( Entity::_find(name) );
-        release(t,r,n);
-        
-        
+        Resource *r = dynamic_cast<Resource *>(Entity::_find(name));
+        release(t, r, n);
     }
 
-}
+} // namespace RTSim

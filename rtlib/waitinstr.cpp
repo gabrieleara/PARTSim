@@ -22,116 +22,119 @@ namespace RTSim {
     using std::unique_ptr;
     using std::vector;
 
-    WaitInstr::WaitInstr(Task * f, const string &r, int nr, const string &n)
-        : Instr(f, n), _res(r), _endEvt(this), 
-          _waitEvt(f, this), _numberOfRes(nr) 
-    {}
+    WaitInstr::WaitInstr(Task *f, const string &r, int nr, const string &n) :
+        Instr(f, n),
+        _res(r),
+        _endEvt(this),
+        _waitEvt(f, this),
+        _numberOfRes(nr) {}
 
-    WaitInstr::WaitInstr(const WaitInstr &other)
-        : Instr(other), _res(other.getResource()), _endEvt(this), _waitEvt(other.getTask(), this), _numberOfRes(other.getNumOfResources())
-    {}
+    WaitInstr::WaitInstr(const WaitInstr &other) :
+        Instr(other),
+        _res(other.getResource()),
+        _endEvt(this),
+        _waitEvt(other.getTask(), this),
+        _numberOfRes(other.getNumOfResources()) {}
 
-    unique_ptr<WaitInstr> WaitInstr::createInstance(vector<string> &par)
-    {
-        unique_ptr<WaitInstr> ptr(new WaitInstr(dynamic_cast<Task *>(Entity::_find(par[1])), par[0]));
-        
+    unique_ptr<WaitInstr> WaitInstr::createInstance(vector<string> &par) {
+        unique_ptr<WaitInstr> ptr(
+            new WaitInstr(dynamic_cast<Task *>(Entity::_find(par[1])), par[0]));
+
         return ptr;
     }
 
-    void WaitInstr::endRun() 
-    {
-        _endEvt.drop(); 
+    void WaitInstr::endRun() {
+        _endEvt.drop();
         _waitEvt.drop();
     }
 
-    void WaitInstr::schedule()
-    {
+    void WaitInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
         DBGPRINT("Scheduling WaitInstr named: " << getName());
 
         _endEvt.post(SIMUL.getTime());
     }
 
-    void WaitInstr::deschedule()
-    {
+    void WaitInstr::deschedule() {
         _endEvt.drop();
     }
 
-    // void WaitInstr::setTrace(Trace *t) 
+    // void WaitInstr::setTrace(Trace *t)
     // {
-    //     _endEvt.addTrace(t); 
+    //     _endEvt.addTrace(t);
     //     _waitEvt.addTrace(t);
     // }
 
-    void WaitInstr::onEnd() 
-    {
+    void WaitInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
         _father->onInstrEnd();
 
         RTKernel *k = dynamic_cast<RTKernel *>(_father->getKernel());
 
-        if (k == NULL) throw BaseExc("Kernel not found!");
+        if (k == NULL)
+            throw BaseExc("Kernel not found!");
 
         k->requestResource(_father, _res, _numberOfRes);
 
         _waitEvt.process();
     }
 
-    SignalInstr::SignalInstr(Task *f, const string &r, int nr, const string &n)
-        : Instr(f, n), _res(r), _endEvt(this), 
-          _signalEvt(f, this), _numberOfRes(nr) 
-    {}
+    SignalInstr::SignalInstr(Task *f, const string &r, int nr,
+                             const string &n) :
+        Instr(f, n),
+        _res(r),
+        _endEvt(this),
+        _signalEvt(f, this),
+        _numberOfRes(nr) {}
 
-    SignalInstr::SignalInstr(const SignalInstr &other)
-        : Instr(other), _res(other.getResource()), _endEvt(this), 
-          _signalEvt(other.getTask(), this), _numberOfRes(other.getNumOfResources()) 
-    {}
+    SignalInstr::SignalInstr(const SignalInstr &other) :
+        Instr(other),
+        _res(other.getResource()),
+        _endEvt(this),
+        _signalEvt(other.getTask(), this),
+        _numberOfRes(other.getNumOfResources()) {}
 
-    
-    unique_ptr<SignalInstr> SignalInstr::createInstance(vector<string> &par)
-    {
-        unique_ptr<SignalInstr> ptr(new SignalInstr(dynamic_cast<Task *>(Entity::_find(par[1])), par[0]));
+    unique_ptr<SignalInstr> SignalInstr::createInstance(vector<string> &par) {
+        unique_ptr<SignalInstr> ptr(new SignalInstr(
+            dynamic_cast<Task *>(Entity::_find(par[1])), par[0]));
         return ptr;
     }
 
-    void SignalInstr::endRun() 
-    {
+    void SignalInstr::endRun() {
         _endEvt.drop();
         _signalEvt.drop();
     }
 
-    void SignalInstr::schedule()
-    {
-        _endEvt.post( SIMUL.getTime()); 
+    void SignalInstr::schedule() {
+        _endEvt.post(SIMUL.getTime());
     }
 
-    void SignalInstr::deschedule()
-    {
+    void SignalInstr::deschedule() {
         _endEvt.drop();
     }
 
-    // void SignalInstr::setTrace(Trace *t) 
+    // void SignalInstr::setTrace(Trace *t)
     // {
     //     _endEvt.addTrace(t);
     //     _signalEvt.addTrace(t);
     // }
 
-    void SignalInstr::onEnd() 
-    {
+    void SignalInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
-        _endEvt.drop();               
-        _signalEvt.process();         
-        _father->onInstrEnd();        
+        _endEvt.drop();
+        _signalEvt.process();
+        _father->onInstrEnd();
 
         RTKernel *k = dynamic_cast<RTKernel *>(_father->getKernel());
 
         if (k == 0) {
             throw BaseExc("SignalInstr has no kernel set!");
         }
-        
-        else k->releaseResource(_father, _res, _numberOfRes); 
+
+        else
+            k->releaseResource(_father, _res, _numberOfRes);
     }
 
-}
+} // namespace RTSim

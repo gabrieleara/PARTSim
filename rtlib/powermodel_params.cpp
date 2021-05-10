@@ -1,8 +1,8 @@
 #include <sstream>
 
-#include "consts.hpp"
+#include <consts.hpp>
+#include <powermodel_params.hpp>
 #include <memory.hpp>
-#include "powermodel_params.hpp"
 
 namespace RTSim {
 
@@ -153,8 +153,8 @@ namespace RTSim {
     }
 
     std::unique_ptr<CPUModelParams>
-    createCPUModelParams(CPUModelParams::key_type k, csv::CSVDocument &doc,
-                         size_t rix) {
+        createCPUModelParams(CPUModelParams::key_type k, csv::CSVDocument &doc,
+                             size_t rix) {
         if (k == CPUModelMinimalParams::key)
             return uniqueFrom<CPUModelMinimalParams>(doc, rix);
 
@@ -171,7 +171,7 @@ namespace RTSim {
     }
 
     std::unique_ptr<CPUModelParams>
-    createCPUModelParams(CPUModelParams::key_type k, yaml::Object_ptr ptr) {
+        createCPUModelParams(CPUModelParams::key_type k, yaml::Object_ptr ptr) {
         if (k == CPUModelMinimalParams::key)
             return uniqueFrom<CPUModelMinimalParams>(ptr);
 

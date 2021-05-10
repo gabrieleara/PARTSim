@@ -13,71 +13,75 @@
  ***************************************************************************/
 #ifndef __JTRACE_HPP__
 #define __JTRACE_HPP__
- 
+
 #include <fstream>
 #include <iostream>
 #include <string>
- 
+
 #include <baseexc.hpp>
 #include <basetype.hpp>
 #include <event.hpp>
-#include <trace.hpp>
 #include <rttask.hpp>
+#include <trace.hpp>
 
 #include <traceevent.hpp>
- 
+
 #define _JTRACE_DBG_LEV "JavaTracer"
 
 namespace RTSim {
 
-  using namespace MetaSim;
+    using namespace MetaSim;
 
-  /* 
-     \ingroup util
+    /*
+       \ingroup util
 
-     The Trace Class!!
-     This is really a basic one, more complicated traces may be generated
-     if it is necessary; the trace file is coded so that it can be directly
-     fed into a Java interface, with no problems deriving from the
-     Big/Little endian issue
-   */
-  class JavaTrace: public virtual Trace {
-  public:
-    typedef enum {TRACE_UNKNOWN_ENDIAN,
-		  TRACE_BIG_ENDIAN,
-		  TRACE_LITTLE_ENDIAN} TRACE_ENDIANESS;
- 
-    static TRACE_ENDIANESS endianess;
-    static void probeEndianess(void);
+       The Trace Class!!
+       This is really a basic one, more complicated traces may be generated
+       if it is necessary; the trace file is coded so that it can be directly
+       fed into a Java interface, with no problems deriving from the
+       Big/Little endian issue
+     */
+    class JavaTrace : public virtual Trace {
+    public:
+        typedef enum {
+            TRACE_UNKNOWN_ENDIAN,
+            TRACE_BIG_ENDIAN,
+            TRACE_LITTLE_ENDIAN
+        } TRACE_ENDIANESS;
 
-    static string version;
- 
-  protected:
-    vector<TraceEvent*> data;
+        static TRACE_ENDIANESS endianess;
+        static void probeEndianess(void);
 
-    // Output file
-    int filenum;
+        static string version;
 
-    // The number of the traced events
-    unsigned long int counter, fileLimit;
+    protected:
+        vector<TraceEvent *> data;
 
-    vector<int> taskList;
+        // Output file
+        int filenum;
 
-  public:
-    JavaTrace(const char *name, bool tof = true,
-	      unsigned long int limit = 1000000);
-    virtual ~JavaTrace();
+        // The number of the traced events
+        unsigned long int counter, fileLimit;
 
-    virtual void close();
+        vector<int> taskList;
 
-    vector<TraceEvent*> getData() {return data;}
+    public:
+        JavaTrace(const char *name, bool tof = true,
+                  unsigned long int limit = 1000000);
+        virtual ~JavaTrace();
 
-    // The Little/Big Endian coding functions!
-    virtual void record(Event *e);
+        virtual void close();
 
-    void attachToTask(AbsRTTask &t) { }
-  };
+        vector<TraceEvent *> getData() {
+            return data;
+        }
 
-} // namespace RTSim  
+        // The Little/Big Endian coding functions!
+        virtual void record(Event *e);
 
-#endif                    
+        void attachToTask(AbsRTTask &t) {}
+    };
+
+} // namespace RTSim
+
+#endif

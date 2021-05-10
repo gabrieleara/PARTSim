@@ -38,24 +38,32 @@ namespace RTSim {
         MRTKernel &_kernel;
         CPU &_cpu;
         AbsRTTask *_task;
+
     public:
-        DispatchMultiEvt(MRTKernel &k, CPU &c, int prio) 
-            : Event(Event::_DEFAULT_PRIORITY + 10),
+        DispatchMultiEvt(MRTKernel &k, CPU &c, int prio) :
+            Event(Event::_DEFAULT_PRIORITY + 10),
             _kernel(k),
             _cpu(c),
-            _task(0) {};
-        CPU * getCPU() const { return &_cpu; }
-        void setTask(AbsRTTask *t) {_task = t; }
-        AbsRTTask *getTask() const { return _task; }
+            _task(0){};
+        CPU *getCPU() const {
+            return &_cpu;
+        }
+        void setTask(AbsRTTask *t) {
+            _task = t;
+        }
+        AbsRTTask *getTask() const {
+            return _task;
+        }
         void doit() override = 0;
         string toString() const override {
             std::stringstream ss;
-            ss << taskname(getTask()) << " " << getCPU()->getName() << " at " << getTime();
-            return ss.str(); 
+            ss << taskname(getTask()) << " " << getCPU()->getName() << " at "
+               << getTime();
+            return ss.str();
         }
     };
-    
-    /** 
+
+    /**
         This class models and event of "start of context switch". It
         serves to implement a context switch on a certain processor.
         Different from the BeginDispatchEvt for single processor
@@ -68,13 +76,13 @@ namespace RTSim {
         BeginDispatchMultiEvt(MRTKernel &k, CPU &c);
         void doit() override;
         string toString() const override {
-            std::stringstream ss ;
+            std::stringstream ss;
             ss << "BeginDMEvt " << DispatchMultiEvt::toString();
             return ss.str();
-        } 
+        }
     };
 
-    /** 
+    /**
         This class models and event of "start of context switch". It
         serves to implement a context switch on a certain processor.
         Different from the EndDispatchEvt for single processor
@@ -86,18 +94,18 @@ namespace RTSim {
         EndDispatchMultiEvt(MRTKernel &k, CPU &c);
         void doit() override;
         string toString() const override {
-            std::stringstream ss ;
+            std::stringstream ss;
             ss << "EndDMEvt " << DispatchMultiEvt::toString();
             return ss.str();
         }
     };
 
-    /** 
+    /**
         \ingroup kernel
-      
+
         An implementation of a real-time multi processor kernel with
         global scheduling. It contains:
- 
+
         - a pointer to the CPU factory used to create CPUs managed by
           the kernel;
 
@@ -110,9 +118,9 @@ namespace RTSim {
 
         - a map of pointers to CPU and task, which keeps the
           information about current task assignment to CPUs;
-        
+
         - the set of tasks handled by this kernel.
-      
+
         This implementation is quite general: it lets the user of this
         class the freedom to adopt any scheduler derived form
         Scheduler and a resorce manager derived from ResManager or no
@@ -121,15 +129,14 @@ namespace RTSim {
         to the instruction class to implement the correct duration of
         its execution by asking the kernel of its task the speed of
         the processor on whitch it's scheduled.
-      
+
         We will probably have to derive from this class to implement
         static partition and mixed task allocation to CPU.
-      
+
         @see absCPUFactory, Scheduler, ResManager, AbsRTTask
     */
     class MRTKernel : public RTKernel {
     protected:
-
         /// CPU Factory. Used in one of the constructors.
         absCPUFactory *_CPUFactory;
 
@@ -137,30 +144,30 @@ namespace RTSim {
         std::map<CPU *, AbsRTTask *> _m_currExe;
 
         /// Where the task was executing before being suspended
-        std::map<const AbsRTTask *, CPU*> _m_oldExe;
+        std::map<const AbsRTTask *, CPU *> _m_oldExe;
 
         /// This denotes where the task has been dispatched.  The set
         /// of dispatched tasks includes the set of executing tasks:
         /// first a task is dispatched, (but not executing yet) in the
         /// onBeginDispatchMulti. Then, in the onEndDispatchMulti, its
         /// execution starts on the processor.
-        std::map<const AbsRTTask *, CPU*> _m_dispatched;
+        std::map<const AbsRTTask *, CPU *> _m_dispatched;
 
         /// true is the CPU is on a context switch
-        std::map<CPU*, bool> _isContextSwitching;
+        std::map<CPU *, bool> _isContextSwitching;
 
         /// The BeginDispatchMultiEvt for every CPU
-        std::map<CPU*, BeginDispatchMultiEvt *> _beginEvt;
+        std::map<CPU *, BeginDispatchMultiEvt *> _beginEvt;
 
         /// The EndDispatchMultiEvt for every CPU
-        std::map<CPU*, EndDispatchMultiEvt *> _endEvt;
+        std::map<CPU *, EndDispatchMultiEvt *> _endEvt;
 
         /// the amount of delay due to migration (will become a
         /// RandomVar eventually).
-        Tick  _migrationDelay;
+        Tick _migrationDelay;
 
         /// set of servers. todo can be moved to mrtkernel
-        vector<CBServer*> _servers;
+        vector<CBServer *> _servers;
 
         void internalConstructor(int n);
 
@@ -174,48 +181,48 @@ namespace RTSim {
         typedef map<CPU *, AbsRTTask *>::iterator ITCPU;
 
         /**
-         * a CPU is considered free to use if it has no _m_currExe[] task mapped, and
-         * there are no _m_dispatched[] tasks on that CPU
+         * a CPU is considered free to use if it has no _m_currExe[] task
+         * mapped, and there are no _m_dispatched[] tasks on that CPU
          */
         ITCPU getNextFreeProc(ITCPU s, ITCPU e);
 
     public:
-
         /**
          * Constructor: needs to know which scheduler and CPU factory
          * the kernel want to use, and how many processor the system
          * is composed of.
          */
-        MRTKernel(Scheduler*, absCPUFactory*, int n=1,
+        MRTKernel(Scheduler *, absCPUFactory *, int n = 1,
                   const std::string &name = "");
 
         /**
          * Constructor: needs to know which scheduler the kernel want
          * to use, and from how many processor the system is composed.
          */
-        MRTKernel(Scheduler*, int n=1, const std::string &name = "");
+        MRTKernel(Scheduler *, int n = 1, const std::string &name = "");
 
         /**
          * Constructor: needs to know which scheduler the kernel want
          * to use and the processors
          */
-        MRTKernel(Scheduler*, std::vector<CPU*>, const std::string &name = "");
+        MRTKernel(Scheduler *, std::vector<CPU *>,
+                  const std::string &name = "");
 
         /**
            Needs to know scheduler and name
          */
-        MRTKernel(Scheduler*, const std::string &name);
+        MRTKernel(Scheduler *, const std::string &name);
 
         virtual ~MRTKernel();
 
         /**
          * Adds a CPU to the set of CPUs handled by the kernel.
          */
-        void addCPU(CPU*);
+        void addCPU(CPU *);
 
         /**
            Add a task to the kernel
-           
+
            Spcify the scheduling parameters in param.
          */
         void addTask(AbsRTTask &t, const std::string &param = "") override;
@@ -226,8 +233,8 @@ namespace RTSim {
         // void activate(AbsRTTask *) override; //same as RTKernel
         void onEnd(AbsRTTask *) override;
 
-        /** 
-            Dispatching on a given CPU. 
+        /**
+            Dispatching on a given CPU.
 
             This is different from the version we have on RTKernel,
             since we may need to specify on which CPU we have to
@@ -247,11 +254,13 @@ namespace RTSim {
          */
         void dispatch() override;
 
-        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt* e);
-        virtual void onEndDispatchMulti(EndDispatchMultiEvt* e);
+        virtual void onBeginDispatchMulti(BeginDispatchMultiEvt *e);
+        virtual void onEndDispatchMulti(EndDispatchMultiEvt *e);
 
         /// Returns used CBS servers
-        vector<CBServer*> getServers() const { return _servers; }
+        vector<CBServer *> getServers() const {
+            return _servers;
+        }
 
         /**
          * Returns a pointer to the CPU on which t is running (NULL if
@@ -267,10 +276,10 @@ namespace RTSim {
 
         /**
            Returns a vector containing the pointers to the processors.
-           
+
            Deprecated, will be removed soon
          */
-        std::vector<CPU*> getProcessors() const;
+        std::vector<CPU *> getProcessors() const;
 
         /**
            Set the migration delay. This is the overhead to be added
@@ -286,11 +295,11 @@ namespace RTSim {
         void print() const override;
         void printState() const override;
 
-        /** 
+        /**
          *  Returns a pointer to the task which is executing on given
          *  CPU (NULL if given CPU is idle)
          */
-        virtual AbsRTTask* getTask(CPU*);
+        virtual AbsRTTask *getTask(CPU *);
 
         /**
          It returns the name of the tasks (std::string) stored in a

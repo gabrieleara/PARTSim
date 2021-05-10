@@ -1,5 +1,5 @@
-#include "system.hpp"
-#include "system_descriptor.hpp"
+#include <system.hpp>
+#include <system_descriptor.hpp>
 
 namespace RTSim {
     // TODO: lots of exception handling?

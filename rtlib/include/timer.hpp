@@ -14,36 +14,38 @@
 #ifndef __TIMER_HPP__
 #define __TIMER_HPP__
 
-#include <simul.hpp>
 #include <gevent.hpp>
+#include <simul.hpp>
 
 #define _TIMER_DBG_LEV "Timer"
 
 namespace RTSim {
 
-    //using namespace MetaSim;
+    // using namespace MetaSim;
 
     class Timer : public MetaSim::Entity {
     public:
-	MetaSim::GEvent<Timer> _triggerEvt;
-	MetaSim::Tick lastTrigger; //Instant of the last trigger event 
+        MetaSim::GEvent<Timer> _triggerEvt;
+        MetaSim::Tick lastTrigger; // Instant of the last trigger event
     public:
-	Timer(const std::string &n = "", int p = 16);
-	virtual void reArm() = 0;
-	virtual void action() = 0;
-	virtual void onTrigger(MetaSim::Event *);
-	void newRun() override;
-	void endRun() override;
+        Timer(const std::string &n = "", int p = 16);
+        virtual void reArm() = 0;
+        virtual void action() = 0;
+        virtual void onTrigger(MetaSim::Event *);
+        void newRun() override;
+        void endRun() override;
     };
 
     class PeriodicTimer : public Timer {
-	MetaSim::Tick _period;
+        MetaSim::Tick _period;
+
     public:
-	PeriodicTimer(MetaSim::Tick p, const std::string &n= "", int prio = 16); 
-	void reArm() override;
-	void action() override;
+        PeriodicTimer(MetaSim::Tick p, const std::string &n = "",
+                      int prio = 16);
+        void reArm() override;
+        void action() override;
     };
 
-} // RTSim
+} // namespace RTSim
 
 #endif

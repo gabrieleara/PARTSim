@@ -29,114 +29,131 @@ namespace RTSim {
 
        This class is the base class for all task events.
     */
-    class TaskEvt : public MetaSim::Event
-    {
+    class TaskEvt : public MetaSim::Event {
     protected:
-        Task* _task;
+        Task *_task;
         int _cpu;
 
     public:
-        TaskEvt(Task* t, int p = _DEFAULT_PRIORITY) : 
-            MetaSim::Event(p), _cpu(-1)  {_task = t;}
-        Task* getTask() const {return _task;}
-        void setTask(Task* t) {_task = t;}
+        TaskEvt(Task *t, int p = _DEFAULT_PRIORITY) :
+            MetaSim::Event(p),
+            _cpu(-1) {
+            _task = t;
+        }
+        Task *getTask() const {
+            return _task;
+        }
+        void setTask(Task *t) {
+            _task = t;
+        }
 
-        int getCPU() {return _cpu;}
-        void setCPU(int cpu) {_cpu = cpu;}
-        string toString() const override { return " at " + std::to_string(double(getTime())) + "\n"; }
+        int getCPU() {
+            return _cpu;
+        }
+        void setCPU(int cpu) {
+            _cpu = cpu;
+        }
+        string toString() const override {
+            return " at " + std::to_string(double(getTime())) + "\n";
+        }
     };
 
     /// arrival event for a task
     /// \ingroup task
-    class ArrEvt: public TaskEvt
-    {
+    class ArrEvt : public TaskEvt {
     public:
-        ArrEvt(Task* t) :TaskEvt(t) {}
+        ArrEvt(Task *t) : TaskEvt(t) {}
         void doit() override;
-        string toString() const override { return "arrEvt " + TaskEvt::toString(); }
+        string toString() const override {
+            return "arrEvt " + TaskEvt::toString();
+        }
     };
 
     /// end of instance event
     /// \ingroup task
-    class EndEvt: public TaskEvt
-    {
+    class EndEvt : public TaskEvt {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
-        EndEvt(Task* t) :TaskEvt(t, _END_EVT_PRIORITY) {}
+        EndEvt(Task *t) : TaskEvt(t, _END_EVT_PRIORITY) {}
         void doit() override;
     };
-    
+
     /// when a task is killed
     /// \ingroup task
-    class KillEvt: public TaskEvt
-    {
+    class KillEvt : public TaskEvt {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
-        KillEvt(Task* t) :TaskEvt(t, _END_EVT_PRIORITY) {}
+        KillEvt(Task *t) : TaskEvt(t, _END_EVT_PRIORITY) {}
         void doit() override;
     };
 
     /// when the event is triggered, the task starts executing on processor
     /// \ingroup task
-    class SchedEvt: public TaskEvt
-    {
+    class SchedEvt : public TaskEvt {
     public:
-        SchedEvt(Task* t) : TaskEvt(t) {}
+        SchedEvt(Task *t) : TaskEvt(t) {}
         void doit() override;
     };
 
-    /// when this event is triggered, the task does not 
+    /// when this event is triggered, the task does not
     /// execute anymore on the processor.
     /// \ingroup task
-    class DeschedEvt: public TaskEvt
-    {
+    class DeschedEvt : public TaskEvt {
     public:
-        DeschedEvt(Task* t) :TaskEvt(t) {}
+        DeschedEvt(Task *t) : TaskEvt(t) {}
         void doit() override;
     };
 
     /// to handle buffered arrivals
     /// \ingroup task
-    class FakeArrEvt: public TaskEvt
-    {
+    class FakeArrEvt : public TaskEvt {
     public:
-        FakeArrEvt(Task* t) :TaskEvt(t) { setPriority(_DEFAULT_PRIORITY - 1); }
+        FakeArrEvt(Task *t) : TaskEvt(t) {
+            setPriority(_DEFAULT_PRIORITY - 1);
+        }
         void doit() override;
     };
 
-    /** 
+    /**
         \addtogroup tasks
 
         @{
     */
-    class DlineSetEvt: public TaskEvt
-    {
+    class DlineSetEvt : public TaskEvt {
     protected:
         Tick _dline;
 
     public:
-        DlineSetEvt(Task* t) :TaskEvt(t) {}
+        DlineSetEvt(Task *t) : TaskEvt(t) {}
         void doit() override {}
-        void setDline(Tick d) {_dline = d;}
-        Tick getDline() {return _dline;}
-
+        void setDline(Tick d) {
+            _dline = d;
+        }
+        Tick getDline() {
+            return _dline;
+        }
     };
 
-    class DeadEvt: public TaskEvt
-    {
+    class DeadEvt : public TaskEvt {
     protected:
         bool _abort;
         bool _kill;
 
     public:
-        static const int _DEAD_EVT_PRIORITY = EndEvt::_END_EVT_PRIORITY + 3; 
+        static const int _DEAD_EVT_PRIORITY = EndEvt::_END_EVT_PRIORITY + 3;
 
-        DeadEvt(Task* t, bool abort, bool kill)
-            : TaskEvt(t, _DEAD_EVT_PRIORITY), _abort(abort), _kill(kill) {}
+        DeadEvt(Task *t, bool abort, bool kill) :
+            TaskEvt(t, _DEAD_EVT_PRIORITY),
+            _abort(abort),
+            _kill(kill) {}
 
-        void doit() override;  
-        void setAbort(bool f) {_abort = f;}
-        void setKill(bool f) {_kill = f;}
+        void doit() override;
+        void setAbort(bool f) {
+            _abort = f;
+        }
+        void setKill(bool f) {
+            _kill = f;
+        }
     };
 
 } // namespace RTSim

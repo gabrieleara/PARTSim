@@ -13,37 +13,34 @@
  ***************************************************************************/
 #include <string>
 
-#include <factory.hpp>
 #include <AVRTask.hpp>
-#include <task.hpp>
-#include <rttask.hpp>
+#include <factory.hpp>
 #include <reginstr.hpp>
+#include <rttask.hpp>
+#include <task.hpp>
 
 namespace RTSim {
 
+    const string TaskName("Task");
+    const string PeriodicTaskName("PeriodicTask");
+    const string AVRTaskName("AVRTask");
 
-  const string TaskName("Task");
-  const string PeriodicTaskName("PeriodicTask");
-  const string AVRTaskName("AVRTask");
-  
-  /**
-     This namespace should not be visible, and in any case, users
-     should never access objects of this namefile. This is used just
-     for initialization of the objects needed for the abstract
-     factory that creates tasks.
-   */
-  namespace __task_stub
-  {
-    static registerInFactory<Task, Task, string>
-    registerRT(TaskName);
+    /**
+       This namespace should not be visible, and in any case, users
+       should never access objects of this namefile. This is used just
+       for initialization of the objects needed for the abstract
+       factory that creates tasks.
+     */
+    namespace __task_stub {
+        static registerInFactory<Task, Task, string> registerRT(TaskName);
 
-    static registerInFactory<Task, PeriodicTask, string>
-    registerPeriodic(PeriodicTaskName);
+        static registerInFactory<Task, PeriodicTask, string>
+            registerPeriodic(PeriodicTaskName);
 
-    static registerInFactory<Task, AVRTask, string>
-    registerAVR(AVRTaskName);
-  } // namespace __var_stub
+        static registerInFactory<Task, AVRTask, string>
+            registerAVR(AVRTaskName);
+    } // namespace __task_stub
 
-  void __regtask_init() {}
+    void __regtask_init() {}
 
-} // RTSim
+} // namespace RTSim

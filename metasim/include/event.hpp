@@ -1,18 +1,17 @@
 #ifndef __EVENT_HPP__
 #define __EVENT_HPP__
 
-#include <memory.hpp>
 #include <deque>
 #include <iostream>
 #include <limits>
+#include <memory.hpp>
 #include <typeinfo>
 
-#include <simul.hpp>
 #include <basestat.hpp>
 #include <particle.hpp>
 #include <plist.hpp>
+#include <simul.hpp>
 #include <trace.hpp>
-
 
 namespace MetaSim {
 
@@ -63,7 +62,6 @@ namespace MetaSim {
 
     */
     class Event {
-
     public:
         /**
             \ingroup metasim_exc
@@ -72,10 +70,9 @@ namespace MetaSim {
         */
         class Exc : public BaseExc {
         public:
-            Exc(const std::string message,
-                const std::string cl = "Event",
-                const std::string md = "event.cpp")
-                : BaseExc(message,cl,md) {} ;
+            Exc(const std::string message, const std::string cl = "Event",
+                const std::string md = "event.cpp") :
+                BaseExc(message, cl, md){};
         };
 
     private:
@@ -91,10 +88,10 @@ namespace MetaSim {
         */
         class Cmp {
         public:
-            bool operator() (Event* e1, Event* e2) const;
+            bool operator()(Event *e1, Event *e2) const;
         };
 
-        typedef priority_list<Event*, Cmp> EventQueue;
+        typedef priority_list<Event *, Cmp> EventQueue;
 
         /**
            Event queue. This is the global event queue, used
@@ -118,7 +115,7 @@ namespace MetaSim {
         /// A queue of all the statistical object. All these
         /// objects will be "invoked" after the event handler
         /// (doit()) has been processed.
-        std::deque<std::unique_ptr<ParticleInterface> > _particles;
+        std::deque<std::unique_ptr<ParticleInterface>> _particles;
 
         /// Triggering time of the event.
         Tick _time;
@@ -141,7 +138,8 @@ namespace MetaSim {
         int _std_priority;
 
         /// We hide operator= to avoid improper use.
-        Event& operator=(Event &);
+        Event &operator=(Event &);
+
     protected:
         /// Indicates if the event has to be destroyed after
         /// bein processed. Normally, this flag is set to
@@ -205,7 +203,7 @@ namespace MetaSim {
         /**
            Processes the event immediately.
         */
-        void process(bool disp=false);
+        void process(bool disp = false);
 
         /**
             Drop the event from the event queue. The event is
@@ -233,20 +231,26 @@ namespace MetaSim {
             were distinguished by their class. For simplicity
             we decided to introduce this identifier.
         */
-        inline int getPriority() const {return _priority;};
+        inline int getPriority() const {
+            return _priority;
+        };
 
         /**
             Set the event priority.  It is a identifier for
             the event priority. The lower the number, the
             higher the priority.
         */
-        inline void setPriority(int p) { _priority = p;};
+        inline void setPriority(int p) {
+            _priority = p;
+        };
 
         /**
             Restore the standard priority (the one defined in
             the constructor).
         */
-        inline void restorePriority() { _priority = _std_priority;};
+        inline void restorePriority() {
+            _priority = _std_priority;
+        };
 
         /**
             Returns the event time. Warning: if you try to get
@@ -256,7 +260,9 @@ namespace MetaSim {
 
             @see getLastTime.
         */
-        inline Tick getTime() const {return _time;};
+        inline Tick getTime() const {
+            return _time;
+        };
 
         /**
             Return the last time in which event was triggered.
@@ -274,7 +280,9 @@ namespace MetaSim {
             has been triggered with getLastTime().
 
             @see getTime */
-        inline Tick getLastTime() const { return _lastTime; };
+        inline Tick getLastTime() const {
+            return _lastTime;
+        };
 
         /**
             Returns the value of the disposable flag Indicates
@@ -285,10 +293,13 @@ namespace MetaSim {
             class, only if the following flas is true.
 
             @see post */
-        inline bool isDisposable() {return _disposable;};
+        inline bool isDisposable() {
+            return _disposable;
+        };
 
-
-        inline bool isInQueue() { return _isInQueue; }
+        inline bool isInQueue() {
+            return _isInQueue;
+        }
 
         /**
             Add a new particle to this event.  This is the new
@@ -327,9 +338,7 @@ namespace MetaSim {
         static void printQueue() {
             EventQueue::iterator it;
 
-            for (it = _eventQueue.begin();
-                 it != _eventQueue.end();
-                 it++)
+            for (it = _eventQueue.begin(); it != _eventQueue.end(); it++)
                 (*it)->print();
         }
 
@@ -338,6 +347,6 @@ namespace MetaSim {
         }
     };
 
-}
+} // namespace MetaSim
 
 #endif

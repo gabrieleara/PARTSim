@@ -34,26 +34,26 @@ namespace RTSim {
         bool first_event;
 
         void writeTaskEvent(const Task &tt, const std::string &evt_name);
+
     public:
-        JSONTrace(const std::string& name);
-        
+        JSONTrace(const std::string &name);
+
         ~JSONTrace();
-        
-        void probe(ArrEvt& e);
-        
-        void probe(EndEvt& e);
-        
-        void probe(SchedEvt& e);
-        
-        void probe(DeschedEvt& e);
-        
-        void probe(DeadEvt& e);
-        
-        void probe(KillEvt& e);
-        
-        void attachToTask(Task& t);
-        
+
+        void probe(ArrEvt &e);
+
+        void probe(EndEvt &e);
+
+        void probe(SchedEvt &e);
+
+        void probe(DeschedEvt &e);
+
+        void probe(DeadEvt &e);
+
+        void probe(KillEvt &e);
+
+        void attachToTask(Task &t);
     };
-}
+} // namespace RTSim
 
 #endif

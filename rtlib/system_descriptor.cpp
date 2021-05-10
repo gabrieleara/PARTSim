@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <sstream>
 
-#include "consts.hpp"
-#include "system_descriptor.hpp"
+#include <consts.hpp>
+#include <system_descriptor.hpp>
 
 namespace RTSim {
     // Generic converter from string to any type (that supports std::streams)

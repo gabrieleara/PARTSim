@@ -17,6 +17,7 @@ namespace RTSim {
     class AbstractFeedbackModule : public Entity {
     protected:
         Task *task;
+
     public:
         AbstractFeedbackModule(const std::string &name);
         virtual ~AbstractFeedbackModule();
@@ -28,6 +29,6 @@ namespace RTSim {
         void newRun() override = 0;
         void endRun() override = 0;
     };
-}
+} // namespace RTSim
 
 #endif

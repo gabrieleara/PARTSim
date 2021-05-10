@@ -27,7 +27,7 @@
  * Revision 1.5  2004/11/24 14:12:13  lipari
  * Merge between the branch and the main trunk.
  *
- * 
+ *
  */
 #ifndef NULL
 #define NULL 0
@@ -48,10 +48,10 @@
 // #endif
 
 namespace MetaSim {
-  /* MAX_RUN is the maximum number of runs allowable in this simulator
-   * it is an arbitrary value, feel free to increase it.
-   */
-  static const size_t MAX_RUN = 100000;
-}
+    /* MAX_RUN is the maximum number of runs allowable in this simulator
+     * it is an arbitrary value, feel free to increase it.
+     */
+    static const size_t MAX_RUN = 100000;
+} // namespace MetaSim
 
 #endif

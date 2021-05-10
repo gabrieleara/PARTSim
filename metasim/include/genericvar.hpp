@@ -44,7 +44,7 @@
  *
  * Revision 1.2  2003/04/24 14:55:54  lipari
  * *** empty log message ***
- * 
+ *
  */
 #ifndef __GENERICVAR_HPP__
 #define __GENERICVAR_HPP__
@@ -59,20 +59,19 @@ namespace MetaSim {
     /**
        This random variable is used to model a generic distribution.
     */
-    class GenericVar: public UniformVar {
+    class GenericVar : public UniformVar {
         std::map<int, double> _pdf;
-        void readPDF(std::ifstream &f, int mode = 0);// throw(Exc);
+        void readPDF(std::ifstream &f, int mode = 0); // throw(Exc);
     public:
         GenericVar(const std::string &filename);
 
         CLONEABLE(RandomVar, GenericVar, override)
-        
+
         static RandomVar *createInstance(std::vector<std::string> &par);
-        
+
         double get(void) override;
+    };
 
-  };
-
-} // namespace metasim
+} // namespace MetaSim
 
 #endif /* __GENERICVAR_HPP__ */

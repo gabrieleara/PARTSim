@@ -5,7 +5,7 @@
 
 namespace RTSim {
     using namespace MetaSim;
- 
+
     /**
        This abstract class is an interface for a supervisor.  A
        supervisor is in charge of performing acceptance test for
@@ -21,6 +21,6 @@ namespace RTSim {
         virtual void addServer(Server *s) = 0;
         virtual ~Supervisor() {}
     };
-}
+} // namespace RTSim
 
 #endif

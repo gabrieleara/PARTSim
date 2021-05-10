@@ -9,39 +9,41 @@ namespace RTSim {
 
     class RTKernel;
 
-    class KernelEvt : public MetaSim::Event
-    {
+    class KernelEvt : public MetaSim::Event {
     protected:
-        RTKernel* _kernel;
+        RTKernel *_kernel;
 
     public:
-        KernelEvt(RTKernel* k, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10) 
-  : MetaSim::Event(p) { _kernel=k; }
-	void setKernel(RTKernel* k) { _kernel=k; };
-	RTKernel* getKernel(){ return _kernel; };
+        KernelEvt(RTKernel *k, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10) :
+            MetaSim::Event(p) {
+            _kernel = k;
+        }
+        void setKernel(RTKernel *k) {
+            _kernel = k;
+        };
+        RTKernel *getKernel() {
+            return _kernel;
+        };
     };
 
-    class DispatchEvt : public KernelEvt
-    {
+    class DispatchEvt : public KernelEvt {
     public:
-        DispatchEvt(RTKernel* k) : KernelEvt(k) {}
+        DispatchEvt(RTKernel *k) : KernelEvt(k) {}
         void doit() override;
     };
 
-    class BeginDispatchEvt : public KernelEvt
-    {
+    class BeginDispatchEvt : public KernelEvt {
     public:
-        BeginDispatchEvt(RTKernel* k) : KernelEvt(k) {}
+        BeginDispatchEvt(RTKernel *k) : KernelEvt(k) {}
         void doit() override;
     };
 
-    class EndDispatchEvt : public KernelEvt
-    {
+    class EndDispatchEvt : public KernelEvt {
     public:
-        EndDispatchEvt(RTKernel* k) : KernelEvt(k) {}
+        EndDispatchEvt(RTKernel *k) : KernelEvt(k) {}
         void doit() override;
     };
 
-}
+} // namespace RTSim
 
-#endif // __KERNEVT_HPP__ 
+#endif // __KERNEVT_HPP__

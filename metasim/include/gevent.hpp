@@ -18,7 +18,7 @@
  * Revision 1.4  2004/11/24 14:12:13  lipari
  * Merge between the branch and the main trunk.
  *
- * 
+ *
  */
 #ifndef __GEVENT_HPP__
 #define __GEVENT_HPP__
@@ -59,37 +59,41 @@ namespace MetaSim {
 
        Handler onTransmit() is called whenever the event is triggered.
     */
-    template<class X>
+    template <class X>
     class GEvent : public Event {
-        typedef void (X::* Pmemfun)(Event *);
-        
+        typedef void (X::*Pmemfun)(Event *);
+
         X *_obj;
         Pmemfun _fun;
-        
-    public:
 
-        GEvent(X *obj, typename GEvent<X>::Pmemfun fun, int p = Event::_DEFAULT_PRIORITY) :
-            Event(p), _obj(obj), _fun(fun) {}
-        
+    public:
+        GEvent(X *obj, typename GEvent<X>::Pmemfun fun,
+               int p = Event::_DEFAULT_PRIORITY) :
+            Event(p),
+            _obj(obj),
+            _fun(fun) {}
+
         /**
            A copy constructor. Useful when creating many events of the
            same type for the same \b object. (Remember: all these
            events point to the same object!)
         */
-        GEvent(const GEvent<X> &e) : Event(e) { 
-            _obj = e._obj; _fun = e._fun; 
+        GEvent(const GEvent<X> &e) : Event(e) {
+            _obj = e._obj;
+            _fun = e._fun;
         }
 
         /** A more generic constructor: the new copied event points to
          * a different object of the same type, the function to be
          * called is the same */
-        GEvent(const GEvent<X> &e, X& obj) : Event(e) { 
-            _obj = &obj; _fun = e._fun; 
+        GEvent(const GEvent<X> &e, X &obj) : Event(e) {
+            _obj = &obj;
+            _fun = e._fun;
         }
-        
+
         /**
            Simply calls the specified handler on the specified object.
-           
+
            \sa register_handler
         */
         void doit() override {
@@ -97,24 +101,24 @@ namespace MetaSim {
                 (_obj->*_fun)(this);
         }
     };
-    
+
     /**
        \ingroup metasim_ee
-       
+
        This function is used to specify that a certain event of type
        GEvent<X> must refer to object obj and call its method fun.
-     
+
        \param evt the event object
-       \param obj the entity obj 
+       \param obj the entity obj
        \param fun the method of obj to be called
        \sa GEvent#doit
     */
     // template<class X>
     // void register_handler(GEvent<X> &evt, X *obj,
-    // 			  typename GEvent<X>::Pmemfun fun) 
-    // { 
-    // 	evt._obj = obj; evt._fun = fun; 
+    // 			  typename GEvent<X>::Pmemfun fun)
+    // {
+    // 	evt._obj = obj; evt._fun = fun;
     // }
-}  
+} // namespace MetaSim
 
 #endif

@@ -1,4 +1,4 @@
-#include "yaml.hpp"
+#include <yaml.hpp>
 
 namespace yaml {
 
@@ -15,7 +15,7 @@ namespace yaml {
     }
 
     static inline bool
-    contains_forbidden_characters(const string &str) noexcept {
+        contains_forbidden_characters(const string &str) noexcept {
         return contains(str, '\t');
     }
 
@@ -242,7 +242,7 @@ namespace yaml {
 
 /*
 // Example of use
-#include "yaml.hpp"
+#include <yaml.hpp>
 #include <iostream>
 
 using std::string;

@@ -16,8 +16,8 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <map>
 
-#include "interpolate.hpp"
-#include "stateless_cpumodel_base.hpp"
+#include <interpolate.hpp>
+#include <stateless_cpumodel_base.hpp>
 
 namespace RTSim {
     template <class T>
@@ -62,7 +62,7 @@ namespace RTSim {
         }
 
         inline map_map_citer
-        find_suitable_map(const wclass_type &workload) const {
+            find_suitable_map(const wclass_type &workload) const {
             // First look for the good workload
             auto res = _map.find(workload);
             if (res != _map.cend())
@@ -87,7 +87,8 @@ namespace RTSim {
         }
 
         inline value_type
-        exact_table_lookup(const OPP &opp, const wclass_type &workload) const {
+            exact_table_lookup(const OPP &opp,
+                               const wclass_type &workload) const {
             auto res_map = find_suitable_map(workload);
             if (res_map == _map.end())
                 return 0;

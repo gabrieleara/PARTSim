@@ -33,20 +33,20 @@ namespace RTSim {
         std::ofstream fd;
         bool first_event;
 
-        void writeTaskEvent(const Task &tt, const std::string &evt_name, TaskEvt* evt);
+        void writeTaskEvent(const Task &tt, const std::string &evt_name,
+                            TaskEvt *evt);
 
     public:
-        PSTrace(const std::string& name);
+        PSTrace(const std::string &name);
         ~PSTrace();
 
-        void probe(ArrEvt& e);
-        void probe(EndEvt& e);
-        void probe(SchedEvt& e);
-        void probe(DeschedEvt& e);
-        void probe(DeadEvt& e);
-        void attachToTask(Task& t);
+        void probe(ArrEvt &e);
+        void probe(EndEvt &e);
+        void probe(SchedEvt &e);
+        void probe(DeschedEvt &e);
+        void probe(DeadEvt &e);
+        void attachToTask(Task &t);
     };
-}
+} // namespace RTSim
 
 #endif
-

@@ -14,9 +14,9 @@
 #ifndef __STRTOKEN_HPP__
 #define __STRTOKEN_HPP__
 
+#include <sstream>
 #include <stdexcept>
 #include <string>
-#include <sstream>
 #include <vector>
 
 #include <baseexc.hpp>
@@ -42,7 +42,8 @@ namespace parse_util {
        For example, given the string "fixed(1);wait(R);" returns the
        vector containing strings "fixed(1)" and "wait(R)".
     */
-    std::vector<std::string> split(const std::string &code, const std::string &sep);
+    std::vector<std::string> split(const std::string &code,
+                                   const std::string &sep);
 
     /**
        Given a sequence of "instructions" spearated by ';', returns a
@@ -57,28 +58,33 @@ namespace parse_util {
        Given an instruction \c instr of the form "token(p1)" returns the
        token.
     */
-    std::string get_token(const std::string &instr, const std::string &open_par = "(");
+    std::string get_token(const std::string &instr,
+                          const std::string &open_par = "(");
 
     /**
        Given an instruction \c instr of the form "token(p1,p2)" returns the
        parameters "p1,p2".
     */
-    std::string get_param(const std::string &instr, const std::string &open_par = "(",
-                     const std::string &close_par = ")");
+    std::string get_param(const std::string &instr,
+                          const std::string &open_par = "(",
+                          const std::string &close_par = ")");
 
     /**
        Given an instruction \c instr of the form "token = param1,
        param2" returns the parameters "param1, param2" (i.e. it returns
        everything after the separation symbol)
     */
-    std::string get_param2(const std::string &instr, const std::string &open_par = "=");
+    std::string get_param2(const std::string &instr,
+                           const std::string &open_par = "=");
 
     /**
        Given a string containing the parameters "(p1,p2)", returns a
        vector of strings containing the parameters p1 and p2.
     */
-    std::vector<std::string> split_param(const std::string &p, const std::string &sep = ",",
-                               char open_par = '(', char close_par = ')');
+    std::vector<std::string> split_param(const std::string &p,
+                                         const std::string &sep = ",",
+                                         char open_par = '(',
+                                         char close_par = ')');
 
     /**
        Given a string of the form "123.75ms" returns the double number
@@ -91,11 +97,10 @@ namespace parse_util {
        Exception raised by the above functions
     */
     class ParseExc : public std::runtime_error {
-
     public:
         ParseExc(const std::string &where, const std::string &par);
-        virtual ~ParseExc() throw () {}
+        virtual ~ParseExc() throw() {}
     };
-}
+} // namespace parse_util
 
 #endif

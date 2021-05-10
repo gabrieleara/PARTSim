@@ -25,18 +25,16 @@ namespace RTSim {
 
        Model for the EDF scheduler
     */
-    class EDFModel: public TaskModel
-    {
+    class EDFModel : public TaskModel {
     protected:
         bool extP;
         int prio;
 
     public:
-        EDFModel(AbsRTTask* t);
+        EDFModel(AbsRTTask *t);
         Tick getPriority() const override;
         void changePriority(Tick p) override;
     };
-
 
     /**
        \ingroup kernels
@@ -45,19 +43,18 @@ namespace RTSim {
        the addTask function, because most of the work is done in
        the Scheduler class.
     */
-    class EDFScheduler: public Scheduler
-    {
+    class EDFScheduler : public Scheduler {
     public:
         /**
          *  Creates an EDFModel, passing the task!! It throws
          *  a * RTSchedExc exception if the task is already
          *  present in this * scheduler.
          */
-        void addTask(AbsRTTask* task) throw (RTSchedExc);
+        void addTask(AbsRTTask *task) throw(RTSchedExc);
 
-        void addTask(AbsRTTask* task, const string &p) override;
+        void addTask(AbsRTTask *task, const string &p) override;
 
-        void removeTask(AbsRTTask* task) override;
+        void removeTask(AbsRTTask *task) override;
 
         static EDFScheduler *createInstance(vector<string> &par);
 
@@ -65,9 +62,9 @@ namespace RTSim {
          * Admission test for a task t on a CPU c
          * @return true if t is admissible on c
          */
-        bool isAdmissible(CPU* c, vector<AbsRTTask*> tasks, AbsRTTask* toBeAdmitted) override;
-
-        };
+        bool isAdmissible(CPU *c, vector<AbsRTTask *> tasks,
+                          AbsRTTask *toBeAdmitted) override;
+    };
 
 } // namespace RTSim
 

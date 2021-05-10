@@ -216,10 +216,12 @@ namespace yaml {
 
     class ParseException : public std::exception {
     public:
-        ParseException(const std::string &&message)
-            : std::exception(), message(message) {}
-        ParseException(const std::string &message)
-            : std::exception(), message(message) {}
+        ParseException(const std::string &&message) :
+            std::exception(),
+            message(message) {}
+        ParseException(const std::string &message) :
+            std::exception(),
+            message(message) {}
 
         // Does not use default constructor
         inline ParseException() = delete;
@@ -227,7 +229,7 @@ namespace yaml {
         // Can be both copy initialized and assigned using default behavior
         inline ParseException(const ParseException &) noexcept = default;
         inline ParseException &
-        operator=(const ParseException &) noexcept = default;
+            operator=(const ParseException &) noexcept = default;
 
         // Can be both move initialized and move assigned using default behavior
         inline ParseException(ParseException &&) noexcept = default;

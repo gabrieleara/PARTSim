@@ -22,38 +22,38 @@ namespace RTSim {
 
        This class implements a Rate Monotonic scheduler (or, more
        precisely, a deadline monotonic). Tasks are ordered in the queue by
-       their relative deadline. 
+       their relative deadline.
 
        This class redefines only the addTask function, because most of the
        work is done in the Scheduler class.
     */
-    class RMScheduler: public FPScheduler
-    {
-        /** 
+    class RMScheduler : public FPScheduler {
+        /**
             \ingroup kernels
-	
+
             Model for RM.
         */
-        class RMModel : public FPScheduler::FPModel
-        {
+        class RMModel : public FPScheduler::FPModel {
         protected:
             bool extP;
+
         public:
             RMModel(AbsRTTask *t) : FPModel(t, 0), extP(false) {}
             Tick getPriority() {
-                if (extP) return _prio;
-                else return _rtTask->getRelDline(); 
+                if (extP)
+                    return _prio;
+                else
+                    return _rtTask->getRelDline();
             }
 
             void changePriority(MetaSim::Tick p) override {
-                if (p == _rtTask->getRelDline()) 
+                if (p == _rtTask->getRelDline())
                     extP = false;
-                else { 
+                else {
                     extP = true;
                     _prio = p;
                 }
             }
-
         };
 
     public:
@@ -61,13 +61,13 @@ namespace RTSim {
          * Creates an RMModel passing the task. It throws a RTSchedExc
          * exception if the task is already present in this scheduler.
          */
-        void addTask(AbsRTTask* task) throw (RTSchedExc);
+        void addTask(AbsRTTask *task) throw(RTSchedExc);
 
         void addTask(AbsRTTask *t, const std::string &p) override;
 
-        void removeTask(AbsRTTask *t) override { }
+        void removeTask(AbsRTTask *t) override {}
     };
 
-}
+} // namespace RTSim
 
 #endif

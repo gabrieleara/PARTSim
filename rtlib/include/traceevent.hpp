@@ -28,353 +28,380 @@
 
 namespace RTSim {
 
-  using std::ifstream;
-  using std::ofstream;
-
-  class Desc
-  {
-  public:
-    string name;
-    int tid;
-
-    Desc(string n, int id) :name(n), tid(id) {}
-    Desc(int id) :name(""), tid(id) {}
-
-    virtual ~Desc() {}
-  };
-
-  class TraceEvent
-  {
-  protected:
-    int _type;
-    int _time;
- 
-  public:
-    static const int TASK_ARRIVAL = 0;
-    static const int TASK_SCHEDULE = 1;
-    static const int TASK_DESCHEDULE = 2;
-    static const int TASK_END = 3;
-    static const int TASK_DLINEPOST = 4;
-    static const int TASK_DLINESET = 5;
-    static const int TASK_WAIT = 6;
-    static const int TASK_SIGNAL = 7;
-    static const int TASK_IDLE = 8;
-    static const int TASK_NAME = 9;
-    static const int TASK_DLINEMISS = 10;
-    static const int EVT_NUMBER = 11;
-
-    static const string evt_name[EVT_NUMBER];
- 
-    TraceEvent() {}
-    TraceEvent(int type, int t) :_type(type), _time(t) {}
-    virtual ~TraceEvent() {}
- 
-    static void encode(char* in, int size);
+    using std::ifstream;
+    using std::ofstream;
+
+    class Desc {
+    public:
+        string name;
+        int tid;
+
+        Desc(string n, int id) : name(n), tid(id) {}
+        Desc(int id) : name(""), tid(id) {}
+
+        virtual ~Desc() {}
+    };
+
+    class TraceEvent {
+    protected:
+        int _type;
+        int _time;
+
+    public:
+        static const int TASK_ARRIVAL = 0;
+        static const int TASK_SCHEDULE = 1;
+        static const int TASK_DESCHEDULE = 2;
+        static const int TASK_END = 3;
+        static const int TASK_DLINEPOST = 4;
+        static const int TASK_DLINESET = 5;
+        static const int TASK_WAIT = 6;
+        static const int TASK_SIGNAL = 7;
+        static const int TASK_IDLE = 8;
+        static const int TASK_NAME = 9;
+        static const int TASK_DLINEMISS = 10;
+        static const int EVT_NUMBER = 11;
 
-    virtual unsigned int getSize() const
-    {return sizeof(_type) + sizeof(_time);}
-    int getType() const {return _type;}
-    int getTime() const {return _time;}
+        static const string evt_name[EVT_NUMBER];
+
+        TraceEvent() {}
+        TraceEvent(int type, int t) : _type(type), _time(t) {}
+        virtual ~TraceEvent() {}
+
+        static void encode(char *in, int size);
 
-    /**
-       This function builds and returns the proper TraceEvent object
-       starting from the Trace type returns null if for some reason
-       the object could not be created!
-     */
-    static const TraceEvent* getEvent(int actType);
+        virtual unsigned int getSize() const {
+            return sizeof(_type) + sizeof(_time);
+        }
+        int getType() const {
+            return _type;
+        }
+        int getTime() const {
+            return _time;
+        }
 
-    /**
-       Returns a descriptive string: used for debug.
-     */
-    virtual string print() = 0;
+        /**
+           This function builds and returns the proper TraceEvent object
+           starting from the Trace type returns null if for some reason
+           the object could not be created!
+         */
+        static const TraceEvent *getEvent(int actType);
 
-    /**
-       Returns a string used for displaying text info.
-     */
-    virtual string getDescription() = 0;
+        /**
+           Returns a descriptive string: used for debug.
+         */
+        virtual string print() = 0;
 
-    /**
-       true if there is something to draw in the temporal window that
-       begins at t.
-     */
-    virtual bool somethingToDraw(int t);
+        /**
+           Returns a string used for displaying text info.
+         */
+        virtual string getDescription() = 0;
 
-    virtual void write(ofstream& f);
+        /**
+           true if there is something to draw in the temporal window that
+           begins at t.
+         */
+        virtual bool somethingToDraw(int t);
 
-    virtual void read(ifstream& in);
+        virtual void write(ofstream &f);
 
-    virtual bool equals(TraceEvent* e);
+        virtual void read(ifstream &in);
+
+        virtual bool equals(TraceEvent *e);
+    };
 
-  }; 
+    class TraceTaskEvent : public TraceEvent {
+    protected:
+        int _task;
 
-  class TraceTaskEvent: public TraceEvent
-  {
-  protected:
-    int _task;
+    public:
+        Desc *tdesc;
+
+        TraceTaskEvent() : tdesc(NULL) {}
+
+        TraceTaskEvent(int type, int time, int task) :
+            TraceEvent(type, time),
+            _task(task) {}
+
+        virtual ~TraceTaskEvent() {}
+
+        unsigned int getSize() const override {
+            return TraceEvent::getSize() + sizeof(_task);
+        }
+
+        int getTask() const {
+            return _task;
+        }
 
-  public:
-    Desc* tdesc;
+        string print() override;
 
-    TraceTaskEvent() :tdesc(NULL) {}
+        string getDescription() override;
 
-    TraceTaskEvent(int type, int time, int task)
-      :TraceEvent(type, time), _task(task) {}
+        void write(ofstream &f) override;
 
-    virtual ~TraceTaskEvent() {}
+        void read(ifstream &in) override;
 
-    unsigned int getSize() const override
-    {return TraceEvent::getSize() + sizeof(_task);}
+        bool equals(TraceEvent *e) override;
+    };
 
-    int getTask() const {return _task;}
- 
-    string print() override;
+    class TraceArrEvent : public TraceTaskEvent {
+    public:
+        TraceArrEvent() {
+            _type = TASK_ARRIVAL;
+        }
 
-    string getDescription() override;
+        TraceArrEvent(int time, int task) :
+            TraceTaskEvent(TASK_ARRIVAL, time, task) {}
+    };
 
-    void write(ofstream& f) override;
- 
-    void read(ifstream& in) override;
+    class TraceCPUEvent : public TraceTaskEvent {
+    protected:
+        int _cpu;
 
-    bool equals(TraceEvent *e) override;
-  };
+    public:
+        TraceCPUEvent() {}
 
-  class TraceArrEvent: public TraceTaskEvent
-  {
-  public:
-    TraceArrEvent() {_type = TASK_ARRIVAL;}
+        TraceCPUEvent(int type, int time, int task, int cpu) :
+            TraceTaskEvent(type, time, task),
+            _cpu(cpu) {}
 
-    TraceArrEvent(int time, int task)
-      :TraceTaskEvent(TASK_ARRIVAL, time, task) {}
+        unsigned int getSize() const override {
+            return TraceTaskEvent::getSize() + sizeof(_cpu);
+        }
 
-  };
+        int getCPU() const {
+            return _cpu;
+        }
 
-  class TraceCPUEvent: public TraceTaskEvent
-  {
-  protected:
-    int _cpu;
+        string print() override;
 
-  public:
-    TraceCPUEvent() {}
+        string getDescription() override;
 
-    TraceCPUEvent(int type, int time, int task, int cpu)
-      :TraceTaskEvent(type, time, task), _cpu(cpu) {}
+        void write(ofstream &f) override;
 
-    unsigned int getSize() const override
-    {return TraceTaskEvent::getSize() + sizeof(_cpu);}
+        void read(ifstream &in) override;
+    };
 
-    int getCPU() const {return _cpu;}
+    class TraceSchedEvent : public TraceCPUEvent {
+    public:
+        TraceSchedEvent() {
+            _type = TASK_SCHEDULE;
+        }
 
-    string print() override;
+        TraceSchedEvent(int time, int task, int cpu) :
+            TraceCPUEvent(TASK_SCHEDULE, time, task, cpu) {}
+    };
 
-    string getDescription() override;
+    class TraceDeschedEvent : public TraceCPUEvent {
+    public:
+        TraceDeschedEvent() {
+            _type = TASK_DESCHEDULE;
+        }
 
-    void write(ofstream& f) override;
+        TraceDeschedEvent(int time, int task, int cpu) :
+            TraceCPUEvent(TASK_DESCHEDULE, time, task, cpu) {}
+    };
 
-    void read(ifstream& in) override;
+    class TraceEndEvent : public TraceCPUEvent {
+    public:
+        TraceEndEvent() {
+            _type = TASK_END;
+        }
 
-  };
+        TraceEndEvent(int time, int task, int cpu) :
+            TraceCPUEvent(TASK_END, time, task, cpu) {}
+    };
 
-  class TraceSchedEvent: public TraceCPUEvent
-  {
-  public:
-    TraceSchedEvent() {_type = TASK_SCHEDULE;}
+    class TraceDlinePostEvent : public TraceTaskEvent {
+    protected:
+        int _taskD;
+        int _taskD2;
 
-    TraceSchedEvent(int time, int task, int cpu)
-      :TraceCPUEvent(TASK_SCHEDULE, time, task, cpu) {}
+    public:
+        TraceDlinePostEvent() {
+            _type = TASK_DLINEPOST;
+        }
 
-  };
+        TraceDlinePostEvent(int time, int task, int dline, int dline2) :
+            TraceTaskEvent(TASK_DLINEPOST, time, task),
+            _taskD(dline),
+            _taskD2(dline2) {}
 
-  class TraceDeschedEvent: public TraceCPUEvent
-  {
-  public:
-    TraceDeschedEvent() {_type = TASK_DESCHEDULE;}
+        virtual ~TraceDlinePostEvent() {}
 
-    TraceDeschedEvent(int time, int task, int cpu)
-      :TraceCPUEvent(TASK_DESCHEDULE, time, task, cpu) {}
+        unsigned int getSize() const override {
+            return TraceTaskEvent::getSize() + sizeof(_taskD) + sizeof(_taskD2);
+        }
 
-  };
+        int getTaskD() const {
+            return _taskD;
+        }
+        int getTaskD2() const {
+            return _taskD2;
+        }
 
-  class TraceEndEvent : public TraceCPUEvent
-  {
-  public:
-    TraceEndEvent() {_type = TASK_END;}
+        string print() override;
 
-    TraceEndEvent(int time, int task, int cpu)
-      :TraceCPUEvent(TASK_END, time, task, cpu) {}
+        string getDescription() override;
 
-  };
+        bool somethingToDraw(int t) override;
 
-  class TraceDlinePostEvent: public TraceTaskEvent
-  {
-  protected:
-    int _taskD;
-    int _taskD2;
+        void write(ofstream &f) override;
 
-  public:
-    TraceDlinePostEvent() {_type = TASK_DLINEPOST;}
+        void read(ifstream &in) override;
 
-    TraceDlinePostEvent(int time, int task, int dline, int dline2)
-      :TraceTaskEvent(TASK_DLINEPOST, time, task), _taskD(dline), _taskD2(dline2) {}
+        bool equals(TraceEvent *e) override;
+    };
 
-    virtual ~TraceDlinePostEvent() {}
+    class TraceDlineSetEvent : public TraceTaskEvent {
+    protected:
+        int _taskD;
 
-    unsigned int getSize() const override
-    {return TraceTaskEvent::getSize() + sizeof(_taskD) + sizeof(_taskD2);}
+    public:
+        TraceDlineSetEvent() {
+            _type = TASK_DLINESET;
+        }
 
-    int getTaskD() const {return _taskD;}
-    int getTaskD2() const {return _taskD2;}
+        TraceDlineSetEvent(int time, int task, int dline) :
+            TraceTaskEvent(TASK_DLINESET, time, task),
+            _taskD(dline) {}
 
-    string print() override;
+        virtual ~TraceDlineSetEvent() {}
 
-    string getDescription() override;
+        unsigned int getSize() const override {
+            return TraceTaskEvent::getSize() + sizeof(_taskD);
+        }
 
-    bool somethingToDraw(int t) override;
+        int getTaskD() const {
+            return _taskD;
+        }
 
-    void write(ofstream& f) override;
+        string print() override;
 
-    void read(ifstream& in) override;
+        string getDescription() override;
 
-    bool equals(TraceEvent* e) override;
+        bool somethingToDraw(int t) override;
 
-  };
+        void write(ofstream &f) override;
 
-  class TraceDlineSetEvent: public TraceTaskEvent
-  {
-  protected:
-    int _taskD;
+        void read(ifstream &in) override;
 
-  public:
-    TraceDlineSetEvent() {_type = TASK_DLINESET;}
+        bool equals(TraceEvent *e) override;
+    };
 
-    TraceDlineSetEvent(int time, int task, int dline)
-      :TraceTaskEvent(TASK_DLINESET, time, task), _taskD(dline) {}
+    class TraceWaitEvent : public TraceTaskEvent {
+    protected:
+        string _res;
 
-    virtual ~TraceDlineSetEvent() {}
- 
-    unsigned int getSize() const override
-    {return TraceTaskEvent::getSize() + sizeof(_taskD);}
+    public:
+        TraceWaitEvent() {
+            _type = TASK_WAIT;
+        }
 
-    int getTaskD() const {return _taskD;}
+        TraceWaitEvent(int time, int task, string res) :
+            TraceTaskEvent(TASK_WAIT, time, task),
+            _res(res) {}
 
-    string print() override;
+        virtual ~TraceWaitEvent() {}
 
-    string getDescription() override;
+        unsigned int getSize() const override;
 
-    bool somethingToDraw(int t) override;
+        string getResource() const {
+            return _res;
+        }
 
-    void write(ofstream& f) override;
+        string print() override;
 
-    void read(ifstream& in) override;
+        string getDescription() override;
 
-    bool equals(TraceEvent* e) override;
+        void write(ofstream &f) override;
 
-  };      
+        void read(ifstream &in) override;
 
-  class TraceWaitEvent: public TraceTaskEvent
-  {
-  protected:
-    string _res;  
+        bool equals(TraceEvent *e) override;
+    };
 
-  public:
-    TraceWaitEvent() {_type = TASK_WAIT;}
+    class TraceSignalEvent : public TraceTaskEvent {
+    protected:
+        string _res;
 
-    TraceWaitEvent(int time, int task, string res)
-      :TraceTaskEvent(TASK_WAIT, time, task), _res(res) {}
+    public:
+        TraceSignalEvent() {
+            _type = TASK_SIGNAL;
+        }
 
-    virtual ~TraceWaitEvent() {}
+        TraceSignalEvent(int time, int task, string res) :
+            TraceTaskEvent(TASK_SIGNAL, time, task),
+            _res(res) {}
 
-    unsigned int getSize() const override;
+        virtual ~TraceSignalEvent() {}
 
-    string getResource() const {return _res;}
+        unsigned int getSize() const override;
 
-    string print() override;
+        string getResource() const {
+            return _res;
+        }
 
-    string getDescription() override;
+        string print() override;
 
-    void write(ofstream& f) override;
+        string getDescription() override;
 
-    void read(ifstream& in) override;
+        void write(ofstream &f) override;
 
-    bool equals(TraceEvent* e) override;
+        void read(ifstream &in) override;
 
-  };
+        bool equals(TraceEvent *e) override;
+    };
 
-  class TraceSignalEvent: public TraceTaskEvent
-  {
-  protected:
-    string _res;  
+    class TraceIdleEvent : public TraceTaskEvent {
+    public:
+        TraceIdleEvent() {
+            _type = TASK_IDLE;
+        }
 
-  public:
-    TraceSignalEvent() {_type = TASK_SIGNAL;}
+        TraceIdleEvent(int time, int task) :
+            TraceTaskEvent(TASK_IDLE, time, task) {}
+    };
 
-    TraceSignalEvent(int time, int task, string res)
-      :TraceTaskEvent(TASK_SIGNAL, time, task), _res(res) {}
+    class TraceNameEvent : public TraceTaskEvent {
+    protected:
+        string _name;
 
-    virtual ~TraceSignalEvent() {}
+    public:
+        TraceNameEvent() {
+            _type = TASK_NAME;
+        }
 
-    unsigned int getSize() const override;
+        TraceNameEvent(int time, int task, const string &s) :
+            TraceTaskEvent(TASK_NAME, time, task),
+            _name(s) {}
 
-    string getResource() const {return _res;}
+        virtual ~TraceNameEvent() {}
 
-    string print() override;
+        unsigned int getSize() const override;
 
-    string getDescription() override;
+        string getName() {
+            return _name;
+        }
 
-    void write(ofstream& f) override;
+        string getDescription() override;
 
-    void read(ifstream& in) override;
+        void write(ofstream &f) override;
 
-    bool equals(TraceEvent* e) override;
+        void read(ifstream &in) override;
 
-  };
+        bool equals(TraceEvent *e) override;
+    };
 
-  class TraceIdleEvent: public TraceTaskEvent
-  {
-  public:
-    TraceIdleEvent() {_type = TASK_IDLE;}
+    class TraceDlineMissEvent : public TraceTaskEvent {
+    public:
+        TraceDlineMissEvent() {
+            _type = TASK_DLINEMISS;
+        }
 
-    TraceIdleEvent(int time, int task)
-      :TraceTaskEvent(TASK_IDLE, time, task) {}
+        TraceDlineMissEvent(int time, int task) :
+            TraceTaskEvent(TASK_DLINEMISS, time, task) {}
+    };
 
-  };
-
-  class TraceNameEvent: public TraceTaskEvent
-  {
-  protected:
-    string _name;
-
-  public:
-    TraceNameEvent() {_type = TASK_NAME;}
-
-    TraceNameEvent(int time, int task, const string &s)
-      :TraceTaskEvent(TASK_NAME, time, task), _name(s) {}
-
-    virtual ~TraceNameEvent() {}
-
-    unsigned int getSize() const override;
-
-    string getName() {return _name;}
-
-    string getDescription() override;
-
-    void write(ofstream& f) override;
-
-    void read(ifstream& in) override;
-
-    bool equals(TraceEvent* e) override;
-
-  };
-
-  class TraceDlineMissEvent: public TraceTaskEvent
-  {
-  public:
-    TraceDlineMissEvent() {_type = TASK_DLINEMISS;}
-
-    TraceDlineMissEvent(int time, int task)
-      :TraceTaskEvent(TASK_DLINEMISS, time, task) {}
-
-  };
-
-} //namespace RTSim
+} // namespace RTSim
 
 #endif

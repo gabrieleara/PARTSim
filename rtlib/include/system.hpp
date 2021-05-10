@@ -5,26 +5,26 @@
 #include <vector>
 
 // Static system information
-#include "cpu.hpp"
-#include "edfsched.hpp"
-#include "kernel.hpp"
-#include "mrtkernel.hpp"
-#include "powermodel.hpp"
-#include "tracepower.hpp"
+#include <cpu.hpp>
+#include <edfsched.hpp>
+#include <kernel.hpp>
+#include <mrtkernel.hpp>
+#include <powermodel.hpp>
+#include <tracepower.hpp>
 
 // Tasks system information
-#include "instr.hpp"
-#include "rttask.hpp"
+#include <instr.hpp>
+#include <rttask.hpp>
 
 // Tracing
-#include "json_trace.hpp"
-#include "jtrace.hpp"
-#include "texttrace.hpp"
-#include "tracepower.hpp"
+#include <json_trace.hpp>
+#include <jtrace.hpp>
+#include <texttrace.hpp>
+#include <tracepower.hpp>
 
 // File formats
-#include "csv.hpp"
-#include "yaml.hpp"
+#include <csv.hpp>
+#include <yaml.hpp>
 
 namespace RTSim {
 

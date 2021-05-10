@@ -35,38 +35,39 @@ namespace RTSim {
     class TextTrace {
     protected:
         std::ofstream fd;
-    public:
-        TextTrace(const string& name);
-        
-        ~TextTrace();
-        
-        void probe(ArrEvt& e);
-        
-        void probe(EndEvt& e);
-        
-        void probe(SchedEvt& e);
-        
-        void probe(DeschedEvt& e);
-        
-        void probe(DeadEvt& e);
 
-        void probe(KillEvt& e);
-        
+    public:
+        TextTrace(const string &name);
+
+        ~TextTrace();
+
+        void probe(ArrEvt &e);
+
+        void probe(EndEvt &e);
+
+        void probe(SchedEvt &e);
+
+        void probe(DeschedEvt &e);
+
+        void probe(DeadEvt &e);
+
+        void probe(KillEvt &e);
+
         void attachToTask(AbsRTTask &t);
     };
 
     class VirtualTrace {
         map<string, int> *results;
+
     public:
-        
         VirtualTrace(map<string, int> *r);
-        
+
         ~VirtualTrace();
-        
-        void probe(EndEvt& e);
-        
+
+        void probe(EndEvt &e);
+
         void attachToTask(Task &t);
     };
-}
+} // namespace RTSim
 
 #endif

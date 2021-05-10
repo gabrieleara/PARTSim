@@ -14,8 +14,8 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <regvar.hpp>
 #include <factory.hpp>
+#include <regvar.hpp>
 #include <simul.hpp>
 #include <strtoken.hpp>
 
@@ -32,79 +32,78 @@ namespace RTSim {
     using std::unique_ptr;
     using std::vector;
 
-    Task::~Task()
-    {
+    Task::~Task() {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT("Destructor of class Task");
-        //discardInstrs(true);
+        // discardInstrs(true);
     }
-    
+
     Task::Task(unique_ptr<RandomVar> iat, Tick rdl, Tick ph,
-               const std::string &name, long qs, Tick maxC)
-        : Entity(name), 
-          int_time(std::move(iat)),
-          lastArrival(0),
-          phase(ph), 
-          arrival(0),
-          execdTime(0),
-          _maxC(maxC), 
-          arrQueue(),
-          arrQueueSize(qs), 
-          state(TSK_IDLE),
-          instrQueue(),
-          actInstr(),
-          _kernel(nullptr),
-          _lastSched(0),
-          _dl(0), _rdl(rdl),
-          feedback(nullptr),
-          arrEvt(this),
-          endEvt(this),
-          schedEvt(this),
-          deschedEvt(this),
-          fakeArrEvt(this),
-          killEvt(this), 
-          deadEvt(this, false, false)
-    {
-    }
+               const std::string &name, long qs, Tick maxC) :
+        Entity(name),
+        int_time(std::move(iat)),
+        lastArrival(0),
+        phase(ph),
+        arrival(0),
+        execdTime(0),
+        _maxC(maxC),
+        arrQueue(),
+        arrQueueSize(qs),
+        state(TSK_IDLE),
+        instrQueue(),
+        actInstr(),
+        _kernel(nullptr),
+        _lastSched(0),
+        _dl(0),
+        _rdl(rdl),
+        feedback(nullptr),
+        arrEvt(this),
+        endEvt(this),
+        schedEvt(this),
+        deschedEvt(this),
+        fakeArrEvt(this),
+        killEvt(this),
+        deadEvt(this, false, false) {}
 
     string Task::getStateString() {
         string s = std::to_string(double(SIMUL.getTime())) + " ";
         switch (getState()) {
-            case TSK_IDLE:
+        case TSK_IDLE:
             s += "idle";
             break;
-            case TSK_READY:
+        case TSK_READY:
             s += "ready";
             break;
-            case TSK_EXEC:
+        case TSK_EXEC:
             s += "executing";
             break;
-            case TSK_BLOCKED:
+        case TSK_BLOCKED:
             s += "blocked";
             break;
-            default:
+        default:
             assert(false);
-            break; 
+            break;
         }
         return s;
     }
-    
-    void Task::newRun(void)
-    {
+
+    void Task::newRun(void) {
         if (!instrQueue.empty()) {
             actInstr = instrQueue.begin();
-        } else throw EmptyTask();
-        
+        } else
+            throw EmptyTask();
+
         state = TSK_IDLE;
-        while (chkBuffArrival()) unbuffArrival();
-        
+        while (chkBuffArrival())
+            unbuffArrival();
+
         lastArrival = arrival = phase;
-        if (int_time != nullptr) arrEvt.post(arrival);
+        if (int_time != nullptr)
+            arrEvt.post(arrival);
         _dl = 0;
     }
-    
-    void Task::endRun(void)
-    {
+
+    void Task::endRun(void) {
         while (!arrQueue.empty()) {
             arrQueue.pop_front();
         }
@@ -116,117 +115,108 @@ namespace RTSim {
         deadEvt.drop();
         killEvt.drop();
     }
-    
+
     /* Methods from the interface... */
-    bool Task::isActive(void) const
-    {
+    bool Task::isActive(void) const {
         return state != TSK_IDLE;
     }
-    
-    bool Task::isExecuting(void) const
-    {
+
+    bool Task::isExecuting(void) const {
         return state == TSK_EXEC;
     };
-    
-    void Task::schedule(void)
-    {
+
+    void Task::schedule(void) {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT("Scheduling " << getName());
-	
+
         _lastSched = SIMUL.getTime();
-        schedEvt.process();        
+        schedEvt.process();
     }
-    
-    void Task::deschedule()
-    {
+
+    void Task::deschedule() {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT("Descheduling " << getName());
-        
+
         schedEvt.drop();
         deschedEvt.process();
     }
-    
-  void Task::setKernel(AbsKernel *k) throw(KernAlreadySet)
-    {
+
+    void Task::setKernel(AbsKernel *k) throw(KernAlreadySet) {
         DBGENTER(_TASK_DBG_LEV);
-        
-        if (_kernel != nullptr) throw KernAlreadySet();
-        
-        _kernel = k;   
+
+        if (_kernel != nullptr)
+            throw KernAlreadySet();
+
+        _kernel = k;
     }
-        
-    void Task::reactivate()
-    {
+
+    void Task::reactivate() {
         Tick v;
-        
+
         if (int_time != nullptr) {
             v = (Tick) int_time->get();
-            if (v > 0) arrEvt.post(SIMUL.getTime() + v);
+            if (v > 0)
+                arrEvt.post(SIMUL.getTime() + v);
         }
     }
-    
-    void Task::handleArrival(Tick arr)
-    {
+
+    void Task::handleArrival(Tick arr) {
         DBGENTER(_TASK_DBG_LEV);
-        
+
         if (isActive()) {
             DBGPRINT("Task::handleArrival() Task already active!");
             throw TaskAlreadyActive();
         }
-        
+
         arrival = arr;
         execdTime = 0;
         actInstr = instrQueue.begin();
 
         DBGPRINT("Task::handleArrival() instrQueue.begin() accessed ");
-                
+
         // reset all instructions
         auto p = instrQueue.begin();
         while (p != instrQueue.end()) {
             DBGPRINT("Resetting");
-            if (*p == nullptr) DBGPRINT("SERIOUS PROBLEM!!");
+            if (*p == nullptr)
+                DBGPRINT("SERIOUS PROBLEM!!");
             (*p)->reset();
             DBGPRINT("Reset");
             p++;
         }
 
         DBGPRINT("Task::handleArrival() after reset ");
-        
+
         state = TSK_READY;
         _dl = getArrival() + _rdl;
-        if (_dl >= SIMUL.getTime()) deadEvt.post(_dl);
-        
+        if (_dl >= SIMUL.getTime())
+            deadEvt.post(_dl);
     }
 
-    void Task::block() 
-    {
+    void Task::block() {
         // check that the task is not idle and is not already blocked
-        if (state == TSK_IDLE || state == TSK_BLOCKED) 
-            throw string("Task cannot be blocked, because it is ") + 
+        if (state == TSK_IDLE || state == TSK_BLOCKED)
+            throw string("Task cannot be blocked, because it is ") +
                 (state == TSK_IDLE ? "idle" : "blocked");
         _kernel->suspend(this);
         state = TSK_BLOCKED;
         _kernel->dispatch();
     }
 
-    void Task::unblock()
-    {
+    void Task::unblock() {
         state = TSK_READY;
         _kernel->onArrival(this);
     }
-    
-    Tick Task::getArrival() const
-    {
+
+    Tick Task::getArrival() const {
         return arrival;
     }
-    
-    Tick Task::getLastArrival() const
-    {
+
+    Tick Task::getLastArrival() const {
         return lastArrival;
     }
-    
-    Tick Task::getExecTime() const
-    {
+
+    Tick Task::getExecTime() const {
         if (isActive()) {
             return execdTime + (*actInstr)->getExecTime();
         } else {
@@ -234,68 +224,59 @@ namespace RTSim {
         }
     }
 
-    double Task::getExecCycles() const
-    {
+    double Task::getExecCycles() const {
         if (isActive()) {
             return double(execdCycles) + (*actInstr)->getActCycles();
         } else {
             return execdCycles;
         }
     }
-    
-    Tick Task::getBuffArrival()
-    {
+
+    Tick Task::getBuffArrival() {
         Tick time = arrQueue.front();
-        
+
         arrQueue.pop_front();
-        
+
         return time;
     }
-    
-    bool Task::chkBuffArrival() const
-    {
+
+    bool Task::chkBuffArrival() const {
         return !arrQueue.empty();
     }
-    
-    void Task::buffArrival()
-    {
-        if ((int)arrQueue.size() <= arrQueueSize) {
+
+    void Task::buffArrival() {
+        if ((int) arrQueue.size() <= arrQueueSize) {
             arrQueue.push_back(SIMUL.getTime());
         }
     }
-    
-    void Task::unbuffArrival()
-    {
+
+    void Task::unbuffArrival() {
         if (!arrQueue.empty()) {
             arrQueue.pop_back();
         }
     }
-    
-    unique_ptr<RandomVar> Task::changeIAT(unique_ptr<RandomVar> iat)
-    {
+
+    unique_ptr<RandomVar> Task::changeIAT(unique_ptr<RandomVar> iat) {
         unique_ptr<RandomVar> ret = std::move(int_time);
-        
+
         int_time = std::move(iat);
         return ret;
     }
-    
-    void Task::addInstr(unique_ptr<Instr> instr)
-    {
+
+    void Task::addInstr(unique_ptr<Instr> instr) {
         instrQueue.push_back(std::move(instr));
         DBGTAG(_TASK_DBG_LEV, "Task::addInstr() : Instruction added");
     }
-        
-    void Task::discardInstrs(bool selfDestruct)
-    {
+
+    void Task::discardInstrs(bool selfDestruct) {
         instrQueue.clear();
     }
-    
+
     /* And finally, the event handlers!!! */
-    
-    void Task::onArrival(Event *e)
-    {
+
+    void Task::onArrival(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
-        
+
         if (!isActive()) {
             // Standard Task Arrival: do standard
             // book-keeping and forward the event to the
@@ -312,171 +293,160 @@ namespace RTSim {
             // from old Task ...
 
             deadEvt.process();
-            
+
             buffArrival();
         }
         reactivate();
     }
-    
-    void Task::onEndInstance(Event *)
-    {
+
+    void Task::onEndInstance(Event *) {
         DBGENTER(_TASK_DBG_LEV);
-        
+
         // from old Task ...
         deadEvt.drop();
         // normal code
-        
+
         if (!isActive()) {
             throw TaskNotActive("OnEnd() on a non-active task");
         }
         if (!isExecuting()) {
-		cout << toString() << endl;
+            cout << toString() << endl;
             throw TaskNotExecuting("OnEnd() on a non-executing task");
         }
-        
+
         actInstr = instrQueue.begin();
         lastArrival = arrival;
-        
+
         int cpu_index = getCPU()->getIndex();
-        
-        DBGPRINT("Task " << getName() << " finished on CPU "
-                 << cpu_index);
-        
+
+        DBGPRINT("Task " << getName() << " finished on CPU " << cpu_index);
+
         endEvt.setCPU(cpu_index);
         _kernel->onEnd(this);
         state = TSK_IDLE;
-        
+
         if (feedback) {
             DBGPRINT("Calling the feedback module");
             feedback->notify(getExecTime());
         }
-        
+
         DBGPRINT_4("chkBuffArrival for task ",
-                   dynamic_cast<Entity*>(this)->getName(),
-                   " = ",
+                   dynamic_cast<Entity *>(this)->getName(), " = ",
                    chkBuffArrival());
-        
+
         if (chkBuffArrival()) {
             fakeArrEvt.process();
-            
+
             DBGPRINT("[Fake Arrival generated]");
         }
     }
-    
-    void Task::killInstance() throw(TaskNotActive, TaskNotExecuting)
-    {
-        
+
+    void Task::killInstance() throw(TaskNotActive, TaskNotExecuting) {
         DBGENTER(_TASK_DBG_LEV);
 
         if (chkBuffArrival()) {
             fakeArrEvt.post(SIMUL.getTime());
             DBGPRINT("[Fake Arrival generated]");
         }
-        
+
         if (isExecuting())
             deschedule();
-        
-        //killEvt.process();
+
+        // killEvt.process();
         killEvt.post(SIMUL.getTime());
     }
-    
-    void Task::onKill(Event *e)
-    {
+
+    void Task::onKill(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
-        
-        // todo right? otherwise at next task arrival, another deadEvt is posted => exception
+
+        // todo right? otherwise at next task arrival, another deadEvt is posted
+        // => exception
         deadEvt.drop();
 
         //(*actInstr)->deschedule();
-        
+
         // from old Task ...
         killEvt.drop();
         // normal code
-        
+
         lastArrival = arrival;
-        
+
         int cpu_index = getCPU()->getIndex();
-        
-        DBGPRINT("Task " << getName() << " killed on CPU "
-                 << cpu_index);
-        
+
+        DBGPRINT("Task " << getName() << " killed on CPU " << cpu_index);
+
         endEvt.setCPU(cpu_index);
         _kernel->onEnd(this);
         state = TSK_IDLE;
-        
+
         if (feedback) {
             DBGPRINT("Calling the feedback module");
             feedback->notify(getExecTime());
         }
-        
+
         DBGPRINT_4("chkBuffArrival for task ",
-                   dynamic_cast<Entity*>(this)->getName(),
-                   " = ",
+                   dynamic_cast<Entity *>(this)->getName(), " = ",
                    chkBuffArrival());
-        
+
         if (chkBuffArrival()) {
             fakeArrEvt.process();
-            
+
             DBGPRINT("[Fake Arrival generated]");
         }
 
         endRun();
     }
-    
-    void Task::onSched(Event *e)
-    {
+
+    void Task::onSched(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
         int cpu_index = getCPU()->getIndex();
-        
-        DBGPRINT("schedEvt for task " << getName()
-                 << " on CPU " << cpu_index);
-        
+
+        DBGPRINT("schedEvt for task " << getName() << " on CPU " << cpu_index);
+
         if (!isActive()) {
             throw TaskNotActive("OnSched on a non-active task");
         }
         if (isExecuting()) {
             throw TaskAlreadyExecuting();
         }
-        
+
         schedEvt.setCPU(cpu_index);
         deschedEvt.drop();
-        
+
         state = TSK_EXEC;
-        
+
         (*actInstr)->schedule();
-        
+
         // from Task ...
         deadEvt.setCPU(cpu_index);
     }
-    
-    void Task::onDesched(Event *e)
-    {
+
+    void Task::onDesched(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
-        
+
         int cpu_index = getOldCPU()->getIndex();
-        
-        DBGPRINT("DeschedEvt for task " << getName()
-                 << "from CPU" << cpu_index);
-        
+
+        DBGPRINT("DeschedEvt for task " << getName() << "from CPU"
+                                        << cpu_index);
+
         if (!isActive()) {
             throw TaskNotActive("OnDesched on a non-active task");
         }
         if (!isExecuting()) {
             throw TaskNotExecuting("OnDesched() on a non-executing task");
         }
-        
+
         DBGPRINT_2("CPU: ", getCPU());
         deschedEvt.setCPU(cpu_index);
         endEvt.drop();
-        
+
         (*actInstr)->deschedule();
         execdTime += (*actInstr)->getExecTime();
-        
+
         state = TSK_READY;
     }
-    
-    void Task::onInstrEnd()
-    {
+
+    void Task::onInstrEnd() {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT("task : " << getName());
         if (!isActive()) {
@@ -484,7 +454,7 @@ namespace RTSim {
             throw TaskNotActive("onInstrEnd() on a non-active task");
         }
 
-        // this exception conflicts with the implementation of suspendInstr. 
+        // this exception conflicts with the implementation of suspendInstr.
         // I am removing it for the moment
         // if (not isExecuting()) {
         //     DBGPRINT("not executing...");
@@ -493,8 +463,7 @@ namespace RTSim {
 
         CPU *p = getCPU();
         if (!dynamic_cast<CPU *>(p))
-            throw InstrExc("No CPU!",
-                           "Task::onInstrEnd()");
+            throw InstrExc("No CPU!", "Task::onInstrEnd()");
         p->setWorkload("idle");
 
         execdTime += (*actInstr)->getExecTime();
@@ -502,35 +471,31 @@ namespace RTSim {
         if (actInstr == instrQueue.end()) {
             DBGPRINT("End of instruction list");
             endEvt.post(SIMUL.getTime());
-        } else if (isExecuting()) {          
+        } else if (isExecuting()) {
             (*actInstr)->schedule();
             DBGPRINT("Next instr scheduled");
         }
     }
-    
-    void Task::onFakeArrival(Event *e)
-    {
+
+    void Task::onFakeArrival(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
         DBGPRINT_2("fakeArrEvt for task", getName());
-        
+
         handleArrival(getBuffArrival());
-        
-        _kernel->onArrival(this);        
+
+        _kernel->onArrival(this);
     }
-    
-    void Task::activate()
-    {
+
+    void Task::activate() {
         activate(SIMUL.getTime());
     }
-    
-    void Task::activate(Tick t)
-    {
+
+    void Task::activate(Tick t) {
         arrEvt.drop();
         arrEvt.post(t);
     }
-    
-    Tick Task::getWCET() const
-    {
+
+    Tick Task::getWCET() const {
         Tick tt = 0;
         if (_maxC == 0) {
             auto i = instrQueue.begin();
@@ -538,138 +503,136 @@ namespace RTSim {
                 tt += (*i)->getWCET();
                 i++;
             }
-        } else tt = _maxC;
+        } else
+            tt = _maxC;
         return tt;
     }
-    
-    void Task::insertCode(const string &code) //throw(ParseExc)
+
+    void Task::insertCode(const string &code) // throw(ParseExc)
     {
         DBGENTER(_TASK_DBG_LEV);
-        
+
         vector<string> instr = split_instr(code);
-        
-        for (unsigned int i=0; i<instr.size(); ++i) {
+
+        for (unsigned int i = 0; i < instr.size(); ++i) {
             vector<string>::iterator j;
-            
+
             string token = get_token(instr[i]);
             string param = get_param(instr[i]);
             vector<string> par_list = split_param(param);
-            
+
             par_list.push_back(string(getName()));
-            
-            
-            for (j=par_list.begin();j!=par_list.end(); ++j)
+
+            for (j = par_list.begin(); j != par_list.end(); ++j)
                 DBGPRINT_2(" - ", *j);
             DBGPRINT("");
-            
-            unique_ptr<Instr> curr = genericFactory<Instr>::instance().create(token, par_list);
-                        
-            if (!curr) throw ParseExc("insertCode", token);
-            
+
+            unique_ptr<Instr> curr =
+                genericFactory<Instr>::instance().create(token, par_list);
+
+            if (!curr)
+                throw ParseExc("insertCode", token);
+
             DBGPRINT("Instr " << curr->getName() << "  created.");
             // todo
-            cout << "Task::insertCode. instr created: "<<curr->getName()<<endl;
-            
+            cout << "Task::insertCode. instr created: " << curr->getName()
+                 << endl;
+
             addInstr(std::move(curr));
-            
+
             printInstrList();
         }
-
     }
-    
-    void Task::printInstrList() const
-    {
+
+    void Task::printInstrList() const {
         unsigned int i;
 
-        cout<<"Task " << getName() << ": instruction list"<<endl;
+        cout << "Task " << getName() << ": instruction list" << endl;
         DBGPRINT("Task " << getName() << ": instruction list");
-        for (i=0; i<instrQueue.size(); ++i) {
-          cout << i << ") " << instrQueue[i]->toString() << endl;
-          DBGPRINT(i << ") " << instrQueue[i]->toString());
+        for (i = 0; i < instrQueue.size(); ++i) {
+            cout << i << ") " << instrQueue[i]->toString() << endl;
+            DBGPRINT(i << ") " << instrQueue[i]->toString());
         }
     }
-    
-    CPU *Task::getCPU() const
-    {
+
+    CPU *Task::getCPU() const {
         DBGTAG(_TASK_DBG_LEV, "Task::getCPU()");
-        
+
         return _kernel->getProcessor(this);
     }
-    
-    
-    CPU *Task::getOldCPU() const
-    {
+
+    CPU *Task::getOldCPU() const {
         DBGTAG(_TASK_DBG_LEV, "Task::getOldCPU()");
-        
+
         return _kernel->getOldProcessor(this);
     }
-    
-    void Task::refreshExec(double oldSpeed, double newSpeed)
-    {
+
+    void Task::refreshExec(double oldSpeed, double newSpeed) {
         DBGENTER(_TASK_DBG_LEV);
         (*actInstr)->refreshExec(oldSpeed, newSpeed);
-        
     }
-    
-    std::string taskname(const AbsRTTask *t)
-    {
+
+    std::string taskname(const AbsRTTask *t) {
         const Entity *e = dynamic_cast<const Entity *>(t);
-        if (e) return string(e->getName());
-        else return "(nil)";
+        if (e)
+            return string(e->getName());
+        else
+            return "(nil)";
     }
-    
-    unique_ptr<Task> Task::createInstance(const vector<string> &par)
-    {
+
+    unique_ptr<Task> Task::createInstance(const vector<string> &par) {
         unique_ptr<RandomVar> i;
         if (par[0] != "0") //(strcmp(par[0].c_str(), "0"))
             i = RandomVar::parsevar(par[0]);
         Tick d = Tick(par[1]);
         Tick p = Tick(par[2]);
         string n = "";
-        //const char* n = "";
-        if (par.size() > 2) n = par[3];
+        // const char* n = "";
+        if (par.size() > 2)
+            n = par[3];
         long q = 1000;
-        if (par.size() > 4) q = 1000;//atoi(par[4].c_str()); // TODO: WHY?
+        if (par.size() > 4)
+            q = 1000; // atoi(par[4].c_str()); // TODO: WHY?
         bool a = true;
-        if (par.size() > 5 && par[5] != "false") a = false;
+        if (par.size() > 5 && par[5] != "false")
+            a = false;
         unique_ptr<Task> t(new Task(std::move(i), d, p, n, q, a));
         return t;
     }
-    
-    void Task::setFeedbackModule(AbstractFeedbackModule *afm)
-    {
+
+    void Task::setFeedbackModule(AbstractFeedbackModule *afm) {
         feedback = afm;
     }
-    
-    void Task::resetInstrQueue()
-    {
+
+    void Task::resetInstrQueue() {
         actInstr = instrQueue.begin();
     }
-    
-    
-    void Task::killOnMiss(bool kill)
-    {
+
+    void Task::killOnMiss(bool kill) {
         deadEvt.setKill(kill);
     }
 
     double Task::getRemainingWCET(double capacity) const {
-        // todo keep track of task migrations and do as in ExecInstr::refreshExec(
+        // todo keep track of task migrations and do as in
+        // ExecInstr::refreshExec(
         Tick alreadyExecdCycles = Tick(double(getExecTime()) * capacity);
         double n = double(getWCET() - alreadyExecdCycles) / capacity;
-        //printf("%s (%f-%f)/%f=%f\n", __func__, double(getWCET()), double(alreadyExecdCycles), capacity, n);
+        // printf("%s (%f-%f)/%f=%f\n", __func__, double(getWCET()),
+        // double(alreadyExecdCycles), capacity, n);
         return n;
     }
 
     string Task::toString() const {
         std::stringstream ss;
-        ss << getName() << " arr " << getArrival() << " DL " << getDeadline() << " WCET " + getWCET();
+        ss << getName() << " arr " << getArrival() << " DL " << getDeadline()
+           << " WCET " + getWCET();
         return ss.str();
     }
 
     /// to string operator
-    std::ostream& operator<<(std::ostream &strm, Task &a) {
+    std::ostream &operator<<(std::ostream &strm, Task &a) {
         strm << a.toString();
         return strm;
     }
-    
-}
+
+} // namespace RTSim

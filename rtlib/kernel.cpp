@@ -17,27 +17,26 @@
 
 #include <cpu.hpp>
 #include <kernel.hpp>
+#include <reginstr.hpp>
 #include <resmanager.hpp>
 #include <scheduler.hpp>
 #include <task.hpp>
-#include <reginstr.hpp>
 
 namespace RTSim {
 
     using std::cout;
     using std::endl;
 
-    RTKernel::RTKernel(Scheduler *s, const std::string& name, CPU* c) 
-        : Entity(name),
-          _sched(s),
-          _resMng(0),
-          _cpu(),
-          _isContextSwitching(false),
-          _contextSwitchDelay(0),
-          internalCpu(true),
-          beginDispatchEvt(this),
-          endDispatchEvt(this)
-    {   
+    RTKernel::RTKernel(Scheduler *s, const std::string &name, CPU *c) :
+        Entity(name),
+        _sched(s),
+        _resMng(0),
+        _cpu(),
+        _isContextSwitching(false),
+        _contextSwitchDelay(0),
+        internalCpu(true),
+        beginDispatchEvt(this),
+        endDispatchEvt(this) {
         __reginstr_init();
         __regsched_init();
         __regtask_init();
@@ -55,60 +54,51 @@ namespace RTSim {
            variable specifies if the CPU must be deleted in
            the kernel destructor.
         */
-        if (c != NULL){
+        if (c != NULL) {
             _cpu = c;
             internalCpu = false;
-        }
-        else{
+        } else {
             // Creates a CPU without power saving:
             _cpu = new CPU;
         }
-          
+
         s->setKernel(this);
     }
-    
-    RTKernel::~RTKernel()
-    {
+
+    RTKernel::~RTKernel() {
         DBGENTER(_KERNEL_DBG_LEV);
         DBGPRINT("Destructor of RTKernel");
-        if (internalCpu == true){
+        if (internalCpu == true) {
             DBGPRINT("Deleting internal CPU in the kernel");
             delete _cpu;
         }
-        
     }
 
-    void RTKernel::addTask(AbsRTTask &t, const string &params) 
-    {
+    void RTKernel::addTask(AbsRTTask &t, const string &params) {
         t.setKernel(this);
-        _handled.push_back(&t); 
+        _handled.push_back(&t);
         _sched->addTask(&t, params);
     }
 
-    CPU* RTKernel::getProcessor(const AbsRTTask* t) const
-    {
+    CPU *RTKernel::getProcessor(const AbsRTTask *t) const {
         return _cpu;
     }
 
-    CPU* RTKernel::getOldProcessor(const AbsRTTask* t) const
-    {
+    CPU *RTKernel::getOldProcessor(const AbsRTTask *t) const {
         return _cpu;
     }
 
-    void RTKernel::activate(AbsRTTask *task)
-    { 
+    void RTKernel::activate(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        _sched->insert(task);        
+        _sched->insert(task);
     }
-    
-    AbsRTTask* RTKernel::getCurrExe() const
-    {
+
+    AbsRTTask *RTKernel::getCurrExe() const {
         return _currExe;
     }
 
-    void RTKernel::suspend(AbsRTTask *task)
-    {
+    void RTKernel::suspend(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
 
         _sched->extract(task);
@@ -119,32 +109,28 @@ namespace RTSim {
         }
     }
 
-    void RTKernel::discardTasks(bool f)
-    {
+    void RTKernel::discardTasks(bool f) {
         _sched->discardTasks(f);
         _handled.clear();
     }
 
-    void RTKernel::onArrival(AbsRTTask *task)
-    {
+    void RTKernel::onArrival(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
-        DBGPRINT_2("Inserting ",
-                   taskname(task));
+        DBGPRINT_2("Inserting ", taskname(task));
 
         _sched->insert(task);
 
-        if(!_isContextSwitching) {
+        if (!_isContextSwitching) {
             DBGPRINT("onArrival, calling dispatch");
             dispatch();
         } else {
-            cout << "onArrival, posting enddispatchevt"<<endl;
+            cout << "onArrival, posting enddispatchevt" << endl;
             beginDispatchEvt.drop();
             beginDispatchEvt.post(endDispatchEvt.getTime());
         }
     }
 
-    void RTKernel::onEnd(AbsRTTask *task)
-    {
+    void RTKernel::onEnd(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
 
         if (getProcessor(task) == NULL) {
@@ -152,13 +138,12 @@ namespace RTSim {
         }
         _sched->extract(task);
         if (_currExe == task)
-          _currExe = NULL;
-        
+            _currExe = NULL;
+
         dispatch();
     }
 
-    void RTKernel::dispatch()
-    {
+    void RTKernel::dispatch() {
         DBGENTER(_KERNEL_DBG_LEV);
 
         // we have only to post an Dispatch event (low priority)
@@ -167,124 +152,104 @@ namespace RTSim {
         beginDispatchEvt.post(SIMUL.getTime());
     }
 
-    void RTKernel::onBeginDispatch(Event* e)
-    {
+    void RTKernel::onBeginDispatch(Event *e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
         AbsRTTask *newExe = _sched->getFirst();
 
         if (newExe != NULL)
-            DBGPRINT_2("From sched: ",
-                       taskname(newExe));
+            DBGPRINT_2("From sched: ", taskname(newExe));
 
-        if(_currExe != newExe){
-                if (_currExe != NULL){ 
-			_currExe->deschedule();
-		}
-		if( newExe != NULL) { 
-			_isContextSwitching = true;
-                	_currExe = newExe;
-                	endDispatchEvt.post(SIMUL.getTime() + _contextSwitchDelay);
-		}
-        }
-        else {
-                _sched->notify(newExe);
-                if (newExe != NULL)
-                    DBGPRINT_2("Now Running: ",
-                               taskname(newExe));
+        if (_currExe != newExe) {
+            if (_currExe != NULL) {
+                _currExe->deschedule();
+            }
+            if (newExe != NULL) {
+                _isContextSwitching = true;
+                _currExe = newExe;
+                endDispatchEvt.post(SIMUL.getTime() + _contextSwitchDelay);
+            }
+        } else {
+            _sched->notify(newExe);
+            if (newExe != NULL)
+                DBGPRINT_2("Now Running: ", taskname(newExe));
         }
     }
 
-
-    void RTKernel::onEndDispatch(Event* e)
-    {
+    void RTKernel::onEndDispatch(Event *e) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-	_currExe->schedule();
+        _currExe->schedule();
 
-        DBGPRINT_2("Now Running: ",
-                   taskname(_currExe));
+        DBGPRINT_2("Now Running: ", taskname(_currExe));
 
-	_isContextSwitching = false;
+        _isContextSwitching = false;
         _sched->notify(_currExe);
     }
 
-
-    void RTKernel::refresh() 
-    { 
+    void RTKernel::refresh() {
         DBGENTER(_KERNEL_DBG_LEV);
         dispatch();
-    } 
+    }
 
-    void RTKernel::setResManager(ResManager* rm)
-    { 
-        _resMng = rm; 
+    void RTKernel::setResManager(ResManager *rm) {
+        _resMng = rm;
         _resMng->setKernel(this, _sched);
     }
 
-    bool RTKernel::requestResource(AbsRTTask *t, const string &r, int n) 
-        throw(RTKernelExc)
-    {
+    bool RTKernel::requestResource(AbsRTTask *t, const string &r,
+                                   int n) throw(RTKernelExc) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        if (_resMng == 0) throw RTKernelExc("Resource Manager not set!");
-        bool ret = _resMng->request(t,r,n);
-        if (!ret) 
+        if (_resMng == 0)
+            throw RTKernelExc("Resource Manager not set!");
+        bool ret = _resMng->request(t, r, n);
+        if (!ret)
             dispatch();
         return ret;
-    } 
+    }
 
-    void RTKernel::releaseResource(AbsRTTask *t, const string &r, int n) 
-        throw(RTKernelExc)
-    { 
-        if (_resMng == 0) throw RTKernelExc("Resource Manager not set!");
+    void RTKernel::releaseResource(AbsRTTask *t, const string &r,
+                                   int n) throw(RTKernelExc) {
+        if (_resMng == 0)
+            throw RTKernelExc("Resource Manager not set!");
 
-        _resMng->release(t,r,n);
+        _resMng->release(t, r, n);
 
         dispatch();
     }
 
-    void RTKernel::setThreshold(const int th)
-    {
+    void RTKernel::setThreshold(const int th) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-       _sched->setThreshold(_currExe, th);
+        _sched->setThreshold(_currExe, th);
     }
 
-    void RTKernel::enableThreshold()
-    {
+    void RTKernel::enableThreshold() {
         DBGENTER(_KERNEL_DBG_LEV);
 
         _sched->enableThreshold(_currExe);
     }
 
-    void RTKernel::disableThreshold()
-    {
+    void RTKernel::disableThreshold() {
         DBGENTER(_KERNEL_DBG_LEV);
-        
+
         _sched->disableThreshold(_currExe);
     }
- 
-    void RTKernel::printState() const
-    {
-    }
 
-    void RTKernel::newRun()
-    {
+    void RTKernel::printState() const {}
+
+    void RTKernel::newRun() {
         _currExe = NULL;
     }
 
-    void RTKernel::endRun()
-    { 
+    void RTKernel::endRun() {
         _currExe = NULL;
     }
 
-    void RTKernel::print() const
-    {
-    }
-    
-    std::vector<std::string>  RTKernel::getRunningTasks()
-    {
+    void RTKernel::print() const {}
+
+    std::vector<std::string> RTKernel::getRunningTasks() {
         std::vector<std::string> tmp_ts;
         std::string tmp_name = taskname(_currExe);
 
@@ -293,4 +258,4 @@ namespace RTSim {
 
         return tmp_ts;
     }
-}
+} // namespace RTSim

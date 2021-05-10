@@ -22,8 +22,8 @@
 #include <entity.hpp>
 
 #include <abskernel.hpp>
-#include <kernevt.hpp>
 #include <cpu.hpp>
+#include <kernevt.hpp>
 
 #define _KERNEL_DBG_LEV "Kernel"
 
@@ -41,10 +41,10 @@ namespace RTSim {
     */
     class RTKernelExc : public BaseExc {
     public:
-        RTKernelExc(string msg) :BaseExc(msg, "RTKernel", "kernel.cpp") {}
+        RTKernelExc(string msg) : BaseExc(msg, "RTKernel", "kernel.cpp") {}
     };
 
-    /** 
+    /**
         \ingroup kernels
 
         An implementation of a real-time single processor kernel.
@@ -60,7 +60,7 @@ namespace RTSim {
         a resource allocation policy;
 
         - the set of task handled by this kernel.
-      
+
         This implementation is quite general: it lets the user of
         this class the freedom to adopt any scheduler derived form
         Scheduler and a resorce manager derived from ResManager
@@ -73,32 +73,31 @@ namespace RTSim {
         We will probably have to derive from this class to
         implement static partition and mixed task allocation to
         CPU.
- 
+
         @sa absCPUFactory, Scheduler, ResManager, AbsRTTask
     */
     class RTKernel : public Entity, public virtual AbsKernel {
     protected:
-
         /// The real-time scheduler
         Scheduler *_sched;
-    
+
         /// The resource manager
-        ResManager* _resMng;
-    
+        ResManager *_resMng;
+
         /// The currently executing task
-        AbsRTTask * _currExe;
-    
+        AbsRTTask *_currExe;
+
         /// The processor...
         CPU *_cpu;
-    
+
         /// List of the tasks.
         std::deque<AbsRTTask *> _handled;
 
         bool _isContextSwitching;
-    
-        Tick  _contextSwitchDelay;
 
-        /** 
+        Tick _contextSwitchDelay;
+
+        /**
             This boolean variable is true if _cpu was created
             using the command "new" in the constructor. It is
             used in the destructor to know if the delete
@@ -111,10 +110,9 @@ namespace RTSim {
         friend class EndDispatchEvt;
 
     public:
-
         BeginDispatchEvt beginDispatchEvt;
         EndDispatchEvt endDispatchEvt;
-    
+
         /**
            Constructor. It needs a pointer to the
            scheduler. Optionally, it is possible to specify
@@ -127,14 +125,14 @@ namespace RTSim {
            @param name   Name of this kernel
            @param c      Pointer to a CPU object
         */
-        RTKernel(Scheduler* s, const std::string &name = "", CPU* c= NULL); 
+        RTKernel(Scheduler *s, const std::string &name = "", CPU *c = NULL);
 
         /**
            Destructor of the class. It destroys the internal
            CPU object, unless it was passed as parameter in
            the constructor.
         */
-        virtual ~RTKernel(); 
+        virtual ~RTKernel();
 
         /**
            This function simply inserts the task in the ready
@@ -144,7 +142,7 @@ namespace RTSim {
 
            @see dispatch
         */
-        void activate(AbsRTTask*) override;
+        void activate(AbsRTTask *) override;
 
         /**
            Removes the task from the ready queue. If the task
@@ -153,7 +151,7 @@ namespace RTSim {
            task is simply removed from the ready queue, and
            nothing happens to the executing task.
         */
-        void suspend(AbsRTTask*) override;
+        void suspend(AbsRTTask *) override;
 
         /**
            Compares _currExe with the first task in the ready
@@ -163,8 +161,8 @@ namespace RTSim {
         */
         void dispatch() override;
 
-        virtual void onBeginDispatch(Event* e);
-        virtual void onEndDispatch(Event* e);
+        virtual void onBeginDispatch(Event *e);
+        virtual void onEndDispatch(Event *e);
 
         /**
            This function is invoked from the task onArrival
@@ -174,7 +172,7 @@ namespace RTSim {
 
            @see refresh
         */
-        void onArrival(AbsRTTask*) override;
+        void onArrival(AbsRTTask *) override;
 
         /**
            This function is invoked from the task onEnd
@@ -185,8 +183,8 @@ namespace RTSim {
 
            @see refresh
         */
-        void onEnd(AbsRTTask*) override;
-    
+        void onEnd(AbsRTTask *) override;
+
         /**
            Calls the refresh method of the scheduler to
            re-order the ready queue, and dispatch() to update
@@ -195,7 +193,7 @@ namespace RTSim {
            @see dispatch, RTSim::Scheduler
         */
         virtual void refresh();
-    
+
         /**
            Set the resource manager to be used for handling
            shared resource between tasks. The default is no
@@ -203,31 +201,30 @@ namespace RTSim {
            will be raised in case a task performs a wait or
            signal opration.
         */
-        void setResManager(ResManager* rm);
-    
+        void setResManager(ResManager *rm);
+
         /**
            Forwards the request of resource r from task t to
            the resource manager. If the resource manager has
            not been set, a RTKernelExc exception is raised.
         */
-        virtual bool requestResource(AbsRTTask *t, const string &r, int n=1)
-            throw(RTKernelExc);
-    
+        virtual bool requestResource(AbsRTTask *t, const string &r,
+                                     int n = 1) throw(RTKernelExc);
+
         /**
            Forwards the release of the resource r by task t to
            the resource manager. If the resource manager has
            not been set, a RTKernelExc is raised.
         */
-        virtual void releaseResource(AbsRTTask *t, const string &r, int n=1)
-            throw(RTKernelExc);
-    
+        virtual void releaseResource(AbsRTTask *t, const string &r,
+                                     int n = 1) throw(RTKernelExc);
 
         /**
-           Forwards the request of preemption threshold raising for 
+           Forwards the request of preemption threshold raising for
            the executing task to the scheduler.
         */
         virtual void setThreshold(int th);
-        
+
         virtual void enableThreshold();
 
         virtual void disableThreshold();
@@ -238,18 +235,18 @@ namespace RTSim {
            reason. Therefore, this function has to be
            called. The typical sequence of operations to
            create a running system is the following:
-       
+
            - The scheduler is created;
-                   
+
            - The kernel is created passing the address of the
            scheduler
-                   
+
            - The task is created
-                   
+
            - The task is added to the kernel, passing the
            proper scheduling parameters.
         */
-        virtual void addTask(AbsRTTask &t, const string &param ="");
+        virtual void addTask(AbsRTTask &t, const string &param = "");
 
         /**
            Returns a pointer to the CPU on which t is runnig
@@ -257,7 +254,7 @@ namespace RTSim {
            case, it will always return the same CPU, since we
            are on a single processor platform.
         */
-        CPU* getProcessor(const AbsRTTask* t) const override;
+        CPU *getProcessor(const AbsRTTask *t) const override;
 
         /**
            Returns a pointer to the CPU on which t was runnig last.
@@ -265,11 +262,13 @@ namespace RTSim {
            always return the same CPU, since we are on a single
            processor platform.
         */
-        CPU* getOldProcessor(const AbsRTTask* t) const override;
+        CPU *getOldProcessor(const AbsRTTask *t) const override;
 
-        AbsRTTask* getCurrExe() const;
+        AbsRTTask *getCurrExe() const;
 
-	virtual Scheduler* getScheduler() const { return _sched; }
+        virtual Scheduler *getScheduler() const {
+            return _sched;
+        }
 
         /**
            Prints on the DEBUG stream the status of the kernel
@@ -286,11 +285,11 @@ namespace RTSim {
            case of RTKernel object, which can never be put on
            top of another kernel. However, it can be root of
            the hierarchy.
-       
+
            Since this object must be the end of the hierarchy,
            this function returns a pointer to itself.
         */
-        //AbsKernel* getKernel() { return this; }
+        // AbsKernel* getKernel() { return this; }
 
         virtual void discardTasks(bool);
 
@@ -299,53 +298,56 @@ namespace RTSim {
            objects. Before every new simulation run, this
            function is invoked. In this case, it just puts the
            _currExe pointer to NULL.
-        */ 
+        */
         void newRun() override;
-    
+
         /**
            This function is common to all Entity
            objects. after every new simulation run, this
            function is invoked. In this case, it just puts the
            _currExe pointer to NULL.
-        */   
+        */
         void endRun() override;
-    
+
         /**
            Prints the status of the objects on the DEBUG
            stream. In reality, this function does nothing! But
            it is virtual, so check the child classes.
-       
+
            @todo check all child classes.
         */
         virtual void print() const;
-  
+
         /**
            Function inherited from AbsKernel. It returns the
            current speed of the CPU.
         */
-        double getSpeed() const override {return (_cpu->getSpeed());}
-  
+        double getSpeed() const override {
+            return (_cpu->getSpeed());
+        }
+
         /**
            Function inherited from AbsKernel. It sets the
            speed of the CPU accordingly to the new system
            load, and returns the new speed.
         */
-      //   double setSpeed(double newLoad) 
-      //       {return (_cpu->setSpeed(newLoad));}
+        //   double setSpeed(double newLoad)
+        //       {return (_cpu->setSpeed(newLoad));}
 
         /**
-           Function inherited from AbsKernel. It says if the 
+           Function inherited from AbsKernel. It says if the
            kernel is currently in context switch mode.
         */
-        bool isContextSwitching() const override
-            { return _isContextSwitching; }
+        bool isContextSwitching() const override {
+            return _isContextSwitching;
+        }
 
         /**
            Function to set the overhead of the context switching,
            that is, by default, zero.
         */
-        virtual void setContextSwitchDelay( const Tick& t ) { 
-            _contextSwitchDelay = t; 
+        virtual void setContextSwitchDelay(const Tick &t) {
+            _contextSwitchDelay = t;
         }
 
         /**
@@ -357,7 +359,7 @@ namespace RTSim {
         */
         virtual std::vector<std::string> getRunningTasks();
     };
-  
-} // namespace RTSim 
+
+} // namespace RTSim
 
 #endif

@@ -36,69 +36,67 @@
 
 namespace RTSim {
 
-  using namespace MetaSim;
+    using namespace MetaSim;
 
-  using std::vector;
+    using std::vector;
 
-  class Task;
-
-  /**
-     This class models an interrupt. It can be periodic/sporadic (the
-     default), or bursty. The corresponding action is to activate a
-     number of tasks.
-
-     @author Giuseppe Lipari 
-   */
-  class Interrupt : public Entity {
-  protected:
-    /// the tasks
-    vector<Task *> tasks;
-
-    /// interarrival time between bursts
-    RandomVar *int_time;
-
-    /// bursty period (minimum interval btw consecutive interrupts)
-    int bp;
-  
-    /// burst lenght (number of consecutive interrupts in a burst).
-    RandomVar *burst_lenght;
-
-    /// Counts the number of activations in the burst
-    int count;
-
-    /// max number of activations in this round 
-    int max_act;
-
-  public:
-
-    /// Trigger Event
-    GEvent<Interrupt> triggerEvt;
+    class Task;
 
     /**
-       Constructor
-       @param iat interarrival time btw bursts
-       @param burstperiod minimum interval btw consecutive interrupts
-       @param burstlenght number of consecutive instances in a burst
-       @param name the name of the interrupt
+       This class models an interrupt. It can be periodic/sporadic (the
+       default), or bursty. The corresponding action is to activate a
+       number of tasks.
+
+       @author Giuseppe Lipari
      */
-    Interrupt(RandomVar *iat, 
-	      int burstperiod = 1, 
-	      RandomVar *burstlenght = NULL, const char *name="");
+    class Interrupt : public Entity {
+    protected:
+        /// the tasks
+        vector<Task *> tasks;
 
-    ~Interrupt();
+        /// interarrival time between bursts
+        RandomVar *int_time;
 
-    /// add a task to the interrupt activation list
-    void addTask(Task *t);
+        /// bursty period (minimum interval btw consecutive interrupts)
+        int bp;
 
-    /**
-       Called by the trigger event. Activates the tasks and posts the
-       trigger event again.
-     */
-    void onTrigger(Event *);
+        /// burst lenght (number of consecutive interrupts in a burst).
+        RandomVar *burst_lenght;
 
-    void newRun() override;
-    void endRun() override;
-  };
+        /// Counts the number of activations in the burst
+        int count;
+
+        /// max number of activations in this round
+        int max_act;
+
+    public:
+        /// Trigger Event
+        GEvent<Interrupt> triggerEvt;
+
+        /**
+           Constructor
+           @param iat interarrival time btw bursts
+           @param burstperiod minimum interval btw consecutive interrupts
+           @param burstlenght number of consecutive instances in a burst
+           @param name the name of the interrupt
+         */
+        Interrupt(RandomVar *iat, int burstperiod = 1,
+                  RandomVar *burstlenght = NULL, const char *name = "");
+
+        ~Interrupt();
+
+        /// add a task to the interrupt activation list
+        void addTask(Task *t);
+
+        /**
+           Called by the trigger event. Activates the tasks and posts the
+           trigger event again.
+         */
+        void onTrigger(Event *);
+
+        void newRun() override;
+        void endRun() override;
+    };
 
 } // namespace RTSim
 

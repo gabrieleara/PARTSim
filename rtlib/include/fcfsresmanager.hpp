@@ -30,30 +30,31 @@ namespace RTSim {
 
     /**
        \ingroup resman
-       Simple Resource manager which implements a FCFS strategy 
+       Simple Resource manager which implements a FCFS strategy
        for a single resource
-       @ see Resource 
+       @ see Resource
     */
     class FCFSResManager : public ResManager {
     public:
         /** Constructor of FCFSResManager
-         * 
+         *
          * @param n is the resource manager name
          */
         FCFSResManager(const string &n = "");
- 
+
         void newRun() override;
         void endRun() override;
- 
+
     protected:
-        bool request(AbsRTTask*, Resource*, int n=1) override;
-        void release(AbsRTTask*, Resource*, int n=1) override;
-    private:  
+        bool request(AbsRTTask *, Resource *, int n = 1) override;
+        void release(AbsRTTask *, Resource *, int n = 1) override;
+
+    private:
         map<Resource *, AbsRTTask *> _resAndCurrUsers;
         typedef std::deque<AbsRTTask *> BLOCKED_QUEUE;
         map<Resource *, BLOCKED_QUEUE> _blocked;
     };
 
-} // namespace RTSim 
+} // namespace RTSim
 
 #endif

@@ -24,7 +24,7 @@
  * Revision 1.4  2004/11/24 14:12:13  lipari
  * Merge between the branch and the main trunk.
  *
- * 
+ *
  */
 #ifndef __ENTITY_HPP___
 #define __ENTITY_HPP___
@@ -40,7 +40,7 @@ namespace MetaSim {
 
 #define _ENTITY_DBG_LEV "Entity"
 
-    /** 
+    /**
         The base class for every simulation object.  An entity has
         an internal status, an interface for modyfing the status,
         and can contain one or more events.  An entity can be
@@ -48,25 +48,24 @@ namespace MetaSim {
         the static method <i>find</i>. A specific entity class
         should redefine the <i>find</i> function for doing type
         checking.
-        
-        @author Giuseppe Lipari  
-        @version 1.0 
-        @sa Event 
-        
-        \ingroup metasim_ee   
+
+        @author Giuseppe Lipari
+        @version 1.0
+        @sa Event
+
+        \ingroup metasim_ee
     */
     class Entity {
     public:
-      virtual string toString() const {
-        return "Default Entity::toString() for " + getName();
-      };
+        virtual string toString() const {
+            return "Default Entity::toString() for " + getName();
+        };
 
     private:
         /** Hide the assignment operator. Entities are not
-            copyable. 
+            copyable.
         */
         Entity &operator=(const Entity &);
-
 
     protected:
         /* In general, entities could be cloned, so we
@@ -75,103 +74,111 @@ namespace MetaSim {
         Entity(const Entity &);
 
     private:
-                /** 
-            It contains pairs <ID, pointer to entity>. It's
-            used mainly to keep track of all the entities
-            present in the system. */
-        static std::map<int , Entity *> _globMap;
-  
+        /**
+    It contains pairs <ID, pointer to entity>. It's
+    used mainly to keep track of all the entities
+    present in the system. */
+        static std::map<int, Entity *> _globMap;
+
         /**
            It contains pairs <string, pointer to entity>. It
            is used to refer entities by name. The string must
            be unique!! */
         static std::map<std::string, Entity *> _index;
-        
+
         /// counter for assigning unique IDs to entities
         static int _IDcount;
-        
+
         /// unique ID for the entity
         int _ID;
-        
+
         /// unique name for the entity
         std::string _name;
-        
+
         /**
            \ingroup metasim_exc
-           
+
            Exceptions for the Entity class.
         */
         class Exc : public BaseExc {
         public:
-            Exc(std::string msg) : 
-                BaseExc(msg, "Entity", "entity.cpp") {}
+            Exc(std::string msg) : BaseExc(msg, "Entity", "entity.cpp") {}
         };
-        
+
         /**
            Initialize the entity. It is called by the
            different constructors, Entity(char *) and
            Entity(string) */
         void _init();
-        
+
     public:
-        /** 
+        /**
             Base constructor.
-            
+
             @param n A (possibly unique) name for the entity:
             by default the entity name is set equal to the
             typeid() + the entity ID. */
         Entity(const std::string &n);
-        
+
         /// Destructor
         virtual ~Entity();
-        
-        /** 
+
+        /**
             Obtains the pointer to the object from the ID.
             Quite useful for debugging.
-            
-            @param id the object ID.  
-            
+
+            @param id the object ID.
+
             @returns the pointer to the entity corresponding
             to that ID, or NULL if it doesn't exist an object
             with that ID. */
-        static inline Entity* getPointer(int id) {
-            std::map<int, Entity*>::const_iterator p = _globMap.find(id);
-            if (p == _globMap.end()) return NULL;
-            else return p->second;
+        static inline Entity *getPointer(int id) {
+            std::map<int, Entity *>::const_iterator p = _globMap.find(id);
+            if (p == _globMap.end())
+                return NULL;
+            else
+                return p->second;
         };
-        
-        /** 
+
+        /**
             Returns the pointer to the entity with the
             spoecified name or NULL if such entity does not
             exists.  */
-        static Entity * _find(std::string n);  
-        
-        /** 
+        static Entity *_find(std::string n);
+
+        /**
             Calls newRun() on every entity in the system.  It is
             automatically called at the beginning of every run by the
             Simulation class. Not to be called by the user!!  In a
             future release will be hidden.
-            
+
             @see callNewRun */
         static void callNewRun();
 
-        /** 
+        /**
             The same as callNewRun(), but it is called at the
             end of every run.
-            
+
             @see callEndRun */
         static void callEndRun();
-        
-        /// Get the entity ID
-        inline int getID() const { return _ID; }
-        
-        ///Get the Entity name
-        inline std::string getName() const { return _name; }
 
-	///Set the Entity name (introduced for the Multi Cores Queues schedulers)
-	inline void setName(string name) { _name = name; }
-        
-        /** 
+        /// Get the entity ID
+        inline int getID() const {
+            return _ID;
+        }
+
+        /// Get the Entity name
+        inline std::string getName() const {
+            return _name;
+        }
+
+        /// Set the Entity name (introduced for the Multi Cores Queues
+        /// schedulers)
+        inline void setName(string name) {
+            _name = name;
+        }
+
+        /**
             Resets the entity status at the beginning of every
             run.  This function is called automatically at the
             beginning of every run, and its job consists in
@@ -179,8 +186,8 @@ namespace MetaSim {
             newRun() is not permitted to create/destroy new
             entity objects. */
         virtual void newRun() = 0;
-        
-        /** 
+
+        /**
             Reset the entity status at the end of every run.
             This function is called automatically at the end
             of every run, and its job consists in resetting
@@ -190,7 +197,7 @@ namespace MetaSim {
         virtual void endRun() = 0;
     };
 
-  std::ostream& operator<<(std::ostream& out, Entity& e);
+    std::ostream &operator<<(std::ostream &out, Entity &e);
 
-}
+} // namespace MetaSim
 #endif

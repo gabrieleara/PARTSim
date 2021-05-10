@@ -13,9 +13,9 @@
  ***************************************************************************/
 #include <simul.hpp>
 
+#include <climits>
 #include <scheduler.hpp>
 #include <task.hpp>
-#include <climits>
 
 namespace RTSim {
     using namespace MetaSim;
@@ -24,156 +24,147 @@ namespace RTSim {
     using std::endl;
     using std::map;
 
-    TaskModel::TaskModel(AbsRTTask* t)
-        : _rtTask(t), active(false), 
-          _insertTime(0), _threshold(INT_MAX) 
-    {
-    }
+    TaskModel::TaskModel(AbsRTTask *t) :
+        _rtTask(t),
+        active(false),
+        _insertTime(0),
+        _threshold(INT_MAX) {}
 
-    TaskModel::~TaskModel()
-    {
-    }
+    TaskModel::~TaskModel() {}
 
-    bool TaskModel::TaskModelCmp::operator()(TaskModel* a, TaskModel* b) const
-    {
-        if (a->getPriority() < b->getPriority()) return true;
+    bool TaskModel::TaskModelCmp::operator()(TaskModel *a, TaskModel *b) const {
+        if (a->getPriority() < b->getPriority())
+            return true;
         else if (a->getPriority() == b->getPriority()) {
-            if (a->getInsertTime() < b->getInsertTime()) return true;
+            if (a->getInsertTime() < b->getInsertTime())
+                return true;
             else if (a->getInsertTime() == b->getInsertTime())
-                if (a->getTaskNumber() < b->getTaskNumber()) return true;
+                if (a->getTaskNumber() < b->getTaskNumber())
+                    return true;
         }
         return false;
     }
 
-    void TaskModel::setActive()
-    {
+    void TaskModel::setActive() {
         active = true;
     }
 
-    void TaskModel::setInactive()
-    {
+    void TaskModel::setInactive() {
         active = false;
     }
 
-    bool TaskModel::isActive()
-    {
+    bool TaskModel::isActive() {
         return active;
     }
 
-    void TaskModel::raiseThreshold()
-    {
+    void TaskModel::raiseThreshold() {
         _savedPriority = getPriority();
-        //cout << "New priority: " << getThreshold() << " / old priority: " << _savedPriority << endl;
+        // cout << "New priority: " << getThreshold() << " / old priority: " <<
+        // _savedPriority << endl;
         changePriority(getThreshold());
     }
 
-    void TaskModel::restorePriority()
-    {
+    void TaskModel::restorePriority() {
         DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
-        //cout << "Restoring priority from: " << getPriority() << " to: " << _savedPriority << endl;
+        // cout << "Restoring priority from: " << getPriority() << " to: " <<
+        // _savedPriority << endl;
         changePriority(_savedPriority);
     }
 
+    /*-----------------------------------------------------------------*/
 
-/*-----------------------------------------------------------------*/
-
-    Scheduler::Scheduler(): Entity(""), _kernel(0), _queue(), _tasks(), _currExe(0)
-    {
-    }
+    Scheduler::Scheduler() :
+        Entity(""),
+        _kernel(0),
+        _queue(),
+        _tasks(),
+        _currExe(0) {}
 
     Scheduler::~Scheduler() {}
 
-    void Scheduler::enqueueModel(TaskModel* model)
-    {
-        AbsRTTask* task = model->getTask();
+    void Scheduler::enqueueModel(TaskModel *model) {
+        AbsRTTask *task = model->getTask();
 
-        if (find(task) != NULL) throw RTSchedExc("Element already present");
-	
+        if (find(task) != NULL)
+            throw RTSchedExc("Element already present");
+
         _tasks[task] = model;
     }
 
-    TaskModel* Scheduler::find(AbsRTTask* task) const
-    {
+    TaskModel *Scheduler::find(AbsRTTask *task) const {
         auto mi = _tasks.find(task);
-	
-        if (mi == _tasks.end()) 
+
+        if (mi == _tasks.end())
             return NULL;
-        else return (*mi).second;
+        else
+            return (*mi).second;
     }
 
-    void Scheduler::setKernel(AbsKernel* k)
-    {
+    void Scheduler::setKernel(AbsKernel *k) {
         _kernel = k;
     }
 
-    void Scheduler::insert(AbsRTTask* task) throw(RTSchedExc, BaseExc)
-    {
+    void Scheduler::insert(AbsRTTask *task) throw(RTSchedExc, BaseExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        TaskModel* model = find(task);
-	
+        TaskModel *model = find(task);
+
         if (model == NULL) {
             cerr << "Scheduler::insert Task model not found" << endl;
             cerr << "For task " << taskname(task) << endl;
             cerr << "Scheduler " << getName() << endl;
             throw RTSchedExc("AbsRTTaskNotFound");
         }
-  
+
         model->setInsertTime(SIMUL.getTime());
         model->setActive();
 
         _queue.insert(model);
     }
 
-    void Scheduler::extract(AbsRTTask* task) throw(RTSchedExc, BaseExc)
-    {
+    void Scheduler::extract(AbsRTTask *task) throw(RTSchedExc, BaseExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        TaskModel* model = find(task);
+        TaskModel *model = find(task);
         if (model == NULL) // raise an exception
             throw RTSchedExc("AbsRTTask not found");
-		
+
         _queue.erase(model);
         model->setInactive();
     }
 
-    int Scheduler::getPriority(AbsRTTask* task) const throw(RTSchedExc)
-    {
-        TaskModel* model = find(task);
-	
+    int Scheduler::getPriority(AbsRTTask *task) const throw(RTSchedExc) {
+        TaskModel *model = find(task);
+
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
-		
+
         return model->getPriority();
     }
 
-    int Scheduler::getThreshold(AbsRTTask* task) throw(RTSchedExc)
-    { 
-        TaskModel* model = find(task);
-	
+    int Scheduler::getThreshold(AbsRTTask *task) throw(RTSchedExc) {
+        TaskModel *model = find(task);
+
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
-		
+
         return model->getThreshold();
-    } 
- 
-    void Scheduler::setThreshold(AbsRTTask *task, int th) throw(RTSchedExc)
-    {
-        TaskModel* model = find(task);
-        
+    }
+
+    void Scheduler::setThreshold(AbsRTTask *task, int th) throw(RTSchedExc) {
+        TaskModel *model = find(task);
+
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
-		
+
         model->setThreshold(th);
     }
 
-    void Scheduler::enableThreshold(AbsRTTask* task)
-        throw(RTSchedExc)
-    {
+    void Scheduler::enableThreshold(AbsRTTask *task) throw(RTSchedExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        TaskModel* model = find(task);
-	
+        TaskModel *model = find(task);
+
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
 
@@ -181,33 +172,31 @@ namespace RTSim {
         model->raiseThreshold();
     }
 
-    void Scheduler::disableThreshold(AbsRTTask *task) throw(RTSchedExc)
-    {
+    void Scheduler::disableThreshold(AbsRTTask *task) throw(RTSchedExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
-        
-        TaskModel* model = find(task);
-        
+
+        TaskModel *model = find(task);
+
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
 
-        //cout << "disableThreshold called" << endl;
-        
+        // cout << "disableThreshold called" << endl;
+
         if (model->isActive()) {
             extract(task);
             model->restorePriority();
             insert(task);
             _kernel->dispatch();
 
-        }
-        else model->restorePriority();
+        } else
+            model->restorePriority();
     }
 
-    void Scheduler::discardTasks(bool f)
-    {
+    void Scheduler::discardTasks(bool f) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        typedef map<AbsRTTask*, TaskModel*>::iterator IT;
-        
+        typedef map<AbsRTTask *, TaskModel *>::iterator IT;
+
         _queue.clear();
 
         IT i = _tasks.begin();
@@ -222,28 +211,28 @@ namespace RTSim {
         _tasks.clear();
     }
 
-    AbsRTTask* Scheduler::getTaskN(unsigned int n)
-    {
+    AbsRTTask *Scheduler::getTaskN(unsigned int n) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        if ( _queue.size() <= n ) {
+        if (_queue.size() <= n) {
             return NULL;
         }
 
-        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
+        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
             _queue.begin();
-        for (unsigned int i = 0; i < n; i++) it++;
+        for (unsigned int i = 0; i < n; i++)
+            it++;
 
-        return (*it)->getTask();    
+        return (*it)->getTask();
     }
 
     bool Scheduler::isFound(AbsRTTask *t) {
-        TaskModel* model = find(t);
+        TaskModel *model = find(t);
         return model != NULL;
     }
 
     bool Scheduler::isInQueue(AbsRTTask *t) {
-        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
+        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
             _queue.begin();
         for (unsigned int i = 0; i < _queue.size(); i++) {
             if ((*it) != NULL && (*it)->getTask() == t)
@@ -253,32 +242,26 @@ namespace RTSim {
         return false;
     }
 
-    void Scheduler::notify(AbsRTTask* task)
-    {
+    void Scheduler::notify(AbsRTTask *task) {
         DBGENTER(_SCHED_DBG_LEVEL);
         _currExe = task;
-        
     }
 
-    void Scheduler::newRun()
-    {
+    void Scheduler::newRun() {
         _queue.clear();
-        
-        typedef map<AbsRTTask*, TaskModel*>::iterator IT;
 
-        for (IT i = _tasks.begin(); i != _tasks.end(); ++i) 
+        typedef map<AbsRTTask *, TaskModel *>::iterator IT;
+
+        for (IT i = _tasks.begin(); i != _tasks.end(); ++i)
             i->second->setInactive();
     }
 
-    void Scheduler::endRun()
-    {
-    }
+    void Scheduler::endRun() {}
 
-    void Scheduler::print()
-    {
-        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
-            _queue.begin(); 
-        
+    void Scheduler::print() {
+        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
+            _queue.begin();
+
         DBGPRINT("Ready queue: ");
         for (; it != _queue.end(); ++it)
             DBGPRINT_2(taskname((*it)->getTask()), " -> ");
@@ -286,20 +269,18 @@ namespace RTSim {
 
     string Scheduler::toString() const {
         string s;
-        priority_list<TaskModel*, TaskModel::TaskModelCmp>::iterator it = 
+        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
             _queue.begin();
         for (unsigned int i = 0; i < _queue.size(); i++) {
             if ((*it) != NULL && (*it)->getTask() != NULL)
                 s += taskname((*it)->getTask()) + "\t";
-    	    it++;
-     	}
-        
-        return s; 
+            it++;
+        }
+
+        return s;
     }
 
-    AbsRTTask* Scheduler::getFirst()
-    {
+    AbsRTTask *Scheduler::getFirst() {
         return getTaskN(0);
- 
     }
-}
+} // namespace RTSim

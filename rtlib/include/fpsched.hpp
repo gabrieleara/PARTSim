@@ -16,12 +16,12 @@
 
 #include <scheduler.hpp>
 
-#define _FP_SCHED_DBG	"fpsched"
+#define _FP_SCHED_DBG "fpsched"
 
 namespace RTSim {
 
     using namespace MetaSim;
-    
+
 #define _FP_SCHED_DBG_LEV "fpsched"
 
     /**
@@ -33,25 +33,27 @@ namespace RTSim {
        work is done in the Scheduler class. The user must specify the
        priority of each task esplicitily.
     */
-    class FPScheduler : public Scheduler
-    {
+    class FPScheduler : public Scheduler {
     protected:
-
-        class FPModel: public TaskModel
-        {
+        class FPModel : public TaskModel {
         protected:
             Tick _prio;
 
         public:
             FPModel(AbsRTTask *t, Tick p) : TaskModel(t), _prio(p) {}
-            Tick getPriority() const override { return _prio; }
+            Tick getPriority() const override {
+                return _prio;
+            }
 
             /// @todo: check the type
-            void setPriority(Tick p) { _prio = p; }
+            void setPriority(Tick p) {
+                _prio = p;
+            }
 
-            void changePriority(Tick p) override { setPriority(p); }
+            void changePriority(Tick p) override {
+                setPriority(p);
+            }
         };
-
 
     public:
         /**
@@ -74,11 +76,10 @@ namespace RTSim {
         void addTask(AbsRTTask *t, const string &p) override;
 
         void removeTask(AbsRTTask *t) override {}
-                        
-        static FPScheduler *createInstance(vector<string> &par);
 
+        static FPScheduler *createInstance(vector<string> &par);
     };
 
-} // namespace RTSim 
+} // namespace RTSim
 
 #endif

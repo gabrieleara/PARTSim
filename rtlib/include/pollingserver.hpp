@@ -21,32 +21,38 @@ namespace RTSim {
     class PollingServer : public Server {
     private:
         Tick Q, P;
-        Tick cap; 
+        Tick cap;
         Tick last_time;
         Tick recharging_time;
+
     public:
-        PollingServer(Tick q, Tick p, const std::string &name, 
+        PollingServer(Tick q, Tick p, const std::string &name,
                       const std::string &sched = "FIFOSched");
 
         void newRun() override;
         void endRun() override;
 
-        Tick getBudget() const override { return Q;}
-        Tick getPeriod() const override { return P;}
+        Tick getBudget() const override {
+            return Q;
+        }
+        Tick getPeriod() const override {
+            return P;
+        }
 
         Tick changeBudget(const Tick &n) override;
 
         /** @todo to be completed */
-        double getVirtualTime() override {return 0;}
+        double getVirtualTime() override {
+            return 0;
+        }
 
     protected:
-                
         /// from idle to active contending (new work to do)
         void idle_ready() override;
 
         /// from active non contending to active contending (more work)
         void releasing_ready() override;
-                
+
         /// from active contending to executing (dispatching)
         void ready_executing() override;
 
@@ -68,7 +74,6 @@ namespace RTSim {
         /// from recharging to active contending (budget recharged)
         void recharging_idle() override;
     };
-}
-
+} // namespace RTSim
 
 #endif

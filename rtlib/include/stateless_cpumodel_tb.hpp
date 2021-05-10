@@ -16,9 +16,9 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <map>
 
-#include "powermodel_params.hpp"
-#include "stateless_cpumodel_base.hpp"
-#include "stateless_cpumodel_table.hpp"
+#include <powermodel_params.hpp>
+#include <stateless_cpumodel_base.hpp>
+#include <stateless_cpumodel_table.hpp>
 
 namespace RTSim {
     // =====================================================
@@ -36,17 +36,17 @@ namespace RTSim {
 
     template <ModelType model_type>
     static typename ModelTypeToValueType<model_type>::value_type
-    convertTBValue(const CPUModelTBParams &);
+        convertTBValue(const CPUModelTBParams &);
 
     template <>
     typename ModelTypeToValueType<ModelType::Power>::value_type
-    convertTBValue<ModelType::Power>(const CPUModelTBParams &pp) {
+        convertTBValue<ModelType::Power>(const CPUModelTBParams &pp) {
         return pp.power;
     }
 
     template <>
     typename ModelTypeToValueType<ModelType::Speed>::value_type
-    convertTBValue<ModelType::Speed>(const CPUModelTBParams &pp) {
+        convertTBValue<ModelType::Speed>(const CPUModelTBParams &pp) {
         return pp.speed;
     }
 
@@ -73,9 +73,9 @@ namespace RTSim {
     // Both method implementations for power and speed are the same!
     template <ModelType model_type>
     typename TBCPUModel<model_type>::value_type
-    TBCPUModel<model_type>::lookupValue(const OPP &opp,
-                                        const wclass_type &workload,
-                                        freq_type) const {
+        TBCPUModel<model_type>::lookupValue(const OPP &opp,
+                                            const wclass_type &workload,
+                                            freq_type) const {
         using value_type = typename TBCPUModel<model_type>::value_type;
         return TableBasedModel<value_type>::exact_table_lookup(opp, workload);
     }

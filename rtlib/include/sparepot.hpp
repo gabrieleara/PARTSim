@@ -1,12 +1,12 @@
 #ifndef __SPAREPOT_H__
 #define __SPAREPOT_H__
 
-#include <vector>
 #include <map>
 #include <sporadicserver.hpp>
 #include <supervisor.hpp>
+#include <vector>
 
-#define _SPARE_POT_DBG_LEV  "SparePot"
+#define _SPARE_POT_DBG_LEV "SparePot"
 
 namespace RTSim {
 
@@ -36,7 +36,7 @@ namespace RTSim {
 
         std::map<SporadicServer *, int> servers;
         int counter;
-        
+
         // this is the lend/borrow matrix
         std::vector<row_t> pi;
 
@@ -52,26 +52,24 @@ namespace RTSim {
         Tick spare_budget;
 
         // not implemented
-        SparePot(const SparePot&);
-        SparePot& operator=(const SparePot&);
-    
+        SparePot(const SparePot &);
+        SparePot &operator=(const SparePot &);
+
     public:
-    
         class SparePotExc : public BaseExc {
         public:
-            SparePotExc(const string& m) : 
-                BaseExc(m,"SparePot","SparePot") {};
+            SparePotExc(const string &m) : BaseExc(m, "SparePot", "SparePot"){};
         };
 
         SparePot(const string &name);
         ~SparePot();
-        
+
         void addServer(Server *s) override;
-    
+
         /**
            This function requests a change (positive or negative) to
            the budget of the server. The function is usually called
-           from a feedback module. 
+           from a feedback module.
 
            @param delta_budget increment (or decrement) in the budget
 
@@ -87,8 +85,8 @@ namespace RTSim {
 
         void newRun() override;
         void endRun() override;
-    protected:
 
+    protected:
         /**
            Adds a new server to the Spare Pot algorithm. The servers
            have to be added in decreasing priority order.
@@ -106,10 +104,9 @@ namespace RTSim {
 
         /**
            Specifies the amount of spare handled by this algorithm.
-           It corresponds to server 0. 
+           It corresponds to server 0.
         */
         void setSpare(const Tick &budget, const Tick &period);
-
 
         class ChangeBudgetEvt;
         friend class ChangeBudgetEvt;
@@ -119,20 +116,30 @@ namespace RTSim {
             SparePot *sp;
             SporadicServer *ss;
             Tick budget;
+
         public:
             ChangeBudgetEvt(SparePot *s1, SporadicServer *s2, Tick b) :
-                Event(EndEvt::_END_EVT_PRIORITY + 4), sp(s1), ss(s2), budget(b) {}
-            void doit() override { sp->onChangeBudget(this); }
-            SporadicServer *getServer() { return ss; }
-            Tick getBudget() { return budget; }
+                Event(EndEvt::_END_EVT_PRIORITY + 4),
+                sp(s1),
+                ss(s2),
+                budget(b) {}
+            void doit() override {
+                sp->onChangeBudget(this);
+            }
+            SporadicServer *getServer() {
+                return ss;
+            }
+            Tick getBudget() {
+                return budget;
+            }
         };
     };
 
-    inline bool operator<(const SparePot::server_struct &a, const SparePot::server_struct &b)
-    {
+    inline bool operator<(const SparePot::server_struct &a,
+                          const SparePot::server_struct &b) {
         return a.period < b.period;
     }
 
-}
+} // namespace RTSim
 
 #endif

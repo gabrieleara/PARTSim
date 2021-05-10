@@ -14,9 +14,9 @@
 #ifndef __RANDOMVAR_HPP__
 #define __RANDOMVAR_HPP__
 
-#include <memory.hpp>
 #include <fstream>
 #include <iostream>
+#include <memory.hpp>
 #include <string>
 #include <vector>
 
@@ -24,7 +24,7 @@
 #include <cloneable.hpp>
 
 #ifdef _MSC_VER
-#pragma warning(disable: 4290)
+#pragma warning(disable : 4290)
 #endif
 
 namespace MetaSim {
@@ -32,7 +32,7 @@ namespace MetaSim {
     typedef long int RandNum;
     const int MAX_SEEDS = 1000;
 
-#define _RANDOMVAR_DBG_LEV  "randomvar"
+#define _RANDOMVAR_DBG_LEV "randomvar"
 
     /**
        \ingroup metasim
@@ -63,8 +63,8 @@ namespace MetaSim {
         // constants used by the internal pseudo-causal number generator.
         static const RandNum A;
         static const RandNum M;
-        static const RandNum Q;	// M div A
-        static const RandNum R;	// M mod A
+        static const RandNum Q; // M div A
+        static const RandNum R; // M mod A
 
     public:
         /**
@@ -81,11 +81,15 @@ namespace MetaSim {
         RandNum sample();
 
         /** Returns the current sequence number. */
-        RandNum getCurrSeed() { return _xn; }
+        RandNum getCurrSeed() {
+            return _xn;
+        }
 
         /** return the constant M (the module of this random
             generator */
-        RandNum getModule() { return M; }
+        RandNum getModule() {
+            return M;
+        }
     };
 
     /**
@@ -108,7 +112,6 @@ namespace MetaSim {
         RandomGen *_gen;
 
     public:
-
         typedef std::string BASE_KEY_TYPE;
 
         /**
@@ -118,26 +121,24 @@ namespace MetaSim {
         */
         class Exc : public BaseExc {
         public:
-            static const char* const _FILEOPEN;
-            static const char* const _FILECLOSE;
-            static const char* const _WRONGPDF;
+            static const char *const _FILEOPEN;
+            static const char *const _FILECLOSE;
+            static const char *const _WRONGPDF;
 
             Exc(std::string wh, std::string cl) :
-                BaseExc(wh, cl, "randomvar.hpp")
-                {
-                }
+                BaseExc(wh, cl, "randomvar.hpp") {}
         };
 
-        class MaxException: public Exc
-        {
+        class MaxException : public Exc {
         public:
-            MaxException(std::string cl)
-                :Exc("Maximum value cannot be computed for this variable type", cl) {}
-            MaxException(std::string m, std::string cl) :Exc(m, cl) {}
+            MaxException(std::string cl) :
+                Exc("Maximum value cannot be computed for this variable type",
+                    cl) {}
+            MaxException(std::string m, std::string cl) : Exc(m, cl) {}
             virtual ~MaxException() throw() {}
-            const char* what() const throw() override
-                { return _what.c_str(); }
-
+            const char *what() const throw() override {
+                return _what.c_str();
+            }
         };
 
         /** Constructor for RandomVar. */
@@ -151,14 +152,16 @@ namespace MetaSim {
         /**
            Polymorphic copy through cloning
         */
-//        virtual std::unique_ptr<RandomVar> clone() const = 0;
+        //        virtual std::unique_ptr<RandomVar> clone() const = 0;
         BASE_CLONEABLE(RandomVar)
 
         virtual ~RandomVar();
 
         /// Initialize the standard generator with a given
         /// seed
-        static inline void init(RandNum s) { _pstdgen->init(s); }
+        static inline void init(RandNum s) {
+            _pstdgen->init(s);
+        }
 
         /// Change the standard generator
         static RandomGen *changeGenerator(RandomGen *g);
@@ -175,8 +178,7 @@ namespace MetaSim {
         virtual double getMaximum() throw(MaxException) = 0;
         virtual double getMinimum() throw(MaxException) = 0;
 
-        virtual void setMaximum(double v) throw(MaxException) {};
-
+        virtual void setMaximum(double v) throw(MaxException){};
 
         /** Parses a random variable from a string. String is in the
             form "varname(par1, par2, ...)", where
@@ -196,55 +198,76 @@ namespace MetaSim {
     */
     class DeltaVar : public RandomVar {
         double _var;
+
     public:
         DeltaVar(double a) : RandomVar(), _var(a) {}
 
         CLONEABLE(RandomVar, DeltaVar, override)
 
-        static std::unique_ptr<DeltaVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<DeltaVar>
+            createInstance(std::vector<std::string> &par);
 
-        double get() override { return _var; }
-        double getMaximum() throw(MaxException) override {return _var;}
-        double getMinimum() throw(MaxException) override {return _var;}
-        void   setMaximum(double v) throw(MaxException) override { _var = v;}
+        double get() override {
+            return _var;
+        }
+        double getMaximum() throw(MaxException) override {
+            return _var;
+        }
+        double getMinimum() throw(MaxException) override {
+            return _var;
+        }
+        void setMaximum(double v) throw(MaxException) override {
+            _var = v;
+        }
     };
 
     /**
         This class implements an uniform distribution, between min
         and max. */
     class UniformVar : public RandomVar {
-      double _min, _max, generatedValue = 0.0;
+        double _min, _max, generatedValue = 0.0;
+
     public:
-        UniformVar(double min, double max)
-            : RandomVar(), _min(min), _max(max) {}
+        UniformVar(double min, double max) :
+            RandomVar(),
+            _min(min),
+            _max(max) {}
 
         CLONEABLE(RandomVar, UniformVar, override)
 
-        static std::unique_ptr<UniformVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<UniformVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
-        double getMaximum() throw(MaxException) override {return _max;}
-        double getMinimum() throw(MaxException) override {return _min;}
+        double getMaximum() throw(MaxException) override {
+            return _max;
+        }
+        double getMinimum() throw(MaxException) override {
+            return _min;
+        }
     };
 
     /**
        This class implements an exponential distribution, with mean m. */
     class ExponentialVar : public UniformVar {
         double _lambda;
-    public :
-        ExponentialVar(double m) :
-            UniformVar(0, 1), _lambda(m) {}
+
+    public:
+        ExponentialVar(double m) : UniformVar(0, 1), _lambda(m) {}
 
         CLONEABLE(RandomVar, ExponentialVar, override)
 
-        static std::unique_ptr<ExponentialVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<ExponentialVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override
-            {throw MaxException("ExponentialVar");}
-        double getMinimum() throw(MaxException) override
-            {return 0;}
+        double getMaximum() throw(MaxException) override {
+            throw MaxException("ExponentialVar");
+        }
+        double getMinimum() throw(MaxException) override {
+            return 0;
+        }
     };
 
     /**
@@ -254,38 +277,49 @@ namespace MetaSim {
     class WeibullVar : public UniformVar {
         double _l;
         double _k;
-    public :
+
+    public:
         WeibullVar(double l, double k, RandomGen *g = nullptr) :
-            UniformVar(0, 1), _l(l), _k(k) {}
+            UniformVar(0, 1),
+            _l(l),
+            _k(k) {}
 
         CLONEABLE(RandomVar, WeibullVar, override)
 
-        static std::unique_ptr<WeibullVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<WeibullVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override { throw MaxException("WeibullVar"); }
-        double getMinimum() throw(MaxException) override { return 0; }
+        double getMaximum() throw(MaxException) override {
+            throw MaxException("WeibullVar");
+        }
+        double getMinimum() throw(MaxException) override {
+            return 0;
+        }
     };
 
     /**
        This class implements a pareto distribution, with parameters m and k */
     class ParetoVar : public UniformVar {
         double _mu, _order;
-    public :
-        ParetoVar(double m, double k) :
-            UniformVar(0,1), _mu(m), _order(k) {};
+
+    public:
+        ParetoVar(double m, double k) : UniformVar(0, 1), _mu(m), _order(k){};
 
         CLONEABLE(RandomVar, ParetoVar, override)
 
-        static std::unique_ptr<ParetoVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<ParetoVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override
-            {throw MaxException("ExponentialVar");}
-        double getMinimum() throw(MaxException) override
-            {throw MaxException("ExponentialVar");}
+        double getMaximum() throw(MaxException) override {
+            throw MaxException("ExponentialVar");
+        }
+        double getMinimum() throw(MaxException) override {
+            throw MaxException("ExponentialVar");
+        }
     };
 
     /**
@@ -299,40 +333,47 @@ namespace MetaSim {
 
     public:
         NormalVar(double m, double s) :
-            UniformVar(0, 1), _mu(m), _sigma(s), _yes(false)
-            {}
+            UniformVar(0, 1),
+            _mu(m),
+            _sigma(s),
+            _yes(false) {}
 
         CLONEABLE(RandomVar, NormalVar, override)
 
-        static std::unique_ptr<NormalVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<NormalVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
-        double getMaximum() throw(MaxException) override
-            {throw MaxException("NormalVar");}
-        double getMinimum() throw(MaxException) override
-            {throw MaxException("NormalVar");}
+        double getMaximum() throw(MaxException) override {
+            throw MaxException("NormalVar");
+        }
+        double getMinimum() throw(MaxException) override {
+            throw MaxException("NormalVar");
+        }
     };
-
 
     /**
        This class implements a Poisson distribution, with mean lambda */
     class PoissonVar : public UniformVar {
         double _lambda;
+
     public:
         static const unsigned long CUTOFF;
-        PoissonVar(double l) :
-            UniformVar(0, 1), _lambda(l) {}
+        PoissonVar(double l) : UniformVar(0, 1), _lambda(l) {}
 
         CLONEABLE(RandomVar, PoissonVar, override)
 
-        static std::unique_ptr<PoissonVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<PoissonVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override
-      {throw MaxException("PoissonVar");}
-        double getMinimum() throw(MaxException) override
-            {throw MaxException("PoissonVar");}
+        double getMaximum() throw(MaxException) override {
+            throw MaxException("PoissonVar");
+        }
+        double getMinimum() throw(MaxException) override {
+            throw MaxException("PoissonVar");
+        }
     };
 
     /**
@@ -346,6 +387,7 @@ namespace MetaSim {
     class DetVar : public RandomVar {
         std::vector<double> _array;
         unsigned int _count;
+
     public:
         DetVar(const std::string &filename);
         DetVar(std::vector<double> &a);
@@ -353,12 +395,12 @@ namespace MetaSim {
 
         CLONEABLE(RandomVar, DetVar, override)
 
-        static std::unique_ptr<DetVar> createInstance(std::vector<std::string> &par);
+        static std::unique_ptr<DetVar>
+            createInstance(std::vector<std::string> &par);
 
         double get() override;
         double getMaximum() throw(MaxException) override;
         double getMinimum() throw(MaxException) override;
-
     };
     //@}
 

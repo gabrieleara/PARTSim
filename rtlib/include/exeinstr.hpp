@@ -30,30 +30,31 @@
 
 #include <memory.hpp>
 
-//From metasim
+// From metasim
 #include <debugstream.hpp>
 #include <event.hpp>
 #include <randomvar.hpp>
 #include <simul.hpp>
 
-//From RTLIB
+// From RTLIB
 #include <instr.hpp>
 #include <sstream>
 
 namespace RTSim {
 
-  using namespace MetaSim;
+    using namespace MetaSim;
 
-  /**
-      \ingroup instr
+    /**
+        \ingroup instr
 
-      These instructions (ExecInstr & FixedInstr) are used to model a
-      basic block of time-consuming computation, and are the basic
-      building block of a real task
+        These instructions (ExecInstr & FixedInstr) are used to model a
+        basic block of time-consuming computation, and are the basic
+        building block of a real task
 
-      @author Luigi Palopoli, Giuseppe Lipari, Gerardo Lamastra, Antonio Casile
-      @version 2.0
-      @see Instr */
+        @author Luigi Palopoli, Giuseppe Lipari, Gerardo Lamastra, Antonio
+       Casile
+        @version 2.0
+        @see Instr */
 
     class ExecInstr : public Instr {
     protected:
@@ -67,7 +68,8 @@ namespace RTSim {
         Tick execdTime;
         /// Duration of the current instruction
         Tick currentCost;
-        /// Execution cycles spent by the instruction (independently of the CPU speed they've been consumed with)
+        /// Execution cycles spent by the instruction (independently of the CPU
+        /// speed they've been consumed with)
         double actCycles;
         /// Last instant of time this instruction was scheduled
         Tick lastTime;
@@ -76,54 +78,56 @@ namespace RTSim {
 
         // copy constructor
         ExecInstr(const ExecInstr &obj);
-    public:
 
+    public:
         EndInstrEvt _endEvt;
         /** This is the constructor of the ExecInstr
             @param f is a pointer to the task containing the pseudo instruction
-            @param c is a random variable containing the duration of the instruction
+            @param c is a random variable containing the duration of the
+           instruction
             @param n is the instruction name
         */
-        ExecInstr(Task *f,
-                  std::unique_ptr<RandomVar> c,
-                  const std::string &wl= "",
-                  const std::string &n = "");
+        ExecInstr(Task *f, std::unique_ptr<RandomVar> c,
+                  const std::string &wl = "", const std::string &n = "");
         static Instr *createInstance(const std::vector<std::string> &par);
 
         CLONEABLE(Instr, ExecInstr, override)
 
         virtual ~ExecInstr();
 
-      string toString() const override {
-        std::stringstream ss;
-        ss << "ExecInstr wl: " << workload << " wcet: " << getWCET() << std::endl;
-        return ss.str();
-      }
+        string toString() const override {
+            std::stringstream ss;
+            ss << "ExecInstr wl: " << workload << " wcet: " << getWCET()
+               << std::endl;
+            return ss.str();
+        }
 
-        //Virtual methods from Instr
-        void schedule() throw (InstrExc) override;
+        // Virtual methods from Instr
+        void schedule() throw(InstrExc) override;
         void deschedule() override;
         void onEnd() override;
         void reset() override;
         Tick getDuration() const override;
         Tick getWCET() const throw(RandomVar::MaxException) override;
         Tick getExecTime() const override;
-        inline double getActCycles() const override { return actCycles; }
-        virtual string getWorkload() const { return workload; }
+        inline double getActCycles() const override {
+            return actCycles;
+        }
+        virtual string getWorkload() const {
+            return workload;
+        }
 
         /* Commented, because the tracing mechanism has changed */
         // virtual void setTrace(Trace *t);
 
-        template<class TraceClass>
+        template <class TraceClass>
         void setTrace(TraceClass &traceobj) {
             attach_stat(traceobj, _endEvt);
         }
 
-
-        //From Entity...
+        // From Entity...
         void newRun() override;
         void endRun() override;
-
 
         /** Function inherited from Instr. It refreshes the state of the
          *  executing instruction when a change of the CPU speed occurs.
@@ -142,12 +146,11 @@ namespace RTSim {
     */
     class FixedInstr : public ExecInstr {
     public:
-        FixedInstr(Task *t,
-                   Tick duration,
-                   const std::string &wl="",
-                   const std::string &n= "");
+        FixedInstr(Task *t, Tick duration, const std::string &wl = "",
+                   const std::string &n = "");
 
-        static std::unique_ptr<Instr> createInstance(const std::vector<std::string> &par);
+        static std::unique_ptr<Instr>
+            createInstance(const std::vector<std::string> &par);
     };
 
 } // namespace RTSim

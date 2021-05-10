@@ -14,14 +14,14 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 #ifndef __POWERMODEL_HPP__
 #define __POWERMODEL_HPP__
 
-#include "class_utils.hpp"
-#include "cloneable.hpp"
+#include <class_utils.hpp>
+#include <cloneable.hpp>
+#include <opp.hpp>
+#include <sortedcont.hpp>
 #include <memory.hpp>
-#include "opp.hpp"
-#include "sortedcont.hpp"
 
-#include "powermodel_params.hpp"
-#include "stateless_cpumodel_base.hpp"
+#include <powermodel_params.hpp>
+#include <stateless_cpumodel_base.hpp>
 
 #include <cmath>
 #include <limits>
@@ -51,9 +51,9 @@ namespace RTSim {
         /// @todo Placeholder, until the integration with the GenericFactory
         /// is ready use this method.
         static std::unique_ptr<CPUModel>
-        create(const CPUMDescriptor &power_desc,
-               const CPUMDescriptor &speed_desc, const OPP &start_opp = {},
-               freq_type f_max = FREQ_MAX);
+            create(const CPUMDescriptor &power_desc,
+                   const CPUMDescriptor &speed_desc, const OPP &start_opp = {},
+                   freq_type f_max = FREQ_MAX);
 
         // =================================================
         // Constructors and destructors
@@ -63,7 +63,8 @@ namespace RTSim {
         /// @param opp   the initial OPP of the CPU (in Volts and MHz)
         /// @param f_max the maximum frequency of the CPU (in MHz)
         CPUModel(const OPP &opp = {}, freq_type f_max = FREQ_MAX) :
-            _opp(opp), _F_max(f_max) {}
+            _opp(opp),
+            _F_max(f_max) {}
 
     public:
         DEFAULT_COPIABLE(CPUModel);

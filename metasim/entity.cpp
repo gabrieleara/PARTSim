@@ -11,23 +11,21 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <typeinfo>
 #include <sstream>
+#include <typeinfo>
 
 #include <entity.hpp>
 #include <simul.hpp>
-
 
 namespace MetaSim {
 
     using std::map;
 
-    map<int, Entity*> Entity::_globMap;
+    map<int, Entity *> Entity::_globMap;
     map<string, Entity *> Entity::_index;
     int Entity::_IDcount = 0;
 
-    void Entity::_init()
-    {
+    void Entity::_init() {
         if (_name == "") {
             std::stringstream ss;
             ss << _IDcount + 1;
@@ -44,77 +42,65 @@ namespace MetaSim {
         DBGENTER(_ENTITY_DBG_LEV);
 
         DBGPRINT_2("Entity ID: ", _ID);
-        DBGPRINT_2("Entity type: ",  typeid(*this).name());
+        DBGPRINT_2("Entity type: ", typeid(*this).name());
         DBGPRINT_2("Entity name:", _name);
 
         _index[_name] = this;
     }
 
-    Entity::Entity(const string &n) : _name(n) 
-    {
+    Entity::Entity(const string &n) : _name(n) {
         _init();
     }
 
-    Entity::~Entity()
-    {
+    Entity::~Entity() {
         _globMap.erase(_ID);
         _index.erase(_name);
     }
 
-
-    Entity::Entity(const Entity &obj) :
-        _name("")
-    {
+    Entity::Entity(const Entity &obj) : _name("") {
         std::stringstream ss;
         ss << obj._name << "_copy_" << _IDcount + 1;
         _name = ss.str();
         _init();
     }
-    
 
-    void Entity::callNewRun()
-    {
-        typedef map<int, Entity*>::iterator EI;
+    void Entity::callNewRun() {
+        typedef map<int, Entity *>::iterator EI;
 
         EI p = _globMap.begin();
 
         while (p != _globMap.end()) {
             DBGENTER(_ENTITY_DBG_LEV);
-            DBGPRINT_2("Calling the newRun() of ",
-                       p->second->getID());
-            
+            DBGPRINT_2("Calling the newRun() of ", p->second->getID());
 
             p->second->newRun();
             p++;
-        }           
+        }
     }
 
-    void Entity::callEndRun()
-    {
-        typedef map<int, Entity*>::iterator EI;
+    void Entity::callEndRun() {
+        typedef map<int, Entity *>::iterator EI;
 
         EI p = _globMap.begin();
         while (p != _globMap.end()) {
             p->second->endRun();
             p++;
         }
-                
-                
     }
 
-    Entity *Entity::_find(string n)
-    {
+    Entity *Entity::_find(string n) {
         Entity *res = 0;
- 
+
         typedef map<string, Entity *>::iterator NI;
 
         NI i = _index.find(n);
-        if (i != _index.end()) res = (*i).second;
+        if (i != _index.end())
+            res = (*i).second;
         return res;
     }
 
-  std::ostream& operator<<(std::ostream& out, Entity& e) {
-    return out << e.toString();
-  }
+    std::ostream &operator<<(std::ostream &out, Entity &e) {
+        return out << e.toString();
+    }
 
 } // end namespace MetaSim

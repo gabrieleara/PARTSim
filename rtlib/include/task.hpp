@@ -23,9 +23,9 @@
 
 /* Headers from RTLib */
 #include <abstask.hpp>
+#include <feedback.hpp>
 #include <kernel.hpp>
 #include <taskevt.hpp>
-#include <feedback.hpp>
 #include <taskexc.hpp>
 
 #define _TASK_DBG_LEV "Task"
@@ -40,13 +40,13 @@ namespace RTSim {
     // Task states
     typedef enum { TSK_IDLE, TSK_READY, TSK_EXEC, TSK_BLOCKED } task_state;
 
-    /** 
+    /**
         \ingroup tasks
 
         This class models a cyclic task. A cyclic task is a task that is
         cyclically activated by a timer (for example a periodic task) or
-        by an external event (sporadic or aperiodic task). 
-      
+        by an external event (sporadic or aperiodic task).
+
         This class models a "run-to-completion" semantic.  Every
         activation (also called arrival), an instance of the task is
         executed. The task executes all the instructions in the
@@ -59,7 +59,7 @@ namespace RTSim {
 
         - when a job arrives, the corresponding deadline is set
         (the class Task has no deadline parameter).
-        
+
         - it adds a deadline event to check deadline misses; it can
         abort the simulation in case of deadline miss (depending on
         the abort parameter in the constructor).
@@ -69,27 +69,30 @@ namespace RTSim {
     private:
         // Hide copy constructor and assignment, tasks cannot be copied
         Task(const Task &);
-        Task & operator=(const Task &);
+        Task &operator=(const Task &);
 
     protected:
-        std::unique_ptr<MetaSim::RandomVar> int_time;  // The task is owner of this varible
-        MetaSim::Tick lastArrival;     // The arrival of the last instance!
-        MetaSim::Tick phase;           // Initial phasing for first arrival
-        MetaSim::Tick arrival;         // Arrival time of the current (last) instance
-        MetaSim::Tick execdTime;       // Actual Real-Time execution of the task
-        MetaSim::Tick execdCycles;     // Cumulative cycles executed by task, independently of CPU speed
-        MetaSim::Tick _maxC;           // Maximum computation time 
-        std::deque <MetaSim::Tick> arrQueue; // Arrival queue, sorted FIFO
-        int arrQueueSize;      // -1 stands for no-limit
+        std::unique_ptr<MetaSim::RandomVar>
+            int_time; // The task is owner of this varible
+        MetaSim::Tick lastArrival; // The arrival of the last instance!
+        MetaSim::Tick phase; // Initial phasing for first arrival
+        MetaSim::Tick arrival; // Arrival time of the current (last) instance
+        MetaSim::Tick execdTime; // Actual Real-Time execution of the task
+        MetaSim::Tick execdCycles; // Cumulative cycles executed by task,
+                                   // independently of CPU speed
+        MetaSim::Tick _maxC; // Maximum computation time
+        std::deque<MetaSim::Tick> arrQueue; // Arrival queue, sorted FIFO
+        int arrQueueSize; // -1 stands for no-limit
 
-        task_state state;      // IDLE, READY, EXECUTING, BLOCKED 
+        task_state state; // IDLE, READY, EXECUTING, BLOCKED
 
-        //bool active;           // true if the current request has not completed
-        //bool executing;        // true if the task is currently executing
+        // bool active;           // true if the current request has not
+        // completed bool executing;        // true if the task is currently
+        // executing
 
-        typedef std::vector<std::unique_ptr<Instr> > InstrList;
-        typedef std::vector<std::unique_ptr<Instr> >::iterator InstrIterator;
-        //typedef std::vector<Instr *>::const_iterator ConstInstrIterator;
+        typedef std::vector<std::unique_ptr<Instr>> InstrList;
+        typedef std::vector<std::unique_ptr<Instr>>::iterator InstrIterator;
+        // typedef std::vector<Instr *>::const_iterator ConstInstrIterator;
         InstrList instrQueue;
         InstrIterator actInstr;
 
@@ -104,7 +107,7 @@ namespace RTSim {
     public:
         // Events need to be public to avoid an excessive fat interface.
         // This is especially true when considering the probing mechanism
-        // (for statistical collection and tracing). 
+        // (for statistical collection and tracing).
 
         ArrEvt arrEvt;
         EndEvt endEvt;
@@ -118,14 +121,18 @@ namespace RTSim {
            Returns a constant reference to the instruction queue
            (instrQueue)
         */
-        const InstrList& getInstrQueue() { return instrQueue; };
-        
+        const InstrList &getInstrQueue() {
+            return instrQueue;
+        };
+
         /**
            Returns a constant reference to the actual instruction
            (actInstr)
         */
-        const InstrIterator& getActInstr() {return actInstr;};
-        
+        const InstrIterator &getActInstr() {
+            return actInstr;
+        };
+
         /**
            Reset the instruction queue pointer:
            actInstr = instrQueue.begin()
@@ -133,7 +140,8 @@ namespace RTSim {
         void resetInstrQueue();
 
         /**
-           Object to string. you should override this function in derived classes
+           Object to string. you should override this function in derived
+           classes
          */
         string toString() const override;
 
@@ -148,39 +156,39 @@ namespace RTSim {
         friend class DeadEvt;
 
         /**
-           This event handler is invoked every time an arrival event 
-           is triggered. 
+           This event handler is invoked every time an arrival event
+           is triggered.
         */
         void onArrival(MetaSim::Event *);
 
         /**
            This event handler is invoked when a task completes an instance.
            It resets the executed time counter, and the instruction counter.
-	   
+
            @todo change its name into onInstanceEnd().
         */
         virtual void onEndInstance(MetaSim::Event *);
-        
+
         /**
            This event handler is invoked when a task instance has been killed.
-           Similar to onEndInstance, but the endEvt is not processed. 
+           Similar to onEndInstance, but the endEvt is not processed.
         */
         virtual void onKill(MetaSim::Event *);
 
         /**
-           This event handler is invoked everytime the task is scheduled (i.e. 
-           dispatched by the kernel). 
+           This event handler is invoked everytime the task is scheduled (i.e.
+           dispatched by the kernel).
         */
         void onSched(MetaSim::Event *);
 
         /**
-           This event handler is invoked everytime the task is suspended 
-           by the kernel or by another entity, or it suspends itself. 
+           This event handler is invoked everytime the task is suspended
+           by the kernel or by another entity, or it suspends itself.
         */
         void onDesched(MetaSim::Event *);
 
         /**
-           This event handler is ivoked everytime a buffered arrival has 
+           This event handler is ivoked everytime a buffered arrival has
            to be processed. In this case:
            - an arrival event was triggered while the task was still active
            and was buffered
@@ -192,18 +200,18 @@ namespace RTSim {
         */
         void onFakeArrival(MetaSim::Event *);
 
-        /** 
+        /**
             Reactivates the task. This method is used to implement a
             cyclic task. When an arrival event is processed by the
             onArrival() event handler, this function is called to post the
-            next arrival event. 
+            next arrival event.
 
             @todo re-think this function to implement a different kind of
             task.
         */
         void reactivate();
 
-        /** 
+        /**
             Handle arrival. This is the true arrival event handler.
 
             @todo simplify the arrival handling, by reducing the number of
@@ -224,39 +232,37 @@ namespace RTSim {
             arrival */
         bool chkBuffArrival() const;
 
-        // blocking a task: 
-        // I deschedule the task, then it goes into the blocking state. 
+        // blocking a task:
+        // I deschedule the task, then it goes into the blocking state.
         // It can be unblocked only when an Unblock() is called
 
         /******************************************************************/
-        
-    public:
 
+    public:
         /** Constructor.
 
-            @param iat Random variable that models activation events. 
-            If this parameter is set equal to NULL (or 0), 
-            then the task is NOT cyclically activated. In other 
-            words, there is no arrival event automatically posted, 
-            but the task must be activated by another entity 
+            @param iat Random variable that models activation events.
+            If this parameter is set equal to NULL (or 0),
+            then the task is NOT cyclically activated. In other
+            words, there is no arrival event automatically posted,
+            but the task must be activated by another entity
             (task or interrupt, or else).
-            @param ph  initial time of the activation. It is the first time at which
-            the arrival event is posted. This parameter is ignored when 
-            iat = 0. 
-            @param name Unique name for this entity. 
+            @param ph  initial time of the activation. It is the first time at
+           which the arrival event is posted. This parameter is ignored when iat
+           = 0.
+            @param name Unique name for this entity.
 
-            @param qs Maximum size of the arrival buffer. This is the maximum 
+            @param qs Maximum size of the arrival buffer. This is the maximum
             number of arrivals that can be buffered. By default, this is
-            equal to __LONG_MAX__. If equal to zero, an arrival event is 
+            equal to __LONG_MAX__. If equal to zero, an arrival event is
             discarded when the task is already active.
 
-            @param maxC Worst-case execution time of an instance. This 
-            parameter is not used for the simulation itself, but only 
+            @param maxC Worst-case execution time of an instance. This
+            parameter is not used for the simulation itself, but only
             for some algorithm, or for analysis). See getWCET(). */
 
-        Task(std::unique_ptr<RandomVar> iat, Tick rdl, Tick ph = 0, 
-             const std::string &name = "", 
-             long qs = 1000, Tick maxC=0);
+        Task(std::unique_ptr<RandomVar> iat, Tick rdl, Tick ph = 0,
+             const std::string &name = "", long qs = 1000, Tick maxC = 0);
 
         /**
            Virtual destructor. Does nothing.
@@ -265,16 +271,17 @@ namespace RTSim {
         */
         virtual ~Task();
 
-	    friend std::ostream& operator<<(std::ostream &strm, Task &a);
+        friend std::ostream &operator<<(std::ostream &strm, Task &a);
 
         /**
            For the abstract factory
         */
-        static std::unique_ptr<Task> createInstance(const std::vector<std::string> &par);
+        static std::unique_ptr<Task>
+            createInstance(const std::vector<std::string> &par);
 
         /**
-           Initializes the internal task structures at the beginning of each run.
-           For example:
+           Initializes the internal task structures at the beginning of each
+           run. For example:
            - posts the first arrival event
            - resets the instruction counter
            - resets the executed time counter
@@ -286,24 +293,24 @@ namespace RTSim {
         */
         void endRun() override;
 
-        /** 
+        /**
             This functions activates the tasks (post the arrival event at
             the current time).
         */
         void activate() override;
 
         /** This method is used to activate the task (posts the arrival
-            event at the time specified in the parameter) 
-	
+            event at the time specified in the parameter)
+
             @param t time of the arrival event
 
-            @todo what if the task is active? 
+            @todo what if the task is active?
             what if the time is in the past?
             what if the arrival event is already posted?
         */
         virtual void activate(Tick t);
 
-        /** 
+        /**
             This method permits to kill a task instance that is currently
             executing. The instruction pointer is reset to the first
             instruction, and the executed time counter is reset to 0. No
@@ -312,22 +319,21 @@ namespace RTSim {
 
             @throws TaskNotActive if the task is not currently active
             @throws TaskNotExecuting if the task is not executing
-	
+
             @todo the last throws is quite suspect....
-        */ 
+        */
         void killInstance() throw(TaskNotActive, TaskNotExecuting);
 
-        
         /**
-           This method permits to select the behaviour of the task when a 
+           This method permits to select the behaviour of the task when a
            deadline miss occurs.
-         
+
            @param kill = true, to kill the task when a deadline miss occurs
            @param kill = false, to contine the task when a deadline miss occurs
         */
         void killOnMiss(bool kill);
-        
-        /** 
+
+        /**
             Event propagated by instructions. It is invoked when an
             instruction is completed. The default behavior is to increment
             the instruction pointer to the next instrution in the list. If
@@ -336,11 +342,10 @@ namespace RTSim {
         */
         virtual void onInstrEnd();
 
-
         void block();
-        void unblock();        
+        void unblock();
 
-        /** 
+        /**
             Adds a new instruction at the end of the instruction list. This
             method has to be invoked during initialization to specify the
             list of instructions for a task.
@@ -351,15 +356,15 @@ namespace RTSim {
         */
         void addInstr(std::unique_ptr<Instr> instr);
 
-        /** 
+        /**
             Removes an instruction from the instruction list. This method
             is invoked mainly during destruction of the task.
         */
         //    void removeInstr(Instr *instr) throw(NoSuchInstr);
 
-        /** 
+        /**
             Removes all instructions. This method removes all instructions
-            from the instruction list. 
+            from the instruction list.
 
             @param selfDestruct when this is true (by default is false),
             the insctructions are destroyed (deallocated). This method is
@@ -376,7 +381,8 @@ namespace RTSim {
         /** Returns the executed time of the last (or current) instance */
         Tick getExecTime() const;
 
-        /** Returns the executed clock cycles (executed WCET) of the last (or current) instance */
+        /** Returns the executed clock cycles (executed WCET) of the last (or
+         * current) instance */
         double getExecCycles() const;
 
         /** Returns the WCET in cycles, independently of CPU speed */
@@ -388,10 +394,16 @@ namespace RTSim {
             return getMaxExecutionCycles(1.0);
         }
 
-        Tick getMinIAT() const { return Tick(int_time->getMinimum());}
+        Tick getMinIAT() const {
+            return Tick(int_time->getMinimum());
+        }
 
-        virtual Tick getLastSched() {return _lastSched;}
-	virtual void setLastSched(Tick ls) {_lastSched = ls;}
+        virtual Tick getLastSched() {
+            return _lastSched;
+        }
+        virtual void setLastSched(Tick ls) {
+            _lastSched = ls;
+        }
 
         /**
             Returns the worst-case computation time. If the maxC parameter
@@ -405,13 +417,14 @@ namespace RTSim {
         virtual Tick getWCET() const;
 
         /**
-           Returns WCET / capacity. WCET can scale up/down if task runs on big-LITTLE
-           depending on CPU frequency
-           This is a worst-case exec time at the supplied speed===capacity
+           Returns WCET / capacity. WCET can scale up/down if task runs on
+           big-LITTLE depending on CPU frequency This is a worst-case exec time
+           at the supplied speed===capacity
          */
         inline double getWCET(double capacity) const override {
             double n = double(getWCET()) / capacity;
-            //cout << endl << "\t\t\ttask::getwcet " << double(getWCET()) <<"/"<< capacity<<"="<<n<<endl;
+            // cout << endl << "\t\t\ttask::getwcet " << double(getWCET())
+            // <<"/"<< capacity<<"="<<n<<endl;
             return n;
         }
 
@@ -420,16 +433,20 @@ namespace RTSim {
         Tick getPeriod() const override {
             throw std::runtime_error("You must override this method!");
         }
-        Tick getDeadline() const override {return _dl;}
-        Tick getRelDline() const override {return _rdl;}
+        Tick getDeadline() const override {
+            return _dl;
+        }
+        Tick getRelDline() const override {
+            return _rdl;
+        }
 
-        /** 
+        /**
             Change the interarrival time. Used to change the period or the
             arrival characteristics of the task.
 
             @param iat a random variable that describes the arrival
             pattern for this cyclic task.
-	
+
             @return the pointer to the old variable random variable
 
             @todo what happens to the existing iat variable?  probably to
@@ -441,21 +458,21 @@ namespace RTSim {
         */
         std::unique_ptr<RandomVar> changeIAT(std::unique_ptr<RandomVar> iat);
 
-        /** 
+        /**
             From AbsTask interface...
-	
+
             @todo check if it calls the schedEvt.process()...
         */
         void schedule() override;
 
         /**
            From AbsTask interface...
-	
+
            @todo check if it calls the deschedEvt.process()...
         */
         void deschedule() override;
 
-        /** 
+        /**
             Set the kernel for this task. Called by kernel.addTask(). If
             you want to remove a task from a kernel, call this function
             with k=NULL.
@@ -468,41 +485,47 @@ namespace RTSim {
         */
         void setKernel(AbsKernel *k) throw(KernAlreadySet) override;
 
-        /** 
+        /**
             Returns the kernel that contains this task. Can return 0
             if this taks does not belong to any kernel.
         */
-        AbsKernel *getKernel() override { return _kernel; }
+        AbsKernel *getKernel() override {
+            return _kernel;
+        }
 
-        task_state getState() { return state; }
+        task_state getState() {
+            return state;
+        }
 
-    	/// for debug
-    	virtual string getStateString();
+        /// for debug
+        virtual string getStateString();
 
-        /** 
+        /**
             Returns true if the task is active.
         */
         bool isActive() const override;
 
-        /** 
+        /**
             Returns true if the task is executing.
         */
         bool isExecuting() const override;
 
-        void setRelDline(const Tick& dl) {_rdl = dl;}
+        void setRelDline(const Tick &dl) {
+            _rdl = dl;
+        }
 
-        /** 
+        /**
             Returns a pointer to the CPU on which this task is executing.
         */
         CPU *getCPU() const;
 
-        /** 
+        /**
             Returns a pointer to the old CPU on which this task was
             executing.
         */
         CPU *getOldCPU() const;
 
-        /** 
+        /**
             Parse and insert instructions into this task. The input string
             must be a sequence of instructions separated by a
             semicolon. Last instruction must also end with a
@@ -534,7 +557,7 @@ namespace RTSim {
             Res1; finally, the last instruction has variable execution
             time uniformely distributed between 10 and 20 ticks.
         */
-        void insertCode(const string &code); //throw(ParseExc);
+        void insertCode(const string &code); // throw(ParseExc);
 
         /**
            Sets the feedback module for this task (optional, by
@@ -543,34 +566,38 @@ namespace RTSim {
 
         void setFeedbackModule(AbstractFeedbackModule *afm);
 
-        /** 
+        /**
             For debugging reasons. Normally you do not need to call this!
 
             @todo to be removed eventually.
-        */ 
+        */
         void printInstrList() const;
 
-        /** 
+        /**
             Function inherited from AbsTask. It refreshes the state of the
             executing task when a change of the CPU speed occurs.
 
             @todo check which function calls this one.
 
             @todo NONE of the implementations of this method does anything!
-        */ 
+        */
         void refreshExec(double oldSpeed, double newSpeed) override;
 
-        int getTaskNumber() const override { return getID();}	
+        int getTaskNumber() const override {
+            return getID();
+        }
 
-        void setAbort(bool f) { deadEvt.setAbort(f); }
+        void setAbort(bool f) {
+            deadEvt.setAbort(f);
+        }
     };
 
-    /// returns the task name, or "(nil)" if the pointer does not point 
+    /// returns the task name, or "(nil)" if the pointer does not point
     /// to a task entity
     std::string taskname(const AbsRTTask *t);
 
     /// to string operator
-    std::ostream& operator<<(std::ostream &strm, Task &a);
+    std::ostream &operator<<(std::ostream &strm, Task &a);
 
 } // namespace RTSim
 

@@ -11,40 +11,38 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <strtoken.hpp>
 #include <factory.hpp>
+#include <strtoken.hpp>
 
+#include <edfsched.hpp>
 #include <fifosched.hpp>
 #include <fpsched.hpp>
-#include <edfsched.hpp>
 #include <rrsched.hpp>
 
 namespace RTSim {
 
     const string FIFOName("FIFOSched");
-        const string FPName("FPSched");
+    const string FPName("FPSched");
     const string EDFName("EDFSched");
     const string RRName("RRSched");
 
-    /** 
+    /**
         This namespace should never be used by the user. Contains
         functions to initialize the abstract factory that builds
         the scheduler.
-    */ 
-    namespace __sched_stub
-    {        
+    */
+    namespace __sched_stub {
         static registerInFactory<Scheduler, FPScheduler, string>
-        registerfp(FPName);
-        
+            registerfp(FPName);
+
         static registerInFactory<Scheduler, EDFScheduler, string>
-        registeredf(EDFName);
-        
+            registeredf(EDFName);
+
         static registerInFactory<Scheduler, RRScheduler, string>
-        registerrr(RRName);
+            registerrr(RRName);
 
         static registerInFactory<Scheduler, FIFOScheduler, string>
-        registerfifo(FIFOName);    
-    }
+            registerfifo(FIFOName);
+    } // namespace __sched_stub
     void __regsched_init() {}
 } // namespace RTSim
-

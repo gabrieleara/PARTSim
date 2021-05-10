@@ -14,8 +14,8 @@
 #ifndef __TASKSTAT_HPP__
 #define __TASKSTAT_HPP__
 
-#include <string>
 #include <cassert>
+#include <string>
 
 #include <baseexc.hpp>
 #include <basestat.hpp>
@@ -28,20 +28,19 @@ namespace RTSim {
 
     const char _NEED_A_TASK[] = "Expecting a task argument";
     const char _NEED_A_RTTASK[] = "Expecting a RT task argument";
-    const char _WRONG_EVENT[] = "Receiving the wrong event"; 
+    const char _WRONG_EVENT[] = "Receiving the wrong event";
 
     class TaskStatExc : public BaseExc {
     public:
         TaskStatExc(string msg, string cl, string md = "taskstat.hpp") :
             BaseExc(msg, cl, md) {}
-
     };
 
     /**
        Abstract Statistical Probe Definitions; the user need to combine
        an abstract probe referring the quantity to measure with the kind
        of measure to do over it
- 
+
        Ex: class MeanFTStat : public FinishingTimeStat<MeanStat>;
     */
 
@@ -56,22 +55,24 @@ namespace RTSim {
         int count;
         Tick descTime;
         Tick schedTime;
+
     public:
-        PreemptionStat(string name = "") : Measure(name) {};
- 
+        PreemptionStat(string name = "") : Measure(name){};
+
         void probe(const DeschedEvt &e) {
             if (e.getLastTime() != schedTime) {
                 descTime = e.getLastTime();
-                count ++;
+                count++;
             }
             if (e.getLastTime() < Measure::_transitory)
                 count = 0;
         }
 
         void probe(const SchedEvt &e) {
-            if (e.getLastTime() != descTime) 
+            if (e.getLastTime() != descTime)
                 schedTime = e.getLastTime();
-            else count --;
+            else
+                count--;
             if (e.getLastTime() < Measure::_transitory)
                 count = 0;
         }
@@ -81,19 +82,18 @@ namespace RTSim {
             count = 0;
         }
 
-        //virtual 
-        void attachToTask(Task *t) 
-            {
-              /*new Particle<SchedEvt, PreemptionStat>(&t->schedEvt, this);
-                new Particle<DeschedEvt, PreemptionStat>(&t->deschedEvt, this);
-                new Particle<EndEvt, PreemptionStat>(&t->endEvt, this);*/
-              attach_stat(*this, t->schedEvt);
-              attach_stat(*this, t->deschedEvt);
-              attach_stat(*this, t->endEvt);
-            }
+        // virtual
+        void attachToTask(Task *t) {
+            /*new Particle<SchedEvt, PreemptionStat>(&t->schedEvt, this);
+              new Particle<DeschedEvt, PreemptionStat>(&t->deschedEvt, this);
+              new Particle<EndEvt, PreemptionStat>(&t->endEvt, this);*/
+            attach_stat(*this, t->schedEvt);
+            attach_stat(*this, t->deschedEvt);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
-    /** 
+    /**
         \ingroup measures
 
         Counts the total number of preemptions.
@@ -102,38 +102,39 @@ namespace RTSim {
         int idSched;
         int idDesched;
         Tick descTime;
-        Tick schedTime; 
+        Tick schedTime;
+
     public:
-  
-        GlobalPreemptionStat(string name = "") : StatCount(name) { 
+        GlobalPreemptionStat(string name = "") : StatCount(name) {
             idSched = -1;
             idDesched = -1;
             descTime = MAXTICK;
             schedTime = MAXTICK;
         }
 
-        void probe(const SchedEvt &se)
-            {
-                if (SIMUL.getTime() < _transitory) return;
-                if (se.getTime() == descTime && se.getTask()->getID() == idDesched)
-                    record(-1);
-            }
+        void probe(const SchedEvt &se) {
+            if (SIMUL.getTime() < _transitory)
+                return;
+            if (se.getTime() == descTime && se.getTask()->getID() == idDesched)
+                record(-1);
+        }
 
-        void probe(const DeschedEvt &de)
-            {
-                if (SIMUL.getTime() < _transitory) return;
-                descTime = SIMUL.getTime();
-                idDesched = de.getTask()->getID();
-                record(1);
-            }
+        void probe(const DeschedEvt &de) {
+            if (SIMUL.getTime() < _transitory)
+                return;
+            descTime = SIMUL.getTime();
+            idDesched = de.getTask()->getID();
+            record(1);
+        }
 
-        virtual void attachToTask(Task *t)
-            {
-              //                new Particle<SchedEvt, GlobalPreemptionStat>(&t->schedEvt, this);
-              // new Particle<DeschedEvt, GlobalPreemptionStat>(&t->deschedEvt, this);
-              attach_stat(*this, t->schedEvt);
-              attach_stat(*this, t->deschedEvt);
-            }
+        virtual void attachToTask(Task *t) {
+            //                new Particle<SchedEvt,
+            //                GlobalPreemptionStat>(&t->schedEvt, this);
+            // new Particle<DeschedEvt, GlobalPreemptionStat>(&t->deschedEvt,
+            // this);
+            attach_stat(*this, t->schedEvt);
+            attach_stat(*this, t->deschedEvt);
+        }
 
         virtual void initValue() {
             idSched = -1;
@@ -146,7 +147,7 @@ namespace RTSim {
 
     // --------------------------------------------------------------
 
-    /** 
+    /**
         \ingroup measures
 
         Measures the finishing time of a task.
@@ -154,21 +155,20 @@ namespace RTSim {
     template <class Measure>
     class FinishingTimeStat : public Measure {
     public:
+        FinishingTimeStat(string name = "") : Measure(name){};
 
-        FinishingTimeStat(string name = "") : Measure(name) {};
+        void probe(const EndEvt &ee) {
+            if (ee.getLastTime() < Measure::_transitory)
+                return;
+            Task *t = ee.getTask();
+            Measure::record(ee.getLastTime() - t->getLastArrival());
+        }
 
-        void probe(const EndEvt &ee) 
-            {
-                if (ee.getLastTime() < Measure::_transitory) return;
-                Task *t = ee.getTask();
-                Measure::record(ee.getLastTime() - t->getLastArrival());
-            }
-
-        void attachToTask(Task *t)
-            {
-              //                new Particle<EndEvt, FinishingTimeStat>(&t->endEvt, this);
-              attach_stat(*this, t->endEvt);
-            }
+        void attachToTask(Task *t) {
+            //                new Particle<EndEvt,
+            //                FinishingTimeStat>(&t->endEvt, this);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
     /**
@@ -184,22 +184,24 @@ namespace RTSim {
     public:
         LatenessStat(string name = "") : Measure(name){};
 
-        void probe(const EndEvt &ee)
-            {
-                if (ee.getLastTime() < Measure::_transitory) return;
+        void probe(const EndEvt &ee) {
+            if (ee.getLastTime() < Measure::_transitory)
+                return;
 
-                Task *t = ee.getTask();
-                Tick f = ee.getLastTime();
-                Tick d = t->getDeadline();
-                if (f > d) Measure::record (f - d);
-                else Measure::record(0);
-            }
+            Task *t = ee.getTask();
+            Tick f = ee.getLastTime();
+            Tick d = t->getDeadline();
+            if (f > d)
+                Measure::record(f - d);
+            else
+                Measure::record(0);
+        }
 
-        void attachToTask(Task *t) 
-            {
-              //                new Particle<EndEvt, LatenessStat>(&t->endEvt, this);
-              attach_stat(*this, t->endEvt);
-            }
+        void attachToTask(Task *t) {
+            //                new Particle<EndEvt, LatenessStat>(&t->endEvt,
+            //                this);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
     /**
@@ -217,22 +219,21 @@ namespace RTSim {
     public:
         TardinessStat(string name = "") : Measure(name){};
 
-        void probe(const EndEvt &ee) 
-            {
-                if (ee.getLastTime() < Measure::_transitory) return;
+        void probe(const EndEvt &ee) {
+            if (ee.getLastTime() < Measure::_transitory)
+                return;
 
-                Task *t = (Task *)ee.getTask();
-                double f = (double)ee.getLastTime();
-                double a =(double)t->getLastArrival();
-                double D = (double)t->getRelDline();
-                Measure::record(max(0.0,(f-a-D)/D));
-            }
+            Task *t = (Task *) ee.getTask();
+            double f = (double) ee.getLastTime();
+            double a = (double) t->getLastArrival();
+            double D = (double) t->getRelDline();
+            Measure::record(max(0.0, (f - a - D) / D));
+        }
 
-        void attachToTask(Task *t)
-            {
-              //new Particle<EndEvt, TardinessStat>(&t->endEvt, this);
-              attach_stat(*this, t->endEvt);
-            }
+        void attachToTask(Task *t) {
+            // new Particle<EndEvt, TardinessStat>(&t->endEvt, this);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
     /**
@@ -245,23 +246,23 @@ namespace RTSim {
     class UtilizationStat : public Measure {
     public:
         UtilizationStat(string name = "") : Measure(name){};
-    
-        void probe(const EndEvt &ee)
-            {
-                if (ee.getLastTime() < Measure::_transitory) return;
 
-                Task *t = (Task *)ee.getTask();
-                double ex = (double)t->getExecTime();
-                double a =(double)t->getLastArrival();
-                double d = (double)t->getDeadline();
-                Measure::record(ex / (d-a));
-            }
+        void probe(const EndEvt &ee) {
+            if (ee.getLastTime() < Measure::_transitory)
+                return;
 
-        void attachToTask(Task *t)
-            {
-              //                new Particle<EndEvt, UtilizationStat>(&t->endEvt, this);
-              attach_stat(*this, t->endEvt);
-            }
+            Task *t = (Task *) ee.getTask();
+            double ex = (double) t->getExecTime();
+            double a = (double) t->getLastArrival();
+            double d = (double) t->getDeadline();
+            Measure::record(ex / (d - a));
+        }
+
+        void attachToTask(Task *t) {
+            //                new Particle<EndEvt, UtilizationStat>(&t->endEvt,
+            //                this);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
     /**
@@ -272,28 +273,27 @@ namespace RTSim {
     */
     class MissPercentage : public StatPercent {
     public:
-        MissPercentage(string name = "") : StatPercent(name) {};
+        MissPercentage(string name = "") : StatPercent(name){};
 
-        void probe(const EndEvt &ee)
-            {
-                if (ee.getLastTime() < _transitory) return;
+        void probe(const EndEvt &ee) {
+            if (ee.getLastTime() < _transitory)
+                return;
 
-                Task *task = (Task *) ee.getTask();
-                if (SIMUL.getTime() > task->getLastArrival() + 
-                    task->getRelDline()) {
-                    record(1.0);
-                }
-                else record(0.0);
-            }
+            Task *task = (Task *) ee.getTask();
+            if (SIMUL.getTime() >
+                task->getLastArrival() + task->getRelDline()) {
+                record(1.0);
+            } else
+                record(0.0);
+        }
 
-        void attachToTask(Task *t)
-            {
-              //                new Particle<EndEvt, MissPercentage>(&t->endEvt, this);
-              attach_stat(*this, t->endEvt);
-            }
+        void attachToTask(Task *t) {
+            //                new Particle<EndEvt, MissPercentage>(&t->endEvt,
+            //                this);
+            attach_stat(*this, t->endEvt);
+        }
     };
 
-  
     /**
        \ingroup measures
 
@@ -302,21 +302,22 @@ namespace RTSim {
     */
     class MissCount : public StatCount {
     public:
-        MissCount(string name = "") : StatCount(name) {};
+        MissCount(string name = "") : StatCount(name){};
 
-        void probe(const DeadEvt &e) {record(1.0);}
+        void probe(const DeadEvt &e) {
+            record(1.0);
+        }
 
-        void attachToTask(Task *t) 
-            {
-              //                new Particle<DeadEvt, MissCount>(&t->deadEvt, this);
-              attach_stat(*this, t->deadEvt);
-            }
+        void attachToTask(Task *t) {
+            //                new Particle<DeadEvt, MissCount>(&t->deadEvt,
+            //                this);
+            attach_stat(*this, t->deadEvt);
+        }
     };
-
 
     /**
        \ingroup measures
-     
+
        Computes the power consumed during the simulation. It is
        performed through periodic sampling of the CPU speed.
     */
@@ -325,23 +326,25 @@ namespace RTSim {
     protected:
         CPU *cpu;
         PeriodicTimer mytimer;
-    public:
-        ConsumedPower(CPU* c, string name="") : Measure (name), cpu(c), mytimer(10) 
-            {
-                new Particle<MetaSim::GEvent<Timer>, ConsumedPower>(&mytimer._triggerEvt, this);
-            }
 
-        virtual void probe(const MetaSim::GEvent<Timer> &e)
-            {
-                Measure::record(cpu->getCurrentPowerConsumption() / 
-                                cpu->getMaxPowerConsumption());
-            }
-    
+    public:
+        ConsumedPower(CPU *c, string name = "") :
+            Measure(name),
+            cpu(c),
+            mytimer(10) {
+            new Particle<MetaSim::GEvent<Timer>, ConsumedPower>(
+                &mytimer._triggerEvt, this);
+        }
+
+        virtual void probe(const MetaSim::GEvent<Timer> &e) {
+            Measure::record(cpu->getCurrentPowerConsumption() /
+                            cpu->getMaxPowerConsumption());
+        }
     };
 
     /**
        \ingroup measures
-     
+
        Computes the power saved during the simulation (with respect to
        the maximum power). It is performed through periodic sampling of
        the CPU speed.
@@ -349,13 +352,12 @@ namespace RTSim {
     template <class Measure>
     class SavedPower : public ConsumedPower<Measure> {
     public:
-        SavedPower(CPU* cpu, string name="") : ConsumedPower<Measure>(cpu,name) {}
+        SavedPower(CPU *cpu, string name = "") :
+            ConsumedPower<Measure>(cpu, name) {}
 
-        virtual void probe(const MetaSim::GEvent<Timer> &e)
-            {
-                record(ConsumedPower<Measure>::cpu->getCurrentPowerSaving());
-            }
-
+        virtual void probe(const MetaSim::GEvent<Timer> &e) {
+            record(ConsumedPower<Measure>::cpu->getCurrentPowerSaving());
+        }
     };
 
 } // namespace RTSim

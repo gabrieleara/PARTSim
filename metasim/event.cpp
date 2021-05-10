@@ -11,9 +11,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <sstream>
 #include <string>
 #include <typeinfo>
-#include <sstream>
 
 #include <entity.hpp>
 #include <event.hpp>
@@ -29,7 +29,7 @@ namespace MetaSim {
     long Event::counter = 0;
 
     /**
-     * Constructor for Event. 
+     * Constructor for Event.
      */
     Event::Event(int p) :
         _order(0),
@@ -39,12 +39,9 @@ namespace MetaSim {
         _lastTime(MAXTICK),
         _priority(p),
         _std_priority(p),
-        _disposable(false)                
-    {
-    }
+        _disposable(false) {}
 
-    Event::~Event()
-    {
+    Event::~Event() {
         drop();
     }
 
@@ -57,48 +54,45 @@ namespace MetaSim {
         _lastTime(MAXTICK),
         _priority(e._priority),
         _std_priority(e._std_priority),
-        _disposable(e._disposable)
-    {
-        for (auto &p : e._particles) 
+        _disposable(e._disposable) {
+        for (auto &p : e._particles)
             p->clone_to(*this);
     }
 
-    
-    bool Event::Cmp::operator() (Event* e1, Event* e2) const {
+    bool Event::Cmp::operator()(Event *e1, Event *e2) const {
         Tick firstTime, secondTime;
-	
-        firstTime  = e1->getTime();
+
+        firstTime = e1->getTime();
         secondTime = e2->getTime();
-	
-        if (firstTime < secondTime) return true;
+
+        if (firstTime < secondTime)
+            return true;
         else if (firstTime == secondTime) {
-            if (e1->getPriority() < e2->getPriority()) return true;
+            if (e1->getPriority() < e2->getPriority())
+                return true;
             else if (e1->getPriority() == e2->getPriority()) {
-                if (e1->_order < (unsigned long)e2->_order) 
+                if (e1->_order < (unsigned long) e2->_order)
                     return true;
-                else return false;
-            }
-            else return false;
-        }
-        else return false;
+                else
+                    return false;
+            } else
+                return false;
+        } else
+            return false;
     }
-    
-    void Event::post(Tick myTime, bool disp) throw (Exc, BaseExc)
-    {
+
+    void Event::post(Tick myTime, bool disp) throw(Exc, BaseExc) {
         if (_isInQueue) {
             std::stringstream str;
-            str << "Time: " << SIMUL.getTime() 
-                << " -- Event" 
+            str << "Time: " << SIMUL.getTime() << " -- Event"
                 << typeid(*this).name() << " already posted";
             throw Exc(str.str());
         }
 
         if (myTime < SIMUL.getTime()) {
             std::stringstream str;
-            str << "Time: " << SIMUL.getTime() 
-                << " -- Posting event" 
-                << typeid(*this).name() << " in the past at time: " 
-                << myTime;
+            str << "Time: " << SIMUL.getTime() << " -- Posting event"
+                << typeid(*this).name() << " in the past at time: " << myTime;
             throw Exc(str.str());
         }
 
@@ -106,14 +100,14 @@ namespace MetaSim {
 
         _order = counter++;
 
-        std::pair<EventQueue::iterator,bool> p;
-        p =_eventQueue.insert(this);
-    
+        std::pair<EventQueue::iterator, bool> p;
+        p = _eventQueue.insert(this);
+
         if (!p.second) {
             std::stringstream str;
-            str << "Time: " << SIMUL.getTime() 
-                << " -- Posting event" 
-                << typeid(*this).name() << " Already in queue!, at time = " << myTime;
+            str << "Time: " << SIMUL.getTime() << " -- Posting event"
+                << typeid(*this).name()
+                << " Already in queue!, at time = " << myTime;
             throw Exc(str.str());
         }
 
@@ -122,22 +116,18 @@ namespace MetaSim {
 
         DBGENTER(_EVENT_DBG_LEV);
         print();
-        
     }
 
     // erase the event from the event queue
-    void Event::drop()
-    {
+    void Event::drop() {
         DBGENTER(_EVENT_DBG_LEV);
         print();
-        
+
         _eventQueue.erase(this);
         _isInQueue = false;
     };
 
-
-    void Event::process(bool disp)
-    {
+    void Event::process(bool disp) {
         DBGENTER(_EVENT_DBG_LEV);
         drop();
         print();
@@ -145,24 +135,23 @@ namespace MetaSim {
         post(SIMUL.getTime(), disp);
     }
 
-    // Function to set the event time 
+    // Function to set the event time
     // (only if the event is not in any queue).
-    void Event::setTime(Tick actTime) throw(Exc)
-    {
+    void Event::setTime(Tick actTime) throw(Exc) {
         if (_isInQueue)
             throw Exc("Cannot set the time if the event is already queued\n");
-        else _time = actTime;
+        else
+            _time = actTime;
     }
 
     // see comment below on exceptions to be thrown by this function
-    void Event::action()
-    {
+    void Event::action() {
         DBGENTER(_EVENT_DBG_LEV);
 
         /* Handles the event ONLY if it has target!!! Otherwise executes
          * its tracing and calls the related stats.....
          */
-        _lastTime = _time; 
+        _lastTime = _time;
 
         // restore old priority
         restorePriority();
@@ -178,28 +167,24 @@ namespace MetaSim {
 
         // the new way of doing statistics. The old way
         // remains valid, but it is deprecated.
-        DBGPRINT_2("Calling the particle probes, size = ", 
-                   _particles.size());
+        DBGPRINT_2("Calling the particle probes, size = ", _particles.size());
         for (auto itp = _particles.begin(); itp != _particles.end(); itp++) {
             DBGPRINT("Calling probe");
             (*itp)->probe();
-        } 
+        }
     }
 
     // DEBUG!!! Prints events data on the dbg stream.
-    void Event::print()
-    {
-        DBGPRINT_6("t=[", _time,
-                   "] prio=[", _priority,
+    void Event::print() {
+        DBGPRINT_6("t=[", _time, "] prio=[", _priority,
                    "] event=", typeid(*this).name());
     }
 
-    void Event::addParticle(std::unique_ptr<ParticleInterface> s)
-    {
+    void Event::addParticle(std::unique_ptr<ParticleInterface> s) {
         DBGENTER(_EVENT_DBG_LEV);
         DBGPRINT_2("Event name ", typeid(*this).name());
         _particles.push_back(std::move(s));
         DBGPRINT_2("size is now: ", _particles.size());
     }
 
-} // namespace MetaSim 
+} // namespace MetaSim
