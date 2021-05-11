@@ -19,7 +19,7 @@ namespace RTSim {
         fd << tt.getName() << "\t";
         fd << (dynamic_cast<ArrEvt *>(evt) != NULL ? 0 : evt->getCPU()) << "\t";
         fd << evt_name << "\t";
-        fd << endl;
+        fd << std::endl;
     }
 
     void PSTrace::probe(ArrEvt &e) {

@@ -1,18 +1,10 @@
 #include <cbserver.hpp>
 #include <energyMRTKernel.hpp>
-
-#include <cassert>
-
 namespace RTSim {
 
-    using namespace MetaSim;
-
-    using std::cout;
-    using std::endl;
-
     CBServer::CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name,
-                       const std::string &s) :
-        Server(name, s),
+                       const std::string &sched) :
+        Server(name, sched),
         Q(q),
         P(p),
         d(d),
@@ -21,9 +13,8 @@ namespace RTSim {
         HR(HR),
         _replEvt(this, &CBServer::onReplenishment,
                  Event::_DEFAULT_PRIORITY - 1),
-        _idleEvt(this, &CBServer::onIdle,
-                 Event::_DEFAULT_PRIORITY -
-                     1), // standard version of RTSim uses _DEFAULT_PRIORITY
+        // For idle, standard version of RTSim uses _DEFAULT_PRIORITY
+        _idleEvt(this, &CBServer::onIdle, Event::_DEFAULT_PRIORITY - 1),
         vtime(),
         idle_policy(ORIGINAL) {
         DBGENTER(_SERVER_DBG_LEV);
@@ -33,14 +24,61 @@ namespace RTSim {
     void CBServer::newRun() {
         DBGENTER(_SERVER_DBG_LEV);
         DBGPRINT_2("HR ", HR);
+
         cap = Q;
         last_time = 0;
         // recharging_time = 0;
         status = IDLE;
-        capacity_queue.clear();
+        // capacity_queue.clear();
         if (vtime.get_status() == CapacityTimer::RUNNING)
             vtime.stop();
         vtime.set_value(0);
+    }
+
+    void CBServer::endRun() {}
+
+    Tick CBServer::changeBudget(const Tick &n) {
+        // NOTE: I removed all custom print to stdout because code was
+        // getting cluttered
+        DBGENTER(_SERVER_DBG_LEV);
+
+        Tick cur_time = SIMUL.getTime();
+
+        if (n <= 0)
+            return 0;
+
+        if (n == Q) {
+            DBGPRINT_2("No Capacity change: n=Q=", Q);
+            return cur_time;
+        }
+
+        // NOTE: if n < Q then cap is decremented
+        Q = n;
+        cap += n - Q;
+
+        if (status == EXECUTING) {
+            DBGPRINT_3("Server ", getName(), " is executing");
+
+            // Capacity may have decreased. If 0, a recharging event is fired at
+            // the current time. If less than 0, an exception is thrown when
+            // postponing the bandwidth expire event.
+
+            cap = cap - (cur_time - last_time);
+            last_time = cur_time;
+
+            if (cap == 0) {
+                DBGPRINT("Server capacity is zero, go to recharging");
+            } else {
+                DBGPRINT_2("Reposting bandExEvt at ", cur_time + cap);
+            }
+
+            _bandExEvt.drop();
+            _bandExEvt.post(cur_time + cap);
+            vtime.stop();
+            vtime.start(double(P) / double(Q));
+        }
+
+        return cur_time;
     }
 
     double CBServer::getVirtualTime() {
@@ -54,10 +92,79 @@ namespace RTSim {
         return vt;
     }
 
-    void CBServer::endRun() {}
+    // --------------> BEGIN FUNCTIONS ADDED BY AGOSTINO <-------------- //
+
+    void CBServer::addTask(AbsRTTask &task, const std::string &params) {
+        Server::addTask(task, params);
+        _yielding = false;
+    }
+
+    std::vector<AbsRTTask *> CBServer::getAllTasks() const {
+        return sched_->getTasks();
+    }
+
+    std::vector<AbsRTTask *> CBServer::getTasks() const {
+        std::vector<AbsRTTask *> res;
+        std::vector<AbsRTTask *> tasks = getAllTasks();
+
+        for (int i = 0; i < tasks.size(); ++i) {
+            Task *tt = dynamic_cast<Task *>(tasks[i]);
+            NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask *>(tt);
+
+            // If the task ends now, skip
+            if (tt->endEvt.getTime() == SIMUL.getTime())
+                continue;
+
+            // If the task is not active and its actication time is in the
+            // past, skip
+            if (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive()) {
+                continue;
+            }
+
+            // NOTE: non-periodic tasks can be created even without using
+            // the NonPeriodicTask class, right? By manually setting the
+            // Task parameters, I think? Check.
+
+            // For non-periodic tasks, inactive or past tasks are ignored.
+            if (ntt != nullptr) {
+                if (!tt->isActive())
+                    continue;
+
+                if (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime())
+                    continue;
+            }
+
+            res.push_back(tt);
+        }
+        return res;
+    }
+
+    bool CBServer::isEmpty() const {
+        return getTasks().size() == 0;
+    }
+
+    bool CBServer::isInServer(AbsRTTask *t) {
+        // Servers are not hierarchical
+        if (dynamic_cast<Server *>(t))
+            return false;
+
+        bool res = sched_->isFound(t);
+        return res;
+    }
+
+    std::string CBServer::toString() const {
+        std::stringstream s;
+        s << "\ttasks: [ " << sched_->toString() << "]"
+          << (isYielding() ? " yielding" : "") << " (Q:" << getBudget()
+          << ", P:" << getPeriod() << ")\tstatus: " << getStatusString();
+        return s.str();
+    }
+
+    // ---------------> END FUNCTIONS ADDED BY AGOSTINO <--------------- //
+
+    // TODO: GA: study functions in this file below this comment
 
     void CBServer::idle_ready() {
-        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(status == IDLE);
         status = READY;
@@ -72,51 +179,47 @@ namespace RTSim {
 
         if (cap == 0) {
             cap = Q;
-            // added relative deadline
+            // Postpone absolute deadline
             d = SIMUL.getTime() + P;
             DBGPRINT_2("new deadline ", d);
             setAbsDead(d);
         }
+
         vtime.set_value(SIMUL.getTime());
         DBGPRINT_2("Going to active contending ", SIMUL.getTime());
     }
 
-    /*I should compare the actual bandwidth with the assignedserver Q
-     *  and postpone deadline and full recharge or just use what is
-     *  left*/
-    // this should not be necessary.
-    // In fact, the releasing state should be the state in which:
-    // 1) the server is not executing
-    // 2) the if (condition) is false.
-    // in other words, it should be possible to avoid the if.
+    // We should compare the actual bandwidth with the assigned Q of this
+    // server, postpone the deadline and fully recharge or just use what is
+    // left. However, this is not necessary, in fact, the releasing state should
+    // be the state in which:
+    //  1. the server is not executing.
+    //  2. the if (condition) is false.
+    //
+    // In other words, it should be possible to avoid the if.
     void CBServer::releasing_ready() {
-        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
+
         status = READY;
         _idleEvt.drop();
+
         DBGPRINT("FROM NON CONTENDING TO CONTENDING");
     }
 
     void CBServer::ready_executing() {
-        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         status = EXECUTING;
         last_time = SIMUL.getTime();
-        vtime.start((double) P / double(Q));
-        cout << "\tCBS::" << __func__ << "(). vtime=" << getVirtualTime()
-             << " setting vtime with " << P << "/" << Q << endl;
+        vtime.start(double(P) / double(Q));
+
         DBGPRINT_2("Last time is: ", last_time);
+
         _bandExEvt.post(last_time + cap);
-        cout << "\tCBS::" << __func__ << "(). _bandExEvt posted at "
-             << last_time << "+" << cap << "=" << last_time + cap << endl;
     }
 
-    /*The server is preempted. */
     void CBServer::executing_ready() {
-        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
-        // assert(isEmpty());
 
         status = READY;
         cap = cap - (SIMUL.getTime() - last_time);
@@ -124,40 +227,44 @@ namespace RTSim {
         _bandExEvt.drop();
     }
 
-    /*The sporadic task ends execution*/
     void CBServer::executing_releasing() {
-        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
-        // assert(isEmpty());
 
         if (status == EXECUTING) {
             cap = cap - (SIMUL.getTime() - last_time);
             vtime.stop();
             _bandExEvt.drop();
         }
+
         if (vtime.get_value() <= double(SIMUL.getTime()))
             status = IDLE;
         else {
-            cout << "Posting idle evt for " << getName()
-                 << " at t=" << vtime.get_value() << "-->"
-                 << ceil(vtime.get_value()) << endl;
-            //_idleEvt.post(Tick::ceil(vtime.get_value())); in exp 9, task WCET
-            // 200, P 500 goes out of period with ceil
             _idleEvt.post(Tick(vtime.get_value()));
             status = RELEASING;
         }
-        DBGPRINT("Status is now XXXYYY " << status_string[status]);
+
+        // DBGPRINT("Status is now XXXYYY " << status_string[status]);
+
+        // The EMRTKernel saves the active utilization on
+        // release in the onExecutingReleasing method.
+        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        if (emrtk != nullptr)
+            emrtk->onExecutingReleasing(this);
     }
 
     void CBServer::releasing_idle() {
-        cout << "CBS::" << __func__ << "() for " << toString() << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = IDLE;
+
+        // TODO: why does this call this?
+        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        if (emrtk != nullptr)
+            emrtk->onReleasingIdle(this);
     }
 
-    /*The server has no more bandwidth The server queue may be empty or not*/
     void CBServer::executing_recharging() {
-        cout << "CBS::" << __func__ << "() for " << toString() << endl;
+        // Server queue may be empty or not.
+
         DBGENTER(_SERVER_DBG_LEV);
 
         _bandExEvt.drop();
@@ -167,22 +274,24 @@ namespace RTSim {
         DBGPRINT_2("Time is: ", SIMUL.getTime());
         DBGPRINT_2("Last time is: ", last_time);
         DBGPRINT_2("HR: ", HR);
+
         if (!HR) {
+            // Postpone the absolute deadline and instantly replenish the budget
             cap = Q;
             d = d + P;
             setAbsDead(d);
+
             DBGPRINT_2("Capacity is now: ", cap);
-            DBGPRINT_2("Capacity queue: ", capacity_queue.size());
+            // DBGPRINT_2("Capacity queue: ", capacity_queue.size());
             DBGPRINT_2("new_deadline: ", d);
+
             status = READY;
             _replEvt.post(SIMUL.getTime());
-            cout << "CBS::" << __func__ << "(). _replEvt posted at "
-                 << SIMUL.getTime() << endl;
         } else {
+            // Set the next replenishment event to the current absolute deadline
+            // and then postpone the deadline
             cap = 0;
             _replEvt.post(d);
-            cout << "CBS::" << __func__ << "(). _replEvt posted at " << d
-                 << endl;
             d = d + P;
             setAbsDead(d);
             status = RECHARGING;
@@ -193,29 +302,22 @@ namespace RTSim {
         // vtime.stop();
 
         DBGPRINT("The status is now " << status_string[status]);
+
+        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        if (emrtk != nullptr)
+            emrtk->onExecutingRecharging(this);
     }
 
-    /*The server has recovered its bandwidth and there is at least one task left
-     * in the queue*/
     void CBServer::recharging_ready() {
-        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
         status = READY;
     }
 
     void CBServer::recharging_idle() {
-        cout << "CBS::" << __func__ << "()" << endl;
         assert(false);
     }
 
-    void CBServer::onIdle(Event *e) {
-        cout << "CBS::" << __func__ << "()" << endl;
-        DBGENTER(_SERVER_DBG_LEV);
-        releasing_idle();
-    }
-
     void CBServer::onReplenishment(Event *e) {
-        cout << "CBS::" << __func__ << "()" << endl;
         DBGENTER(_SERVER_DBG_LEV);
 
         _replEvt.drop();
@@ -223,130 +325,72 @@ namespace RTSim {
         DBGPRINT_2("Status before: ", status);
         DBGPRINT_2("Capacity before: ", cap);
 
-        if (status == RECHARGING || status == RELEASING || status == IDLE) {
+        switch (status) {
+        case RECHARGING:
+        case RELEASING:
+        case IDLE: {
             cap = Q; // repl_queue.front().second;
-            if (sched_->getFirst() != NULL) {
+            if (sched_->getFirst() != nullptr) {
+                // There is some work ready to go
                 recharging_ready();
                 kernel->onArrival(this);
             } else if (status != IDLE) {
                 if (double(SIMUL.getTime()) < vtime.get_value()) {
                     status = RELEASING;
                     _idleEvt.post(Tick::ceil(vtime.get_value()));
-                } else
+                } else {
                     status = IDLE;
+                }
 
-                currExe_ = NULL;
-                sched_->notify(NULL);
+                currExe_ = nullptr;
+                sched_->notify(nullptr);
             }
-        } else if (status == READY || status == EXECUTING) {
-            if (sched_->getFirst() == this) {
-            }
+        } break;
+        case READY:
+        case EXECUTING: {
+            // TODO: what should we do now?
+
+            // if (sched_->getFirst() == this) {
+            // }
 
             //       repl_queue.pop_front();
             // capacity_queue.push_back(r);
             // if (repl_queue.size() > 1) check_repl();
             // me falta reinsertar el servidor con la prioridad adecuada
+        } break;
+        default:
+            assert(false);
         }
 
         DBGPRINT_2("Status is now: ", status_string[status]);
         DBGPRINT_2("Capacity is now: ", cap);
+
+        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        if (emrtk != nullptr)
+            emrtk->onReplenishment(this);
     }
 
-    Tick CBServer::changeBudget(const Tick &n) {
-        cout << "CBS::" << __func__ << "() for " << getName()
-             << " n (new budget)=" << n << ", Q (old budget)=" << Q << endl;
-        if (toString().find("T9_task8") != string::npos)
-            cout << "";
-        Tick ret = 0;
+    void CBServer::onIdle(Event *e) {
         DBGENTER(_SERVER_DBG_LEV);
-
-        if (n > Q) {
-            DBGPRINT_4("Capacity Increment: n=", n, " Q=", Q);
-            cap += n - Q;
-            if (status == EXECUTING) {
-                DBGPRINT_3("Server ", getName(), " is executing");
-                cap = cap - (SIMUL.getTime() - last_time);
-                _bandExEvt.drop();
-                vtime.stop();
-                last_time = SIMUL.getTime();
-                _bandExEvt.post(last_time + cap);
-                cout << "CBS::" << __func__
-                     << "(). n > Q. _bandExEvt posted at " << last_time + cap
-                     << endl;
-                vtime.start((double) P / double(n));
-                cout << "CBS::" << __func__
-                     << "(). n > Q. vtime=" << getVirtualTime()
-                     << " setting vitime with " << P << "/" << Q << endl;
-                DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
-            }
-            Q = n;
-            ret = SIMUL.getTime();
-        } else if (n == Q) {
-            DBGPRINT_2("No Capacity change: n=Q=", n);
-            ret = SIMUL.getTime();
-        } else if (n > 0) {
-            DBGPRINT_4("Capacity Decrement: n=", n, " Q=", Q);
-            if (status == EXECUTING) {
-                DBGPRINT_3("Server ", getName(), " is executing");
-                cap = cap - (SIMUL.getTime() - last_time);
-                last_time = SIMUL.getTime();
-                DBGVAR(cap);
-                _bandExEvt.drop();
-                vtime.stop();
-            }
-
-            Q = n;
-
-            if (status == EXECUTING) {
-                vtime.start(double(P) / double(Q));
-                cout << "CBS::" << __func__ << "() - EXEC. setting vitime with "
-                     << P << "/" << Q << endl;
-                DBGPRINT("Server was executing");
-                if (cap == 0) {
-                    DBGPRINT("capacity is zero, go to recharging");
-                    _bandExEvt.drop();
-                    _bandExEvt.post(SIMUL.getTime());
-                    cout << "CBS::" << __func__
-                         << "(). cap == 0. _bandExEvt posted at "
-                         << SIMUL.getTime() << endl;
-                } else {
-                    DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
-                    _bandExEvt.post(last_time + cap);
-                    cout << "CBS::" << __func__
-                         << "(). cap != 0. _bandExEvt posted at "
-                         << last_time + cap << endl;
-                }
-            }
-        }
-        cout << "\tending cap=" << cap << endl;
-        return ret;
+        releasing_idle();
     }
 
-    Tick CBServer::changeQ(const Tick &n) {
-        Q = n;
-        return 0;
-    }
-
-    Tick CBServer::get_remaining_budget() const {
-        double dist = (double(getDeadline()) - vtime.get_value()) * double(Q) /
-                          double(P) +
-                      0.00000000001;
-
-        return Tick::floor(dist);
-    }
-
-    void CBServerCallingEMRTKernel::killInstance(bool onlyOnce) {
-        cout << "CBSCEMRTK::" << __func__ << "() for " << getName()
-             << " at t=" << SIMUL.getTime() << endl;
-
-        Task *t = dynamic_cast<Task *>(getFirstTask());
-        CPU_BL *cpu = dynamic_cast<CPU_BL *>(t->getCPU());
+    // TODO: check if this method is good and that no other
+    // method will be ever invoked for this CBServer once
+    // killed with this method
+    void CBServer::killInstance(bool onlyOnce) {
+        auto t = dynamic_cast<Task *>(sched_->getFirst());
+        auto cpu = dynamic_cast<CPU_BL *>(t->getCPU());
         assert(t != NULL);
         assert(cpu != NULL);
+
+        // TODO: check that the CPU is actually part of a
+        // BigLittle
 
         executing_releasing();
         status = EXECUTING;
         yield();
+
         _bandExEvt.drop();
         _replEvt.drop();
         _rechargingEvt.drop();
@@ -354,83 +398,55 @@ namespace RTSim {
         _killed = true;
 
         t->killInstance();
-        cout << endl
-             << endl
-             << "Kill event is now " << t->killEvt.toString() << endl
-             << endl;
         t->killEvt.doit();
-        cout << "Kill event is dropped? " << t->killEvt.toString() << endl;
+
+        // std::cout << "Kill event is dropped? " << t->killEvt.toString() <<
+        // std::endl;
 
         status = RELEASING;
         _dispatchEvt.drop();
     }
 
-    CPU *CBServerCallingEMRTKernel::getProcessor(const AbsRTTask *t) const {
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        AbsRTTask *tt = const_cast<AbsRTTask *>(t);
+    double CBServer::getWCET(double capacity) const {
+        double wcet = 0.0;
 
-        if (dynamic_cast<PeriodicTask *>(tt)) {
-            assert(emrtk != NULL);
-            return emrtk->getProcessor(tt);
-        } else
-            return CBServer::getProcessor(tt);
+        // TODO: this assumes that all absRTTasks properly implement the
+        // getWCET(capacity) method (and do not simply return 0.0)
+        for (auto *t : getTasks()) {
+            wcet += double(t->getWCET(capacity));
+        }
+
+        return wcet;
+
+        // double wcet = 0.0;
+        // for (AbsRTTask *t : getTasks())
+        //     wcet += double(dynamic_cast<Task *>(t)->getWCET());
+        // wcet = wcet / capacity;
+        // return wcet;
     }
 
-    // task of server ends
-    void CBServerCallingEMRTKernel::onEnd(AbsRTTask *t) {
-        cout << "t=" << SIMUL.getTime() << " CBSCEMRTK::" << __func__
-             << "() for " << t->toString() << endl;
-        CPU_BL *cpu = dynamic_cast<CPU_BL *>(dynamic_cast<Task *>(t)->getCPU());
+    void CBServer::onArrival(AbsRTTask *t) {
+        _yielding = false;
+        Server::onArrival(t);
+    }
+
+    void CBServer::onEnd(AbsRTTask *t) {
         Server::onEnd(t);
-        // todo del cout
-        cout << "\tEnd of Server::onEnd() in CBSCEMRTK::onEnd()" << endl;
 
         if (isEmpty())
             yield();
 
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != NULL)
-            emrtk->onTaskInServerEnd(t, cpu, this);
-
-        cout << endl;
+        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        if (emrtk != nullptr)
+            emrtk->onTaskInServerEnd(t, dynamic_cast<Task *>(t)->getCPU(),
+                                     this);
     }
 
-    void CBServerCallingEMRTKernel::onReplenishment(Event *e) {
-        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
-        CBServer::onReplenishment(e);
-
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != NULL)
-            emrtk->onReplenishment(this);
-    }
-
-    void CBServerCallingEMRTKernel::executing_recharging() {
-        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
-        CBServer::executing_recharging();
-
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != NULL)
-            emrtk->onExecutingRecharging(this);
-    }
-
-    void CBServerCallingEMRTKernel::executing_releasing() {
-        cout << "CBSCEMRTK::" << __func__ << "()" << endl;
-        CBServer::executing_releasing();
-
-        // here you should save Util active. Done in CBSCEMRTK::onEnd()
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != NULL)
-            emrtk->onExecutingReleasing(this); // save util active
-    }
-
-    /// remember to call Server::setKernel(kern) before this
-    void CBServerCallingEMRTKernel::releasing_idle() {
-        cout << "CBSCEMRTK::" << __func__ << "() t=" << SIMUL.getTime() << endl;
-        CBServer::releasing_idle();
-
-        EnergyMRTKernel *emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != NULL)
-            emrtk->onReleasingIdle(this);
+    void CBServer::onDesched(Event *e) {
+        if (isEmpty())
+            yield();
+        else // could happend with non-periodic tasks
+            Server::onDesched(e);
     }
 
 } // namespace RTSim

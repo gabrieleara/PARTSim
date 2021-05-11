@@ -15,22 +15,25 @@
 #define RTLIB2_0_ENERGYMRTKERNEL_H
 
 #include <mrtkernel.hpp>
-#include <multi_cores_scheds.hpp>
+#include <multisched.hpp>
 #include <rrsched.hpp>
 #include <rttask.hpp>
 #include <task.hpp>
 #include <utils.hpp>
+#include <cbserver.hpp>
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 
 namespace RTSim {
 
     class CBServer;
-    class CBServerCallingEMRTKernel;
+    using CBServerCallingEMRTKernel = CBServer;
 
     using CPU_BL = CPU;
     using Island_BL = CPUIsland;
     using IslandType = CPUIsland::Type;
+
+    using std::map;
 
     /**
         \ingroup sched

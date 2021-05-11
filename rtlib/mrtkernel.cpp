@@ -11,138 +11,127 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <algorithm>
-
-#include <simul.hpp>
 
 #include <cbserver.hpp>
-#include <cpu.hpp>
 #include <mrtkernel.hpp>
-#include <resmanager.hpp>
 #include <scheduler.hpp>
-#include <task.hpp>
 
 namespace RTSim {
-
-    using namespace MetaSim;
-    using std::cout;
-    using std::endl;
-
-    template <class IT>
-    void clean_mapcontainer(IT b, IT e) {
-        for (IT i = b; i != e; i++)
-            delete i->second;
-    }
+    // =========================================================================
+    // class BeginDispatchMultiEvt
+    // =========================================================================
 
     BeginDispatchMultiEvt::BeginDispatchMultiEvt(MRTKernel &k, CPU &c) :
-        DispatchMultiEvt(k, c, Event::_DEFAULT_PRIORITY + 10) {}
-
-    EndDispatchMultiEvt::EndDispatchMultiEvt(MRTKernel &k, CPU &c) :
         DispatchMultiEvt(k, c, Event::_DEFAULT_PRIORITY + 10) {}
 
     void BeginDispatchMultiEvt::doit() {
         _kernel.onBeginDispatchMulti(this);
     }
 
+    // =========================================================================
+    // class EndDispatchMultiEvt
+    // =========================================================================
+
+    EndDispatchMultiEvt::EndDispatchMultiEvt(MRTKernel &k, CPU &c) :
+        DispatchMultiEvt(k, c, Event::_DEFAULT_PRIORITY + 10) {}
+
     void EndDispatchMultiEvt::doit() {
         _kernel.onEndDispatchMulti(this);
     }
 
-    vector<CPU *> MRTKernel::getProcessors() const {
-        vector<CPU *> s; // = new vector<const CPU*>;
+    // =========================================================================
+    // class MRTKernel
+    // =========================================================================
 
-        typedef map<CPU *, AbsRTTask *>::const_iterator IT;
-        int j = 0;
+    // =====================================================
+    // Constructors and Destructor
+    // =====================================================
 
-        for (IT i = _m_currExe.begin(); i != _m_currExe.end(); i++, j++)
-            s[j] = i->first;
-        return s;
-    }
 
-    CPU *MRTKernel::getFreeProcessor() {
-        for (ITCPU i = _m_currExe.begin(); i != _m_currExe.end(); i++)
-            if (i->second == NULL)
-                return i->first;
-        return NULL;
-    }
+    static inline std::set<CPU *> createCPUSet(absCPUFactory *factory,
+                                               size_t n) {
+        std::set<CPU *> cpus;
 
-    bool MRTKernel::isDispatched(CPU *p) {
-        map<const AbsRTTask *, CPU *>::iterator j = _m_dispatched.begin();
-
-        for (; j != _m_dispatched.end(); ++j)
-            if (j->second == p)
-                return true;
-
-        return false;
-    }
-
-    MRTKernel::ITCPU MRTKernel::getNextFreeProc(ITCPU s, ITCPU e) {
-        for (ITCPU i = s; i != e; ++i)
-            if (i->second == NULL && !isDispatched(i->first))
-                return i;
-
-        return e;
-    }
-
-    void MRTKernel::internalConstructor(int n) {
-        for (int i = 0; i < n; i++) {
-            CPU *c = _CPUFactory->createCPU();
-            _m_currExe[c] = NULL;
-            _isContextSwitching[c] = false;
-            _beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
-            _endEvt[c] = new EndDispatchMultiEvt(*this, *c);
+        for (size_t i = 0; i < n; i++) {
+            cpus.insert(factory->createCPU());
         }
 
-        _sched->setKernel(this);
+        return cpus;
     }
 
-    MRTKernel::MRTKernel(Scheduler *s, absCPUFactory *fact, int n,
+
+    MRTKernel::MRTKernel(Scheduler *s, std::set<CPU *> cpus,
                          const string &name) :
         RTKernel(s, name),
-        _CPUFactory(fact),
         _migrationDelay(0) {
-        internalConstructor(n);
+        // internalConstructor(cpus);
+        for (auto c : cpus) {
+            addCPU(c);
+        }
+        _sched->setKernel(this);
     }
 
     MRTKernel::MRTKernel(Scheduler *s, std::vector<CPU *> cpus,
                          const string &name) :
-        RTKernel(s, name),
-        _migrationDelay(0) {
-        for (CPU *c : cpus) {
-            _m_currExe[c] = NULL;
-            _isContextSwitching[c] = false;
-            _beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
-            _endEvt[c] = new EndDispatchMultiEvt(*this, *c);
-        }
+        MRTKernel(s, std::set<CPU *>(cpus.begin(), cpus.end()), name) {}
 
-        _sched->setKernel(this);
-    }
+    MRTKernel::MRTKernel(Scheduler *s, absCPUFactory *factory, int n,
+                         const string &name) :
+        MRTKernel(s, createCPUSet(factory, n)) {}
 
+    // Using std::make_unique, we create a temporary unique_ptr that will
+    // automatically delete the uniformCPUFactory once done
     MRTKernel::MRTKernel(Scheduler *s, int n, const string &name) :
-        RTKernel(s, name),
-        _migrationDelay(0) {
-        _CPUFactory = new uniformCPUFactory();
-
-        internalConstructor(n);
-    }
+        MRTKernel(s, std::make_unique<uniformCPUFactory>().get(), n, name) {}
 
     MRTKernel::MRTKernel(Scheduler *s, const string &name) :
-        RTKernel(s, name),
-        _migrationDelay(0) {
-        _CPUFactory = new uniformCPUFactory();
+        MRTKernel(s, 1, name) {}
 
-        internalConstructor(1);
+    /// Deletes elements pointed by maps
+    template <class IT>
+    static inline void clean_mapcontainer(IT b, IT e) {
+        for (IT i = b; i != e; i++)
+            delete i->second;
     }
 
     MRTKernel::~MRTKernel() {
-        delete _CPUFactory;
+        // delete _CPUFactory;
         clean_mapcontainer(_beginEvt.begin(), _beginEvt.end());
         clean_mapcontainer(_endEvt.begin(), _endEvt.end());
     }
 
+    // =====================================================
+    // Methods
+    // =====================================================
+
+    CPU *MRTKernel::getFreeProcessor() {
+        for (auto it : _m_currExe) {
+            if (it.second == nullptr)
+                return it.first;
+        }
+        return nullptr;
+    }
+
+    bool MRTKernel::isDispatched(CPU *p) const {
+        for (auto it : _m_dispatched) {
+            if (it.second == p)
+                return true;
+        }
+        return false;
+    }
+
+    MRTKernel::ITCPU MRTKernel::getNextFreeProc(ITCPU begin, ITCPU end) {
+        for (auto it = begin; it != end; ++it) {
+            if (it->second == nullptr && !isDispatched(it->first))
+                return it;
+        }
+        return end;
+    }
+
     void MRTKernel::addCPU(CPU *c) {
         DBGENTER(_KERNEL_DBG_LEV);
-        _m_currExe[c] = NULL;
+
+        _m_currExe[c] = nullptr;
         _isContextSwitching[c] = false;
         _beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
         _endEvt[c] = new EndDispatchMultiEvt(*this, *c);
@@ -150,34 +139,19 @@ namespace RTSim {
 
     void MRTKernel::addTask(AbsRTTask &t, const string &param) {
         RTKernel::addTask(t, param);
-        _m_oldExe[&t] = NULL;
-        _m_dispatched[&t] = NULL;
+        _m_oldExe[&t] = nullptr;
+        _m_dispatched[&t] = nullptr;
 
         CBServer *cbs = dynamic_cast<CBServer *>(&t);
         if (cbs != nullptr)
             _servers.push_back(cbs);
     }
 
-    CPU *MRTKernel::getProcessor(const AbsRTTask *t) const {
-        DBGENTER(_KERNEL_DBG_LEV);
-        CPU *ret = NULL;
-
-        typedef map<CPU *, AbsRTTask *>::const_iterator IT;
-
-        for (IT i = _m_currExe.begin(); i != _m_currExe.end(); i++)
-            if (i->second == t)
-                ret = i->first;
-        return ret;
-    }
-
-    CPU *MRTKernel::getOldProcessor(const AbsRTTask *t) const {
-        CPU *ret = NULL;
-
+    void MRTKernel::onArrival(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        ret = _m_oldExe.find(t)->second;
-
-        return ret;
+        _sched->insert(task);
+        dispatch();
     }
 
     void MRTKernel::suspend(AbsRTTask *task) {
@@ -185,22 +159,14 @@ namespace RTSim {
 
         _sched->extract(task);
         CPU *p = getProcessor(task);
-        if (p != NULL) {
+        if (p != nullptr) {
             task->deschedule();
 
-            _m_currExe[p] = NULL;
+            _m_currExe[p] = nullptr;
             _m_oldExe[task] = p;
-            _m_dispatched[task] = NULL;
+            _m_dispatched[task] = nullptr;
             dispatch(p);
         }
-    }
-
-    void MRTKernel::onArrival(AbsRTTask *t) {
-        DBGENTER(_KERNEL_DBG_LEV);
-
-        _sched->insert(t);
-
-        dispatch();
     }
 
     void MRTKernel::onEnd(AbsRTTask *task) {
@@ -208,92 +174,114 @@ namespace RTSim {
 
         CPU *p = getProcessor(task);
 
-        if (p == NULL)
+        if (p == nullptr)
             throw RTKernelExc("Received a onEnd of a non executing task");
 
         _sched->extract(task);
         _m_oldExe[task] = p;
-        _m_currExe[p] = NULL;
-        _m_dispatched[task] = NULL;
+        _m_currExe[p] = nullptr;
+        _m_dispatched[task] = nullptr;
 
         dispatch(p);
-    }
-
-    void MRTKernel::dispatch() {
-        DBGENTER(_KERNEL_DBG_LEV);
-
-        int ncpu = _m_currExe.size();
-        int num_newtasks = 0; // tells us how many "new" tasks in the
-                              // ready queue
-        int i;
-
-        for (i = 0; i < ncpu; ++i) {
-            AbsRTTask *t = _sched->getTaskN(i);
-            if (t == NULL)
-                break;
-            else if (getProcessor(t) == NULL && _m_dispatched[t] == NULL)
-                num_newtasks++;
-        }
-
-        _sched->print();
-        DBGPRINT_2("New tasks: ", num_newtasks);
-        print();
-        if (num_newtasks == 0)
-            return; // nothing to do
-
-        ITCPU start = _m_currExe.begin();
-        ITCPU stop = _m_currExe.end();
-        ITCPU f = start;
-        do {
-            f = getNextFreeProc(f, stop);
-            if (f != stop) {
-                DBGPRINT_2("Dispatching on free processor ", f->first);
-                dispatch(f->first);
-                num_newtasks--;
-                f++;
-            } else { // no more free processors
-                // now we deschedule tasks
-                // NON-SENSE: this is putting all new tasks on WHAT CPU ?!?
-                for (;;) {
-                    AbsRTTask *t = _sched->getTaskN(i++);
-                    if (t == NULL)
-                        throw RTKernelExc(
-                            "Can't find enough tasks to deschedule!");
-
-                    CPU *c = _m_dispatched[t];
-                    if (c != NULL) {
-                        DBGPRINT_4("Dispatching on processor ", c,
-                                   " which is executing task ", taskname(t));
-
-                        dispatch(c);
-                        num_newtasks--;
-                        break;
-                    }
-                }
-            }
-        } while (num_newtasks > 0);
     }
 
     void MRTKernel::dispatch(CPU *p) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        if (p == NULL)
+        if (p == nullptr)
             throw RTKernelExc("Dispatch with NULL parameter");
-
         DBGPRINT_2("dispatching on processor ", p);
+
+        // Undo any previous "begin dispatch event" existing on this CPU
         _beginEvt[p]->drop();
 
         if (_isContextSwitching[p]) {
             DBGPRINT("Context switch is disabled!");
+
+            // Shifting forward the dispatch time on this cpu until the current
+            // context switch (event) is done
             _beginEvt[p]->post(_endEvt[p]->getTime());
+
+            // The previous context switch is canceled (the time it took to run
+            // will still be accounted though)
             AbsRTTask *task = _endEvt[p]->getTask();
             _endEvt[p]->drop();
-            if (task != NULL) {
-                _endEvt[p]->setTask(NULL);
-                _m_dispatched[task] = NULL;
+            if (task != nullptr) {
+                _endEvt[p]->setTask(nullptr);
+                _m_dispatched[task] = nullptr;
             }
         } else {
+            // Perform the dispatch now (see onBeginDispatchMulti)
             _beginEvt[p]->post(SIMUL.getTime());
+        }
+    }
+
+    void MRTKernel::dispatch() {
+        DBGENTER(_KERNEL_DBG_LEV);
+
+        size_t ncpu = _m_currExe.size();
+
+        // Tells us how many of the first ncpu tasks in the ready queue are not
+        // yet scheduled or dispatched for scheduling.
+        int num_newtasks = 0;
+
+        // Check whether the first ncpu tasks in the ready queue are already
+        // dispatched or not.
+        for (size_t i = 0; i < ncpu; ++i) {
+            AbsRTTask *t = _sched->getTaskN(i);
+            if (t == nullptr)
+                break;
+            else if (getProcessor(t) == nullptr && _m_dispatched[t] == nullptr)
+                ++num_newtasks;
+        }
+
+        // Technically, in the old impl i can be less than ncpu, but if we break
+        // before reaching ncpu for sure there are NO tasks to evict and i will
+        // never be used.
+        int i = ncpu;
+
+        _sched->print();
+        DBGPRINT_2("New tasks: ", num_newtasks);
+        print();
+
+        if (num_newtasks < 1)
+            return;
+
+        for (auto f = getNextFreeProc(_m_currExe.begin(), _m_currExe.end());
+             num_newtasks > 0; f = getNextFreeProc(f, _m_currExe.end())) {
+            if (f != _m_currExe.end()) {
+                DBGPRINT_2("Dispatching on free processor ", f->first);
+                dispatch(f->first);
+                --num_newtasks;
+                ++f;
+            } else {
+                // We have to "evict" a task from being scheduled/dispatched
+                // because there are no more CPUs and a task that is "higher" in
+                // the ready queue has to run on its CPU.
+
+                // ORIGINAL NOTE FROM TOMMASO:
+                // NON-SENSE: this is putting all new tasks on WHAT CPU ?!?
+
+                // NOTE: this loop takes a long while to complete
+                for (;;) {
+                    AbsRTTask *t = _sched->getTaskN(i++);
+                    if (t == nullptr) {
+                        throw RTKernelExc(
+                            "Can't find enough tasks to deschedule!");
+                    }
+
+                    // NOTE: does not check for running tasks, only dispatched
+                    // ones!
+                    CPU *c = _m_dispatched[t];
+                    if (c != nullptr) {
+                        DBGPRINT_4("Dispatching on processor ", c,
+                                   " which is executing task ", taskname(t));
+                        dispatch(c);
+                        --num_newtasks;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -303,38 +291,35 @@ namespace RTSim {
         // if necessary, deschedule the task.
         CPU *p = e->getCPU();
         AbsRTTask *dt = _m_currExe[p];
-        AbsRTTask *st = NULL;
+        AbsRTTask *st = nullptr;
 
-        if (dt != NULL) {
+        if (dt != nullptr) {
             _m_oldExe[dt] = p;
-            _m_currExe[p] = NULL;
-            _m_dispatched[dt] = NULL;
+            _m_currExe[p] = nullptr;
+            _m_dispatched[dt] = nullptr;
             dt->deschedule();
         }
 
         // select the first non dispatched task in the queue
         int i = 0;
-        while ((st = _sched->getTaskN(i)) != NULL)
-            if (_m_dispatched[st] == NULL)
+        while ((st = _sched->getTaskN(i)) != nullptr)
+            if (_m_dispatched[st] == nullptr)
                 break;
             else
                 i++;
 
-        if (st == NULL) {
+        if (st == nullptr) {
             DBGPRINT("Nothing to schedule, finishing");
         }
 
         DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
-        // todo
-        cout << __func__ << "Scheduling task " << taskname(st) << " on cpu "
-             << p->toString() << endl;
 
         if (st)
             _m_dispatched[st] = p;
         _endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
         Tick overhead(_contextSwitchDelay);
-        if (st != NULL && _m_oldExe[st] != p && _m_oldExe[st] != NULL)
+        if (st != nullptr && _m_oldExe[st] != p && _m_oldExe[st] != nullptr)
             overhead += _migrationDelay;
         _endEvt[p]->post(SIMUL.getTime() + overhead);
     }
@@ -360,40 +345,61 @@ namespace RTSim {
         _sched->notify(st);
     }
 
-    void MRTKernel::printState() const {
-        Entity *task;
-        cout << "MRTKernel::printstate(), time " << SIMUL.getTime() << " ";
-        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++) {
-            task = dynamic_cast<Entity *>(i->second);
-            if (task != NULL)
-                cout << i->first->getName() << " : " << task->getName()
-                     << "   ";
-            else
-                cout << i->first->getName() << " :   0   ";
-        }
-        cout << endl;
+    CPU *MRTKernel::getProcessor(const AbsRTTask *t) const {
+        DBGENTER(_KERNEL_DBG_LEV);
+        CPU *ret = nullptr;
+
+        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++)
+            if (i->second == t)
+                ret = i->first;
+        return ret;
+    }
+
+    CPU *MRTKernel::getOldProcessor(const AbsRTTask *t) const {
+        CPU *ret = nullptr;
+
+        DBGENTER(_KERNEL_DBG_LEV);
+
+        auto it = _m_oldExe.find(t);
+        if (it != _m_oldExe.cend())
+            ret = it->second;
+
+        return ret;
+    }
+
+    std::vector<CPU *> MRTKernel::getProcessors() const {
+        std::vector<CPU *> s;
+
+        // typedef map<CPU *, AbsRTTask *>::const_iterator IT;
+        int j = 0;
+
+        // TODO: either pre-allocate or push_back?
+        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++, j++)
+            s[j] = i->first;
+        return s;
     }
 
     void MRTKernel::newRun() {
-        for (ITCPU i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
-            if (i->second != NULL)
+        for (auto i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
+            if (i->second != nullptr)
                 _sched->extract(i->second);
-            i->second = NULL;
+            i->second = nullptr;
         }
-        map<const AbsRTTask *, CPU *>::iterator j = _m_dispatched.begin();
-        for (; j != _m_dispatched.end(); ++j)
-            j->second = NULL;
 
-        j = _m_oldExe.begin();
-        for (; j != _m_oldExe.end(); ++j)
-            j->second = NULL;
+        for (auto j = _m_dispatched.begin(); j != _m_dispatched.end(); ++j) {
+            j->second = nullptr;
+        }
+
+        for (auto j = _m_oldExe.begin(); j != _m_oldExe.end(); ++j) {
+            j->second = nullptr;
+        }
     }
 
     void MRTKernel::endRun() {
-        for (ITCPU i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
-            if (i->second != NULL)
+        for (auto i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
+            if (i->second != nullptr)
                 _sched->extract(i->second);
-            i->second = NULL;
+            i->second = nullptr;
         }
     }
 
@@ -401,19 +407,35 @@ namespace RTSim {
         DBGPRINT("Executing");
         for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); ++i)
             DBGPRINT_4("  [", i->first, "] --> ", taskname(i->second));
-        auto j = _m_dispatched.cbegin();
+
         DBGPRINT("Dispatched");
-        for (; j != _m_dispatched.cend(); ++j)
+        for (auto j = _m_dispatched.cbegin(); j != _m_dispatched.cend(); ++j)
             DBGPRINT_4("  [", taskname(j->first), "] --> ", j->second);
     }
 
-    AbsRTTask *MRTKernel::getTask(CPU *c) {
-        return _m_currExe[c];
+    void MRTKernel::printState() const {
+        Entity *task;
+        std::cout << "MRTKernel::printstate(), time " << SIMUL.getTime() << " ";
+        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++) {
+            task = dynamic_cast<Entity *>(i->second);
+            if (task != nullptr)
+                std::cout << i->first->getName() << " : " << task->getName()
+                          << "   ";
+            else
+                std::cout << i->first->getName() << " :   0   ";
+        }
+        std::cout << std::endl;
+    }
+
+    AbsRTTask *MRTKernel::getTask(const CPU *c) {
+        // Not the cleanest solution, but the comparison operator doesn't care
+        // about the pointd element anyway
+        return _m_currExe[const_cast<CPU *>(c)];
     }
 
     std::vector<std::string> MRTKernel::getRunningTasks() {
         std::vector<std::string> tmp_ts;
-        for (auto i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
+        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++) {
             std::string tmp_name = taskname((*i).second);
             if (tmp_name != "(nil)")
                 tmp_ts.push_back(tmp_name);

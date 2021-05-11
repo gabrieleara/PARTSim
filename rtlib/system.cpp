@@ -43,14 +43,14 @@ namespace RTSim {
                 cpu->setWorkload(
                     "idle"); // TODO: do islands always start as idle?
 
-                auto ptrace = make_shared<TracePowerConsumption>(
+                auto ptrace = std::make_shared<TracePowerConsumption>(
                     cpu.get(), 1, "power_" + cpuname + ".txt");
 
                 // TODO: a scheduler factory that has a number of different
                 // schedulers to choose from starting from the value of
                 // island.kernel.scheduler
-                auto scheduler = make_shared<EDFScheduler>();
-                auto kernel = make_shared<RTKernel>(
+                auto scheduler = std::make_shared<EDFScheduler>();
+                auto kernel = std::make_shared<RTKernel>(
                     scheduler.get(), island.kernel.name, cpu.get());
 
                 this->cpu_models.push_back(cpu_model);

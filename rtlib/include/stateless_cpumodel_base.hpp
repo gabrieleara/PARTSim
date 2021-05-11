@@ -19,8 +19,8 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 
 #include <class_utils.hpp>
 #include <cloneable.hpp>
-#include <opp.hpp>
 #include <memory.hpp>
+#include <opp.hpp>
 
 namespace RTSim {
     // Forward declarations
@@ -148,7 +148,7 @@ namespace RTSim {
     public:                                                                    \
         cls_name(const CPUMDescriptor &desc = {});                             \
         DEFAULT_COPIABLE(cls_name);                                            \
-        CLONEABLE(base_type, cls_name);                                        \
+        CLONEABLE(base_type, cls_name, override);                              \
                                                                                \
         virtual value_type                                                     \
             lookupValue(const OPP &opp, const wclass_type &workload,           \
