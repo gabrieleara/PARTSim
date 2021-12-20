@@ -7,11 +7,17 @@ and developed by Giuseppe Lipari.
 
 ## Dependencies
 
-This version of PARTSim requieres Eigen3 library to build the thermal model
-implementation. For now, there is no option to compile the model separately from
-the rest of PARTSim or to exclude it from the build.
+Apart from the build system dependencies like CMake, this library does not have
+any custom mandatory dependency.
 
-On Debian-based distributions, you can install the required dependency by
+If you wish to use in your system the thermal model implementation included
+(experimental) you do need to have Eigen3 library and headers installed on your
+machine. Also, you need to enable the option to build it in
+`rtlib/CMakeLists.txt` by setting `RTLIB_THERMAL` to `ON`. For now, the builder
+script does not support setting this option from the command line (that is,
+unless you want to run `cmake` commands on your own).
+
+On Debian-based distributions, you can install Eigen3 library and headers by
 running:
 ```bash
 sudo apt update

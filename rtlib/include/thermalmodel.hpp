@@ -2,6 +2,37 @@
 #include <unsupported/Eigen/MatrixFunctions>
 #include <vector>
 
+class ThermalModel {
+public:
+    using scalar_type = double;
+
+private:
+    static_assert(
+        std::numeric_limits<scalar_type>::has_infinity,
+        "The type of scalar_type must be a type with an infinity value!");
+
+    size_t n_cpus;
+
+    using Matrix = Eigen::Matrix<scalar_type, Eigen::Dynamic, Eigen::Dynamic>;
+    using Vector = Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+
+    Matrix MatrixA() {
+        return Matrix(n_cpus, n_cpus);
+    }
+
+    Matrix MatrixB() {
+        return Matrix(n_cpus, n_cpus+1);
+    }
+
+    Vector VectorA() {
+        return Vector(n_cpus);
+    }
+
+    Vector VectorB() {
+        return Vector(n_cpus+1);
+    }
+};
+
 template <size_t n_cpus_, class scalar_type_ = double>
 class ThermalModel {
 public:

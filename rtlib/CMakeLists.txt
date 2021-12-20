@@ -15,8 +15,13 @@ set(LIBRARY_TYPE SHARED)
 set(LIBRARY_VERSION 3.0)
 set(LIBRARY_SOVERSION 3)
 
-find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-set(LIBRARY_DEPENDENCIES metasim Eigen3::Eigen)
+set(LIBRARY_DEPENDENCIES metasim)
+
+option(RTLIB_THERMAL "Enables the thermal modeling subsystem" OFF)
+if (RTLIB_THERMAL EQUAL ON)
+    find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+    set(LIBRARY_DEPENDENCIES ${LIBRARY_DEPENDENCIES} Eigen3::Eigen)
+endif()
 
 set(LIBRARY_INCLUDEDIR include)
 
