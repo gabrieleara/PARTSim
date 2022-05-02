@@ -2,347 +2,375 @@
 
 # -------------------------------------------------------- #
 
-function jump_and_print_path() {
-    cd -P "$(dirname "$1")" >/dev/null 2>&1 && pwd
-}
-
+# Returns the script path
 function get_script_path() {
-    local _SOURCE
-    local _PATH
-
-    _SOURCE="${BASH_SOURCE[0]}"
-
-    # Resolve $_SOURCE until the file is no longer a symlink
-    while [ -h "$_SOURCE" ]; do
-        _PATH="$(jump_and_print_path "${_SOURCE}")"
-        _SOURCE="$(readlink "${_SOURCE}")"
-
-        # If $_SOURCE is a relative symlink, we need to
-        # resolve it relative to the path where the symlink
-        # file was located
-        [[ $_SOURCE != /* ]] && _SOURCE="${_PATH}/${_SOURCE}"
-    done
-
-    _PATH="$(jump_and_print_path "$_SOURCE")"
-    echo "${_PATH}"
+    realpath "$(dirname "${BASH_SOURCE[0]}")"
 }
 
-# Argument: relative path of project directory wrt this
-# script directory
-function get_project_path() {
-    local _PATH
-    local _PROJPATH
-
-    _PATH=$(get_script_path)
-    _PROJPATH=$(realpath "${_PATH}/$1")
-    echo "${_PROJPATH}"
+# Returns a default value for parallel compilation equal to
+# 6/8 the number of CPUs available (if more than 1)
+function get_cpus_j() {
+    local j
+    j=$(($(nproc) * 6 / 8))
+    if [ $j -lt 1 ]; then
+        echo 1
+    else
+        echo $j
+    fi
 }
 
 # ======================================================== #
 # ---------------------- ARGUMENTS ----------------------- #
 # ======================================================== #
 
-function toshortopts() {
-    local out=
-    newargs=()
-    while [ $# -gt 0 ]; do
+# Format: short-option [long-option] [colon]
+readonly ARGUMENTS_MAPPING=(
+    "h help"
+    "v verbose"
+    "c colorize"
+    "d deb"
+    "r rpm"
+    "J parallel"
+    "j jobs :"
+    "b build-type :"
+    "p build-path :"
+    "G generator :"
+)
+
+# Returns a string to be passed to getopt
+# Argument: 0 for short, 1 for long
+function optstring() {
+    local idx
+
+    case "$1" in
+    short) idx=1 ;;
+    long) idx=2 ;;
+    esac
+
+    local out=""
+    local a
+    local c
+    for arg in "${ARGUMENTS_MAPPING[@]}"; do
+        a="$(echo "$arg" | cut -d' ' -f "$idx")"
+        c="$(echo "$arg" | rev | cut -d' ' -f "1")"
+
+        if [ "$c" != ":" ]; then
+            c=""
+        fi
+
+        if [ -n "$a" ] && [ "$a" != ":" ] && [ "$a" != "-" ]; then
+            out="${out},${a}${c}"
+        fi
+    done
+
+    echo "${out:1}"
+}
+
+function options_parse_jobs() {
+    PARALLEL="$1"
+    if [ "$PARALLEL" -lt 1 ] 2>/dev/null; then
+        echo "${BASH_SOURCE[0]}: option 'j': expected an integer, found '$1'" >&2
+        false
+    fi
+}
+
+function BUILD_TYPE() {
+    case "$1" in
+    debug) BUILD_TYPE='Debug' ;;
+    release) BUILD_TYPE='Release' ;;
+    release-wdebug) BUILD_TYPE='RelWithDebInfo' ;;
+    *)
+        echo "${BASH_SOURCE[0]}: option 'b': unexpected value '$1'" >&2
+        false
+        ;;
+    esac
+}
+
+function options_parse_build_path() {
+    BUILD_PATH="$1"
+    if [ -z "$BUILD_PATH" ] || [[ "$BUILD_PATH" == -* ]]; then
+        echo "${BASH_SOURCE[0]}: option 'p': unexpected value '$1'" >&2
+        false
+    fi
+}
+
+function options_parse_generator() {
+    GENERATOR="$1"
+    if [ -z "$GENERATOR" ] || [[ "$GENERATOR" == -* ]]; then
+        echo "${BASH_SOURCE[0]}: option 'G': unexpected value '$1'" >&2
+        false
+    fi
+
+    if [ "$GENERATOR" = 'Ninja' ] && ! command -v ninja &>/dev/null; then
+        # Fallback to Unix Makefiles on Linux
+        echo "Ninja not found, falling back on Linux Makefiles..."
+        GENERATOR='Unix Makefiles'
+    fi
+}
+
+function options_parse() {
+    local VALID_ARGS
+
+    set +e
+    VALID_ARGS="$(getopt \
+        --name "${BASH_SOURCE[0]}" \
+        -o "$(optstring short)" \
+        --long "$(optstring long)" \
+        -- "$@")"
+
+    # If something goes wrong, getopt will print the message
+    # error first, so we just need to print usage and exit
+    # with an error
+    if [[ $? -ne 0 ]]; then
+        set -e
+        echo "" >&2
+        do_usage
+        false
+    fi
+
+    # After this command, VALID_ARGS contains only valid
+    # arguments in the format: all options -- all commands
+    set -e
+    eval set -- "$VALID_ARGS"
+
+    # Variables that will contain all command-line arguments
+    COMMANDS=()
+    VERBOSE=OFF
+    COLORIZE=OFF
+    PARALLEL=1
+
+    PACKAGE_DEB=OFF
+    PACKAGE_RPM=OFF
+
+    BUILD_TYPE=Release
+    BUILD_PATH="$DIR_SCRIPT/build"
+    GENERATOR=
+    options_parse_generator "Ninja"
+
+    OPTIONS_ATLEASTONE=n
+
+    while true; do
         case "$1" in
-        --help)         printf -v out '%s' '-h' ;;
-        --verbose)      printf -v out '%s' '-v' ;;
-        --deb)          printf -v out '%s' '-d' ;;
-        --rpm)          printf -v out '%s' '-r' ;;
-        --jobs)         printf -v out '%s' '-j' ;;
-        --parallel)     printf -v out '%s' '-J' ;;
-        --generator)    printf -v out '%s' '-G' ;;
-        --build-type)   printf -v out '%s' '-b' ;;
-        --build-path)   printf -v out '%s' '-p' ;;
-        --colorize)     printf -v out '%s' '-c' ;;
-        *)              printf -v out '%s' "$1" ;;
-        esac
-        shift
-
-        newargs+=( "$out" )
-    done
-}
-
-function separate_args() {
-    local optstring="$1"
-    local OPTION
-    shift
-
-    opt_args=()
-    pos_args=()
-
-    while [ $# -gt 0 ]; do
-        unset OPTIND
-        unset OPTARG
-        unset OPTION
-        while getopts ":$optstring" OPTION; do
-            if [ "$OPTION" != : ]; then
-                opt_args+=("-$OPTION")
-            else
-                OPTARG="-$OPTARG"
-            fi
-
-            if [ ! -z "$OPTARG" ]; then
-                opt_args+=("$OPTARG")
-            fi
-
-            unset OPTARG
-        done
-
-        shift $((OPTIND - 1)) || true
-        pos_args+=("$1")
-        shift || true
-    done
-}
-
-function missing_argument() {
-    printf 'Error: option %s requires an argument!\n\n' "$@" >&2
-    usage
-}
-
-function unsupported_argument() {
-    printf 'Error: option %s does not support argument %s!\n\n' "$@" >&2
-    usage
-}
-
-function unrecognized() {
-    printf 'Error: unrecognized %s %s!\n\n' "$1" "${*:2}" >&2
-}
-
-function parse_opt_args() {
-    local optstring="$1"
-    local OPTION
-    shift
-
-    unset OPTIND
-    unset OPTARG
-    unset OPTION
-    while getopts "$optstring" OPTION; do
-        case $OPTION in
-        h)
-            pos_args=()
+        -h | --help)
+            COMMANDS=("help")
             return 0
             ;;
-        v)
-            verbose=ON
+        -v | --verbose)
+            VERBOSE=ON
             ;;
-        d)
-            package_deb=ON
+        -c | --colorize)
+            COLORIZE=ON
             ;;
-        r)
-            package_rpm=ON
+        -d | --deb)
+            PACKAGE_DEB=ON
             ;;
-        j)
-            if [ -z "$OPTARG" ]; then
-                missing_argument '-j|--jobs'
-                return 1
-            fi
+        -r | --rpm)
+            PACKAGE_RPM=ON
             ;;
-        J)
-            jobs=""
+        -J | --parallel)
+            PARALLEL="$(get_cpus_j)"
             ;;
-        b)
-            if [ -z "$OPTARG" ]; then
-                missing_argument '-b|--build-type'
-                return 1
-            fi
-
-            case "$OPTARG" in
-            debug) build_type='Debug' ;;
-            release) build_type='Release' ;;
-            release-wdebug) build_type='RelWithDebInfo' ;;
-            *)
-                unsupported_argument '-b|--build-type' "$OPTARG"
-                return 1
-                ;;
-            esac
+        -j | --jobs)
+            options_parse_jobs "$2"
+            shift
             ;;
-        p)
-            if [ -z "$OPTARG" ]; then
-                missing_argument '-p|--build-path'
-                return 1
-            fi
-            path_build="$OPTARG"
+        -b | --build-type)
+            BUILD_TYPE "$2"
+            shift
             ;;
-        G)
-            if [ -z "$OPTARG" ]; then
-                missing_argument '-G|--generator'
-                return 1
-            fi
-            generator="$OPTARG"
+        -p | --build-path)
+            options_parse_build_path "$2"
+            shift
             ;;
-        c)
-            colorize=ON
+        -G | --generator)
+            options_parse_generator "$2"
+            shift
+            ;;
+        '--')
+            # End of option arguments
+            shift
+            break
             ;;
         *)
-            shift $((OPTIND - 1)) || true
-            unrecognized 'option' "$1"
-            return 1
+            echo "Error: unrecognized option $1" >&2
+            do_usage
+            false
             ;;
         esac
-        unset OPTARG
+        OPTIONS_ATLEASTONE=y
+        shift
     done
 
-    # Too many options/unrecognized options
-    shift $((OPTIND - 1)) || true
-    if [ "$#" -gt 0 ]; then
-        unrecognized 'options' "$@"
-        return 1
-    fi
+    # Remaining arguments are positional
+    COMMANDS+=("$@")
 }
 
-function parse_pos_args() {
-    commands=("$@")
+function options_commit() {
+    readonly COMMANDS
+    readonly VERBOSE
+    readonly COLORIZE
+    readonly PARALLEL
 
-    if [ $# -lt 1 ]; then
-        commands=(usage)
-    fi
+    readonly PACKAGE_DEB
+    readonly PACKAGE_RPM
+
+    readonly BUILD_TYPE
+    readonly BUILD_PATH
+    readonly GENERATOR
 }
 
 # ======================================================== #
 # ----------------------- COMMANDS ----------------------- #
 # ======================================================== #
 
-function usage() {
+function do_usage() {
     cat <<EOF
-usage: $0 [options] COMMAND [...COMMANDS]
+usage: ${BASH_SOURCE[0]} [options] COMMAND [...COMMANDS]
 
 Runs the specified list of commands using the given arguments
 
-List of options (all optional):
-  -h, --help        Prints this help message and returns
-  -v, --verbose     Prints more info during execution
-  -d, --deb         Enables the generation of the deb package
-  -r, --rpm         Enables the generation of the rpm package
-  -G, --generator GEN
-                    Uses the provided CMake generator to build the project
-  -J, --parallel    Enables parallel build execution with a default number of
-                    processes
-  -c, --colorize    Forces compiler output to be ANSI-colored
-  -j, --jobs JOBS
-                    Enables parallel build execution with JOBS processes
-  -b, --build-type TARGET[=release*|debug|release-wdebug]
-                    Specifies which version of the project to build
-  -p, --build-path BUILDPATH[=build]
-                    Specifies which path to use to build the project
+Valid commands:
+    help                            Prints this help message and exits
+    build                           (Re-)Builds the project
+    clean                           Cleans the project build directory
+    configure                       (Re-)Configures the project
+    install                         (Re-)Installs the project
+    package                         Generates the desired packages (see options)
+    uninstall                       Removes the installed files from paths
+    test                            Runs automated testing
 
-List of commands:
-    build           (Re-)Build the project
-    clean           Clean the project build directory
-    configure       (Re-)Configures the project
-    install         (Re-)Install the project
-    package         Generates the desired packages
-    uninstall       Removes the installed files from paths
-    usage           Prints this help message and returns
-    test            Run automated testing
+Multiple commands are executed in order, except 'help',
+which will always be the only one executed if included.
+
+Valid options (all optional):
+    -h, --help                      Prints this help message and exits
+    -v, --verbose                   Prints more info during execution
+    -c, --colorize                  Forces compiler output to be ANSI-colored
+
+    -d, --deb                       Enables the generation of the deb package
+    -r, --rpm                       Enables the generation of the rpm package
+
+    -G [gen], --generator [gen]     Uses the provided CMake generator to build
+                                    the project
+
+    -J, --parallel                  Enables parallel compilation with $(get_cpus_j)
+                                    processes
+    -j [jobs], --jobs [jobs]        Enables parallel compilation with [jobs]
+                                    processes
+
+    -b [target], --build-type [target]
+                                    Specifies which version of the project to
+                                    build (default: release, see below)
+
+    -p [buildpath], --build-path [buildpath]
+                                    Specifies which path to use to build the
+                                    project (default: build)
+
+Available build types:
+    release                         release build (default)
+    debug                           debug build
+    release-wdebug                  release build with debug information
+
 EOF
+
+    # TODO: multiple-verbosity levels?
 }
 
-function reset_ran() {
-    ran_build=0
-    ran_clean=0
-    ran_configure=0
-    ran_install=0
-    ran_package=0
-    ran_uninstall=0
-    ran_usage=0
-    ran_test=0
+function do_reset_ran() {
+    RAN_BUILD=0
+    RAN_CONFIGURE=0
+    RAN_INSTALL=0
+    RAN_PACKAGE=0
+    RAN_UNINSTALL=0
+    RAN_TEST=0
 }
 
-function build() {
-    if [ "$ran_build" = 1 ]; then
+function do_build() {
+    if [ "$RAN_BUILD" = 1 ]; then
         return 0
     fi
 
-    configure
-    cmake --build "$path_build" --parallel $jobs
-    ran_build=1
+    do_configure
+    cmake --build "$BUILD_PATH" --parallel "$PARALLEL"
+    RAN_BUILD=1
 }
 
-function clean() {
-    rm -rf "$path_build"
-    reset_ran
+function do_clean() {
+    rm -rf "$BUILD_PATH"
+    do_reset_ran
 }
 
-function configure() {
-    if [ "$ran_configure" = 1 ]; then
+function do_configure() {
+    if [ "$RAN_CONFIGURE" = 1 ]; then
         return 0
     fi
 
-    if [ "$generator" = 'Ninja' ] && ! command -v ninja &> /dev/null
-    then
-        # Fallback to Unix Makefiles on Linux
-        generator='Unix Makefiles'
-    fi
+    cmake -S "$DIR_PROJ" -B "$BUILD_PATH" \
+        -G "$GENERATOR" \
+        -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
+        -DCMAKE_VERBOSE_MAKEFILE:BOOL="$VERBOSE" \
+        -DCPACK_ENABLE_DEB="$PACKAGE_DEB" \
+        -DCPACK_ENABLE_RPM="$PACKAGE_RPM" \
+        -DCMAKE_FORCE_COLORED_OUTPUT="$COLORIZE"
 
-    cmake -S "$path_src" -B "$path_build" \
-        -G "$generator" \
-        -DCMAKE_BUILD_TYPE="$build_type" \
-        -DCMAKE_VERBOSE_MAKEFILE:BOOL="$verbose" \
-        -DCPACK_ENABLE_DEB="$package_deb" \
-        -DCPACK_ENABLE_RPM="$package_rpm" \
-        -DCMAKE_FORCE_COLORED_OUTPUT="$colorize" \
-
-    ran_configure=1
+    RAN_CONFIGURE=1
 }
 
-function install() {
-    if [ "$ran_install" = 1 ]; then
+function do_install() {
+    if [ "$RAN_INSTALL" = 1 ]; then
         return 0
     fi
 
-    build
-    sudo cmake --build "$path_build" --target install
-    ran_install=1
+    do_build
+    sudo cmake --build "$BUILD_PATH" --target install
+    RAN_INSTALL=1
 }
 
-function uninstall() {
-    if [ "$ran_uninstall" = 1 ]; then
+function do_uninstall() {
+    if [ "$RAN_UNINSTALL" = 1 ]; then
         return 0
     fi
 
     # This is a bit counter-intuitive, to uninstall we need to install first!
     # What we want actually is the install manifest to be present in the build
     # path!
-    local install_manifest="${path_build}/install_manifest.txt"
+    local install_manifest="${BUILD_PATH}/install_manifest.txt"
     if [ ! -f "$install_manifest" ]; then
-        install
+        do_install
     fi
 
     echo "Removing the following files:"
     cat "$install_manifest"
     echo ""
     cat "$install_manifest" | sudo xargs rm -f
-    ran_uninstall=1
+    RAN_UNINSTALL=1
 }
 
-function package() {
-    if [ "$ran_package" = 1 ]; then
+function do_package() {
+    if [ "$RAN_PACKAGE" = 1 ]; then
         return 0
     fi
 
-    configure
-    build
+    do_configure
+    do_build
 
     (
         set -e
-        cd "$path_build"
+        cd "$BUILD_PATH"
         sudo cpack
-        sudo chown -R $USER:$USER .
+        sudo chown -R "$USER:$USER" .
     )
 
-    if [ "$package_deb" = 'ON' ]; then
-        # TODO: sign the deb package
-        :
-    fi
+    # if [ "$PACKAGE_DEB" = 'ON' ]; then
+    #     # TODO: sign the deb package
+    #     :
+    # fi
 
-    ran_package=1
+    RAN_PACKAGE=1
 }
 
-function runtest() {
-    if [ "$ran_test" = 1 ]; then
+function do_runtest() {
+    if [ "$RAN_TEST" = 1 ]; then
         return 0
     fi
 
@@ -350,69 +378,108 @@ function runtest() {
 
     (
         set -e
-        cd "$path_build"
+        cd "$BUILD_PATH"
 
         testargs=()
 
-        if [ "$verbose" = "ON" ]; then
+        if [ "$VERBOSE" = "ON" ]; then
             testargs+=("-V")
         else
             testargs+=("--progress")
         fi
 
-        GTEST_COLOR=1 ctest -C "${build_type}" "${testargs[@]}"
+        GTEST_COLOR=1 ctest -C "$BUILD_TYPE" "${testargs[@]}"
     )
+
+    RAN_TEST=1
 }
 
-(
-    set -e
+# ======================================================== #
+# ------------------------- MAIN ------------------------- #
+# ======================================================== #
 
-    # Variables and default values
-    path_proj="$(get_project_path ".")"
-    path_src="$path_proj"
-    path_build="$path_proj/build"
-    build_type="Release"
-    package_deb=OFF
-    package_rpm=OFF
-    verbose=OFF
-    colorize=OFF
-    jobs=1
-    generator=Ninja
+function do_main() {
+    # Base directories
+    DIR_CUR="$(realpath "$(pwd)")"
+    DIR_SCRIPT="$(get_script_path)"
+    DIR_PROJ="$DIR_SCRIPT"
+    # DIR_UTIL="$DIR_SCRIPT/util"
 
-    commands=()
+    readonly DIR_CUR
+    readonly DIR_SCRIPT
+    readonly DIR_PROJ
+    # readonly DIR_UTIL
 
-    opt_args=()
-    pos_args=()
-    optstring='hvJj:drb:p:G:c'
+    # # Include util scripts (looping over find output
+    # # separated by '\0')
+    # while IFS= read -r -d '' infile; do
+    #     source "$infile"
+    # done < <(find "$DIR_UTIL" -name '*.sh' -print0)
 
-    OPTERR=0
+    # # Parse env variables first
+    # options_parse_env
 
-    # Separate optional from positional arguments, then parse them
-    toshortopts "$@"
+    # Parse command line arguments then
+    options_parse "$@"
 
-    separate_args   "$optstring" "${newargs[@]}"
-    parse_opt_args  "$optstring" "${opt_args[@]}"
-    parse_pos_args  "${pos_args[@]}"
+    # Set in stone all options and configuration
+    options_commit
 
-    reset_ran
+    # If at least one option, but no commands are specified,
+    # bad command
+    if [ "${#COMMANDS[@]}" -lt 1 ] && [ "$OPTIONS_ATLEASTONE" = y ]; then
+        echo "${BASH_SOURCE[0]}: no command specified!" >&2
+        echo "" >&2
+        do_usage
+        false
+    fi
 
-    for c in "${commands[@]}"; do
-        # Trim the variable
-        c="$(echo $c | xargs)"
-        case "$c" in
-        build) build ;;
-        clean) clean ;;
-        configure) configure ;;
-        install) install ;;
-        package) package ;;
-        test) runtest ;;
-        uninstall) uninstall ;;
-        usage) usage ;;
+    # If help specified, do that only
+    if [ "${#COMMANDS[@]}" -lt 1 ] || [[ " ${COMMANDS[*]} " =~ " help " ]]; then
+        do_usage
+        return 0
+    fi
+
+    do_reset_ran
+
+    local cmd
+    for cmd in "${COMMANDS[@]}"; do
+        case "$cmd" in
+        build)
+            do_build
+            ;;
+        clean)
+            do_clean
+            ;;
+        configure)
+            do_configure
+            ;;
+        install)
+            do_install
+            ;;
+        package)
+            do_package
+            ;;
+        test)
+            do_runtest
+            ;;
+        uninstall)
+            do_uninstall
+            ;;
+        usage)
+            do_usage
+            ;;
         *)
-            unrecognized 'command' "$c"
-            usage
+            echo "${BASH_SOURCE[0]}: invalid command -- '$cmd'" >&2
+            echo "" >&2
+            do_usage
             false
             ;;
         esac
     done
+}
+
+(
+    set -e
+    do_main "$@"
 )
