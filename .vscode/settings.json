@@ -4,6 +4,10 @@
     "files.trimTrailingWhitespace": false,
     "editor.formatOnSaveMode": "modifications",
     "C_Cpp.clang_format_style": "file",
+    "cmake.configureSettings": {
+        "CMAKE_GENERATOR": "Unix Makefiles",
+        // "CMAKE_GENERATOR": "Ninja",
+    },
     "files.associations": {
         "limits": "cpp",
         "array": "cpp",

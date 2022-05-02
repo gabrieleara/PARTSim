@@ -13,6 +13,13 @@ include(GNUInstallDirs)
 
 ################## LIBRARY SETTINGS ###################
 
+if (CMAKE_BUILD_TYPE MATCHES "^[Dd]ebug")
+    add_definitions(-D__DEBUG__)
+    message("${LIBRARY_NAME}: Debug added as a compilation flag")
+elseif (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease")
+    add_definitions(-DNDEBUG)
+endif()
+
 add_library(${LIBRARY_NAME} ${LIBRARY_TYPE}
     ${SOURCE_FILES}
 )

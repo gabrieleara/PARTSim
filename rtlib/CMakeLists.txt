@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-if (CMAKE_BUILD_TYPE MATCHES "^[Dd]ebug")
-    add_definitions(-D__DEBUG__)
-    message("Debug added as a compilation flag")
-elseif (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease")
-    add_definitions(-DNDEBUG)
-endif()
-
 set(LIBRARY_NAME rtlib)
 
 # TODO: SHARED or STATIC?
@@ -16,15 +9,7 @@ set(LIBRARY_VERSION 3.0)
 set(LIBRARY_SOVERSION 3)
 
 set(LIBRARY_DEPENDENCIES metasim)
-
-option(RTLIB_THERMAL "Enables the thermal modeling subsystem" OFF)
-if (RTLIB_THERMAL EQUAL ON)
-    find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-    set(LIBRARY_DEPENDENCIES ${LIBRARY_DEPENDENCIES} Eigen3::Eigen)
-endif()
-
 set(LIBRARY_INCLUDEDIR include)
-
 set(SOURCE_FILES
     AVRTask.cpp
     bwi.cpp
@@ -84,6 +69,13 @@ set(SOURCE_FILES
     waitinstr.cpp
     yaml.cpp
 )
+
+option(RTLIB_THERMAL "Enables the thermal modeling subsystem" OFF)
+if (RTLIB_THERMAL EQUAL ON)
+    find_package (Eigen3 3.3 REQUIRED NO_MODULE)
+    set(LIBRARY_DEPENDENCIES ${LIBRARY_DEPENDENCIES} Eigen3::Eigen)
+endif()
+
 
 # ---------- You should not need to change anything below this line ---------- #
 

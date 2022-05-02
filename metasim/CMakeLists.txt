@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
 
-if (CMAKE_BUILD_TYPE MATCHES "^[Dd]ebug")
-    add_definitions(-D__DEBUG__)
-    message("Debug added as a compilation flag")
-elseif (CMAKE_BUILD_TYPE MATCHES "^[Rr]elease")
-    add_definitions(-DNDEBUG)
-endif()
-
 set(LIBRARY_NAME metasim)
 
 # TODO: SHARED or STATIC?

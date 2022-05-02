@@ -374,7 +374,7 @@ function do_runtest() {
         return 0
     fi
 
-    build
+    do_build
 
     (
         set -e
