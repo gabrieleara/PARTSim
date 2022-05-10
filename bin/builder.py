@@ -71,7 +71,7 @@ def do_clean(options):
     global RAN
     cmd = "rm -rf '{}'".format(options.build_path)
     runcmd(cmd)
-    RAN.clean()
+    RAN.clear()
 
 
 def do_configure(options):
@@ -391,7 +391,7 @@ def main():
 
     global RAN
     for c in options.commands:
-        if c != 'clean' and c not in RAN:
+        if c == 'clean' or c not in RAN:
             print(" +------- Running step " + c)
             print('')
             COMMANDS[c]['action'](options)
