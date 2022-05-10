@@ -87,6 +87,10 @@ def do_configure(options):
         "-DCMAKE_FORCE_COLORED_OUTPUT='{}'".format(options.colorize),
     ]
 
+    # Append additional cmake options supplied manually by the user
+    for cmake_opt in options.cmake_option:
+        cmd.append("-D" + cmake_opt)
+
     runcmd(cmd)
 
 
@@ -213,6 +217,14 @@ def check_cpus(v):
 def get_cpus_j():
     return int(max_cpus() * 6 / 8)
 
+def cmake_option(v):
+    v = str(v)
+    if '=ON' in v or '=OFF' in v:
+        return v
+    raise argparse.ArgumentTypeError(
+        "'{}'".format(v) + " is not a valid option in the format 'OPTION={ON|OFF}'."
+    )
+
 
 # +--------------------------------------------------------+
 # |          Command-line Arguments Configuration          |
@@ -227,10 +239,9 @@ def arguments_parser():
     )
 
     parser = argparse.ArgumentParser(
-        # description=config['description'],
-        # usage=config['usage'],
-        description=
-        'Multiple commands are executed in order, except \'help\', which will always be the only one executed if included.',
+        prog=sys.argv[0],
+        description='Multiple commands are executed in order, except \'help\', '
+            'which will always be the only one executed if included.',
         formatter_class=fmter,
         add_help=False,
     )
@@ -342,6 +353,14 @@ def arguments_parser():
         help='Specifies which path to use to build the project',
         default='build')
 
+    optional.add_argument(
+        '-D',
+        '--cmake-option',
+        help='Accepts OPTION={ON|OFF} values to forward to cmake',
+        type=cmake_option,
+        action='append',
+    )
+
     return parser
 
 
@@ -385,6 +404,7 @@ def main():
     options.package_deb = onoff(options.package_deb)
     options.package_rpm = onoff(options.package_rpm)
     options.generator = check_generator(options.generator)
+    options.cmake_option = options.cmake_option if options.cmake_option else []
 
     options.dir_project = os.path.realpath(
         os.path.dirname(os.path.realpath(__file__)) + '/..')
