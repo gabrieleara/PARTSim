@@ -211,7 +211,7 @@ namespace RTSim {
             Inherited from AbsRTTask. Cannot be called here
             (throws an exception).
         */
-        void activate() throw(ServerExc) override {
+        void activate() override { // throw(ServerExc) override {
             throw ServerExc("cannot call activate() on a server",
                             "Server::activate()");
         }

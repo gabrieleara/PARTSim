@@ -99,7 +99,7 @@ namespace parse_util {
     class ParseExc : public std::runtime_error {
     public:
         ParseExc(const std::string &where, const std::string &par);
-        virtual ~ParseExc() throw() {}
+        virtual ~ParseExc() {}
     };
 } // namespace parse_util
 

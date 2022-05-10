@@ -141,7 +141,7 @@ namespace RTSim {
         deschedEvt.process();
     }
 
-    void Task::setKernel(AbsKernel *k) throw(KernAlreadySet) {
+    void Task::setKernel(AbsKernel *k) { // throw(KernAlreadySet) {
         DBGENTER(_TASK_DBG_LEV);
 
         if (_kernel != nullptr)
@@ -341,7 +341,7 @@ namespace RTSim {
         }
     }
 
-    void Task::killInstance() throw(TaskNotActive, TaskNotExecuting) {
+    void Task::killInstance() { // throw(TaskNotActive, TaskNotExecuting) {
         DBGENTER(_TASK_DBG_LEV);
 
         if (chkBuffArrival()) {
@@ -508,8 +508,7 @@ namespace RTSim {
         return tt;
     }
 
-    void Task::insertCode(const string &code) // throw(ParseExc)
-    {
+    void Task::insertCode(const string &code) { // throw(ParseExc)
         DBGENTER(_TASK_DBG_LEV);
 
         vector<string> instr = split_instr(code);

@@ -61,7 +61,7 @@ namespace RTSim {
          * Creates an RMModel passing the task. It throws a RTSchedExc
          * exception if the task is already present in this scheduler.
          */
-        void addTask(AbsRTTask *task) throw(RTSchedExc);
+        void addTask(AbsRTTask *task); // throw(RTSchedExc);
 
         void addTask(AbsRTTask *t, const std::string &p) override;
 

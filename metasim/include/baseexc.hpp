@@ -53,7 +53,7 @@ namespace MetaSim {
                 std::runtime_error(ss.str());
         }
 
-        virtual ~BaseExc() throw() {}
+        virtual ~BaseExc() {}
     };
 
     // a couple of useful macros

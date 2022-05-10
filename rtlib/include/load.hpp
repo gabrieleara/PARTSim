@@ -153,7 +153,7 @@ namespace RTSim {
         // Helpers
         bool normalizeLoad();
         bool generateLoad();
-        void chk(int i) const throw(Exc) {
+        void chk(int i) const { // throw(Exc) {
 #ifdef __DEBUG__
             if (i < 0 || i > _size)
                 throw Exc(Exc::_UNV_IND);
@@ -190,11 +190,11 @@ namespace RTSim {
         */
         RandomTaskSetFactory(int n, double u, IATGen *g1, CTGen *g2, DTGen *g3,
                              double minU = UMIN_DEF,
-                             bool preciseU = false) throw(Exc);
+                             bool preciseU = false); // throw(Exc);
 
         RandomTaskSetFactory(int n, double u, IATGen *g1, CTGen *g2, DTGen *g3,
                              OffsetGen *g4, double minU = UMIN_DEF,
-                             bool preciseU = false) throw(Exc);
+                             bool preciseU = false); // throw(Exc);
 
         virtual ~RandomTaskSetFactory();
 

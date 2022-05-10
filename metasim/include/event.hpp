@@ -148,7 +148,7 @@ namespace MetaSim {
 
         /// Checks that the event is not queued, and set the
         /// _time field;
-        void setTime(Tick actTime) throw(Exc);
+        void setTime(Tick actTime); // throw(Exc);
 
         /**
             Copy constructor. This is defined to allow dynamic
@@ -198,7 +198,7 @@ namespace MetaSim {
             @param disp set it to true if the event object
             must be disposed.
         */
-        void post(Tick myTime, bool disp = false) throw(Exc, BaseExc);
+        void post(Tick myTime, bool disp = false); // throw(Exc, BaseExc);
 
         /**
            Processes the event immediately.

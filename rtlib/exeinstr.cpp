@@ -115,7 +115,7 @@ namespace RTSim {
         return (Tick) cost->get();
     }
 
-    Tick ExecInstr::getWCET() const throw(RandomVar::MaxException) {
+    Tick ExecInstr::getWCET() const { // throw(RandomVar::MaxException) {
         Tick wcet;
         // todo code not flexible and only applies to Uniform distrib
         if (dynamic_cast<UniformVar *>(cost.get()) != NULL)
@@ -126,7 +126,7 @@ namespace RTSim {
     }
 
     // Attention: here you decide when the WCET ends!
-    void ExecInstr::schedule() throw(InstrExc) {
+    void ExecInstr::schedule() { // throw(InstrExc) {
         DBGENTER(_INSTR_DBG_LEV);
 
         Tick t = SIMUL.getTime();

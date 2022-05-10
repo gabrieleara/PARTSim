@@ -198,7 +198,7 @@ namespace RTSim {
     }
 
     bool RTKernel::requestResource(AbsRTTask *t, const string &r,
-                                   int n) throw(RTKernelExc) {
+                                   int n) { // throw(RTKernelExc) {
         DBGENTER(_KERNEL_DBG_LEV);
 
         if (_resMng == 0)
@@ -210,7 +210,7 @@ namespace RTSim {
     }
 
     void RTKernel::releaseResource(AbsRTTask *t, const string &r,
-                                   int n) throw(RTKernelExc) {
+                                   int n) { // throw(RTKernelExc) {
         if (_resMng == 0)
             throw RTKernelExc("Resource Manager not set!");
 

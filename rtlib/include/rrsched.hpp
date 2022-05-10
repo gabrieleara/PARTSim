@@ -126,7 +126,7 @@ namespace RTSim {
         */
         void round(Event *);
 
-        void addTask(AbsRTTask *t) throw(RRSchedExc);
+        void addTask(AbsRTTask *t); // throw(RRSchedExc);
 
         void addTask(AbsRTTask *t, const string &p) override;
 

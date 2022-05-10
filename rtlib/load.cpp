@@ -438,7 +438,7 @@ namespace RTSim {
     RandomTaskSetFactory::RandomTaskSetFactory(int n, double u, IATGen *g1,
                                                CTGen *g2, DTGen *g3,
                                                double minU,
-                                               bool preciseU) throw(Exc) :
+                                               bool preciseU) : // throw(Exc) :
         _count(0),
         _size(n),
         _u(u),
@@ -464,7 +464,7 @@ namespace RTSim {
     RandomTaskSetFactory::RandomTaskSetFactory(int n, double u, IATGen *g1,
                                                CTGen *g2, DTGen *g3,
                                                OffsetGen *g4, double minU,
-                                               bool preciseU) throw(Exc) :
+                                               bool preciseU) : // throw(Exc) :
         _count(0),
         _size(n),
         _u(u),

@@ -61,7 +61,7 @@ namespace RTSim {
 
            @param t task to be added.
         */
-        void addTask(AbsRTTask *t) throw(RTSchedExc) {}
+        void addTask(AbsRTTask *t) {} // throw(RTSchedExc) {}
 
         /**
            Create an FPModel passing the task and the priority. It throws a
@@ -71,7 +71,7 @@ namespace RTSim {
            @param t task to be added.
            @param prio task's priority.
         */
-        void addTask(AbsRTTask *t, int prio) throw(RTSchedExc);
+        void addTask(AbsRTTask *t, int prio); // throw(RTSchedExc);
 
         void addTask(AbsRTTask *t, const string &p) override;
 

@@ -73,7 +73,7 @@ namespace RTSim {
                 const std::vector<std::string> &instr,
                 const std::vector<double> &Omegaplus,
                 const std::vector<double> &Omegaminus,
-                const std::string &name) throw(WrongParameterSize);
+                const std::string &name); // throw(WrongParameterSize);
 
         void newRun() override;
 
@@ -82,10 +82,10 @@ namespace RTSim {
         void handleArrival(Tick arr) override;
 
         // post arrEvt for this task with mode and rdl values.
-        virtual void activate(int mode, Tick rdl) throw(ModeOutOfIndex);
+        virtual void activate(int mode, Tick rdl); // throw(ModeOutOfIndex);
 
         // Updates his own Instr matrix with values passed by param
-        void buildInstr(const std::vector<std::string> &param) throw(ParseExc);
+        void buildInstr(const std::vector<std::string> &param); // throw(ParseExc);
 
         // Updates task parameters
         // Only when the task is not active to be called before activate();
@@ -93,7 +93,7 @@ namespace RTSim {
             double angper, double angphase, double angdl,
             const std::vector<std::string> &instr,
             const std::vector<double> &OmegaM,
-            const std::vector<double> &OmegaP) throw(TaskAlreadyActive);
+            const std::vector<double> &OmegaP); // throw(TaskAlreadyActive);
 
         double getAngularPhase() {
             return AngularPhase;
@@ -120,7 +120,7 @@ namespace RTSim {
             return 0;
         }
 
-        virtual Tick getWCET(int index) const throw(ModeOutOfIndex);
+        virtual Tick getWCET(int index) const; // throw(ModeOutOfIndex);
 
         static std::unique_ptr<AVRTask>
             createInstance(const std::vector<std::string> &par);

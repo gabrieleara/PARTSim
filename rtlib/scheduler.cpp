@@ -104,7 +104,7 @@ namespace RTSim {
         _kernel = k;
     }
 
-    void Scheduler::insert(AbsRTTask *task) throw(RTSchedExc, BaseExc) {
+    void Scheduler::insert(AbsRTTask *task) { // throw(RTSchedExc, BaseExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);
@@ -122,7 +122,7 @@ namespace RTSim {
         _queue.insert(model);
     }
 
-    void Scheduler::extract(AbsRTTask *task) throw(RTSchedExc, BaseExc) {
+    void Scheduler::extract(AbsRTTask *task) { // throw(RTSchedExc, BaseExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);
@@ -133,7 +133,7 @@ namespace RTSim {
         model->setInactive();
     }
 
-    int Scheduler::getPriority(AbsRTTask *task) const throw(RTSchedExc) {
+    int Scheduler::getPriority(AbsRTTask *task) const { // throw(RTSchedExc) {
         TaskModel *model = find(task);
 
         if (model == NULL)
@@ -142,7 +142,7 @@ namespace RTSim {
         return model->getPriority();
     }
 
-    int Scheduler::getThreshold(AbsRTTask *task) throw(RTSchedExc) {
+    int Scheduler::getThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
         TaskModel *model = find(task);
 
         if (model == NULL)
@@ -151,7 +151,7 @@ namespace RTSim {
         return model->getThreshold();
     }
 
-    void Scheduler::setThreshold(AbsRTTask *task, int th) throw(RTSchedExc) {
+    void Scheduler::setThreshold(AbsRTTask *task, int th) { // throw(RTSchedExc) {
         TaskModel *model = find(task);
 
         if (model == NULL)
@@ -160,7 +160,7 @@ namespace RTSim {
         model->setThreshold(th);
     }
 
-    void Scheduler::enableThreshold(AbsRTTask *task) throw(RTSchedExc) {
+    void Scheduler::enableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);
@@ -172,7 +172,7 @@ namespace RTSim {
         model->raiseThreshold();
     }
 
-    void Scheduler::disableThreshold(AbsRTTask *task) throw(RTSchedExc) {
+    void Scheduler::disableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);

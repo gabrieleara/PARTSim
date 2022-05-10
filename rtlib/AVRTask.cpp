@@ -38,7 +38,7 @@ namespace RTSim {
         // std::cout << "delete completed" << endl;
     }
 
-    void AVRTask::buildInstr(const vector<string> &param) throw(ParseExc) {
+    void AVRTask::buildInstr(const vector<string> &param) { // throw(ParseExc) {
         /// PEZZO DI CODICE INCRIMINATO
         // if (myInstr.size() > 0){
         // 	vector<vector<Instr*>>::iterator s = myInstr.begin();
@@ -87,7 +87,7 @@ namespace RTSim {
                      const vector<string> &instr,
                      const vector<double> &Omegaplus,
                      const vector<double> &Omegaminus,
-                     const std::string &name) throw(WrongParameterSize) :
+                     const std::string &name) : // throw(WrongParameterSize) :
         Task(NULL, 0, 0, name, 1000),
         AngularPeriod(angPeriod),
         AngularPhase(angPhase),
@@ -130,7 +130,7 @@ namespace RTSim {
     void AVRTask::changeStatus(
         double angper, double angphase, double angdl,
         const vector<string> &instr, const vector<double> &OmegaM,
-        const vector<double> &OmegaP) throw(TaskAlreadyActive) {
+        const vector<double> &OmegaP) { // throw(TaskAlreadyActive) {
         if (instr.size() != OmegaM.size() || instr.size() != OmegaP.size())
             throw WrongParameterSize(
                 "instruction, OmegaPlus and OmegaMinus sizes must be all equal "
@@ -185,7 +185,7 @@ namespace RTSim {
         // TASK::handleArrival" << endl;
     }
 
-    void AVRTask::activate(int mode, Tick rdl) throw(ModeOutOfIndex) {
+    void AVRTask::activate(int mode, Tick rdl) { // throw(ModeOutOfIndex) {
         if (mode >= myInstr.size() || mode < 0)
             throw ModeOutOfIndex("Mode Index out of range");
         this->BufferedDeadlines.push_back(rdl);
@@ -194,7 +194,7 @@ namespace RTSim {
         arrEvt.post(SIMUL.getTime());
     }
 
-    Tick AVRTask::getWCET(int index) const throw(ModeOutOfIndex) {
+    Tick AVRTask::getWCET(int index) const { // throw(ModeOutOfIndex) {
         if (index >= myInstr.size() || index < 0)
             throw ModeOutOfIndex("Mode Index out of range");
         Tick tt = 0;

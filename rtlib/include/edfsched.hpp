@@ -50,7 +50,7 @@ namespace RTSim {
          *  a * RTSchedExc exception if the task is already
          *  present in this * scheduler.
          */
-        void addTask(AbsRTTask *task) throw(RTSchedExc);
+        void addTask(AbsRTTask *task); // throw(RTSchedExc);
 
         void addTask(AbsRTTask *task, const string &p) override;
 

@@ -216,7 +216,7 @@ namespace RTSim {
         /**
          * Insert a task in the queue.
          */
-        virtual void insert(AbsRTTask *) throw(RTSchedExc, BaseExc);
+        virtual void insert(AbsRTTask *); // throw(RTSchedExc, BaseExc);
 
         /**
          * Have you inserted the task t in the scheduler yet?
@@ -235,15 +235,15 @@ namespace RTSim {
         /**
          *  extract a task from the queue.
          */
-        virtual void extract(AbsRTTask *) throw(RTSchedExc, BaseExc);
+        virtual void extract(AbsRTTask *); // throw(RTSchedExc, BaseExc);
 
         /** returns the priority of the task */
-        int getPriority(AbsRTTask *task) const throw(RTSchedExc);
+        int getPriority(AbsRTTask *task) const; // throw(RTSchedExc);
 
         /** raises the threshold of the task */
-        void enableThreshold(AbsRTTask *t) throw(RTSchedExc);
+        void enableThreshold(AbsRTTask *t); // throw(RTSchedExc);
         /** lowers the threshold of the task */
-        void disableThreshold(AbsRTTask *t) throw(RTSchedExc);
+        void disableThreshold(AbsRTTask *t); // throw(RTSchedExc);
 
         /**
          * Sets the preemption threshold of task t. Throws an
@@ -256,14 +256,14 @@ namespace RTSim {
          * in RRSched it makes no sense at all. This makes the
          * interface not really robust.
          */
-        void setThreshold(AbsRTTask *t, int th) throw(RTSchedExc);
+        void setThreshold(AbsRTTask *t, int th); // throw(RTSchedExc);
 
         /**
          * Returns the preemption threshold of task t. Throws an
          * exception if the task does not exist or if the scheduler
          * does not support preemption thresholds
          */
-        int getThreshold(AbsRTTask *t) throw(RTSchedExc);
+        int getThreshold(AbsRTTask *t); // throw(RTSchedExc);
 
         /**
          *  returns the first task in the queue, or NULL if

@@ -27,7 +27,7 @@
 
 namespace RTSim {
 
-    void RMScheduler::addTask(AbsRTTask *task) throw(RTSchedExc) {
+    void RMScheduler::addTask(AbsRTTask *task) { // throw(RTSchedExc) {
         enqueueModel(new RMModel(task));
     }
 

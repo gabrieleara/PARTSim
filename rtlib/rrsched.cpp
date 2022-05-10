@@ -146,7 +146,7 @@ namespace RTSim {
         }
     }
 
-    void RRScheduler::addTask(AbsRTTask *task) throw(RRSchedExc) {
+    void RRScheduler::addTask(AbsRTTask *task) { // throw(RRSchedExc) {
         DBGENTER(_RR_SCHED_DBG_LEV);
 
         RRModel *model = new RRModel(task);

@@ -38,7 +38,7 @@ namespace MetaSim {
         return is;
     }
 
-    void Tick::set_resolution(const string &s) throw(ParseExc) {
+    void Tick::set_resolution(const string &s) { // throw(ParseExc) {
         string unit;
         double num;
 

@@ -140,9 +140,10 @@ namespace MetaSim {
 /// rounding
 /// FIXME: detect first if ::round() is available (e.g., VC2013)
 #define xx_round(dbl)                                                          \
-    dbl >= 0.0 ? (impl_t)(dbl + 0.5)                                           \
-               : ((dbl - (double) (impl_t) dbl) <= -0.5 ? (impl_t) dbl         \
-                                                        : (impl_t)(dbl - 0.5))
+    dbl >= 0.0                                                                 \
+        ? (impl_t) (dbl + 0.5)                                                 \
+        : ((dbl - (double) (impl_t) dbl) <= -0.5 ? (impl_t) dbl                \
+                                                 : (impl_t) (dbl - 0.5))
         static Tick round(double t) {
             Tick q;
             q.v = xx_round(t);
@@ -223,8 +224,8 @@ namespace MetaSim {
         }
 
         /// implementation in tick.pp
-        static void
-            set_resolution(const std::string &t) throw(parse_util::ParseExc);
+        static void set_resolution(const std::string &t);
+        // throw(parse_util::ParseExc);
 
         FRIEND_DECL_SYMM_OPS(bool, <);
         FRIEND_DECL_SYMM_OPS(bool, <=);

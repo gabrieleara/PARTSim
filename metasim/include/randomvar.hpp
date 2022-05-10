@@ -135,8 +135,8 @@ namespace MetaSim {
                 Exc("Maximum value cannot be computed for this variable type",
                     cl) {}
             MaxException(std::string m, std::string cl) : Exc(m, cl) {}
-            virtual ~MaxException() throw() {}
-            const char *what() const throw() override {
+            virtual ~MaxException() {}
+            const char *what() const noexcept override {
                 return _what.c_str();
             }
         };
@@ -175,10 +175,10 @@ namespace MetaSim {
             distriibution. */
         virtual double get() = 0;
 
-        virtual double getMaximum() throw(MaxException) = 0;
-        virtual double getMinimum() throw(MaxException) = 0;
+        virtual double getMaximum() = 0; // throw(MaxException) = 0;
+        virtual double getMinimum() = 0; // throw(MaxException) = 0;
 
-        virtual void setMaximum(double v) throw(MaxException){};
+        virtual void setMaximum(double v) {} // throw(MaxException){};
 
         /** Parses a random variable from a string. String is in the
             form "varname(par1, par2, ...)", where
@@ -210,13 +210,13 @@ namespace MetaSim {
         double get() override {
             return _var;
         }
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             return _var;
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             return _var;
         }
-        void setMaximum(double v) throw(MaxException) override {
+        void setMaximum(double v) override { // throw(MaxException) override {
             _var = v;
         }
     };
@@ -239,10 +239,10 @@ namespace MetaSim {
             createInstance(std::vector<std::string> &par);
 
         double get() override;
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             return _max;
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             return _min;
         }
     };
@@ -262,10 +262,10 @@ namespace MetaSim {
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             throw MaxException("ExponentialVar");
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             return 0;
         }
     };
@@ -291,10 +291,10 @@ namespace MetaSim {
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             throw MaxException("WeibullVar");
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             return 0;
         }
     };
@@ -314,10 +314,10 @@ namespace MetaSim {
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             throw MaxException("ExponentialVar");
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             throw MaxException("ExponentialVar");
         }
     };
@@ -344,10 +344,10 @@ namespace MetaSim {
             createInstance(std::vector<std::string> &par);
 
         double get() override;
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             throw MaxException("NormalVar");
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             throw MaxException("NormalVar");
         }
     };
@@ -368,10 +368,10 @@ namespace MetaSim {
 
         double get() override;
 
-        double getMaximum() throw(MaxException) override {
+        double getMaximum() override { // throw(MaxException) override {
             throw MaxException("PoissonVar");
         }
-        double getMinimum() throw(MaxException) override {
+        double getMinimum() override { // throw(MaxException) override {
             throw MaxException("PoissonVar");
         }
     };
@@ -399,8 +399,8 @@ namespace MetaSim {
             createInstance(std::vector<std::string> &par);
 
         double get() override;
-        double getMaximum() throw(MaxException) override;
-        double getMinimum() throw(MaxException) override;
+        double getMaximum() override; // throw(MaxException) override;
+        double getMinimum() override; // throw(MaxException) override;
     };
     //@}
 

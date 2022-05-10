@@ -90,7 +90,7 @@ namespace RTSim {
         Tick getDuration() const override {
             return 0;
         }
-        Tick getWCET() const throw(RandomVar::MaxException) override {
+        Tick getWCET() const override { // throw(RandomVar::MaxException) {
             return 0;
         }
         void reset() override {}

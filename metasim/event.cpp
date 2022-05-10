@@ -81,7 +81,7 @@ namespace MetaSim {
             return false;
     }
 
-    void Event::post(Tick myTime, bool disp) throw(Exc, BaseExc) {
+    void Event::post(Tick myTime, bool disp) { // throw(Exc, BaseExc) {
         if (_isInQueue) {
             std::stringstream str;
             str << "Time: " << SIMUL.getTime() << " -- Event"
@@ -137,7 +137,7 @@ namespace MetaSim {
 
     // Function to set the event time
     // (only if the event is not in any queue).
-    void Event::setTime(Tick actTime) throw(Exc) {
+    void Event::setTime(Tick actTime) { // throw(Exc) {
         if (_isInQueue)
             throw Exc("Cannot set the time if the event is already queued\n");
         else

@@ -37,7 +37,7 @@ namespace RTSim {
         }
     }
 
-    void EDFScheduler::addTask(AbsRTTask *task) throw(RTSchedExc) {
+    void EDFScheduler::addTask(AbsRTTask *task) { // throw(RTSchedExc) {
         enqueueModel(new EDFModel(task));
     }
 

@@ -18,7 +18,7 @@
 
 namespace RTSim {
 
-    void FPScheduler::addTask(AbsRTTask *task, int prio) throw(RTSchedExc) {
+    void FPScheduler::addTask(AbsRTTask *task, int prio) { // throw(RTSchedExc) {
         FPModel *model = new FPModel(task, prio);
 
         if (find(task) != NULL)

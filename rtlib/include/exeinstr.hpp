@@ -103,12 +103,12 @@ namespace RTSim {
         }
 
         // Virtual methods from Instr
-        void schedule() throw(InstrExc) override;
+        void schedule() override; // throw(InstrExc) override;
         void deschedule() override;
         void onEnd() override;
         void reset() override;
         Tick getDuration() const override;
-        Tick getWCET() const throw(RandomVar::MaxException) override;
+        Tick getWCET() const override;
         Tick getExecTime() const override;
         inline double getActCycles() const override {
             return actCycles;

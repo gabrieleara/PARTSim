@@ -322,7 +322,7 @@ namespace RTSim {
 
             @todo the last throws is quite suspect....
         */
-        void killInstance() throw(TaskNotActive, TaskNotExecuting);
+        void killInstance(); // throw(TaskNotActive, TaskNotExecuting);
 
         /**
            This method permits to select the behaviour of the task when a
@@ -360,7 +360,7 @@ namespace RTSim {
             Removes an instruction from the instruction list. This method
             is invoked mainly during destruction of the task.
         */
-        //    void removeInstr(Instr *instr) throw(NoSuchInstr);
+        //    void removeInstr(Instr *instr); // throw(NoSuchInstr);
 
         /**
             Removes all instructions. This method removes all instructions
@@ -483,7 +483,7 @@ namespace RTSim {
             for this task. To move a task from one kernel to another, call
             setKernel(0) before.
         */
-        void setKernel(AbsKernel *k) throw(KernAlreadySet) override;
+        void setKernel(AbsKernel *k) override; // throw(KernAlreadySet) override;
 
         /**
             Returns the kernel that contains this task. Can return 0

@@ -247,9 +247,9 @@ namespace Catch {
     public:
         NotImplementedException( SourceLineInfo const& lineInfo );
 
-        virtual ~NotImplementedException() throw() {}
+        virtual ~NotImplementedException() {}
 
-        virtual const char* what() const throw();
+        virtual const char* what() const noexcept; // throw();
 
     private:
         std::string m_what;
@@ -2028,7 +2028,7 @@ namespace Catch {
 
     class StreamBufBase : public std::streambuf {
     public:
-        virtual ~StreamBufBase() throw();
+        virtual ~StreamBufBase();
     };
 }
 
@@ -2047,7 +2047,7 @@ namespace Catch {
             setp( data, data + sizeof(data) );
         }
 
-        ~StreamBufImpl() throw() {
+        ~StreamBufImpl() {
             sync();
         }
 
@@ -5761,7 +5761,7 @@ namespace Catch {
         m_what = oss.str();
     }
 
-    const char* NotImplementedException::what() const throw() {
+    const char* NotImplementedException::what() const noexcept { // throw() {
         return m_what.c_str();
     }
 
@@ -7649,7 +7649,7 @@ namespace Catch {
 namespace Catch {
     NonCopyable::~NonCopyable() {}
     IShared::~IShared() {}
-    StreamBufBase::~StreamBufBase() throw() {}
+    StreamBufBase::~StreamBufBase() {}
     IContext::~IContext() {}
     IResultCapture::~IResultCapture() {}
     ITestCase::~ITestCase() {}

@@ -272,7 +272,7 @@ namespace MetaSim {
         return _array[_count++];
     }
 
-    double DetVar::getMaximum() throw(MaxException) {
+    double DetVar::getMaximum() { // throw(MaxException) {
         if (_array.empty())
             return 0;
         double max = _array[0];
@@ -282,7 +282,7 @@ namespace MetaSim {
         return max;
     }
 
-    double DetVar::getMinimum() throw(MaxException) {
+    double DetVar::getMinimum() { // throw(MaxException) {
         if (_array.empty())
             return 0;
         double min = _array[0];

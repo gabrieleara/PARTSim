@@ -148,7 +148,8 @@ namespace RTSim {
         /**
            Returns the worst-case execution time for this instruction.
         */
-        virtual Tick getWCET() const throw(RandomVar::MaxException) = 0;
+        // virtual Tick getWCET() const throw(RandomVar::MaxException) = 0;
+        virtual Tick getWCET() const = 0;
 
         // Commented because the tracing mechanism has changed wildily
         // virtual void setTrace(Trace*) = 0;
