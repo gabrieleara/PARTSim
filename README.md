@@ -25,7 +25,7 @@ You don't have to issue CMake commands to build PARTSim. A (Python-based) builde
 
 To build the simulator using the builder script with multi-threaded compilation enabled, run:
 ```bash
-./bin/builder.py -c -J build
+./tools/builder.py -c -J build
 ```
 
 The builder script accepts many options and commands. Use the `--help` option (or run the script with no option/command) to see a list of accepted arguments ([see below](#build-options)).
@@ -36,17 +36,17 @@ If you want to build the experimental thermal model with the PARTSim library (pr
 
 Example:
 ```bash
-./bin/builder.py -D RTLIB_THERMAL=ON build # [...]
+./tools/builder.py -D RTLIB_THERMAL=ON build # [...]
 ```
 
 ### Build Options
 
 Following is a (mostly) up-to-date output of the builder help:
 ```
-$ ./bin/builder.py -h
-usage: ./bin/builder.py [-h] [-v] [-c] [-d] [-r] [-G {Ninja,Unix Makefiles}] [-J] [-j JOBS]
-                        [-b {release,debug,release-wdebug}] [-p BUILD_PATH] [-D CMAKE_OPTION]
-                        [COMMAND ...]
+$ ./tools/builder.py -h
+usage: ./tools/builder.py [-h] [-v] [-c] [-d] [-r] [-G {Ninja,Unix Makefiles}] [-J] [-j JOBS]
+                          [-b {release,debug,release-wdebug}] [-p BUILD_PATH] [-D CMAKE_OPTION]
+                          [COMMAND ...]
 
 Multiple commands are executed in order, except 'help', which will always be the only one executed
 if included.
