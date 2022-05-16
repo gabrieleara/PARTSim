@@ -1,5 +1,5 @@
 /*
- * Filename: rtsim/rtsim_args.hpp
+ * Filename: rtsim/args.hpp
  * Path: rtsim
  * Created Date: Monday, May 16th 2022, 9:52:03 am
  * Author: Gabriele Ara
@@ -17,8 +17,8 @@
 
 static inline bool string_endswith(const std::string &s,
                                    const std::string &end) {
-    int std::endlen = end.length();
-    std::string s_end = s.substr(s.length() - std::endlen);
+    int endlen = end.length();
+    std::string s_end = s.substr(s.length() - endlen);
     return s_end == end;
 }
 

@@ -1,10 +1,12 @@
-add_executable(rtsim
-    rtsim_main.cpp
+add_executable(rtsim-exe
+    main.cpp
+)
+
+set_target_properties(rtsim-exe
+    PROPERTIES OUTPUT_NAME rtsim
 )
 
 # find_package(cmdarg)
-
-
 # Check if dependency library is installed
 # set(LIBCMDARG BOOL:false)
 # set(LIBCMDARG_INCLUDE BOOL:false)
@@ -39,4 +41,4 @@ else()
     target_link_libraries(cmdarg INTERFACE ${LIBCMDARG})
 endif()
 
-target_link_libraries(rtsim PRIVATE cmdarg PRIVATE rtlib)
+target_link_libraries(rtsim-exe PRIVATE cmdarg PRIVATE rtsim)

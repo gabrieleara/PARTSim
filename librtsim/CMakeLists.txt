@@ -1,16 +1,14 @@
-cmake_minimum_required(VERSION 3.0)
+set(LIBRARY_NAME                    rtsim)
+set(LIBRARY_TYPE                    SHARED)
+set(LIBRARY_VERSION                 3.0)
+set(LIBRARY_SOVERSION               3)
+set(LIBRARY_INCLUDEDIR              include)
+set(LIBRARY_INCLUDEDIR_PRIVATE      )
+set(LIBRARY_INCLUDEDIR_INTERFACE    )
+set(LIBRARY_PROPERTIES              )
+set(LIBRARY_DEPENDENCIES            metasim)
 
-set(LIBRARY_NAME rtlib)
-
-# TODO: SHARED or STATIC?
-set(LIBRARY_TYPE SHARED)
-
-set(LIBRARY_VERSION 3.0)
-set(LIBRARY_SOVERSION 3)
-
-set(LIBRARY_DEPENDENCIES metasim)
-set(LIBRARY_INCLUDEDIR include)
-set(SOURCE_FILES
+set(LIBRARY_SOURCE_FILES
     AVRTask.cpp
     bwi.cpp
     capacitytimer.cpp
@@ -76,7 +74,4 @@ if (RTLIB_THERMAL EQUAL ON)
     set(LIBRARY_DEPENDENCIES ${LIBRARY_DEPENDENCIES} Eigen3::Eigen)
 endif()
 
-
-# ---------- You should not need to change anything below this line ---------- #
-
-include(${PROJECT_SOURCE_DIR}/CMakeLists_library.txt)
+include(${PROJECT_SOURCE_DIR}/cmakeopts/library.cmake)
