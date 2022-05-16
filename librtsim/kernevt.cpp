@@ -1,6 +1,6 @@
 
-#include <kernel.hpp>
-#include <kernevt.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/kernevt.hpp>
 
 namespace RTSim {
     /*

@@ -19,9 +19,9 @@
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
-		"ms-vscode.cpptools",
-		"ms-vscode.cmake-tools",
-		"eamodio.gitlens"
+		"ms-vscode.cpptools-extension-pack",
+		"eamodio.gitlens",
+		"psioniq.psi-header",
 	],
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],

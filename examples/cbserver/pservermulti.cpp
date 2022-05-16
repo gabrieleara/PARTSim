@@ -1,10 +1,10 @@
-#include <mrtkernel.hpp>
-#include <rmsched.hpp>
-#include <rrsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <pollingserver.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/rmsched.hpp>
+#include <rtsim/rrsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/pollingserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

@@ -11,9 +11,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <factory.hpp>
-#include <fifosched.hpp>
-#include <kernel.hpp>
+#include <metasim/factory.hpp>
+#include <rtsim/fifosched.hpp>
+#include <rtsim/kernel.hpp>
 
 namespace RTSim {
 

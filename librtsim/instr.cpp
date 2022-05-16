@@ -1,4 +1,4 @@
-#include <instr.hpp>
+#include <rtsim/instr.hpp>
 
 namespace RTSim {
 

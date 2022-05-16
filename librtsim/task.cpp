@@ -14,14 +14,14 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <factory.hpp>
-#include <regvar.hpp>
-#include <simul.hpp>
-#include <strtoken.hpp>
+#include <metasim/factory.hpp>
+#include <metasim/regvar.hpp>
+#include <metasim/simul.hpp>
+#include <metasim/strtoken.hpp>
 
-#include <abskernel.hpp>
-#include <instr.hpp>
-#include <task.hpp>
+#include <rtsim/abskernel.hpp>
+#include <rtsim/instr.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

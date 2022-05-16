@@ -1,4 +1,4 @@
-#include <ps_trace.hpp>
+#include <rtsim/ps_trace.hpp>
 
 namespace RTSim {
 

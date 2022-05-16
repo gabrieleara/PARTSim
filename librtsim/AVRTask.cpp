@@ -4,7 +4,7 @@ copyright            : (C) 2014 Simoncelli Stefano
 email                : simoncelli.stefano@hotmail.it
 ***************************************************************************/
 
-#include <AVRTask.hpp>
+#include <rtsim/AVRTask.hpp>
 #define _USE_MATH_DEFINES
 #include <math.h>
 

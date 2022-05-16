@@ -11,14 +11,14 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <strtoken.hpp>
+#include <metasim/strtoken.hpp>
 
-#include <exeinstr.hpp>
-#include <reginstr.hpp>
-#include <schedinstr.hpp>
-#include <suspend_instr.hpp>
-#include <threinstr.hpp>
-#include <waitinstr.hpp>
+#include <rtsim/exeinstr.hpp>
+#include <rtsim/reginstr.hpp>
+#include <rtsim/schedinstr.hpp>
+#include <rtsim/suspend_instr.hpp>
+#include <rtsim/threinstr.hpp>
+#include <rtsim/waitinstr.hpp>
 
 namespace RTSim {
     const Instr::BASE_KEY_TYPE ExecName("delay");

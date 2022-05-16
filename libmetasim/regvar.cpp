@@ -11,9 +11,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <factory.hpp>
-#include <genericvar.hpp>
-#include <regvar.hpp>
+#include <metasim/factory.hpp>
+#include <metasim/genericvar.hpp>
+#include <metasim/regvar.hpp>
 
 namespace MetaSim {
 

@@ -11,11 +11,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
-#include <kernel.hpp>
-#include <task.hpp>
-#include <waitinstr.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/task.hpp>
+#include <rtsim/waitinstr.hpp>
 
 namespace RTSim {
 

@@ -1,10 +1,10 @@
 #include <cassert>
-#include <memory.hpp>
+#include <metasim/memory.hpp>
 
-#include <factory.hpp>
-#include <kernel.hpp>
-#include <server.hpp>
-#include <strtoken.hpp>
+#include <metasim/factory.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/server.hpp>
+#include <metasim/strtoken.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

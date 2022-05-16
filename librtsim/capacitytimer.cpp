@@ -1,4 +1,4 @@
-#include <capacitytimer.hpp>
+#include <rtsim/capacitytimer.hpp>
 #include <cassert>
 #include <cmath>
 

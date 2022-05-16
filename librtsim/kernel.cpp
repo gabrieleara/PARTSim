@@ -13,14 +13,14 @@
  ***************************************************************************/
 #include <algorithm>
 
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
-#include <cpu.hpp>
-#include <kernel.hpp>
-#include <reginstr.hpp>
-#include <resmanager.hpp>
-#include <scheduler.hpp>
-#include <task.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/reginstr.hpp>
+#include <rtsim/resmanager.hpp>
+#include <rtsim/scheduler.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

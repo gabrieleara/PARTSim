@@ -14,14 +14,14 @@
 
 #include <cassert>
 
-#include <cbserver.hpp>
-#include <cpu.hpp>
-#include <energyMRTKernel.hpp>
-#include <exeinstr.hpp>
-#include <rttask.hpp>
-#include <scheduler.hpp>
-#include <task.hpp>
-#include <utils.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/exeinstr.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/scheduler.hpp>
+#include <rtsim/task.hpp>
+#include <rtsim/utils.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

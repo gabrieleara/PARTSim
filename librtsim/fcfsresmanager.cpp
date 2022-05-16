@@ -25,10 +25,10 @@
  * Finished merging the main trunk with Lipari's branch.
  *
  */
-#include <abskernel.hpp>
-#include <fcfsresmanager.hpp>
-#include <resource.hpp>
-#include <task.hpp>
+#include <rtsim/abskernel.hpp>
+#include <rtsim/fcfsresmanager.hpp>
+#include <rtsim/resource.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

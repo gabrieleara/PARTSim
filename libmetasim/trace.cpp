@@ -1,5 +1,5 @@
-#include <event.hpp>
-#include <trace.hpp>
+#include <metasim/event.hpp>
+#include <metasim/trace.hpp>
 
 namespace MetaSim {
     using std::ios;

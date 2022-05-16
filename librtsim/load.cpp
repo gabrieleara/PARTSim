@@ -13,8 +13,8 @@
  ***************************************************************************/
 #include <cmath>
 
-#include <exeinstr.hpp>
-#include <load.hpp>
+#include <rtsim/exeinstr.hpp>
+#include <rtsim/load.hpp>
 
 namespace RTSim {
 

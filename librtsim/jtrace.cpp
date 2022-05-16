@@ -14,12 +14,12 @@
 #include <algorithm>
 #include <string>
 
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
-#include <jtrace.hpp>
-#include <server.hpp>
-#include <task.hpp>
-#include <waitinstr.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/server.hpp>
+#include <rtsim/task.hpp>
+#include <rtsim/waitinstr.hpp>
 
 namespace RTSim {
 

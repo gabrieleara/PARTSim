@@ -17,15 +17,15 @@
 #include <string>
 #include <vector>
 
-#include <factory.hpp>
-#include <simul.hpp>
-#include <strtoken.hpp>
+#include <metasim/factory.hpp>
+#include <metasim/simul.hpp>
+#include <metasim/strtoken.hpp>
 
-#include <exeinstr.hpp>
+#include <rtsim/exeinstr.hpp>
 #include <assert.h>
-#include <cpu.hpp>
-#include <exeinstr.hpp>
-#include <task.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/exeinstr.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

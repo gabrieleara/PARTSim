@@ -18,12 +18,12 @@
 #include <string>
 #include <vector>
 
-#include <abstask.hpp>
+#include <rtsim/abstask.hpp>
 #include <assert.h>
-#include <opp.hpp>
-#include <powermodel.hpp>
-#include <timer.hpp>
-#include <trace.hpp>
+#include <rtsim/opp.hpp>
+#include <rtsim/powermodel.hpp>
+#include <rtsim/timer.hpp>
+#include <metasim/trace.hpp>
 
 #define _KERNEL_DBG_LEV "Kernel"
 
@@ -276,7 +276,7 @@ namespace RTSim
     };
 
     virtual ~CPU_BL() {
-      cout << __func__ << endl;
+      std::cout << __func__ << std::endl;
       delete _pm;
     }
 
@@ -360,7 +360,7 @@ namespace RTSim
     };
 
     ~Island_BL() {
-	cout << __func__ << endl;
+	cout << __func__ << std::endl;
         _opps.clear();
         for (CPU_BL* c : _cpus)
           delete c;
@@ -406,7 +406,7 @@ namespace RTSim
     bool isBusy() {
         for (CPU_BL* c : _cpus)
             if (c->isBusy()){
-                cout << c->toString() << " is busy"<<endl;
+                std::cout << c->toString() << " is busy"<<endl;
                 return true;
             };
         return false;

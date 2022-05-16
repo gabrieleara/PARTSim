@@ -1,7 +1,7 @@
-#include <kernel.hpp>
-#include <task.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/task.hpp>
 
-#include <suspend_instr.hpp>
+#include <rtsim/suspend_instr.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

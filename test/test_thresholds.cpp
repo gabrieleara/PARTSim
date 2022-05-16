@@ -1,8 +1,8 @@
 #include "catch.hpp"
-#include <rttask.hpp>
-#include <cbserver.hpp>
-#include <kernel.hpp>
-#include <fpsched.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/fpsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

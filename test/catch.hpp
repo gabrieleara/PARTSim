@@ -372,7 +372,7 @@ namespace Catch {
 #pragma clang diagnostic pop
 #endif
 
-#include <memory.hpp>
+#include <metasim/memory.hpp>
 #include <vector>
 #include <stdlib.h>
 
@@ -2107,7 +2107,7 @@ namespace Catch {
     };
 }
 
-#include <memory.hpp>
+#include <metasim/memory.hpp>
 #include <vector>
 #include <string>
 #include <iostream>

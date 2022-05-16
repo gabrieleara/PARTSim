@@ -1,10 +1,10 @@
-#include <kernel.hpp>
-#include <edfsched.hpp>
-#include <fifosched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <grubserver.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/fifosched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/grubserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

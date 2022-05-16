@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cassert>
 #include <math.h>
-#include <sporadicserver.hpp>
-#include <supercbs.hpp>
+#include <rtsim/sporadicserver.hpp>
+#include <rtsim/supercbs.hpp>
 
 namespace RTSim {
 

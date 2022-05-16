@@ -1,4 +1,4 @@
-#include <feedbacktest.hpp>
+#include <rtsim/feedbacktest.hpp>
 
 namespace RTSim {
     FeedbackTestModule::FeedbackTestModule(const std::string &name) :

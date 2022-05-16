@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <grubserver.hpp>
+#include <rtsim/grubserver.hpp>
 #include <iostream>
 
 namespace RTSim {

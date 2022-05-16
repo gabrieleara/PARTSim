@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <strtoken.hpp>
+#include <metasim/strtoken.hpp>
 
 namespace parse_util {
 

@@ -11,11 +11,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
-#include <abskernel.hpp>
-#include <piresman.hpp>
-#include <resource.hpp>
+#include <rtsim/abskernel.hpp>
+#include <rtsim/piresman.hpp>
+#include <rtsim/resource.hpp>
 
 namespace RTSim {
 

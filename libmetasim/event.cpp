@@ -15,9 +15,9 @@
 #include <string>
 #include <typeinfo>
 
-#include <entity.hpp>
-#include <event.hpp>
-#include <simul.hpp>
+#include <metasim/entity.hpp>
+#include <metasim/event.hpp>
+#include <metasim/simul.hpp>
 
 namespace MetaSim {
     /** ------------------------------------------------------------

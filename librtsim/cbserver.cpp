@@ -1,5 +1,5 @@
-#include <cbserver.hpp>
-#include <energyMRTKernel.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/energyMRTKernel.hpp>
 namespace RTSim {
 
     CBServer::CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name,

@@ -7,12 +7,12 @@
  */
 
 // LibMetasim
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
 // LibRTSim
-#include <json_trace.hpp>
-#include <system.hpp>
-#include <texttrace.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/system.hpp>
+#include <rtsim/texttrace.hpp>
 
 int main(int argc, char *argv[]) {
     auto opts = parse_arguments(argc, argv);

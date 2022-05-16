@@ -1,6 +1,6 @@
 #include <algorithm>
 #include <cassert>
-#include <sparepot.hpp>
+#include <rtsim/sparepot.hpp>
 
 namespace RTSim {
     using std::cerr;

@@ -2,11 +2,11 @@
  In this example, a simple system is simulated, consisting of two
  real-time tasks scheduled by RM on a single processor.
  */
-#include <kernel.hpp>
-#include <fpsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/fpsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

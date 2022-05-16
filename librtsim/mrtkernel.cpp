@@ -12,9 +12,9 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <cbserver.hpp>
-#include <mrtkernel.hpp>
-#include <scheduler.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/scheduler.hpp>
 
 namespace RTSim {
     // =========================================================================

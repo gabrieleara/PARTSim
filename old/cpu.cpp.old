@@ -13,9 +13,9 @@ email                : lipari@sssup.it
  ***************************************************************************/
 
 #include <assert.h>
-#include <cpu.hpp>
-#include <energyMRTKernel.hpp>
-#include <system_descriptor.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/system_descriptor.hpp>
 
 namespace RTSim
 {
@@ -193,25 +193,25 @@ namespace RTSim
     {
 
 #define __get_speed(iter) (speeds.begin() + (iter - OPPs.begin()))
-        cout << "Checking CPU:" << cpuName << endl;;
-        cout << "Max Power Consumption is :" << getMaxPowerConsumption() << endl;
+        std::cout << "Checking CPU:" << cpuName << std::endl;;
+        std::cout << "Max Power Consumption is :" << getMaxPowerConsumption() << std::endl;
         for (vector<OPP>::iterator iter = OPPs.begin(); iter != OPPs.end(); iter++)
         {
-            cout << "-OPP-" << endl;
-            cout << "\tFrequency:" << (*iter).frequency << endl;
-            cout << "\tVoltage:" << (*iter).voltage << endl;
-            cout << "\tSpeed:" << *__get_speed(iter) << endl;
+            std::cout << "-OPP-" << std::endl;
+            std::cout << "\tFrequency:" << (*iter).frequency << std::endl;
+            std::cout << "\tVoltage:" << (*iter).voltage << std::endl;
+            std::cout << "\tSpeed:" << *__get_speed(iter) << std::endl;
         }
         for (unsigned int i = 0; i < OPPs.size(); i++)
-            cout << "Speed level" << getSpeedByOPP(i) << endl;
+            std::cout << "Speed level" << getSpeedByOPP(i) << std::endl;
         for (vector<OPP>::iterator iter = OPPs.begin(); iter != OPPs.end(); iter++)
         {
-            cout << "Setting speed to " << *__get_speed(iter) << endl;
+            std::cout << "Setting speed to " << *__get_speed(iter) << std::endl;
             setSpeed(*__get_speed(iter));
-            cout << "New speed is  " << getSpeed() << endl;
-            cout << "Current OPP is  " << getOPP() << endl;
-            cout << "Current Power Consumption is  " << getCurrentPowerConsumption() << endl;
-            cout << "Current Power Saving is  " << getCurrentPowerSaving() << endl;
+            std::cout << "New speed is  " << getSpeed() << std::endl;
+            std::cout << "Current OPP is  " << getOPP() << std::endl;
+            std::cout << "Current Power Consumption is  " << getCurrentPowerConsumption() << std::endl;
+            std::cout << "Current Power Saving is  " << getCurrentPowerSaving() << std::endl;
         }
     }
 

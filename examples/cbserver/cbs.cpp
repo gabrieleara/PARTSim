@@ -1,11 +1,11 @@
-#include <kernel.hpp>
-#include <edfsched.hpp>
-#include <fifosched.hpp>
-//#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <cbserver.hpp>
-#include <supercbs.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/fifosched.hpp>
+//#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/supercbs.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

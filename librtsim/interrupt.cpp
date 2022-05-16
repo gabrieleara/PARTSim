@@ -24,11 +24,11 @@
  */
 #include <cassert>
 
-#include <randomvar.hpp>
-#include <simul.hpp>
+#include <metasim/randomvar.hpp>
+#include <metasim/simul.hpp>
 
-#include <interrupt.hpp>
-#include <task.hpp>
+#include <rtsim/interrupt.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

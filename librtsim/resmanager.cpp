@@ -22,12 +22,12 @@
  * Finished merging the main trunk with Lipari's branch.
  *
  */
-#include <entity.hpp>
+#include <metasim/entity.hpp>
 
-#include <abskernel.hpp>
-#include <abstask.hpp>
-#include <resmanager.hpp>
-#include <resource.hpp>
+#include <rtsim/abskernel.hpp>
+#include <rtsim/abstask.hpp>
+#include <rtsim/resmanager.hpp>
+#include <rtsim/resource.hpp>
 
 namespace RTSim {
 

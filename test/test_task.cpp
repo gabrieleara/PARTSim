@@ -1,9 +1,9 @@
 #include "catch.hpp"
 
-#include <metasim.hpp>
-#include <rttask.hpp>
-#include <kernel.hpp>
-#include <fpsched.hpp>
+#include <rtsim/metasim.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/fpsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

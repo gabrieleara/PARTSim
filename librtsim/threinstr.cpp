@@ -11,11 +11,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
-#include <kernel.hpp>
-#include <task.hpp>
-#include <threinstr.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/task.hpp>
+#include <rtsim/threinstr.hpp>
 
 namespace RTSim {
     using std::unique_ptr;

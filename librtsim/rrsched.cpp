@@ -1,8 +1,8 @@
 #include <cassert>
-#include <energyMRTKernel.hpp>
-#include <rrsched.hpp>
+#include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/rrsched.hpp>
 #include <sstream>
-#include <task.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

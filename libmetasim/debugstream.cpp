@@ -14,8 +14,8 @@
 #include <algorithm>
 #include <iostream>
 
-#include <debugstream.hpp>
-#include <simul.hpp>
+#include <metasim/debugstream.hpp>
+#include <metasim/simul.hpp>
 
 namespace MetaSim {
 

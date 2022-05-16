@@ -11,9 +11,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <edfsched.hpp>
-#include <kernel.hpp>
-#include <rttask.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
 
 namespace RTSim {
 

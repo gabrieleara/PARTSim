@@ -22,8 +22,8 @@
  * Finished merging the main trunk with Lipari's branch.
  *
  */
-#include <abstask.hpp>
-#include <resource.hpp>
+#include <rtsim/abstask.hpp>
+#include <rtsim/resource.hpp>
 
 namespace RTSim {
 

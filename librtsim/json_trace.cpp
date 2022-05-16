@@ -1,4 +1,4 @@
-#include <json_trace.hpp>
+#include <rtsim/json_trace.hpp>
 
 namespace RTSim {
 

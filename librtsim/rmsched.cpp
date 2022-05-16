@@ -22,8 +22,8 @@
  * Finished merging the main trunk with Lipari's branch.
  *
  */
-#include <kernel.hpp>
-#include <rmsched.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/rmsched.hpp>
 
 namespace RTSim {
 

@@ -15,8 +15,8 @@
 
 #include <sstream>
 
-#include <entity.hpp>
-#include <simul.hpp>
+#include <metasim/entity.hpp>
+#include <metasim/simul.hpp>
 
 namespace MetaSim {
     using std::cerr;

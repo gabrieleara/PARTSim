@@ -11,8 +11,8 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <simul.hpp>
-#include <timer.hpp>
+#include <metasim/simul.hpp>
+#include <rtsim/timer.hpp>
 
 namespace RTSim {
 

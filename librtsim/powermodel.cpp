@@ -1,13 +1,13 @@
 
-#include <powermodel.hpp>
+#include <rtsim/powermodel.hpp>
 
-#include <stateless_cpumodel_base.hpp>
-#include <stateless_cpumodel_bp.hpp>
-#include <stateless_cpumodel_minimal.hpp>
-#include <stateless_cpumodel_tb.hpp>
-#include <stateless_cpumodel_tbapprox.hpp>
+#include <rtsim/stateless_cpumodel_base.hpp>
+#include <rtsim/stateless_cpumodel_bp.hpp>
+#include <rtsim/stateless_cpumodel_minimal.hpp>
+#include <rtsim/stateless_cpumodel_tb.hpp>
+#include <rtsim/stateless_cpumodel_tbapprox.hpp>
 
-#include <system_descriptor.hpp>
+#include <rtsim/system_descriptor.hpp>
 
 namespace RTSim {
     // =====================================================

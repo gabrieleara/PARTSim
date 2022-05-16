@@ -11,13 +11,13 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <factory.hpp>
-#include <strtoken.hpp>
+#include <metasim/factory.hpp>
+#include <metasim/strtoken.hpp>
 
-#include <edfsched.hpp>
-#include <fifosched.hpp>
-#include <fpsched.hpp>
-#include <rrsched.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/fifosched.hpp>
+#include <rtsim/fpsched.hpp>
+#include <rtsim/rrsched.hpp>
 
 namespace RTSim {
 

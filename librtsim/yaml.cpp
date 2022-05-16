@@ -1,4 +1,4 @@
-#include <yaml.hpp>
+#include <rtsim/yaml.hpp>
 
 namespace yaml {
 
@@ -242,7 +242,7 @@ namespace yaml {
 
 /*
 // Example of use
-#include <yaml.hpp>
+#include <rtsim/yaml.hpp>
 #include <iostream>
 
 using std::string;

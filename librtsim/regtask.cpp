@@ -13,11 +13,11 @@
  ***************************************************************************/
 #include <string>
 
-#include <AVRTask.hpp>
-#include <factory.hpp>
-#include <reginstr.hpp>
-#include <rttask.hpp>
-#include <task.hpp>
+#include <rtsim/AVRTask.hpp>
+#include <metasim/factory.hpp>
+#include <rtsim/reginstr.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

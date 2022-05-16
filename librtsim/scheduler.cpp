@@ -11,11 +11,11 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
 #include <climits>
-#include <scheduler.hpp>
-#include <task.hpp>
+#include <rtsim/scheduler.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
     using namespace MetaSim;

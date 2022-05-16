@@ -1,14 +1,14 @@
 #include <cstdlib>
-#include <kernel.hpp>
-#include <edfsched.hpp>
-#include <rrsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <supercbs.hpp>
-#include <feedbacktest.hpp>
-#include <taskstat.hpp>
-#include <feedbackarsim.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/rrsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/supercbs.hpp>
+#include <rtsim/feedbacktest.hpp>
+#include <rtsim/taskstat.hpp>
+#include <rtsim/feedbackarsim.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

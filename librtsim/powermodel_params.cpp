@@ -1,8 +1,8 @@
 #include <sstream>
 
-#include <consts.hpp>
-#include <powermodel_params.hpp>
-#include <memory.hpp>
+#include <rtsim/consts.hpp>
+#include <rtsim/powermodel_params.hpp>
+#include <metasim/memory.hpp>
 
 namespace RTSim {
 

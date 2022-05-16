@@ -8,17 +8,17 @@
 #include <string>
 #include <fstream>
 
-#include <mrtkernel.hpp>
-#include <cpu.hpp>
-#include <edfsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <json_trace.hpp>
-#include <tracepower.hpp>
-#include <rttask.hpp>
-#include <instr.hpp>
-#include <powermodel.hpp>
-#include <system_descriptor.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/tracepower.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/instr.hpp>
+#include <rtsim/powermodel.hpp>
+#include <rtsim/system_descriptor.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

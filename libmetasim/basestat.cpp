@@ -17,11 +17,11 @@
 #include <iostream>
 #include <numeric>
 
-#include <baseexc.hpp>
-#include <basestat.hpp>
-#include <basetype.hpp>
+#include <metasim/baseexc.hpp>
+#include <metasim/basestat.hpp>
+#include <metasim/basetype.hpp>
 #include <functional>
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
 namespace MetaSim {
     double BaseStat::_TDistr[MAX_DISTR];
@@ -275,8 +275,8 @@ namespace MetaSim {
 
 #ifdef __BASESTAT_TEST__
 
-#include <event.hpp>
-#include <randomvar.hpp>
+#include <metasim/event.hpp>
+#include <metasim/randomvar.hpp>
 
 using namespace MetaSim;
 

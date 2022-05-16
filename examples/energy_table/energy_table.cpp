@@ -5,14 +5,14 @@
 */
 
 // Metasim stuff
-#include <simul.hpp>
+#include <metasim/simul.hpp>
 
 // RTSim stuff
-#include <system.hpp>
+#include <rtsim/system.hpp>
 
 // Tracing stuff
-#include <json_trace.hpp>
-#include <texttrace.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/texttrace.hpp>
 
 using MetaSim::Simulation;
 

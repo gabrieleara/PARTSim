@@ -5,12 +5,12 @@ email                : simoncelli.stefano@hotmail.it
 ***************************************************************************/
 
 #include "catch.hpp"
-#include <metasim.hpp>
-#include <factory.hpp>
-#include <AVRTask.hpp>
-#include <kernel.hpp>
-#include <fpsched.hpp>
-#include <edfsched.hpp>
+#include <rtsim/metasim.hpp>
+#include <metasim/factory.hpp>
+#include <rtsim/AVRTask.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/fpsched.hpp>
+#include <rtsim/edfsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

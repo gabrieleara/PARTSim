@@ -11,10 +11,10 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <kernel.hpp>
-#include <schedinstr.hpp>
-#include <simul.hpp>
-#include <task.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/schedinstr.hpp>
+#include <metasim/simul.hpp>
+#include <rtsim/task.hpp>
 
 namespace RTSim {
 

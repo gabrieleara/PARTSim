@@ -22,8 +22,8 @@
  * Improved the Tracer.
  *
  */
-#include <jtrace.hpp>
-#include <traceevent.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/traceevent.hpp>
 
 namespace RTSim {
 

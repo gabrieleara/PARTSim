@@ -13,21 +13,21 @@
 #include "rrsched.hpp"
 #include "rttask.hpp"
 #include <assert.h>
-#include <cpu.hpp>
-#include <edfsched.hpp>
-#include <energyMRTKernel.hpp>
-#include <fileImporter.hpp>
-#include <instr.hpp>
-#include <json_trace.hpp>
-#include <jtrace.hpp>
-#include <mrtkernel.hpp>
-#include <powermodel.hpp>
-#include <ps_trace.hpp>
-#include <rttask.hpp>
-#include <system_descriptor.hpp>
-#include <taskstat.hpp>
-#include <texttrace.hpp>
-#include <tracepower.hpp>
+#include <rtsim/cpu.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/fileImporter.hpp>
+#include <rtsim/instr.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/powermodel.hpp>
+#include <rtsim/ps_trace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/system_descriptor.hpp>
+#include <rtsim/taskstat.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/tracepower.hpp>
 #include <unistd.h>
 
 using namespace MetaSim;

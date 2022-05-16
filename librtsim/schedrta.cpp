@@ -1,8 +1,8 @@
 #include <algorithm>
 #include <cassert>
 #include <math.h>
-#include <schedrta.hpp>
-#include <sporadicserver.hpp>
+#include <rtsim/schedrta.hpp>
+#include <rtsim/sporadicserver.hpp>
 
 namespace RTSim {
 

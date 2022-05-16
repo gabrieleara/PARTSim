@@ -6,18 +6,18 @@
 #include <cstring>
 #include <unistd.h>
 
-#include <kernel.hpp>
-#include <rmsched.hpp>
-#include <rrsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <sporadicserver.hpp>
-#include <feedbacktest.hpp>
-#include <schedpoints.hpp>
-#include <taskstat.hpp>
-#include <feedbackarsim.hpp>
-#include <strtoken.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/rmsched.hpp>
+#include <rtsim/rrsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/sporadicserver.hpp>
+#include <rtsim/feedbacktest.hpp>
+#include <rtsim/schedpoints.hpp>
+#include <rtsim/taskstat.hpp>
+#include <rtsim/feedbackarsim.hpp>
+#include <metasim/strtoken.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

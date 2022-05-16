@@ -1,10 +1,10 @@
-#include <metasim.hpp>
-#include <rttask.hpp>
-#include <mrtkernel.hpp>
-#include <energyMRTKernel.hpp>
-#include <edfsched.hpp>
-#include <cbserver.hpp>
-#include <taskstat.hpp>
+#include <rtsim/metasim.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/cbserver.hpp>
+#include <rtsim/taskstat.hpp>
 
 #include "catch.hpp"
 

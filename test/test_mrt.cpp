@@ -1,9 +1,9 @@
 #include "catch.hpp"
-#include <metasim.hpp>
-#include <rttask.hpp>
-#include <mrtkernel.hpp>
-#include <edfsched.hpp>
-#include <cbserver.hpp>
+#include <rtsim/metasim.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/cbserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

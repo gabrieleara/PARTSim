@@ -2,13 +2,13 @@
   In this example, a simple system is simulated, consisting of two
   real-time tasks scheduled by EDF on a single processor.
 */
-#include <kernel.hpp>
-#include <edfsched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <instr.hpp>
-#include <taskstat.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/instr.hpp>
+#include <rtsim/taskstat.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

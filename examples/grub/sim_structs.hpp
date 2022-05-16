@@ -3,15 +3,15 @@
 #include <sstream>
 #include <fstream>
 
-#include <kernel.hpp>
-#include <edfsched.hpp>
-#include <fifosched.hpp>
-#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <grubserver.hpp>
-#include <load.hpp>
-#include <taskstat.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/edfsched.hpp>
+#include <rtsim/fifosched.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/grubserver.hpp>
+#include <rtsim/load.hpp>
+#include <rtsim/taskstat.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

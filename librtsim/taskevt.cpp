@@ -17,8 +17,8 @@
  * $Log$
  */
 #include <cstdlib>
-#include <task.hpp>
-#include <taskevt.hpp>
+#include <rtsim/task.hpp>
+#include <rtsim/taskevt.hpp>
 
 namespace RTSim {
     using std::cout;

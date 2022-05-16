@@ -1,9 +1,9 @@
-#include <kernel.hpp>
-#include <rmsched.hpp>
-//#include <jtrace.hpp>
-#include <texttrace.hpp>
-#include <rttask.hpp>
-#include <sporadicserver.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/rmsched.hpp>
+//#include <rtsim/jtrace.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/sporadicserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

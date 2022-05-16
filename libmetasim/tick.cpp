@@ -16,8 +16,8 @@
 #include <sstream>
 #include <string>
 
-#include <strtoken.hpp>
-#include <tick.hpp>
+#include <metasim/strtoken.hpp>
+#include <metasim/tick.hpp>
 
 namespace MetaSim {
 

@@ -12,7 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 #include <cmath>
-#include <memory.hpp>
+#include <metasim/memory.hpp>
 #include <string>
 #include <vector>
 
@@ -21,11 +21,11 @@
 #include <cmath>
 #include <limits>
 
-#include <factory.hpp>
-#include <randomvar.hpp>
-#include <regvar.hpp>
-#include <simul.hpp>
-#include <strtoken.hpp>
+#include <metasim/factory.hpp>
+#include <metasim/randomvar.hpp>
+#include <metasim/regvar.hpp>
+#include <metasim/simul.hpp>
+#include <metasim/strtoken.hpp>
 
 namespace MetaSim {
 
