@@ -7,13 +7,17 @@
 #include <iomanip>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
+
+#include <assert.h>
 
 namespace RTSim {
     using namespace MetaSim;
 
     class StaffordImporter {
     public:
-        static string generate(unsigned int period, double utilization) {
+        static std::string generate(unsigned int period, double utilization) {
             char s[200] = "";
             char filename[120] = "";
 
@@ -39,16 +43,16 @@ namespace RTSim {
             int res = system(s);
             std::cout << "file made" << std::endl;
             saveLastGenerated(filename);
-            return string(filename);
+            return std::string(filename);
         }
 
         /// Imports tasks from file. Returns CPU/set number -> (WCET, Period =
         /// Deadline) for all CPU, tasks.
-        static map<unsigned int, pair<unsigned int, unsigned int>>
-            importFromFile(const string &filename) {
+        static std::map<unsigned int, std::pair<unsigned int, unsigned int>>
+            importFromFile(const std::string &filename) {
             ifstream fd(filename.c_str());
             double trash, util, wcet, period;
-            map<unsigned int, pair<unsigned int, unsigned int>> tasks;
+            map<unsigned int, std::pair<unsigned int, unsigned int>> tasks;
             int i = 0;
 
             while (fd >> trash >> util >> wcet >> period) {
@@ -68,9 +72,9 @@ namespace RTSim {
             return tasks;
         }
 
-        static vector<PeriodicTask *>
-            getPeriodicTasks(const string &filename, const int experiment_no) {
-            map<unsigned int, pair<unsigned int, unsigned int>> tasks =
+        static std::vector<PeriodicTask *>
+            getPeriodicTasks(const std::string &filename, const int experiment_no) {
+            std::map<unsigned int, pair<unsigned int, unsigned int>> tasks =
                 importFromFile(filename);
             vector<PeriodicTask *> res;
             char instr[60] = "";
@@ -93,8 +97,8 @@ namespace RTSim {
             return res;
         }
 
-        static vector<CBServerCallingEMRTKernel *>
-            getEnvelopedPeriodcTasks(const string &filename,
+        static std::vector<CBServerCallingEMRTKernel *>
+            getEnvelopedPeriodcTasks(const std::string &filename,
                                      EnergyMRTKernel *kern,
                                      const int experiment_no = -1) {
             assert(filename != "");
@@ -111,10 +115,10 @@ namespace RTSim {
             return ets;
         }
 
-        static string getLastGenerated() {
-            string filename = "";
+        static std::string getLastGenerated() {
+            std::string filename = "";
 
-            ifstream in("taskset_generator/saved.conf");
+            std::ifstream in("taskset_generator/saved.conf");
             in >> filename;
             in.close();
 
@@ -124,9 +128,9 @@ namespace RTSim {
         }
 
     private:
-        static void saveLastGenerated(const string &filename) {
+        static void saveLastGenerated(const std::string &filename) {
             assert(filename != "");
-            ofstream out("taskset_generator/saved.conf");
+            std::ofstream out("taskset_generator/saved.conf");
             out << filename;
             out.close();
         }

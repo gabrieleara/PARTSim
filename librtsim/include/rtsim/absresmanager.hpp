@@ -36,7 +36,7 @@ namespace RTSim {
      */
     class AbsResManager {
     protected:
-        set<Resource *> _res;
+        std::set<Resource *> _res;
 
     public:
         AbsResManager(){};
@@ -72,8 +72,8 @@ namespace RTSim {
         virtual void addUser(AbsTask *t, char *name, int n = 1) = 0;
 
         // the int parameter will be read by multiple resources managers
-        virtual map<char *, int> *getLResourceNames(void *p = NULL);
-        virtual map<char *, int> *getGResourceNames() {
+        virtual std::map<char *, int> *getLResourceNames(void *p = NULL);
+        virtual std::map<char *, int> *getGResourceNames() {
             return NULL;
         }
 

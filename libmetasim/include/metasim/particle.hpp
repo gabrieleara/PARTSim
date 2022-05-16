@@ -20,6 +20,8 @@
 #ifndef __PARTICLE_HPP__
 #define __PARTICLE_HPP__
 
+#include <metasim/memory.hpp>
+
 namespace MetaSim {
 
     class Event;

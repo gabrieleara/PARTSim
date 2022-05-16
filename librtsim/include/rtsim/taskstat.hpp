@@ -21,6 +21,7 @@
 #include <metasim/basestat.hpp>
 
 #include <rtsim/task.hpp>
+#include <rtsim/timer.hpp>
 
 namespace RTSim {
 
@@ -227,7 +228,7 @@ namespace RTSim {
             double f = (double) ee.getLastTime();
             double a = (double) t->getLastArrival();
             double D = (double) t->getRelDline();
-            Measure::record(max(0.0, (f - a - D) / D));
+            Measure::record(std::max(0.0, (f - a - D) / D));
         }
 
         void attachToTask(Task *t) {

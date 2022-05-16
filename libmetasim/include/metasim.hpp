@@ -28,7 +28,7 @@
 #include <metasim/factory.hpp>
 #include <metasim/genericvar.hpp>
 #include <metasim/gevent.hpp>
-#include <rtsim/history.hpp>
+#include <metasim/history.hpp>
 #include <metasim/plist.hpp>
 #include <metasim/randomvar.hpp>
 #include <metasim/regvar.hpp>
