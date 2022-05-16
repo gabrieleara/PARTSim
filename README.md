@@ -6,7 +6,14 @@ The name derives from the fact that this is a fork of RTSim, originally designed
 
 ## Dependencies
 
-Apart from the build system dependencies like CMake, this library does not have any mandatory custom dependency.
+The libraries do not have any external source dependencies. The executable depends on [cmdarg][cmdarg] a simple library for handling command line arguments.
+
+In addition, [cmakeopts][cmakeopts] is another required dependency to build both the library and the executable, becxause many cmake options are offloaded to that set.
+
+To gather all dependencies you can run:
+```bash
+git submodule update --init --recursive
+```
 
 ### Optional Dependencies
 
@@ -93,3 +100,5 @@ Valid options (all optional):
 [cmake]: https://cmake.org/cmake/help/latest/
 [ninja]: https://ninja-build.org/
 [eigen3]: https://eigen.tuxfamily.org/index.php?title=Main_Page
+[cmakeopts]: https://github.com/gabrieleara/cmakeopts
+[cmdarg]: https://github.com/gabrieleara/cmdarg
