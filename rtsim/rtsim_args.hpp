@@ -13,28 +13,45 @@
 
 #include <cmdarg.hpp>
 #include <iostream>
+#include <sstream>
 
-static inline int list_append_unsafe(std::string *dest,
-                                     const cmdarg::Argument &opt,
-                                     const std::string &src) {
-    *dest += "'" + src + "' ";
+static inline bool string_endswith(const std::string &s,
+                                   const std::string &end) {
+    int std::endlen = end.length();
+    std::string s_end = s.substr(s.length() - std::endlen);
+    return s_end == end;
+}
+
+static inline int list_append(std::string *dest, const cmdarg::Argument &opt,
+                              const std::string &src) {
+    std::ostringstream oss;
+    oss << src << std::endl;
+    *dest += oss.str();
     return 0;
 }
 
-// TODO: escape ' characters
+static inline std::vector<std::string> list_split(const std::string &src) {
+    std::vector<std::string> out;
+    std::istringstream iss{src};
+
+    std::string str;
+    while (std::getline(iss, str)) {
+        if (str.length() > 0)
+            out.emplace_back(str);
+    }
+
+    return out;
+}
+
 static inline int list_append_txt_json(std::string *dest,
                                        const cmdarg::Argument &opt,
                                        const std::string &src) {
-    using cmdarg::actions::store_string;
-
-    std::string ext = src.substr(src.length() - 4);
-    if (ext == ".txt") {
-        return list_append_unsafe(dest, opt, src);
+    if (string_endswith(src, ".txt")) {
+        return list_append(dest, opt, src);
     }
 
-    ext = src.substr(src.length() - 5);
-    if (ext == ".json") {
-        return list_append_unsafe(dest, opt, src);
+    if (string_endswith(src, ".json")) {
+        return list_append(dest, opt, src);
     }
 
     std::cerr << "Error: argument --" << opt.long_opt << "/-" << opt.short_opt

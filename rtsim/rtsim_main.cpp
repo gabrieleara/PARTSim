@@ -6,8 +6,13 @@
  * ╚═══════════════════════════════════════════════════════╝
  */
 
+// LibMetasim
 #include <simul.hpp>
+
+// LibRTSim
+#include <json_trace.hpp>
 #include <system.hpp>
+#include <texttrace.hpp>
 
 int main(int argc, char *argv[]) {
     auto opts = parse_arguments(argc, argv);
@@ -16,10 +21,10 @@ int main(int argc, char *argv[]) {
 
     if (opts["enable-debug"] == "true") {
         simulation.dbg.enable("All");
-        simulation.dbg.setStream("debug.txt");
+        simulation.dbg.setStream("debug.txt"); // FIXME: customizable
     }
 
-    for (auto s : list_split_unsafe(opts["trace"])) {
+    for (auto s : list_split(opts["trace"])) {
         if (string_endswith(s, ".txt")) {
             RTSim::TextTrace ttrace(s);
             // TODO: traces should be added to all tasks
@@ -29,13 +34,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // TODO: tracing options
-
     RTSim::System sys{opts["system"]};
     // TODO: RTSim::TaskSet tset{opts.fname_tasks};
 
     try {
-        simulation.run(std::stoi(opts["length"])); // TODO: let user decide for how long
+        simulation.run(std::stoi(opts["duration"]));
     } catch (std::exception &e) {
         std::cerr << "EXCEPTION: " << e.what() << std::endl;
         std::cerr << "TERMINATING!" << std::endl;
@@ -50,16 +53,6 @@ int main(int argc, char *argv[]) {
  * ║                       Includes                        ║
  * ╚═══════════════════════════════════════════════════════╝
  */
-
-// // LibMetasim
-// #include <simul.hpp>
-
-// // LibRTSim
-// #include <system.hpp>
-
-// // Tracing
-// #include <json_trace.hpp>
-// #include <texttrace.hpp>
 
 // PeriodicTask_ptr create_fixed_task(const string &workload,
 //                                    const string &cpuname, int task_index) {
@@ -107,40 +100,3 @@ int main(int argc, char *argv[]) {
 
 //     return ts;
 // }
-
-int main(int argc, char *argv[]) {
-    // string taskset_descriptor = "tasks.yaml";
-    vector<unsigned int> default_opps = {0, 0};
-
-    try {
-        Simulation &simulation = Simulation::getInstance();
-
-        simulation.dbg.enable("All");
-        simulation.dbg.setStream("debug.txt");
-
-        TextTrace ttrace("trace.txt");
-        JSONTrace jtrace("trace.json");
-
-        // Create the system on which the taskset will run
-        // TODO: let user choose which system to use
-        System sys(system_descriptor);
-
-        const string workload = "bzip2";
-
-        // Create the corresponding taskset
-        // TODO: proper taskset generation
-
-        /*
-        TaskSet tset =
-            create_tasks_per_core(sys, ttrace, jtrace, workload, 1, 3);
-        */
-
-        simulation.run(5000); // TODO: let user decide for how long
-    } catch (std::exception &e) {
-        std::cerr << "EXCEPTION: " << e.what() << std::endl;
-        std::cerr << "TERMINATING!" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}

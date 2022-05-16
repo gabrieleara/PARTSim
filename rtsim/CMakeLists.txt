@@ -1,5 +1,5 @@
 add_executable(rtsim
-    main.cpp
+    rtsim_main.cpp
 )
 
 # find_package(cmdarg)
@@ -39,4 +39,4 @@ else()
     target_link_libraries(cmdarg INTERFACE ${LIBCMDARG})
 endif()
 
-target_link_libraries(rtsim PRIVATE cmdarg)
+target_link_libraries(rtsim PRIVATE cmdarg PRIVATE rtlib)
