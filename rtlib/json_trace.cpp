@@ -7,20 +7,20 @@ namespace RTSim {
 
     JSONTrace::JSONTrace(const string &name) {
         fd.open(name.c_str());
-        fd << "{" << endl;
-        fd << "    \"events\" : \[" << endl;
+        fd << "{" << std::endl;
+        fd << "    \"events\" : \[" << std::endl;
         first_event = true;
     }
 
     JSONTrace::~JSONTrace() {
-        fd << "] }" << endl;
+        fd << "] }" << std::endl;
         fd.close();
     }
 
     void JSONTrace::writeTaskEvent(const Task &tt,
                                    const std::string &evt_name) {
         if (!first_event)
-            fd << "," << endl;
+            fd << "," << std::endl;
         else
             first_event = false;
         fd << "{ ";

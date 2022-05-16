@@ -423,7 +423,7 @@ namespace RTSim {
          */
         inline double getWCET(double capacity) const override {
             double n = double(getWCET()) / capacity;
-            // cout << endl << "\t\t\ttask::getwcet " << double(getWCET())
+            // std::cout << std::endl << "\t\t\ttask::getwcet " << double(getWCET())
             // <<"/"<< capacity<<"="<<n<<endl;
             return n;
         }

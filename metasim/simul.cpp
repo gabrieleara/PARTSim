@@ -33,7 +33,7 @@ namespace MetaSim {
             _msg(msg) {}
         void doit() override {
             DBGPRINT(_msg);
-            cout << _msg << endl;
+            std::cout << _msg << std::endl;
         }
     };
 
@@ -117,8 +117,8 @@ namespace MetaSim {
                 globTime = sim_step();
             }
         } catch (NoMoreEventsInQueue &e) {
-            cerr << "No more events in queue: simulation time = " << globTime
-                 << endl;
+            std::cerr << "No more events in queue: simulation time = " << globTime
+                 << std::endl;
         }
 
         return globTime;
@@ -156,23 +156,23 @@ namespace MetaSim {
         bool terminateSim = true;
 
         if (nRuns < -1) {
-            cout << "Initialize stats" << endl;
+            std::cout << "Initialize stats" << std::endl;
             initializeRuns = true;
             terminateSim = false;
             numRuns = 1;
             nRuns = -nRuns;
         } else if (nRuns == -1) {
-            cout << "Will not initialize stats" << endl;
+            std::cout << "Will not initialize stats" << std::endl;
             initializeRuns = false;
             terminateSim = false;
             numRuns = 1;
         } else if (nRuns == 0) {
-            cout << "Last Sim in the batch" << endl;
+            std::cout << "Last Sim in the batch" << std::endl;
             initializeRuns = false;
             terminateSim = true;
             numRuns = 1;
         } else if (nRuns == 1) {
-            cout << "One single run" << endl;
+            std::cout << "One single run" << std::endl;
             initializeRuns = true;
             terminateSim = true;
             numRuns = 1;
@@ -180,10 +180,10 @@ namespace MetaSim {
             numRuns = nRuns;
 
         if (numRuns == 2) {
-            cout << "Warning: Simulation cannot be "
+            std::cout << "Warning: Simulation cannot be "
                     "initialized with 2 runs"
-                 << endl;
-            cout << "         Executing 3 runs!" << endl;
+                 << std::endl;
+            std::cout << "         Executing 3 runs!" << std::endl;
             numRuns = 3;
         }
 
@@ -195,7 +195,7 @@ namespace MetaSim {
         // while numRuns is the maximum number of runs.
         actRuns = 0;
         while (actRuns < numRuns) {
-            cout << "\n Run #" << actRuns << endl;
+            std::cout << "\n Run #" << actRuns << std::endl;
 
             initSingleRun();
 
@@ -205,8 +205,8 @@ namespace MetaSim {
                     globTime = sim_step();
                 }
             } catch (NoMoreEventsInQueue &e) {
-                cerr << "No more events in queue: simulation time =" << globTime
-                     << endl;
+                std::cerr << "No more events in queue: simulation time =" << globTime
+                     << std::endl;
             }
 
             endSingleRun();

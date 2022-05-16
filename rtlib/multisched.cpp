@@ -68,8 +68,8 @@ namespace RTSim {
             when = _endEvts[cpu]->getTime();
         dropEvt(cpu, task);
         postBeginEvt(cpu, task, when);
-        // cout << "task = " << SIMUL.getTime() << ", ctx switch set at"
-        //      << double(when) << " for " << taskname(task) << endl;
+        // std::cout << "task = " << SIMUL.getTime() << ", ctx switch set at"
+        //      << double(when) << " for " << taskname(task) << std::endl;
     }
 
     void MultiCoresScheds::makeReady(CPU *cpu) {
@@ -439,11 +439,11 @@ namespace RTSim {
             task = dynamic_cast<EnergyMRTKernel *>(_kernel)->getEnveloper(task);
 
         for (auto &elem : _active_utilizations) {
-            // cout << "forgetU_active: " << elem.first->toString() << endl;
+            // std::cout << "forgetU_active: " << elem.first->toString() << std::endl;
             if (elem.first == task) {
-                // cout << "\treleasing_idle for " << elem.first->toString()
+                // std::cout << "\treleasing_idle for " << elem.first->toString()
                 //      << " on " << elem.second.cpu->getName()
-                //      << ". Its U_act was " << elem.second.uact << endl;
+                //      << ". Its U_act was " << elem.second.uact << std::endl;
                 cpu = elem.second.cpu;
                 _active_utilizations.erase(elem.first);
                 break;
@@ -471,7 +471,7 @@ namespace RTSim {
     }
 
     void MultiCoresScheds::saveU_active(CPU *cpu, CBServer *cbs) {
-        // cout << "MCS::" << __func__ << "() " << endl;
+        // std::cout << "MCS::" << __func__ << "() " << std::endl;
         assert(cbs != NULL);
         assert(cpu != NULL);
 
@@ -499,9 +499,9 @@ namespace RTSim {
         // a better map is by cpu, but then cpus can collide
         Tick vt = Tick(cbs->getVirtualTime());
         if (double(vt) < double(SIMUL.getTime())) {
-            // cout << "\tvt = " << vt
+            // std::cout << "\tvt = " << vt
             //      << " <= simul time = " << SIMUL.getTime() << " => skip"
-            //      << endl;
+            //      << std::endl;
             return;
         }
 
@@ -511,11 +511,11 @@ namespace RTSim {
         u.uact = u_active;
 
         _active_utilizations[cbs] = u;
-        // cout << "\tadded active utilization for " << cbs->getName()
+        // std::cout << "\tadded active utilization for " << cbs->getName()
         //      << " cpu " << cpu->toString() << " U_act " << u_active
         //      << ", cancel at t=" <<
         //      _active_utilizations[cbs].virtual_time
-        //      << endl;
+        //      << std::endl;
     }
 
     std::string MultiCoresScheds::toString() const {

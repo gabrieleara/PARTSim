@@ -69,8 +69,8 @@ void prepare_feedback(System &sys)
 int main(int argc, char *argv[])
 {
     if (argc < 6) {
-        cout << "Usage: " << argv[0] << " <fix|fback> " 
-             << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << endl;
+        std::cout << "Usage: " << argv[0] << " <fix|fback> " 
+             << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
         exit(0);
     }
     try {
@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
             prepare_feedback(sys); 
         }
         else {
-            cout << "Usage: " << argv[0] << " <fix|fback> " 
-                 << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << endl;
+            std::cout << "Usage: " << argv[0] << " <fix|fback> " 
+                 << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
             exit(0);
         }
 
@@ -137,14 +137,14 @@ int main(int argc, char *argv[])
         
         SIMUL.run(3000000);
 
-        cout << "Percentage of deadline misses for task mm1: " 
+        std::cout << "Percentage of deadline misses for task mm1: " 
              << sys.miss1.getLastValue() <<  " - " 
-             << sys.miss1.getValue() << endl;
-        cout << "Percentage of deadline misses for task mm2: " << 
-            sys.miss2.getLastValue() << endl;
+             << sys.miss1.getValue() << std::endl;
+        std::cout << "Percentage of deadline misses for task mm2: " << 
+            sys.miss2.getLastValue() << std::endl;
     } catch (BaseExc &e) {
-      cout << e.what() << endl;  //47447166 Tecnave sa
+      std::cout << e.what() << std::endl;  //47447166 Tecnave sa
     } catch (parse_util::ParseExc &e2) {
-        cout << e2.what() << endl;
+        std::cout << e2.what() << std::endl;
     }        
 }

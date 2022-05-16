@@ -29,21 +29,21 @@ struct Stats {
 	ofstream m;
 	m.open(fname.c_str(), ios::app);
 	m << par << ", " << miss_count.getMean() << ", " 
-	  << miss_count.getConfInterval() << endl; 
+	  << miss_count.getConfInterval() << std::endl; 
 	m.close();
 
 	fname = filename + "_miss_perc.txt";
 	ofstream p;
 	p.open(fname.c_str(), ios::app);
 	p << par << ", " << miss_perc.getMean() << ", " 
-	  << miss_perc.getConfInterval() << endl; 
+	  << miss_perc.getConfInterval() << std::endl; 
 	p.close();
 
 	fname = filename + "_tard.txt";
 	ofstream t;
 	t.open(fname.c_str(), ios::app);
 	t << par << ", " << tard.getMean() << ", " 
-	  << tard.getConfInterval() << endl; 
+	  << tard.getConfInterval() << std::endl; 
 	t.close();
     }
     void newStatRun() {
@@ -87,7 +87,7 @@ public:
 	s->addTask(task);
 	servers.push_back(s);
 	bool flag = super.addGrub(s);
-	cout << "Grub added: " << flag << endl;
+	cout << "Grub added: " << flag << std::endl;
 	kern.addTask(*s, "");
 	ttrace.attachToTask(task);
     }    
@@ -98,7 +98,7 @@ public:
 			   "", 
 			   "FIFOSched");
 	cout << "Created a server with period : " 
-	     << Tick(double(task.getMinIAT()) * hl_ratio) << endl;
+	     << Tick(double(task.getMinIAT()) * hl_ratio) << std::endl;
 	add_to_sim(s, task);
     }
 
@@ -107,7 +107,7 @@ public:
 	if (ratio > 1) ratio = 1;
 	Grub *s = new Grub(Tick(double(task.getWCET())*ratio), task.getMinIAT(), "", "FIFOSched");    
 	cout << "Created a LOW server with budget : " 
-	     << Tick(double(task.getWCET())*ratio) << endl;
+	     << Tick(double(task.getWCET())*ratio) << std::endl;
 	add_to_sim(s, task);
     }
     
@@ -116,7 +116,7 @@ public:
 	    Tick cap = Tick(double(period) * (upper_limit - HighUtil));
 	    LowServer = new Grub(cap, period, "", "EDFSched");
 	    bool flag = super.addGrub(LowServer);
-	    cout << "Single Grub added: " << flag << endl;
+	    std::cout << "Single Grub added: " << flag << std::endl;
 	    kern.addTask(*LowServer, "");
 	    servers.push_back(LowServer);
 	}

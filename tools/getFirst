@@ -6,7 +6,7 @@ energyMRTKernel.cpp:72:        return _queues->isInAnyQueue(t) != NULL;
 energyMRTKernel.cpp:76:      return !_queues->isEmpty(p);
 energyMRTKernel.cpp:107:        double u_active = _queues->getUtilization_active(c);
 energyMRTKernel.cpp:146:            double u_active_c1 = _queues->getUtilization_active(c1);
-energyMRTKernel.cpp:197:        cout << _queues->toString();
+energyMRTKernel.cpp:197:        std::cout << _queues->toString();
 energyMRTKernel.cpp:207:          AbsRTTask *t = _queues->getRunningTask(c);
 energyMRTKernel.cpp:243:          res = dynamic_cast<RRScheduler*>(_queues->getScheduler(p))->isRoundExpired(t);
 energyMRTKernel.cpp:257:        AbsRTTask *dt   = _queues->getRunningTask(p);
@@ -21,7 +21,7 @@ energyMRTKernel.cpp:421:        _queues->onRound(finishingTask, getProcessor(fin
 energyMRTKernel.cpp:428:        double u_act = _queues->getUtilization_active(c);
 energyMRTKernel.cpp:521:        _queues->insertTask(t, pp, opp);
 energyMRTKernel.cpp:538:              AbsRTTask *t = _queues->getFirst(c);
-energyMRTKernel.cpp:614:            cout << _queues->toString() << endl;
+energyMRTKernel.cpp:614:            std::cout << _queues->toString() << std::endl;
 energyMRTKernel.cpp:621:            _queues->schedule(c);
 energyMRTKernel.hpp:533:          _queues->onExecutingReleasing(t, cpu, cbs);
 energyMRTKernel.hpp:556:          _queues->onReleasingIdle(cbs);

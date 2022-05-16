@@ -63,7 +63,7 @@ namespace RTSim {
         double capacity = c->getSpeed();
 
         if (toBeAdmitted->getWCET(capacity) == 0.0)
-            cout << "" << toBeAdmitted->getWCET(capacity);
+            std::cout << "" << toBeAdmitted->getWCET(capacity);
         printf("\t\t\tEDFSched::isAdmissible WCET %.17g cap %f speed %f\n",
                toBeAdmitted->getWCET(capacity), capacity,
                double(c->getSpeed()));

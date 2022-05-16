@@ -18,7 +18,7 @@ namespace RTSim {
         vtime(),
         idle_policy(ORIGINAL) {
         DBGENTER(_SERVER_DBG_LEV);
-        DBGPRINT(s);
+        // DBGPRINT(s);
     }
 
     void CBServer::newRun() {

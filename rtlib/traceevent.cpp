@@ -85,7 +85,7 @@ namespace RTSim {
             result = new TraceDlineMissEvent();
             break;
         default:
-            cerr << "Class not found!!\n";
+            std::cerr << "Class not found!!\n";
         }
         return result;
     }

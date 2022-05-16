@@ -16,7 +16,7 @@ namespace RTSim {
     using std::vector;
 
     AVRTask::~AVRTask() {
-        // std::cout << "Inside delete" << endl;
+        // std::cout << "Inside delete" << std::endl;
 
         /// PEZZO DI CODICE INCRIMINATO
 
@@ -35,7 +35,7 @@ namespace RTSim {
         myInstr.clear();
         BufferedDeadlines.clear();
         BufferedModes.clear();
-        // std::cout << "delete completed" << endl;
+        // std::cout << "delete completed" << std::endl;
     }
 
     void AVRTask::buildInstr(const vector<string> &param) { // throw(ParseExc) {
@@ -80,7 +80,7 @@ namespace RTSim {
             myInstr.push_back(myCurrInstr);
         }
 
-        // std::cout << "Creation terminated" << endl;
+        // std::cout << "Creation terminated" << std::endl;
     }
 
     AVRTask::AVRTask(double angPeriod, double angPhase, double angDl,
@@ -159,12 +159,12 @@ namespace RTSim {
         mode = *(BufferedModes.begin());
         BufferedModes.erase(BufferedModes.begin());
 
-        // cout << "AVRTask::handleArrival at " << arr << " BEFORE" << endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " BEFORE" << std::endl;
         instrQueue.clear();
-        // cout << "AVRTask::handleArrival at " << arr << " AFTER" << endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " AFTER" << std::endl;
 
-        // if (instrQueue.begin() != instrQueue.end()) cout << "SOMETHING REALLY
-        // WRONG" << endl;
+        // if (instrQueue.begin() != instrQueue.end()) std::cout << "SOMETHING REALLY
+        // WRONG" << std::endl;
 
         vector<RTSim::Instr *> myCurrInstr = myInstr.at(mode);
 
@@ -176,13 +176,13 @@ namespace RTSim {
             j++;
         }
 
-        // cout << "AVRTask::handleArrival at " << arr << " before
-        // TASK::handleArrival" << endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " before
+        // TASK::handleArrival" << std::endl;
 
         Task::handleArrival(arr);
 
-        // cout << "AVRTask::handleArrival at " << arr << " after
-        // TASK::handleArrival" << endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " after
+        // TASK::handleArrival" << std::endl;
     }
 
     void AVRTask::activate(int mode, Tick rdl) { // throw(ModeOutOfIndex) {

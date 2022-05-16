@@ -64,9 +64,9 @@ namespace RTSim {
     }
 
     void RRScheduler::notify(AbsRTTask *task) {
-        cout << __func__ << "() " << getName() << ":" << endl;
+        std::cout << __func__ << "() " << getName() << ":" << std::endl;
         if (!isEnabled()) {
-            cout << "\tdisabled, skip" << endl;
+            std::cout << "\tdisabled, skip" << std::endl;
             return;
         }
         DBGENTER(_RR_SCHED_DBG_LEV);
@@ -80,18 +80,18 @@ namespace RTSim {
                 _rrEvt.post(SIMUL.getTime() + model->getRRSlice());
                 DBGPRINT_2("rrEvt post at time ",
                            SIMUL.getTime() + model->getRRSlice());
-                cout << "\trrEvt post at time "
+                std::cout << "\trrEvt post at time "
                      << SIMUL.getTime() + model->getRRSlice() << " task "
-                     << taskname(task) << endl;
+                     << taskname(task) << std::endl;
             }
         }
     }
 
     void RRScheduler::round(Event *) {
-        cout << __func__ << "() t = " << SIMUL.getTime() << " " << getName()
-             << ":" << endl;
+        std::cout << __func__ << "() t = " << SIMUL.getTime() << " " << getName()
+             << ":" << std::endl;
         if (!isEnabled()) {
-            cout << "\tdisabled, skip" << endl;
+            std::cout << "\tdisabled, skip" << std::endl;
             return;
         }
 
@@ -104,13 +104,13 @@ namespace RTSim {
             DBGPRINT("Round expired");
             _queue.erase(model);
             // todo temp
-            cout << "\tRound expired for task " << model->toString()
-                 << " => removed" << endl;
+            std::cout << "\tRound expired for task " << model->toString()
+                 << " => removed" << std::endl;
             if (model->isActive()) {
                 model->setInsertTime(SIMUL.getTime());
                 _queue.insert(model);
                 // todo temp
-                cout << "\tand then reinserted into queue" << endl;
+                std::cout << "\tand then reinserted into queue" << std::endl;
             }
         }
 
@@ -127,17 +127,17 @@ namespace RTSim {
                     _rrEvt.drop();
                     _rrEvt.post(SIMUL.getTime() + slice);
                     // todo rem
-                    cout << "\tround evt set at " << SIMUL.getTime() + slice
-                         << " for task " << first->toString() << endl;
+                    std::cout << "\tround evt set at " << SIMUL.getTime() + slice
+                         << " for task " << first->toString() << std::endl;
                 }
             }
         }
 
-        cout << "\tRRScheduler queue: " << toString() << endl;
+        std::cout << "\tRRScheduler queue: " << toString() << std::endl;
 
         if (_kernel) {
             DBGPRINT("informing the kernel");
-            cout << "\tInforming the kernel" << endl;
+            std::cout << "\tInforming the kernel" << std::endl;
             if (dynamic_cast<EnergyMRTKernel *>(_kernel))
                 dynamic_cast<EnergyMRTKernel *>(_kernel)->onRound(
                     model->getTask());

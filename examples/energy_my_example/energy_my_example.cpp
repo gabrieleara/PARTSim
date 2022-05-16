@@ -38,8 +38,8 @@ int main(int argc, char *argv[])
         workload = argv[3];
     }
 
-    cout << "OPPs: [" << OPP_little << ", " << OPP_big << "]" << endl;
-    cout << "Workload: [" << workload << "]" << endl;
+    std::cout << "OPPs: [" << OPP_little << ", " << OPP_big << "]" << std::endl;
+    std::cout << "Workload: [" << workload << "]" << std::endl;
 
     try {
         SIMUL.dbg.enable("All");
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
         {
             /* Create 4 LITTLE CPUs */
             string cpu_name = "LITTLE_" + to_string(i);
-            cout << "Creating CPU: " << cpu_name << endl;
+            std::cout << "Creating CPU: " << cpu_name << std::endl;
 
             CPUModel *pm = CPUModel::create(little_desc, little_desc,
                                             OPP{F_little[F_little.size() - 1],
@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
             /* Create 4 big CPUs */
 
             string cpu_name = "BIG_" + to_string(i);
-            cout << "Creating CPU: " << cpu_name << endl;
+            std::cout << "Creating CPU: " << cpu_name << std::endl;
 
             CPUModel *pm = CPUModel::create(big_desc, big_desc,
                                             OPP{F_big[F_big.size() - 1],
@@ -246,7 +246,7 @@ int main(int argc, char *argv[])
         string task_name;
 
         task_name = "Task_LITTLE_0";
-        cout << "Creating task: " << task_name << endl;
+        std::cout << "Creating task: " << task_name << std::endl;
         t = new PeriodicTask(500, 100, 0, task_name);
         t->insertCode("fixed(100," + workload + ");");
         kernels[0]->addTask(*t, "");
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
         //jtrace.attachToTask(*t);
 
         task_name = "Task_LITTLE_1";
-        cout << "Creating task: " << task_name << endl;
+        std::cout << "Creating task: " << task_name << std::endl;
         t = new PeriodicTask(500, 100, 0, task_name);
         t->insertCode("fixed(100," + workload + ");");
         kernels[0]->addTask(*t, "");
@@ -263,7 +263,7 @@ int main(int argc, char *argv[])
         /* big *
 
         task_name = "Task_big_0";
-        cout << "Creating task: " << task_name << endl;
+        std::cout << "Creating task: " << task_name << std::endl;
         t = new PeriodicTask(500, 100, 0, task_name);
         t->insertCode("fixed(100," + workload + ");");
         kernels[4]->addTask(*t, "");
@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
          * big and LITTLE cpus.
          */
 
-        cout << "Dumping tasks' execution times" << endl;
+        std::cout << "Dumping tasks' execution times" << std::endl;
 
         map<string, double> min_C;
         min_C["bzip2"] = 4.69799888;
@@ -300,18 +300,18 @@ int main(int argc, char *argv[])
                     cpus[cpu]->setOPP(opp);
                     computing_file << cpus[cpu]->getFrequency() * 1000 << " "
                                    << cpus[cpu]->getSpeed() * min_C[wl]
-                                      << endl;
+                                      << std::endl;
                 }
                 cpus[cpu]->setWorkload("idle");
                 cpus[cpu]->setOPP(old_opp);
             }
         }
 
-        cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << endl;
-        cout << "Running simulation!" << endl;
+        std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~" << std::endl;
+        std::cout << "Running simulation!" << std::endl;
 
         SIMUL.run(5000);
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     }
 }

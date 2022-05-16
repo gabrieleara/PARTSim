@@ -64,9 +64,9 @@ int main()
         //SIMUL.dbg.enable(_FIFO_SCHED_DBG_LEV);
         SIMUL.run(50);
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
-        cout << e2.what() << endl;
+        std::cout << e2.what() << std::endl;
 
     }        
 }

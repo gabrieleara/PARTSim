@@ -59,15 +59,15 @@ namespace RTSim {
 
     void TaskModel::raiseThreshold() {
         _savedPriority = getPriority();
-        // cout << "New priority: " << getThreshold() << " / old priority: " <<
-        // _savedPriority << endl;
+        // std::cout << "New priority: " << getThreshold() << " / old priority: " <<
+        // _savedPriority << std::endl;
         changePriority(getThreshold());
     }
 
     void TaskModel::restorePriority() {
         DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
-        // cout << "Restoring priority from: " << getPriority() << " to: " <<
-        // _savedPriority << endl;
+        // std::cout << "Restoring priority from: " << getPriority() << " to: " <<
+        // _savedPriority << std::endl;
         changePriority(_savedPriority);
     }
 
@@ -110,9 +110,9 @@ namespace RTSim {
         TaskModel *model = find(task);
 
         if (model == NULL) {
-            cerr << "Scheduler::insert Task model not found" << endl;
-            cerr << "For task " << taskname(task) << endl;
-            cerr << "Scheduler " << getName() << endl;
+            std::cerr << "Scheduler::insert Task model not found" << std::endl;
+            std::cerr << "For task " << taskname(task) << std::endl;
+            std::cerr << "Scheduler " << getName() << std::endl;
             throw RTSchedExc("AbsRTTaskNotFound");
         }
 
@@ -180,7 +180,7 @@ namespace RTSim {
         if (model == NULL)
             throw RTSchedExc("AbsRTTask not found");
 
-        // cout << "disableThreshold called" << endl;
+        // std::cout << "disableThreshold called" << std::endl;
 
         if (model->isActive()) {
             extract(task);

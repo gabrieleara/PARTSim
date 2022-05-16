@@ -59,6 +59,6 @@ int main()
         // run the simulation for 500 units of time
         SIMUL.run(500);
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     }
 }

@@ -95,7 +95,7 @@ namespace MetaSim {
          */
         void setTransitory(Tick t1, Tick t2);
 
-        // These helper function are only called by operator << and endl
+        // These helper function are only called by operator << and std::endl
         bool filter() const;
         void resetIndent();
         void indent();
@@ -112,7 +112,7 @@ namespace MetaSim {
         return s;
     }
 
-    /** The following specialization is useful for intercepting the endl
+    /** The following specialization is useful for intercepting the std::endl
         modifier and properly handle the indenting. */
     inline DebugStream &operator<<(DebugStream &s,
                                    DebugStream &(*f)(DebugStream &) ) {
@@ -127,8 +127,8 @@ namespace std {
     /**
        \ingroup metasim_util
 
-       Specialization of endl: must be in namespace std
-       to override the standard endl() function
+       Specialization of std::endl: must be in namespace std
+       to override the standard std::endl() function
     */
     inline MetaSim::DebugStream &endl(MetaSim::DebugStream &s) {
         if (s.filter()) {

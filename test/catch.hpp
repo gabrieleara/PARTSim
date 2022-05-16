@@ -5130,8 +5130,8 @@ namespace Catch {
                 Timer timer;
                 timer.start();
                 if( m_reporter->getPreferences().shouldRedirectStdOut ) {
-                    StreamRedirect coutRedir( std::cout, redirectedCout );
-                    StreamRedirect cerrRedir( std::cerr, redirectedCerr );
+                    StreamRedirect coutRedir(std::cout, redirectedCout);
+                    StreamRedirect cerrRedir(std::cerr, redirectedCerr);
                     m_activeTestCase->invoke();
                 }
                 else {

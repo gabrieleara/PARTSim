@@ -1765,7 +1765,7 @@ int main(int argc, char *argv[]) {
                     ets = StaffordImporter::getEnvelopedPeriodcTasks(filename,
                                                                      kern, i);
                 } catch (std::exception &e) {
-                    cerr << "Error: " << e.what() << std::endl;
+                    std::cerr << "Error: " << e.what() << std::endl;
                     return 0;
                 }
                 assert(ets.size() > 0);
@@ -2212,7 +2212,7 @@ void getCores(vector<CPU_BL *> &cpus_little, vector<CPU_BL *> &cpus_big,
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create LITTLE CPUs */
         string cpu_name = "LITTLE_" + to_string(i);
-        cout << "Creating CPU: " << cpu_name << endl;
+        std::cout << "Creating CPU: " << cpu_name << std::endl;
 
         CPUModel *pm = CPUModel::create(little_desc, little_desc,
                                         OPP{F_little[F_little.size() - 1],
@@ -2230,7 +2230,7 @@ void getCores(vector<CPU_BL *> &cpus_little, vector<CPU_BL *> &cpus_big,
     for (unsigned int i = 0; i < 4; ++i) {
         /* Create big CPUs */
         string cpu_name = "BIG_" + to_string(i);
-        cout << "Creating CPU: " << cpu_name << endl;
+        std::cout << "Creating CPU: " << cpu_name << std::endl;
 
         CPUModel *pm = CPUModel::create(big_desc, big_desc,
                                         OPP{F_big[F_big.size() - 1],

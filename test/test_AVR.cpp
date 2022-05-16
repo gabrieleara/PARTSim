@@ -46,26 +46,26 @@ TEST_CASE("AVRTask activate using FP")
 
 	t1.activate(0, 15);
 
-    cout << "1) All tasks have been initialised" << endl;
+    std::cout << "1) All tasks have been initialised" << std::endl;
     
 	SIMUL.run_to(9);
 
-    cout << "1) Until 9" << endl;
+    std::cout << "1) Until 9" << std::endl;
     
 	t2.activate(0, 19);
 	t3.activate(0, 25);
 
-    cout << "1) after activate" << endl;
+    std::cout << "1) after activate" << std::endl;
     
 	SIMUL.run_to(10);
 
-    cout << "1) until 10" << endl; 
+    std::cout << "1) until 10" << std::endl; 
     
 	REQUIRE(t1.getExecTime() == 10);
     REQUIRE(t2.getExecTime() == 0);
     REQUIRE(t3.getExecTime() == 0);     	
 
-    cout << "1) After require" << endl;
+    std::cout << "1) After require" << std::endl;
     
     SIMUL.run_to(22);
 
@@ -85,7 +85,7 @@ TEST_CASE("AVRTask activate using FP")
 
     SIMUL.endSingleRun();
 
-    cout << "1) after endSingleRun()" << endl;
+    std::cout << "1) after endSingleRun()" << std::endl;
 }
 
 TEST_CASE("AVRTask activate using EDF")
@@ -93,7 +93,7 @@ TEST_CASE("AVRTask activate using EDF")
 	EDFScheduler sched;
 	RTKernel kern(&sched);
 
-    cout << "2) Before task creation " << endl;
+    std::cout << "2) Before task creation " << std::endl;
     
 	AVRTask t1(M_PI, 0, M_PI / 4,
                vector < string > {string("fixed(10);"), string("fixed(6);"), string("fixed(3);") },
@@ -114,7 +114,7 @@ TEST_CASE("AVRTask activate using EDF")
                "AVRtask3");
 
 
-    cout << "2) task creation passed" << endl;
+    std::cout << "2) task creation passed" << std::endl;
     
 	kern.addTask(t1);
 	kern.addTask(t2);
@@ -122,17 +122,17 @@ TEST_CASE("AVRTask activate using EDF")
 
 	SIMUL.initSingleRun();
 
-    cout << "2) initSingleRun() passed" << endl;
+    std::cout << "2) initSingleRun() passed" << std::endl;
 
 	t1.activate(0, 15);
 	t2.activate(1, 19);
 	t3.activate(2, 5);
 
-    cout << "2) task activated" << endl;
+    std::cout << "2) task activated" << std::endl;
 
 	SIMUL.run_to(4);
 
-    cout << "2) until 4" << endl;
+    std::cout << "2) until 4" << std::endl;
     
 	REQUIRE(t1.getExecTime() == 0);
 	REQUIRE(t2.getExecTime() == 0);
@@ -154,7 +154,7 @@ TEST_CASE("AVRTask activate using EDF")
 
 	SIMUL.endSingleRun();
 
-    cout << "2) After endSingleRun()" << endl;
+    std::cout << "2) After endSingleRun()" << std::endl;
 }
 
 TEST_CASE("AVRTask getWCET")
@@ -174,7 +174,7 @@ TEST_CASE("AVRTask getWCET")
                vector<double>{500, 1500, 3500},
                "AVRtask2");
 
-    cout << "3) After task creation" << endl;
+    std::cout << "3) After task creation" << std::endl;
     
 	REQUIRE(t1.getWCET(0) == 10);
 	REQUIRE(t1.getWCET(1) == 6);
@@ -183,7 +183,7 @@ TEST_CASE("AVRTask getWCET")
 	REQUIRE(t2.getWCET(1) == 7);
 	REQUIRE(t2.getWCET(2) == 2);
 
-    cout << "3) test end" << endl;
+    std::cout << "3) test end" << std::endl;
     
     //SIMUL.endSingleRun();
 }
@@ -211,7 +211,7 @@ TEST_CASE("AVRTask changeStatus()")
                vector<double>{500, 1500, 3500},
                "AVRtask3");
 
-    cout << "4) after task creation" << endl;
+    std::cout << "4) after task creation" << std::endl;
     
     kern.addTask(t1, "15");
     kern.addTask(t2, "10");
@@ -219,7 +219,7 @@ TEST_CASE("AVRTask changeStatus()")
 
     SIMUL.initSingleRun();
 
-    cout << "4) initSingleRun passed" << endl;
+    std::cout << "4) initSingleRun passed" << std::endl;
     
 	t1.activate(0, 25);
 	t2.activate(1, 8);
@@ -242,7 +242,7 @@ TEST_CASE("AVRTask changeStatus()")
                     vector<double>{2000, 4000, 6000},
                     vector<double>{500, 1500, 3500});
 
-    cout << "4) t2 change status passed" << endl;
+    std::cout << "4) t2 change status passed" << std::endl;
     
 	t2.activate(0,9);
 	
@@ -257,31 +257,31 @@ TEST_CASE("AVRTask changeStatus()")
                     vector<double>{2000, 4000, 6000},
                     vector<double>{500, 1500, 3500});
 
-    cout << "4) t1 change status passed" << endl;
+    std::cout << "4) t1 change status passed" << std::endl;
     
 	t1.activate(0, 9);
 
-    cout << "4) t1 activated" << endl;
+    std::cout << "4) t1 activated" << std::endl;
 
     SIMUL.run_to(39);
 
-    cout << "4) t1 run to 39" << endl;
+    std::cout << "4) t1 run to 39" << std::endl;
     
     REQUIRE(t1.getExecTime() == 12);
 	REQUIRE(t1.getDeadline() == 36);
 	REQUIRE(t3.getExecTime() == 0);
 
-    cout << "4) t1 require passed" << endl;
+    std::cout << "4) t1 require passed" << std::endl;
 
 	SIMUL.run_to(43);
 
-    cout << "4) run to 43" << endl;
+    std::cout << "4) run to 43" << std::endl;
     
 	REQUIRE(t3.getExecTime() == 4);
     
 	SIMUL.endSingleRun();
 
-    cout << "4) test end" << endl;
+    std::cout << "4) test end" << std::endl;
 }
 
 template<typename Derived, typename Base, typename Del>
@@ -306,7 +306,7 @@ TEST_CASE("AVRTask createInstance from factory")
 	auto curr = FACT(Task).create("AVRTask",params);
     auto t1 = static_unique_ptr_cast<AVRTask>(std::move(curr));
 
-    cout << "task created" << endl;
+    std::cout << "task created" << std::endl;
     
 	REQUIRE(t1->getAngularPhase() == 0);
 	REQUIRE(t1->getWCET(0) == 20);

@@ -24,40 +24,40 @@ int main()
 
         TextTrace ttrace("trace.txt");
 
-        cout << "Creating Scheduler and kernel" << endl;
+        std::cout << "Creating Scheduler and kernel" << std::endl;
         EDFScheduler edfsched;
         RTKernel kern(&edfsched);
 
-        cout << "Creating the first task" << endl;
+        std::cout << "Creating the first task" << std::endl;
         PeriodicTask t1(4, 4, 0, "Task0");
         t1.insertCode("fixed(2);");
 
-        cout << "Creating the second task" << endl;
+        std::cout << "Creating the second task" << std::endl;
         PeriodicTask t2(5, 5, 0, "Task1");
 
-        cout << "Inserting code" << endl;
+        std::cout << "Inserting code" << std::endl;
         t2.insertCode("fixed(2);");
 
-        cout << "Setting up traces" << endl;
+        std::cout << "Setting up traces" << std::endl;
 
         // new way
         ttrace.attachToTask(t1);
         ttrace.attachToTask(t2);
 
-        cout << "Adding tasks to schedulers" << endl;
+        std::cout << "Adding tasks to schedulers" << std::endl;
 
         kern.addTask(t1, "");
         kern.addTask(t2, "");
 
-        cout << "Ready to run!" << endl;
+        std::cout << "Ready to run!" << std::endl;
         // run the simulation for 500 units of time
         SIMUL.initSingleRun();
         SIMUL.run_to(14);
-        cout << "sim paused at: " << SIMUL.getTime() << endl;
+        std::cout << "sim paused at: " << SIMUL.getTime() << std::endl;
         t1.killInstance();
         SIMUL.run_to(30);
         SIMUL.endSingleRun();
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     }
 }

@@ -17,7 +17,7 @@ set(SOURCE_FILES
     cbserver.cpp
     cpu.cpp
     edfsched.cpp
-    # energyMRTKernel.cpp
+    energyMRTKernel.cpp
     exeinstr.cpp
     fcfsresmanager.cpp
     feedback.cpp

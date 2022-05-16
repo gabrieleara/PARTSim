@@ -310,7 +310,7 @@ namespace RTSim {
             throw TaskNotActive("OnEnd() on a non-active task");
         }
         if (!isExecuting()) {
-            cout << toString() << endl;
+            std::cout << toString() << std::endl;
             throw TaskNotExecuting("OnEnd() on a non-executing task");
         }
 
@@ -534,8 +534,8 @@ namespace RTSim {
 
             DBGPRINT("Instr " << curr->getName() << "  created.");
             // todo
-            cout << "Task::insertCode. instr created: " << curr->getName()
-                 << endl;
+            std::cout << "Task::insertCode. instr created: " << curr->getName()
+                 << std::endl;
 
             addInstr(std::move(curr));
 
@@ -546,10 +546,10 @@ namespace RTSim {
     void Task::printInstrList() const {
         unsigned int i;
 
-        cout << "Task " << getName() << ": instruction list" << endl;
+        std::cout << "Task " << getName() << ": instruction list" << std::endl;
         DBGPRINT("Task " << getName() << ": instruction list");
         for (i = 0; i < instrQueue.size(); ++i) {
-            cout << i << ") " << instrQueue[i]->toString() << endl;
+            std::cout << i << ") " << instrQueue[i]->toString() << std::endl;
             DBGPRINT(i << ") " << instrQueue[i]->toString());
         }
     }

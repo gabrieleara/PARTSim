@@ -35,9 +35,9 @@ namespace RTSim {
                 remove(filename);
             }
 
-            cout << "executing: " << s << endl;
+            std::cout << "executing: " << s << std::endl;
             int res = system(s);
-            cout << "file made" << endl;
+            std::cout << "file made" << std::endl;
             saveLastGenerated(filename);
             return string(filename);
         }
@@ -58,13 +58,13 @@ namespace RTSim {
             }
 
             for (const auto &elem : tasks) {
-                cout << elem.first << ")\twcet " << elem.second.first
-                     << " period " << elem.second.second << endl;
+                std::cout << elem.first << ")\twcet " << elem.second.first
+                     << " period " << elem.second.second << std::endl;
             }
 
             fd.close();
-            cout << filename << endl;
-            cout << "imported " << tasks.size() << endl;
+            std::cout << filename << std::endl;
+            std::cout << "imported " << tasks.size() << std::endl;
             return tasks;
         }
 
@@ -88,7 +88,7 @@ namespace RTSim {
                 res.push_back(t);
             }
 
-            cout << "read " << res.size() << endl;
+            std::cout << "read " << res.size() << std::endl;
 
             return res;
         }
@@ -102,7 +102,7 @@ namespace RTSim {
             vector<CBServerCallingEMRTKernel *> ets;
             vector<PeriodicTask *> tasks =
                 getPeriodicTasks(filename, experiment_no);
-            cout << "received " << tasks.size() << endl;
+            std::cout << "received " << tasks.size() << std::endl;
 
             for (PeriodicTask *t : tasks) {
                 ets.push_back(kern->addTaskAndEnvelope(t, ""));

@@ -65,7 +65,7 @@ namespace RTSim {
                         (double) server_vector[j].wcet;
 
                 if (rtime > (double) server_vector[i].period) {
-                    cerr << "Response time greater than period" << endl;
+                    std::cerr << "Response time greater than period" << std::endl;
                     exit(-1);
                 }
                 DBGVAR(rtime);

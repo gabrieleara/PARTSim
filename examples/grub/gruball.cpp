@@ -96,7 +96,7 @@ int main(int argc, char*argv[])
 	double u_step = .05;
 	int i = 0;
 	for (double ratio=lowHighRatio_Min ; ratio < lowHighRatio_Max; ratio+=RStep) {
-	    cout << "Ratio: " << ratio << endl;
+	    std::cout << "Ratio: " << ratio << std::endl;
 	    // create the scheduler and the kernel
 	    Stats mystats;
 	    for (int k=0; k<NRep; k++) {
@@ -111,9 +111,9 @@ int main(int argc, char*argv[])
 		vector<Grub *> servers;
 		for (unsigned j=0; j<ts.size(); j++) {
 		    ts.getTask(j)->setRelDline(ts.getMaxIAT(j));
-		    cout << "Created task: (" 
+		    std::cout << "Created task: (" 
 			 << ts.getMaxCT(j) << " , " << ts.getMaxIAT(j) << "," 
-			 << ts.getTask(j)->getRelDline() << ")" <<  endl;
+			 << ts.getTask(j)->getRelDline() << ")" <<  std::endl;
 		    sim.create_high_server(*ts.getTask(j));
 		}
 		
@@ -129,10 +129,10 @@ int main(int argc, char*argv[])
 					 new DlineEquPeriodDTGen);
 		for (unsigned j=0; j<ts2.size(); j++) {
 		    ts2.getTask(j)->setRelDline(ts2.getMaxIAT(j));
-		    cout << "Created task: (" <<
+		    std::cout << "Created task: (" <<
 			ts2.getMaxCT(j) << " , " << 
 			ts2.getMaxIAT(j) << "," << 
-			ts2.getTask(j)->getRelDline() << ")" <<  endl;
+			ts2.getTask(j)->getRelDline() << ")" <<  std::endl;
 		    // create a server for a LOW CRITICALITY TASK
 		    // I have to allocate less bandwidth. 
 		    // The actual available bandwidth is  (1 - HighUtil)
@@ -148,7 +148,7 @@ int main(int argc, char*argv[])
 		    mystats.miss_perc.attachToTask(ts2.getTask(j));
 		    mystats.tard.attachToTask(ts2.getTask(j));
 		}
-		cout << "DONE! Now start simulation" << endl;
+		cout << "DONE! Now start simulation" << std::endl;
 		int n = 1;
 		if (k == 0)  n = -NRep;
 		else if (k == NRep-1) n = 0;
@@ -158,8 +158,8 @@ int main(int argc, char*argv[])
 	    mystats.dump(ratio, base_name);
 	}
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
-        cout << e2.what() << endl;
+        std::cout << e2.what() << std::endl;
     }        
 }

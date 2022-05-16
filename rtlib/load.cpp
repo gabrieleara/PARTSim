@@ -149,7 +149,7 @@ namespace RTSim {
     void CTGen::rebuild() {
         cleanVector<RandomVar>(va);
         if (!generate()) {
-            cerr << "Errore nella generazione!!" << endl;
+            std::cerr << "Errore nella generazione!!" << std::endl;
             exit(-1);
         }
     }
@@ -392,7 +392,7 @@ namespace RTSim {
                 isOk = iatGen->generate();
                 if (isOk) {
 #ifdef __DEBUG__
-                    cout << "calling ctGen::generate trial=" << _count << endl;
+                    std::cout << "calling ctGen::generate trial=" << _count << std::endl;
 #endif
                     isOk = ctGen->generate();
                 } else
@@ -611,31 +611,31 @@ namespace RTSim {
     //         cleanVector<Task>(tasks);
     //         delete iatGen;
     //         delete ctGen;
-    //         //dbg << "~RandomTaskSetFactory() has completed!" << endl;
+    //         //dbg << "~RandomTaskSetFactory() has completed!" << std::endl;
     //     }
 
     void RandomTaskSetFactory::print(int i) {
-        cout << "task[" << i << "]" << endl;
-        cout << "U   = " << getMinLoad(i) << "/" << getAvgLoad(i) << "/"
-             << getMaxLoad(i) << "/" << getLoad(i) << endl;
-        cout << "C   = " << getMinCT(i) << "/" << getAvgCT(i) << "/"
-             << getMaxCT(i) << endl;
-        cout << "IAT = " << getMinIAT(i) << "/" << getAvgIAT(i) << "/"
-             << getMaxIAT(i) << endl;
+        std::cout << "task[" << i << "]" << std::endl;
+        std::cout << "U   = " << getMinLoad(i) << "/" << getAvgLoad(i) << "/"
+             << getMaxLoad(i) << "/" << getLoad(i) << std::endl;
+        std::cout << "C   = " << getMinCT(i) << "/" << getAvgCT(i) << "/"
+             << getMaxCT(i) << std::endl;
+        std::cout << "IAT = " << getMinIAT(i) << "/" << getAvgIAT(i) << "/"
+             << getMaxIAT(i) << std::endl;
     }
 
     void RandomTaskSetFactory::print() {
         // dbg.enable("__tset__");
         // dbg.enter("__tset__");
-        cout << "Task Set" << endl;
+        std::cout << "Task Set" << std::endl;
         for (int i = 0; i < _size; i++) {
             print(i);
-            cout << "------------------------------------------------" << endl;
+            std::cout << "------------------------------------------------" << std::endl;
         }
 
-        cout << "Real U = " << getMinLoad() << "/" << getAvgLoad() << "/"
-             << getMaxLoad() << endl;
-        cout << "Wanted U = " << getLoad() << endl << endl;
+        std::cout << "Real U = " << getMinLoad() << "/" << getAvgLoad() << "/"
+             << getMaxLoad() << std::endl;
+        std::cout << "Wanted U = " << getLoad() << std::endl << std::endl;
 
         // dbg.exit();
         // dbg.disable("__tset__");

@@ -124,7 +124,7 @@ namespace RTSim {
             DBGPRINT("onArrival, calling dispatch");
             dispatch();
         } else {
-            cout << "onArrival, posting enddispatchevt" << endl;
+            std::cout << "onArrival, posting enddispatchevt" << std::endl;
             beginDispatchEvt.drop();
             beginDispatchEvt.post(endDispatchEvt.getTime());
         }

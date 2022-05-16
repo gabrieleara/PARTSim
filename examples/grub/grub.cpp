@@ -42,19 +42,19 @@ int main()
         GrubSupervisor super;
 
         bool flag1 = super.addGrub(&serv1);
-        cout << "Server1 added = " << flag1 << endl;
+        std::cout << "Server1 added = " << flag1 << std::endl;
 
         bool flag2 = super.addGrub(&serv2);
-        cout << "Server2 added = " << flag2 << endl;
+        std::cout << "Server2 added = " << flag2 << std::endl;
 
         SIMUL.dbg.enable(_TASK_DBG_LEV);
         SIMUL.dbg.enable(_KERNEL_DBG_LEV);
         SIMUL.dbg.enable(_SERVER_DBG_LEV);
         SIMUL.run(24);
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
-        cout << e2.what() << endl;
+        std::cout << e2.what() << std::endl;
 
     }        
 }

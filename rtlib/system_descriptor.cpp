@@ -28,6 +28,8 @@ namespace RTSim {
         return kd;
     }
 
+    // FIXME: does not support prefix for file name
+
     template <>
     CPUMDescriptor createFrom(yaml::Object_ptr ptr) {
         CPUMDescriptor pm;

@@ -50,7 +50,7 @@ namespace RTSim {
 
     void DeadEvt::doit() {
         if (_abort) {
-            cout << "Simulation aborted!!!" << endl;
+            std::cout << "Simulation aborted!!!" << std::endl;
             exit(-1);
         }
         if (_kill && _task->isActive() == true) {

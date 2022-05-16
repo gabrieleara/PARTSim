@@ -50,7 +50,7 @@ namespace RTSim {
         executing(false),
         _endEvt(this) {
         DBGTAG(_INSTR_DBG_LEV, "ExecInstr constructor");
-        cout << "wl: " << wl << endl;
+        std::cout << "wl: " << wl << std::endl;
     }
 
     ExecInstr::ExecInstr(const ExecInstr &other) :

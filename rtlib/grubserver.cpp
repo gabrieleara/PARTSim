@@ -53,7 +53,7 @@ namespace RTSim {
     void GrubSupervisor::newRun() {
         active_u = 0;
         residual_capacity = 0;
-        // cout << "NEW RUN" << endl;
+        // std::cout << "NEW RUN" << std::endl;
     }
 
     void GrubSupervisor::endRun() {}
@@ -101,14 +101,14 @@ namespace RTSim {
             cap.start(-supervisor->getActiveUtilization());
             Tick delta = cap.get_intercept(0);
             if (delta < 0) {
-                cout << "Task: " << dynamic_cast<Task *>(tasks[0])->getName()
-                     << endl;
-                cout << "Time: " << SIMUL.getTime() << endl;
-                cout << "Status: " << status << " -- intercept: " << delta
-                     << endl;
-                cout << "capacity: " << cap.get_value() << endl;
-                cout << "Supervisor utilization: "
-                     << supervisor->getActiveUtilization() << endl;
+                std::cout << "Task: " << dynamic_cast<Task *>(tasks[0])->getName()
+                     << std::endl;
+                std::cout << "Time: " << SIMUL.getTime() << std::endl;
+                std::cout << "Status: " << status << " -- intercept: " << delta
+                     << std::endl;
+                std::cout << "capacity: " << cap.get_value() << std::endl;
+                std::cout << "Supervisor utilization: "
+                     << supervisor->getActiveUtilization() << std::endl;
                 assert(0);
             }
             _bandExEvt.post(SIMUL.getTime() + cap.get_intercept(0));
@@ -121,7 +121,7 @@ namespace RTSim {
     }
 
     void Grub::idle_ready() {
-        // cout << "IDLE-READY" << endl;
+        // std::cout << "IDLE-READY" << std::endl;
         DBGENTER(_SERVER_DBG_LEV);
         assert(status == IDLE);
         status = READY;
@@ -132,7 +132,7 @@ namespace RTSim {
         vtime.set_value(SIMUL.getTime());
         supervisor->set_active(this);
         DBGPRINT_2("Going to READY at ", SIMUL.getTime());
-        // cout << "IDLE-READY end" << endl;
+        // std::cout << "IDLE-READY end" << std::endl;
     }
 
     void Grub::releasing_ready() {
@@ -146,7 +146,7 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
         status = EXECUTING;
         Tick extra = supervisor->get_capacity();
-        // cout << "Extra: " << extra << endl;
+        // std::cout << "Extra: " << extra << std::endl;
         cap.set_value(cap.get_value() + double(extra));
         startAccounting();
     }
@@ -200,7 +200,7 @@ namespace RTSim {
     void Grub::recharging_idle() {
         // no way
         // assert(0);
-        // cout << "RECHARGING - IDLE!" << endl;
+        // std::cout << "RECHARGING - IDLE!" << std::endl;
         releasing_idle();
     }
 

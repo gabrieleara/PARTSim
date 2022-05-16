@@ -33,21 +33,21 @@ int main()
         ttrace.attachToTask(t2);
         ttrace.attachToTask(t3);
 
-        cout << "Task created" << endl;
+        std::cout << "Task created" << std::endl;
 
         SporadicServer serv(6, 50, "server", "FIFOSched");
 
-        cout << "Server created" << endl;
+        std::cout << "Server created" << std::endl;
         
         serv.addTask(t11);
         kern.addTask(serv, "");
 
-        cout << "Server added " << endl;
+        std::cout << "Server added " << std::endl;
         
         kern.addTask(t2, "");
         kern.addTask(t3, "");
 
-        cout << "Tasks added " << endl;
+        std::cout << "Tasks added " << std::endl;
         
         // run the simulation for 500 units of time
         SIMUL.dbg.enable(_TASK_DBG_LEV);
@@ -55,8 +55,8 @@ int main()
         SIMUL.dbg.enable(_SERVER_DBG_LEV);
         SIMUL.run(500);
     } catch (BaseExc &e) {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
-        cout << e2.what() << endl;
+        std::cout << e2.what() << std::endl;
     }        
 }

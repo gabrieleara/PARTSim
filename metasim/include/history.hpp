@@ -139,11 +139,11 @@ template <class C>
 void print(C &c) {
     typedef typename C::iterator CI;
     CI i;
-    cout << '[';
+    std::cout << '[';
     for (i = c.begin(); i != c.end(); ++i) {
-        cout << *i << " ";
+        std::cout << *i << " ";
     }
-    cout << ']' << endl;
+    std::cout << ']' << std::endl;
 }
 
 int main() {
@@ -153,14 +153,14 @@ int main() {
         h1.push(i);
     }
     print(h1);
-    cout << "Front=" << h1.front() << endl;
-    cout << "Back=" << h1.back() << endl;
+    std::cout << "Front=" << h1.front() << std::endl;
+    std::cout << "Back=" << h1.back() << std::endl;
     for (register int i = 10; i < 20; i++) {
         h1.push(i);
     }
     print(h1);
-    cout << "Front=" << h1.front() << endl;
-    cout << "Back=" << h1.back() << endl;
+    std::cout << "Front=" << h1.front() << std::endl;
+    std::cout << "Back=" << h1.back() << std::endl;
 }
 
 #endif // __TEST__

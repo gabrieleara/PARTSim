@@ -88,7 +88,7 @@ void System::addLoadTask(const string & name, Tick b, Tick p, int prio)
 
 	stringstream mystr;
 	mystr << "fixed(" << (int)b << ");";
-	cout << "Instruction: " << mystr.str() << endl;
+	cout << "Instruction: " << mystr.str() << std::endl;
 
 	m1->insertCode(mystr.str());
 	mm.push_back(m1);
@@ -121,12 +121,12 @@ vector < string > get_tokens(ifstream & f, int &count)
 		while (line[0] == '#' || line.size() < 1);	// skip comment and empty lines
 
 		tokens = parse_util::split(line, ";");
-		//  cout << "Line parsed with " << tokens.size() << " tokens" << endl;
-		//for (int i=0; i<tokens.size(); i++) cout << tokens[i] << "; ";
-		//cout << endl;
+		//  std::cout << "Line parsed with " << tokens.size() << " tokens" << std::endl;
+		//for (int i=0; i<tokens.size(); i++) std::cout << tokens[i] << "; ";
+		//cout << std::endl;
 	}
 	catch(exception & e) {
-		cerr << "Error in parsing file: " << endl;
+		cerr << "Error in parsing file: " << std::endl;
 		cerr << e.what();
 		exit(0);
 	}
@@ -139,7 +139,7 @@ void read_tasks(const string & data_file, System & s)
 	ifstream f(data_file.c_str());
 
 	if (!f.is_open()) {
-		cerr << "Can't open " << data_file << endl;
+		cerr << "Can't open " << data_file << std::endl;
 		exit(-1);
 	}
 
@@ -150,7 +150,7 @@ void read_tasks(const string & data_file, System & s)
 
 		if (tokens.size() < 5) {
 			cout << "Error, wrong number of tokens at line" << count
-			    << endl;
+			    << std::endl;
 			exit(0);
 		}
 
@@ -163,28 +163,28 @@ void read_tasks(const string & data_file, System & s)
 			parse_util::parse_double(tokens[3], period, unit);
 			parse_util::parse_double(tokens[4], prio, unit);
 		} catch(exception & e) {
-			cerr << "Error in parsing" << endl;
-			cerr << e.what() << endl;
+			cerr << "Error in parsing" << std::endl;
+			cerr << e.what() << std::endl;
 			exit(0);
 		}
 
 		if (tokens[1] == "m") {
 			if (tokens.size() == 6) {
-				//      cout << "Creating a multimedia task with " 
+				//      std::cout << "Creating a multimedia task with " 
 				//     << avg << ", " << period << ", " << prio << ", " 
-				//     << tokens[5] << endl;
+				//     << tokens[5] << std::endl;
 
 				s.addMultimediaTask(tokens[0], Tick(avg),
 						    Tick(period), tokens[5],
 						    int (prio));
 			} else {
 				cerr << "Wrong number of tokes at line: " <<
-				    count << endl;
+				    count << std::endl;
 				exit(0);
 			}
 		} else if (tokens[1] == "l") {
-			// cout << "Creating a load task with " 
-			//     << avg << ", " << period << ", " << prio << endl;
+			// std::cout << "Creating a load task with " 
+			//     << avg << ", " << period << ", " << prio << std::endl;
 
 			s.addLoadTask(tokens[0], Tick(avg), Tick(period),
 				      int (prio));
@@ -200,7 +200,7 @@ void create_feedback(const string & fback_file, Supervisor * super)
 	ifstream f(fback_file.c_str());
 
 	if (!f.is_open()) {
-		cerr << "Can't open " << fback_file << endl;
+		cerr << "Can't open " << fback_file << std::endl;
 		exit(-1);
 	}
 
@@ -213,7 +213,7 @@ void create_feedback(const string & fback_file, Supervisor * super)
 
 			if (tokens.size() < 2) {
 				cout << "Error, wrong number of tokens at line"
-				    << count << endl;
+				    << count << std::endl;
 				exit(0);
 			}
 			string task_name = tokens[0];
@@ -224,7 +224,7 @@ void create_feedback(const string & fback_file, Supervisor * super)
 			    PeriodicTask * >(Entity::_find(task_name));
 			if (mytask == 0) {
 				cerr << "Error: task " << task_name <<
-				    " not found" << endl;
+				    " not found" << std::endl;
 				exit(0);
 			}
 
@@ -233,7 +233,7 @@ void create_feedback(const string & fback_file, Supervisor * super)
 			    Server * >(Entity::_find("Server_" + task_name));
 			if (server == 0) {
 				cerr << "Error: server Server_" << task_name <<
-				    " not found" << endl;
+				    " not found" << std::endl;
 				exit(0);
 			}
 			FeedbackModuleARSim *ftm1 =
@@ -247,7 +247,7 @@ void create_feedback(const string & fback_file, Supervisor * super)
 		while (!f.eof());
 	}
 	catch(ParseExc & e) {
-		cerr << e.what() << endl;
+		cerr << e.what() << std::endl;
 	}
 }
 
@@ -265,40 +265,40 @@ int main(int argc, char *argv[])
 	if (argc < 4) {
 		cout << "Usage: " << argv[0] <<
 		    " [sim_time] [file name] <fix|schedp|sparepot|cbs> [feedback params]"
-		    << endl;
+		    << std::endl;
 		exit(0);
 	}
 
 	read_tasks(argv[2], sys);
 
-	cout << "NOW SELECTING SIMULATION TYPE (sys.ss.size()=" << sys.ss.size() << ")" << endl;
+	cout << "NOW SELECTING SIMULATION TYPE (sys.ss.size()=" << sys.ss.size() << ")" << std::endl;
 
 	if (strcmp("fix", argv[3]) == 0) {
-		cout << "Fixed server simulation" << endl;
+		cout << "Fixed server simulation" << std::endl;
 	} else if (strcmp("schedp", argv[3]) == 0 ||
 		   strcmp("sparepot", argv[3]) == 0) {
 		if (argc < 5) {
-			cerr << "Missing the feedback parameters file" << endl;
+			cerr << "Missing the feedback parameters file" << std::endl;
 			exit(-1);
 		}
 		if (strcmp("schedp", argv[3]) == 0) {
-			cout << "SCHED_POINTS" << endl;
+			cout << "SCHED_POINTS" << std::endl;
 			SchedPoint *super_schedp;
 			super_schedp = new SchedPoint("SchedPoint");
 
-			cout << "Now adding the servers" << endl;
+			cout << "Now adding the servers" << std::endl;
 			for (i = 0; i < sys.ss.size(); i++) {
-				cout << "Adding server " << i << endl;
+				cout << "Adding server " << i << std::endl;
 				super_schedp->addServer(sys.ss[i]);
 			}
 
-			cout << "Building constraints" << endl;
+			cout << "Building constraints" << std::endl;
 			super_schedp->buildconstraints();
 
-			cout << "Creating feedback" << endl;
+			cout << "Creating feedback" << std::endl;
 			create_feedback(argv[4], super_schedp);
 		} else if (strcmp("sparepot", argv[3]) == 0) {
-			cout << "SPARE_POT" << endl;
+			cout << "SPARE_POT" << std::endl;
 			SparePot *super_sparep;
 			super_sparep = new SparePot("SparePot");
 
@@ -348,13 +348,13 @@ int main(int argc, char *argv[])
 			super_sparep->compute_matrix(Tick(budget),
 						     Tick(period));
 			cout << "budget " << budget << " Period " << period <<
-			    endl;
+			    std::endl;
 			create_feedback(argv[4], super_sparep);
 		}
 	}
 	else if (strcmp("cbs", argv[3]) == 0) {
 		//////////// new cbs 
-		cout << "CBS-EDF" << endl;
+		cout << "CBS-EDF" << std::endl;
 		SuperCBS *feedback;
 		//SparePot *super_sparep;
 		feedback = new SuperCBS("CBS");
@@ -365,31 +365,31 @@ int main(int argc, char *argv[])
 
 		create_feedback(argv[4], feedback);
 	} else {
-		cerr << "ERROR: wrong argument" << endl;
+		cerr << "ERROR: wrong argument" << std::endl;
 		exit(-1);
 	}
 
 	Tick sim_time = atoi(argv[1]);
 
-	cout << "Running simulation for " << sim_time << endl;
+	cout << "Running simulation for " << sim_time << std::endl;
 	try {
 		SIMUL.run(sim_time);
 	}
 	catch(BaseExc & e) {
-		cout << e.what() << endl;
+		cout << e.what() << std::endl;
 	}
 
-	cout << "Miss size: " << sys.miss.size() << endl;
+	cout << "Miss size: " << sys.miss.size() << std::endl;
 
 	for (int i = 0; i < sys.miss.size(); i++) {
 		cout << "Percentage of dline misses of i= " << i << " : "
 		    << sys.miss[i]->getLastValue()
-		    << " over " << sys.miss[i]->getNumSamples() << endl;
+		    << " over " << sys.miss[i]->getNumSamples() << std::endl;
 	}
 
 	for (int i = 0; i < sys.tstat.size(); i++) {
 		cout << "Tardiness of i= " << i << " : "
-		    << sys.tstat[i]->getLastValue() << endl;
+		    << sys.tstat[i]->getLastValue() << std::endl;
 	}
 
 	fid_1 = fopen("deadlinesmiss_matrix_hcbs.txt", "a");
@@ -408,8 +408,8 @@ int main(int argc, char *argv[])
 	fclose(fid_2);
 
 //     if (argc < 6) {
-//         cout << "Usage: " << argv[0] << " <fix|schedp|sparep> " 
-//              << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << endl;
+//         std::cout << "Usage: " << argv[0] << " <fix|schedp|sparep> " 
+//              << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
 //         exit(0);
 //     }
 
@@ -442,8 +442,8 @@ int main(int argc, char *argv[])
 //             prepare_feedback(sys); 
 //         }
 //         else {
-//             cout << "Usage: " << argv[0] << " <fix|fback> " 
-//                  << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << endl;
+//             std::cout << "Usage: " << argv[0] << " <fix|fback> " 
+//                  << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
 //             exit(0);
 //         }
 
@@ -474,19 +474,19 @@ int main(int argc, char *argv[])
 
 //         SIMUL.run(3000);
 
-//         cout << "Percentage of deadline misses for task mm1: " 
-//              << sys.miss1.getLastValue() << endl;
-//         cout << "Percentage of deadline misses for task mm2: " << 
-//             sys.miss2.getLastValue() << endl;
+//         std::cout << "Percentage of deadline misses for task mm1: " 
+//              << sys.miss1.getLastValue() << std::endl;
+//         std::cout << "Percentage of deadline misses for task mm2: " << 
+//             sys.miss2.getLastValue() << std::endl;
 
-//         cout << "Tardiness for task mm1: " 
-//              << sys.ts1.getLastValue() << endl;
-//         cout << "Tardiness for task mm2: " << 
-//             sys.ts2.getLastValue() << endl;
+//         std::cout << "Tardiness for task mm1: " 
+//              << sys.ts1.getLastValue() << std::endl;
+//         std::cout << "Tardiness for task mm2: " << 
+//             sys.ts2.getLastValue() << std::endl;
 
 //     } catch (BaseExc &e) {
-//         cout << e.what() << endl;
+//         std::cout << e.what() << std::endl;
 //     } catch (parse_util::ParseExc &e2) {
-//         cout << e2.what() << endl;
+//         std::cout << e2.what() << std::endl;
 //     }
 }

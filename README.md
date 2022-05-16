@@ -30,6 +30,10 @@ To build the simulator using the builder script with multi-threaded compilation 
 
 The builder script accepts many options and commands. Use the `--help` option (or run the script with no option/command) to see a list of accepted arguments ([see below](#build-options)).
 
+### Using the EnergyMRTKernel
+
+The EnergyMRTKernel is not supported anymore and maintained in the code base for now just for practicality. Users should not look at it or even get remotely close to it.
+
 ### Enabling the Thermal Model
 
 If you want to build the experimental thermal model with the PARTSim library (provided you have installed the [Eigen3 dependency](#optional-dependencies)), you must pass the option `-D RTLIB_THERMAL=ON` to the builder script.
