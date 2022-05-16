@@ -415,6 +415,17 @@ namespace RTSim {
 namespace RTSim {
     using namespace MetaSim;
 
+    class CPU;
+
+    // THIS IS NEEDEED BECAUSE USING A CPU POINTER TO INSTANTIATE A NEW VECTOR
+    // IS MISTAKENLY INTERPRETED AS ALLOCATING A HUGE VECTOR (ADDRESS IS
+    // INTERPRETED AS INTEGER!!)
+    static inline std::vector<CPU *> _vector_from_cpu_pointer(CPU *c) {
+        std::vector<CPU *> v;
+        v.push_back(c);
+        return v;
+    }
+
     // =========================================================================
     // class CPU
     // =========================================================================
@@ -468,8 +479,9 @@ namespace RTSim {
         /// by this method will keep existing forever...).
         CPU(const std::string &name = "", const std::vector<volt_type> &V = {},
             const std::vector<freq_type> &F = {}, CPUModel *pm = nullptr) :
-            CPU(name, new CPUIsland({this}, CPUIsland::Type::GENERIC, name, V,
-                                    F, pm)) {}
+            CPU(name, new CPUIsland(_vector_from_cpu_pointer(this),
+                                    CPUIsland::Type::GENERIC, name, V, F, pm)) {
+        }
 
         DISABLE_COPY(CPU);
         DISABLE_MOVE(CPU);
@@ -558,7 +570,7 @@ namespace RTSim {
 
         std::string getWorkload() const {
             // TODO: check if this is ok
-            if (disabled())
+            if (disabled() || _workload.length() < 1)
                 return "idle";
             return _workload;
         }
@@ -922,9 +934,6 @@ namespace RTSim {
         /// Index of the CPU in its multiprocessor environment
         int _index;
 
-        /// Island related to this CPU
-        CPUIsland *_island;
-
         /// Workload currently executing on this CPU ("idle"
         /// if no task is running)
         std::string _workload;
@@ -987,6 +996,14 @@ namespace RTSim {
         /// Determines whether power saving is enabled or not
         /// @deprecated
         // bool PowerSaving;
+
+        /// Island related to this CPU
+        ///
+        /// NOTE: IN CURRENT IMPLEMENTATION, MUST BE
+        /// THE LAST ATTRIBUTE!! CONSTRUCTORS CALL EACH OTHER (I KNOW, BAD)
+        /// EXPECTING THAT OTHER ATTRIBUTES ARE ALREADY INITIALIZED. BY THE
+        /// STANDARD, ATTRIBUTES ARE INITIALIZED IN DECLARATION ORDER!!!
+        CPUIsland *_island;
     };
 
     inline void CPUIsland::updateModels() {
