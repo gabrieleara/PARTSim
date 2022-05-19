@@ -52,7 +52,7 @@ namespace MetaSim {
         /**
          * Open the file specified by the string filename and set it as a
          * debug stream.  */
-        void setStream(const char *filename);
+        void setStream(const std::string &filename);
 
         /**
          *  Enable the output for a certain debug level.

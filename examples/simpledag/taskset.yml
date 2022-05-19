@@ -21,6 +21,7 @@
 #
 # - delay(var): takes a random variable and generates a ExecInstr instruction
 #   with variable execution time, according to the specified random variable;
+#   FIXME: unsupported for now.
 #
 # - wait(r) or lock(r): takes a string r containing the name of a resource and
 #   produces a WaitInstr on that resource;
@@ -45,7 +46,10 @@ taskset:
   # in rtsim main)
 
   - name: dag_begin
+    # In a DAG, all tasks share the same inter-arrival time (=period)
     iat: 1000
+    # and all tasks (except the dag_begin) must have the same relative deadline.
+    #
     # Must run before all tasks in the dag (including those without precedence
     # constraints), so deadline = 1 (with 0 it will generate a miss!)
     rdl: 1

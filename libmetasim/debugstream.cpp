@@ -43,7 +43,7 @@ namespace MetaSim {
         _os = &o;
     }
 
-    void DebugStream::setStream(const char *filename) {
+    void DebugStream::setStream(const std::string &filename) {
         if (_autodelete)
             delete _os;
         _autodelete = true;

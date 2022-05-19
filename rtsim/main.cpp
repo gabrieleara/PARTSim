@@ -101,9 +101,9 @@ int main(int argc, char *argv[]) {
 
     MetaSim::Simulation &simulation = MetaSim::Simulation::getInstance();
 
-    if (opts["enable-debug"] == "true") {
+    if (opts["debug"] == "true") {
         simulation.dbg.enable("All");
-        simulation.dbg.setStream("debug.txt"); // FIXME: customizable
+        simulation.dbg.setStream(opts["debug-out"]);
     }
 
     std::vector<Tracer> tracers;
