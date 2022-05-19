@@ -60,7 +60,6 @@ taskset:
       - lock(c_task_X_0)
       - lock(c_task_0_1)
       - lock(c_task_0_2)
-      - lock(c_task_1_2)
       - lock(c_task_1_X)
       - lock(c_task_2_X)
       # Must release all tasks with no precedence constraints
@@ -73,8 +72,8 @@ taskset:
       # against dag_begin)
       - lock(c_task_X_0)
       - fixed(200,bzip2)
-      # And unlock one or more tasks (at least they should unlock the dag_end if
-      # they do not have any other successor)
+      # And unlocks one or more tasks (at least they should unlock the dag_end
+      # if they do not have any other successor)
       - unlock(c_task_0_1)
       - unlock(c_task_0_2)
 
@@ -82,7 +81,6 @@ taskset:
     iat: 1000
     code:
       - lock(c_task_0_2)
-      - lock(c_task_1_2)
       - fixed(200,bzip2)
       - unlock(c_task_2_X)
 
@@ -92,17 +90,18 @@ taskset:
       - lock(c_task_0_1)
       - fixed(500,bzip2)
       - unlock(c_task_1_X)
-      - unlock(c_task_1_2)
 
   # Last task to run in a dag, unlocks all tasks with precedence constraints
   - name: dag_end
     iat: 1000
     code:
+      # Must lock on all tasks with no successors
+      - lock(c_task_1_X)
+      - lock(c_task_2_X)
       # Must unlock all precedence constraints
       - unlock(c_task_X_0)
       - unlock(c_task_0_1)
       - unlock(c_task_0_2)
-      - unlock(c_task_1_2)
       - unlock(c_task_1_X)
       - unlock(c_task_2_X)
       # Must unlock the dag_begin
