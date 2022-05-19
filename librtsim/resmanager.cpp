@@ -54,6 +54,15 @@ namespace RTSim {
         _res.push_back(r);
     }
 
+    bool ResManager::hasResource(const string &name) const {
+        for (const auto &r : _res) {
+            if (r->getName() == name)
+                return true;
+        }
+
+        return false;
+    }
+
     bool ResManager::request(AbsRTTask *t, const string &name, int n) {
         DBGENTER(_RESMAN_DBG_LEV);
 

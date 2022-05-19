@@ -60,6 +60,8 @@ namespace RTSim {
         */
         virtual void addResource(const std::string &name, int n = 1);
 
+        virtual bool hasResource(const std::string &name) const;
+
         /**
          * Function called by a task instr (the WaitInstr) to perform an
          * access request to a specific resource. That access could be

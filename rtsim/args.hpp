@@ -43,6 +43,17 @@ static inline std::vector<std::string> list_split(const std::string &src) {
     return out;
 }
 
+static inline int store_txt(std::string *dest, const cmdarg::Argument &opt,
+                            const std::string &src) {
+    if (string_endswith(src, ".txt")) {
+        return cmdarg::actions::store_string(dest, opt, src);
+    }
+
+    std::cerr << "Error: argument --" << opt.long_opt << "/-" << opt.short_opt
+              << ": expected filename ending with '.txt'!" << std::endl;
+    return 1;
+}
+
 static inline int list_append_txt_json(std::string *dest,
                                        const cmdarg::Argument &opt,
                                        const std::string &src) {
@@ -55,7 +66,7 @@ static inline int list_append_txt_json(std::string *dest,
     }
 
     std::cerr << "Error: argument --" << opt.long_opt << "/-" << opt.short_opt
-              << ": expected filename ending with 'txt' or '.json'!"
+              << ": expected filename ending with '.txt' or '.json'!"
               << std::endl;
     return 1;
 }
@@ -91,13 +102,22 @@ static inline cmdarg::Options parse_arguments(int argc, char *argv[]) {
         .action = list_append_txt_json,
     });
     parser.addArgument({
-        .long_opt = "enable-debug",
+        .long_opt = "debug",
         .short_opt = 'd',
         .required = false,
         .parameter_required = cmdarg::Argument::ParameterRequired::NO,
         .help = "Enables debug prints throughout the simulation",
         .default_value = "false",
         .action = cmdarg::actions::store_true,
+    });
+    parser.addArgument({
+        .long_opt = "debug-out",
+        .short_opt = 'D',
+        .required = false,
+        .parameter_required = cmdarg::Argument::ParameterRequired::REQUIRED,
+        .help = "The file name where to store debug prints",
+        .default_value = "debug.txt",
+        .action = store_txt,
     });
 
     return parser.parse(argc, argv);

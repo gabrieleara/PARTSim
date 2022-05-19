@@ -126,6 +126,10 @@ namespace RTSim {
          *  of the executing instruction when a change of the CPU speed occurs.
          */
         void refreshExec(double, double) override {}
+
+        std::string toString() const override {
+            return "wait(" + _res + ")";
+        }
     };
 
     /**
@@ -201,6 +205,10 @@ namespace RTSim {
          *  of the executing instruction when a change of the CPU speed occurs.
          */
         void refreshExec(double, double) override {}
+
+        std::string toString() const override {
+            return "signal(" + _res + ")";
+        }
     };
 
 } // namespace RTSim
