@@ -10,15 +10,15 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/rtsim/rtsim",
             "args": [
-                "odroid_tb.yaml",
-                "taskset",
-                "5000",
-                "--enable-debug",
+                "examples/simpledag/system-multi-core.yml",
+                "examples/simpledag/taskset.yml",
+                "10000",
+                "--debug",
                 "-t",
                 "trace.txt",
             ],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/examples/energy_table/",
+            "cwd": "${workspaceFolder}",
             "environment": [
                 // {
                 //     "name": "LD_LIBRARY_PATH",

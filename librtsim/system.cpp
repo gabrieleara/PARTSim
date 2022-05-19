@@ -1,6 +1,8 @@
 #include <rtsim/system.hpp>
 #include <rtsim/system_descriptor.hpp>
 
+#include <rtsim/mrtkernel.hpp>
+
 namespace RTSim {
     // TODO: lots of exception handling?
     System::System(const string &fname) {
@@ -29,6 +31,16 @@ namespace RTSim {
             // Frequencies are already sorted in non-decreasing order
             const unsigned int fmax = *(island.freqs.end() - 1);
 
+            // TODO: a scheduler factory that has a number of different
+            // schedulers to choose from starting from the value of
+            // island.kernel.scheduler
+            auto scheduler = std::make_shared<EDFScheduler>();
+            auto kernel = std::make_shared<MRTKernel>(
+                scheduler.get(), std::set<CPU *>{}, island.kernel.name);
+
+            this->schedulers.push_back(scheduler);
+            this->kernels.push_back(kernel);
+
             for (int i = 0; i < island.numcpus; ++i) {
                 const string cpuname = cpu_base_name + std::to_string(i);
 
@@ -46,18 +58,11 @@ namespace RTSim {
                 auto ptrace = std::make_shared<TracePowerConsumption>(
                     cpu.get(), 1, "power_" + cpuname + ".txt");
 
-                // TODO: a scheduler factory that has a number of different
-                // schedulers to choose from starting from the value of
-                // island.kernel.scheduler
-                auto scheduler = std::make_shared<EDFScheduler>();
-                auto kernel = std::make_shared<RTKernel>(
-                    scheduler.get(), island.kernel.name, cpu.get());
+                kernel->addCPU(cpu.get());
 
                 this->cpu_models.push_back(cpu_model);
                 this->cpus.push_back(cpu);
                 this->ptraces.push_back(ptrace);
-                this->schedulers.push_back(scheduler);
-                this->kernels.push_back(kernel);
             }
         }
     }
