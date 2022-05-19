@@ -18,4 +18,6 @@
         oldstamp="$tstamp"
         oldline="$line"
     done
+
+    echo "$oldline"
 )
