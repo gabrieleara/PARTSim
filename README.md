@@ -4,20 +4,56 @@ A Power-Aware Real-Time System Simulator.
 
 The name derives from the fact that this is a fork of RTSim, originally designed and developed by Giuseppe Lipari.
 
-## Dependencies
+## Quick Guide
 
-The libraries do not have any external source dependencies. The executable depends on [cmdarg][cmdarg] a simple library for handling command line arguments.
+The simulator can be easily built using [CMake] after downloading its mandatory dependencies. It is preferrable to clone the project with `git`, since `git` is also used to manage its mandatory dependencies. Python 3 is also necessary if you want to use the supplied builder script, but you can build it without using only standard CMake commands if you want.
 
-In addition, [cmakeopts][cmakeopts] is another required dependency to build both the library and the executable, becxause many cmake options are offloaded to that set.
+If you only care about building the simulator, you can create a *shallow clone* of the project and build it in a few easy steps:
 
-To gather all dependencies you can run:
+<!-- git clone https://gitlab.retis.santannapisa.it/parts/PARTSim.git --depth 1 PARTSim -->
+
 ```bash
-git submodule update --init --recursive
+git clone https://github.com/gabrieleara/PARTSim.git --depth 1 PARTSim
+cd PARTSim
+git submodule update --recursive --init
+./tools/builder.py -cJ build
 ```
 
-### Optional Dependencies
+> NOTE: you can supply any of the mirrors for the project instead of the link above.
 
-The experimental thermal model implementation (excluded by default in the build process) depends on [Eigen3][eigen3]. Compiling it on your machine requires both library and headers installed.
+In the project directory there is now a `build` directory which contains the following files (among others):
+
+| Files                                                                                                                | Description          |
+| :------------------------------------------------------------------------------------------------------------------- | :------------------- |
+| `build/libmetasim/libmetasim.so` <br/> `build/libmetasim/libmetasim.so.3` <br/> `build/libmetasim/libmetasim.so.3.0` | The MetaSim library  |
+| `build/librtsim/librtsim.so` <br/> `build/librtsim/librtsim.so.3` <br/> `build/librtsim/librtsim.so.3.0`             | The RTSim library    |
+| `build/rtsim/rtsim`                                                                                                  | The RTSim executable |
+
+<!----------------------------------------------------------------------------->
+
+## Full Guide
+
+### Dependencies
+
+So far, the project has the following dependencies:
+
+| Dependency  | Type   | Mandatory | Description                                                                           |
+| ----------- | ------ | --------- | ------------------------------------------------------------------------------------- |
+| [CMakeOpts] | Build  | Yes       | A set of options for CMake, used to streamline the building process                   |
+| [CmdArg]    | Source | Yes       | A simple library for handling command-line options                                    |
+| [Eigen3]    | Source | No        | A powerful mathematical library used by the experimental thermal model implementation |
+
+*Build* dependencies are only needed by the build system, while *Source* dependencies provide libraries needed by the simulator.
+
+*Mandatory* dependencies are automatically downloaded by issuing
+```
+git submodule update --recursive --init
+```
+while optional ones must be obtained by different means.
+
+### Managing Optional Dependencies
+
+The experimental thermal model implementation (excluded by default in the build process) depends on [Eigen3]. Compiling it on your machine requires both library and headers installed.
 
 On Debian-based distributions, you can install the Eigen3 library and headers by running:
 ```bash
@@ -25,77 +61,33 @@ sudo apt update
 sudo apt install libeigen3-dev -y
 ```
 
-## Building
-Building PARTSim requires [CMake][cmake], optionally using [Ninja][ninja] as a CMake generator (default), making compilation time pretty fast. Ninja, however, is not required, with GNU Make set as fall back generator if Ninja is missing.
+### Building
 
-You don't have to issue CMake commands to build PARTSim. A (Python-based) builder script is provided to simplify the build process. The script invokes CMake commands with suitable options, handling all sorts of situations for you.
+Building PARTSim requires [CMake], optionally using [Ninja] as a CMake generator (default), making compilation time pretty fast. Ninja, however, is not required, with GNU Make set as fall back generator if Ninja is missing.
+
+You don't have to issue CMake commands to build PARTSim. A (Python-based) builder script provided by [CMakeOpts] is used to simplify the build process. The script invokes CMake commands with suitable options, handling all sorts of situations for you.
 
 To build the simulator using the builder script with multi-threaded compilation enabled, run:
 ```bash
-./tools/builder.py -c -J build
+./tools/builder.py -cJ build
 ```
 
-The builder script accepts many options and commands. Use the `--help` option (or run the script with no option/command) to see a list of accepted arguments ([see below](#build-options)).
+The builder script accepts many options and commands. Use the `--help` option (or run the script with no option/command) to see a list of accepted arguments.
 
-### Using the EnergyMRTKernel
+#### Special Note on Using the EnergyMRTKernel Class
 
-The EnergyMRTKernel is not supported anymore and maintained in the code base for now just for practicality. Users should not look at it or even get remotely close to it.
+The `EnergyMRTKernel` is not supported anymore and maintained in the code base for now just for practicality. Users should not look at it or even get remotely close to it.
 
-### Enabling the Thermal Model
+#### Enabling the Thermal Model
 
-If you want to build the experimental thermal model with the PARTSim library (provided you have installed the [Eigen3 dependency](#optional-dependencies)), you must pass the option `-D RTLIB_THERMAL=ON` to the builder script.
+If you want to build the experimental thermal model with the PARTSim library (provided you have installed the Eigen3 dependency [see above](#managing-optional-dependencies)), you must pass the option `-D RTLIB_THERMAL=ON` to the builder script.
 
 Example:
 ```bash
-./tools/builder.py -D RTLIB_THERMAL=ON build # [...]
+./tools/builder.py -D RTLIB_THERMAL=ON build # [ other options... ]
 ```
 
-### Build Options
-
-Following is a (mostly) up-to-date output of the builder help:
-```
-$ ./tools/builder.py -h
-usage: ./tools/builder.py [-h] [-v] [-c] [-d] [-r] [-G {Ninja,Unix Makefiles}] [-J] [-j JOBS]
-                          [-b {release,debug,release-wdebug}] [-p BUILD_PATH] [-D CMAKE_OPTION]
-                          [COMMAND ...]
-
-Multiple commands are executed in order, except 'help', which will always be the only one executed
-if included.
-
-Positional arguments:
-  COMMAND                                         List of one or more commands to run sequentially
-
-List of valid commands:
-  help                                            Prints this help message and exits
-  build                                           (Re-)Builds the project
-  clean                                           Cleans the project build directory
-  configure                                       (Re-)Configures the project
-  install                                         (Re-)Installs the project
-  package                                         Generates the desired packages (see options)
-  uninstall                                       Removes the installed files from paths
-  test                                            Runs automated testing
-
-Valid options (all optional):
-  -h, --help                                      Prints this help message and exits
-  -v, --verbose                                   Prints more info during execution
-  -c, --colorize                                  Forces compiler output to be ANSI-colored
-  -d, --package-deb                               Enables the generation of the deb package
-  -r, --package-rpm                               Enables the generation of the rpm package
-  -G {Ninja,Unix Makefiles}, --generator {Ninja,Unix Makefiles}
-                                                  Uses the provided CMake generator to build the
-                                                  project (default: Ninja)
-  -J, --parallel                                  Enables parallel compilation with 6 processes
-  -j JOBS, --jobs JOBS                            Enables parallel compilation with JOBS processes
-  -b {release,debug,release-wdebug}, --build-type {release,debug,release-wdebug}
-                                                  Specifies which version of the project to build
-                                                  (default: release)
-  -p BUILD_PATH, --build-path BUILD_PATH          Specifies which path to use to build the project
-                                                  (default: build)
-  -D CMAKE_OPTION, --cmake-option CMAKE_OPTION    Accepts OPTION={ON|OFF} values to forward to
-                                                  cmake
-```
-
-<!-- Links -->
+<!----------------------------------- Links ----------------------------------->
 
 [cmake]: https://cmake.org/cmake/help/latest/
 [ninja]: https://ninja-build.org/
