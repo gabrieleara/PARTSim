@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/libmetasim/include/**",
+                "${workspaceFolder}/librtsim/include/**",
+                "${workspaceFolder}/rtsim/cmdarg/include/public/**",
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-clang-x64",
+            // "configurationProvider": "ms-vscode.cmake-tools"
+        }
+    ],
+    "version": 4
+}

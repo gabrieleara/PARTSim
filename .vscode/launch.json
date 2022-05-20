@@ -14,9 +14,10 @@
                 "examples/simpledag/taskset.yml",
                 "10000",
                 "--debug",
-                "-t",
-                "trace.txt",
+                // "-t",
+                // "trace.txt",
             ],
+            "preLaunchTask": "${defaultBuildTask}",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [
