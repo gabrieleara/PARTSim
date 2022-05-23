@@ -52,7 +52,7 @@ namespace RTSim {
 
         void probe(KillEvt &e);
 
-        void attachToTask(Task &t);
+        void attachToTask(AbsRTTask &t);
     };
 } // namespace RTSim
 

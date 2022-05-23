@@ -48,6 +48,8 @@ taskset:
   - name: dag_begin
     # In a DAG, all tasks share the same inter-arrival time (=period)
     iat: 1000
+    # NOTE: runtime>=1 is a requirement for dag_begin/dag_end
+    runtime: 1
     # and all tasks (except the dag_begin) must have the same relative deadline.
     #
     # Must run before all tasks in the dag (including those without precedence
@@ -56,17 +58,12 @@ taskset:
     code:
       # Must lock on DAG to ensure that dag_end ran in previous iteration
       - lock(DAG)
-      # Must lock all precedence constraints
-      - lock(c_task_X_0)
-      - lock(c_task_0_1)
-      - lock(c_task_0_2)
-      - lock(c_task_1_X)
-      - lock(c_task_2_X)
       # Must release all tasks with no precedence constraints
       - unlock(c_task_X_0)
 
   - name: task_0
     iat: 1000
+    runtime: 200
     code:
       # Each task locks on one or more precedence contraints (at least they lock
       # against dag_begin)
@@ -79,6 +76,7 @@ taskset:
 
   - name: task_2
     iat: 1000
+    runtime: 200
     code:
       - lock(c_task_0_2)
       - fixed(200,bzip2)
@@ -86,6 +84,7 @@ taskset:
 
   - name: task_1
     iat: 1000
+    runtime: 500
     code:
       - lock(c_task_0_1)
       - fixed(500,bzip2)
@@ -94,15 +93,25 @@ taskset:
   # Last task to run in a dag, unlocks all tasks with precedence constraints
   - name: dag_end
     iat: 1000
+    runtime: 1
     code:
       # Must lock on all tasks with no successors
       - lock(c_task_1_X)
       - lock(c_task_2_X)
-      # Must unlock all precedence constraints
-      - unlock(c_task_X_0)
-      - unlock(c_task_0_1)
-      - unlock(c_task_0_2)
-      - unlock(c_task_1_X)
-      - unlock(c_task_2_X)
       # Must unlock the dag_begin
       - unlock(DAG)
+
+# Following is the list of resources and their supposed initial state
+resources:
+  - name: DAG
+    initial-state: unlocked
+  - name: c_task_X_0
+    initial-state: locked
+  - name: c_task_0_1
+    initial-state: locked
+  - name: c_task_0_2
+    initial-state: locked
+  - name: c_task_1_X
+    initial-state: locked
+  - name: c_task_2_X
+    initial-state: locked

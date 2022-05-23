@@ -29,16 +29,18 @@ namespace RTSim {
 
     using namespace MetaSim;
 
-    Resource::Resource(const string &n, int nr) :
+    Resource::Resource(const string &n, int nr, int nr_available) :
         Entity(n),
         _total(nr),
-        _available(nr),
+        _available(nr_available),
+        _available_initial(nr_available),
         _owner(0) {}
 
     Resource::Resource(const Resource &r) :
         Entity(r.getName() + "_copy"),
         _total(r.total()),
-        _available(r.total()),
+        _available(r._available), // FIXME: is this more correct?
+        _available_initial(r._available_initial),
         _owner(0) {}
 
     void Resource::lock(AbsRTTask *t, int n) {
@@ -63,7 +65,9 @@ namespace RTSim {
         return _total;
     }
 
-    void Resource::newRun() {}
+    void Resource::newRun() {
+        _available = _available_initial;
+    }
 
     void Resource::endRun() {}
 

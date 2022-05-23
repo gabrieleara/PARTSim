@@ -48,12 +48,13 @@ namespace RTSim {
     protected:
         int _total;
         int _available;
+        const int _available_initial;
 
         AbsRTTask *_owner;
 
     public:
         /// simple constructor
-        Resource(const string &n, int nr = 1);
+        Resource(const string &n, int nr = 1, int nr_available = 1);
 
         /// copy constructor
         Resource(const Resource &r);

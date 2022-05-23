@@ -60,18 +60,19 @@ namespace RTSim {
         writeTaskEvent(tt, "kill");
     }
 
-    void JSONTrace::attachToTask(Task &t) {
+    void JSONTrace::attachToTask(AbsRTTask &t) {
         // new Particle<ArrEvt, JSONTrace>(&t->arrEvt, this);
         // new Particle<EndEvt, JSONTrace>(&t->endEvt, this);
         // new Particle<SchedEvt, JSONTrace>(&t->schedEvt, this);
         // new Particle<DeschedEvt, JSONTrace>(&t->deschedEvt, this);
         // new Particle<DeadEvt, JSONTrace>(&t->deadEvt, this);
 
-        attach_stat(*this, t.arrEvt);
-        attach_stat(*this, t.endEvt);
-        attach_stat(*this, t.schedEvt);
-        attach_stat(*this, t.deschedEvt);
-        attach_stat(*this, t.deadEvt);
-        attach_stat(*this, t.killEvt);
+        Task &tt = dynamic_cast<Task &>(t);
+        attach_stat(*this, tt.arrEvt);
+        attach_stat(*this, tt.endEvt);
+        attach_stat(*this, tt.schedEvt);
+        attach_stat(*this, tt.deschedEvt);
+        attach_stat(*this, tt.deadEvt);
+        attach_stat(*this, tt.killEvt);
     }
 } // namespace RTSim

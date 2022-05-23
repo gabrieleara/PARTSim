@@ -49,8 +49,8 @@ namespace RTSim {
         _sched = s;
     }
 
-    void ResManager::addResource(const string &name, int n) {
-        Resource *r = new Resource(name, n);
+    void ResManager::addResource(const string &name, int n, int n_initial) {
+        Resource *r = new Resource(name, n, n_initial);
         _res.push_back(r);
     }
 

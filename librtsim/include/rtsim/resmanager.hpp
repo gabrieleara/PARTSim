@@ -58,7 +58,8 @@ namespace RTSim {
            @param n number of unit (for supporting multi-unit resources),
            by default is 1.
         */
-        virtual void addResource(const std::string &name, int n = 1);
+        virtual void addResource(const std::string &name, int n = 1,
+                                 int n_initial = 1);
 
         virtual bool hasResource(const std::string &name) const;
 

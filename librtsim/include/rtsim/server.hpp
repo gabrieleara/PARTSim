@@ -385,6 +385,10 @@ namespace RTSim {
         bool isContextSwitching() const override {
             return false;
         }
+
+        AbsRTTask *getCurrentTask() const {
+            return currExe_;
+        }
     };
 } // namespace RTSim
 

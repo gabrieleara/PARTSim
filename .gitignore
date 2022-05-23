@@ -46,3 +46,9 @@ _deps
 *.exe
 *.out
 *.app
+
+# Byproducts of the simulator
+debug.txt
+trace.txt
+trace.json
+power_*.txt

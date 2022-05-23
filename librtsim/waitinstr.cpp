@@ -65,17 +65,57 @@ namespace RTSim {
     //     _waitEvt.addTrace(t);
     // }
 
+    /// Since tasks can be nested and parent tasks usually implement both the
+    /// AbsRTTask and the AbsRTKernel interfaces (see Servers), we need to climb
+    /// up the ladder until we find a kernel on which we can request the
+    /// resource and the task seen by that kernel that is issuing the request.
+    ///
+    /// Given the task that issued the wait/signal instruction, this function
+    /// will climb up said ladder until a suitable pair is found.
+    ///
+    /// @note this means that, in case a task is wrapped in a server, the server
+    /// will be the one issuing the request for the task, at least from a
+    /// RTKernel/Scheduler point of view. This way, RTKernel/Scheduler
+    /// implementation can be agnostic with respect to tasks hierarchy.
+    ///
+    /// @returns true if a suitable pair is found
+    ///
+    /// @param[inout] task_ptr      used to supply the initial task on which
+    /// perform the research; after this call it will contain the task on which
+    /// the actual request must be done
+    ///
+    /// @param[out]   kernel_ptr    the kernel on which the request must be done
+    bool findKernelTask(AbsRTTask **task_ptr, RTKernel **rtkernel_ptr) {
+        AbsRTTask *&task = (*task_ptr);
+        RTKernel *&rtkernel = (*rtkernel_ptr);
+
+        rtkernel = nullptr;
+        while (rtkernel == nullptr && task != nullptr) {
+            AbsKernel *kernel = task->getKernel();
+            rtkernel = dynamic_cast<RTKernel *>(kernel);
+
+            if (rtkernel == nullptr) {
+                // The kernel is a server, not an actual rtkernel convert it to
+                // its task interface and keep climbing up
+                task = dynamic_cast<AbsRTTask *>(kernel);
+            }
+        }
+
+        return task != nullptr;
+    }
+
     void WaitInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
         _father->onInstrEnd();
 
-        RTKernel *k = dynamic_cast<RTKernel *>(_father->getKernel());
+        AbsRTTask *task = _father;
+        RTKernel *rtkernel;
+        auto found = findKernelTask(&task, &rtkernel);
+        if (!found)
+            throw BaseExc("WaitInstr: Kernel not found!");
 
-        if (k == NULL)
-            throw BaseExc("Kernel not found!");
-
-        k->requestResource(_father, _res, _numberOfRes);
+        rtkernel->requestResource(task, _res, _numberOfRes);
 
         _waitEvt.process();
     }
@@ -127,14 +167,13 @@ namespace RTSim {
         _signalEvt.process();
         _father->onInstrEnd();
 
-        RTKernel *k = dynamic_cast<RTKernel *>(_father->getKernel());
+        AbsRTTask *task = _father;
+        RTKernel *rtkernel;
+        auto found = findKernelTask(&task, &rtkernel);
+        if (!found)
+            throw BaseExc("SignalInstr: Kernel not found!");
 
-        if (k == 0) {
-            throw BaseExc("SignalInstr has no kernel set!");
-        }
-
-        else
-            k->releaseResource(_father, _res, _numberOfRes);
+        rtkernel->releaseResource(task, _res, _numberOfRes);
     }
 
 } // namespace RTSim

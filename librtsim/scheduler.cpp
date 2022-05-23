@@ -98,6 +98,17 @@ namespace RTSim {
             return NULL;
         else
             return (*mi).second;
+
+        // // NOTE: this code should not be necessary anymore. If you need it
+        // // remove the if-else above and uncomment this block.
+        // while (mi == _tasks.end()) {
+        //     auto kernel = task->getKernel();
+        //     task = dynamic_cast<AbsRTTask *>(kernel);
+        //     if (task == nullptr)
+        //         return nullptr;
+        //     mi = _tasks.find(task);
+        // }
+        // return (*mi).second;
     }
 
     void Scheduler::setKernel(AbsKernel *k) {

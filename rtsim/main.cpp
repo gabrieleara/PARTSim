@@ -10,23 +10,50 @@
 #include <metasim/simul.hpp>
 
 // LibRTSim
+#include <rtsim/cbserver.hpp>
 #include <rtsim/fcfsresmanager.hpp>
 #include <rtsim/json_trace.hpp>
 #include <rtsim/system.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/waitinstr.hpp>
 
-using TaskSet = std::vector<std::shared_ptr<RTSim::Task>>;
+class ServerTask {
+    using Task_ptr = std::shared_ptr<RTSim::Task>;
+    using Server_ptr = std::shared_ptr<RTSim::Server>;
+
+public:
+    ServerTask(Task_ptr task, Server_ptr server) : task(task), server(server) {
+        if (server)
+            server->addTask(*task);
+    }
+
+    RTSim::AbsRTTask &getTaskForKernel() {
+        return *server;
+    }
+
+    RTSim::AbsRTTask &getTaskForTracer() {
+        return *task;
+    }
+
+private:
+    Task_ptr task;
+    Server_ptr server;
+};
+
+using TaskSet = std::vector<ServerTask>;
 
 TaskSet read_taskset(const std::string &tset_file) {
     yaml::Object_ptr tset_spec = yaml::parse(tset_file);
 
     TaskSet taskset;
 
+    int i = 0;
+
     // FIXME: assuming periodic task, ask for task type in YML
     for (const auto &task_spec : *(tset_spec->get("taskset"))) {
         auto str_name = task_spec->get("name")->get();
         auto str_iat = task_spec->get("iat")->get();
+        auto str_runtime = task_spec->get("runtime")->get();
         auto str_rdl = task_spec->get("rdl")->get();
         auto str_ph = task_spec->get("ph")->get();
         auto str_qs = task_spec->get("qs")->get();
@@ -35,6 +62,8 @@ TaskSet read_taskset(const std::string &tset_file) {
         using Tick = MetaSim::Tick;
 
         auto iat = str_iat.length() ? Tick(std::stol(str_iat)) : Tick(0);
+        auto runtime =
+            str_runtime.length() ? Tick(std::stol(str_runtime)) : Tick(0);
         auto rdl = str_rdl.length() ? Tick(std::stol(str_rdl)) : iat;
         auto ph = str_ph.length() ? Tick(std::stol(str_ph)) : Tick(0);
         auto qs = str_qs.length() ? std::stol(str_qs) : 100L;
@@ -56,10 +85,38 @@ TaskSet read_taskset(const std::string &tset_file) {
             task_ptr->insertCode(str_instr);
         }
 
-        taskset.push_back(task_ptr);
+        auto server_ptr = std::make_shared<RTSim::CBServer>(
+            runtime, iat, rdl, true, "cbserver_" + str_name);
+
+        taskset.emplace_back(task_ptr, server_ptr);
     }
 
     return taskset;
+}
+
+std::unique_ptr<RTSim::ResManager>
+    read_resources(const std::string &tset_file) {
+    yaml::Object_ptr tset_spec = yaml::parse(tset_file);
+
+    auto resources = std::make_unique<RTSim::FCFSResManager>();
+
+    for (const auto &res_spec : *(tset_spec->get("resources"))) {
+        auto str_name = res_spec->get("name")->get();
+        auto str_initial_state = res_spec->get("initial-state")->get();
+
+        // TODO: more general specification in YML for any kind of resource
+        int n_initial = str_initial_state == "locked" ? 0 : 1;
+
+        if (!resources->hasResource(str_name)) {
+            resources->addResource(str_name, 1, n_initial);
+        } else {
+            std::cerr << "Cannot specify resource twice: " << str_name
+                      << std::endl;
+            throw std::exception{};
+        }
+    }
+
+    return resources;
 }
 
 struct Tracer {
@@ -88,7 +145,7 @@ struct Tracer {
         }
     }
 
-    void attachToTask(RTSim::Task &task) {
+    void attachToTask(RTSim::AbsRTTask &task) {
         if (ttrace)
             ttrace->attachToTask(task);
         if (jtrace)
@@ -107,50 +164,23 @@ int main(int argc, char *argv[]) {
     }
 
     std::vector<Tracer> tracers;
-
     for (auto fname : list_split(opts["trace"])) {
         tracers.emplace_back(fname);
     }
 
     RTSim::System sys{opts["system"]};
+
+    auto resmanager = read_resources(opts["taskset"]);
+    for (auto &kernel : sys.kernels) {
+        kernel->setResManager(resmanager.get());
+    }
+
     TaskSet taskset = read_taskset(opts["taskset"]);
+    for (auto &task : taskset) {
+        sys.kernels[0]->addTask(task.getTaskForKernel());
 
-    RTSim::FCFSResManager resmanager;
-    sys.kernels[0]->setResManager(&resmanager);
-
-    for (auto &t : taskset) {
-        sys.kernels[0]->addTask(*t, "");
         for (auto &tracer : tracers) {
-            tracer.attachToTask(*t);
-        }
-
-        for (const auto &instr : t->getInstrQueue()) {
-            auto waitInstr =
-                dynamic_cast<const RTSim::WaitInstr *>(instr.get());
-
-            // If instance of WaitInstr, check that the resoure is present
-            if (waitInstr) {
-                auto res = waitInstr->getResource();
-                if (!resmanager.hasResource(res)) {
-                    resmanager.addResource(res);
-                }
-
-                continue;
-            }
-
-            // Same thing for SignalInstr
-            auto signalInstr =
-                dynamic_cast<const RTSim::SignalInstr *>(instr.get());
-
-            // If instance of SignalInstr, check that the resoure is present
-            if (signalInstr) {
-                auto res = signalInstr->getResource();
-                if (!resmanager.hasResource(res)) {
-                    resmanager.addResource(res);
-                }
-
-                continue;
-            }
+            tracer.attachToTask(task.getTaskForTracer());
         }
     }
 
@@ -161,6 +191,8 @@ int main(int argc, char *argv[]) {
         std::cerr << "TERMINATING!" << std::endl;
         return EXIT_FAILURE;
     }
+
+    resmanager->getID();
 
     return EXIT_SUCCESS;
 }
