@@ -9,8 +9,8 @@ email                : simoncelli.stefano@hotmail.it
 #include <metasim/factory.hpp>
 #include <rtsim/AVRTask.hpp>
 #include <rtsim/kernel.hpp>
-#include <rtsim/fpsched.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

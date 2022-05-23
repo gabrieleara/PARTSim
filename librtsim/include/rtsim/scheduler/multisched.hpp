@@ -11,8 +11,8 @@
 // RTSim
 // #include <rtsim/cpu.hpp>
 #include <rtsim/mrtkernel.hpp>
-// #include <rtsim/rrscheduler.hpp>
-#include <rtsim/scheduler.hpp>
+// #include <rtsim/scheduler/rrscheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 namespace RTSim {
     /// \ingroup sched

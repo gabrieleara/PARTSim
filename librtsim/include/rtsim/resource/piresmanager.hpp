@@ -18,8 +18,8 @@
 
 #include <metasim/plist.hpp>
 
-#include <rtsim/resmanager.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/resource/resmanager.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 #define _PIRESMAN_DBG_LEV "piresman"
 
@@ -27,61 +27,40 @@ namespace RTSim {
 
     using namespace MetaSim;
 
-    using std::map;
-
-    /**
-       \ingroup resman
-
-       This class implements the Priority Inheritance Protocol. It has the
-       same interface of any Resource Manager class, in addition it has a
-       setScheduler() function, because the PI needs the scheduler for
-       changing the priority of a task.
-    */
+    /// @ingroup resman
+    ///
+    /// Implements the Priority Inheritance Protocol. When a task blocks on a
+    /// resource, it queries its scheduler for its priority and bumps the
+    /// priority of the running task accordingly.
     class PIRManager : public ResManager {
-        //         Scheduler *_sched;
     public:
-        /**
-         * Constructor
-         */
         PIRManager(const std::string &n = "");
 
-        /**
-         * Sets the scheduler for this resmanager
-         */
-        //         void setScheduler(Scheduler *s);
-
-        /**
-         * @todo clear the maps!!
-         */
+        // TODO: clear the maps!
         void newRun() override;
         void endRun() override;
 
     protected:
-        /**
-           Returns true if the resource can be locked, false otherwise
-           (in such a case, the task should be blocked)
-         */
         bool request(AbsRTTask *t, Resource *r, int n = 1) override;
-
-        /**
-           Releases the resource.
-         */
         void release(AbsRTTask *t, Resource *r, int n = 1) override;
 
     private:
-        /// correspondence task / priority
-        typedef map<std::string, int> PRIORITY_MAP;
+        /// Correspondence between each task and its (original) priority
+        using priority_map_t = std::map<Resource *, int>;
 
-        /// Blocked tasks, ordered by priority.
-        /// There is one such queue for each resource
-        typedef priority_list<TaskModel *, TaskModel::TaskModelCmp>
-            BLOCKED_QUEUE;
+        /// Blocked tasks are ordered by priority, just like in the original
+        /// scheduler.
+        using prio_queue_t =
+            priority_list<TaskModel *, TaskModel::TaskModelCmp>;
 
-        // Stores the old task priorities
-        map<AbsRTTask *, PRIORITY_MAP> oldPriorities;
+        /// Stores the old task priorities
+        std::map<AbsRTTask *, priority_map_t> _oldPriorities;
 
-        // stores the blocked tasks for each resource, ordered by priority
-        map<string, BLOCKED_QUEUE> blocked;
+        /// Stores the blocked tasks for each resource, ordered by priority
+        std::map<Resource *, prio_queue_t> _blocked;
+
+        /// Stores the list of tasks using the resource, ordered by priority
+        std::map<Resource *, prio_queue_t> _running;
     };
 } // namespace RTSim
 

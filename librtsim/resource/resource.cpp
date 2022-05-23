@@ -23,7 +23,7 @@
  *
  */
 #include <rtsim/abstask.hpp>
-#include <rtsim/resource.hpp>
+#include <rtsim/resource/resource.hpp>
 
 namespace RTSim {
 
@@ -39,7 +39,7 @@ namespace RTSim {
     Resource::Resource(const Resource &r) :
         Entity(r.getName() + "_copy"),
         _total(r.total()),
-        _available(r._available), // FIXME: is this more correct?
+        _available(r._available),
         _available_initial(r._available_initial),
         _owner(0) {}
 
@@ -70,11 +70,6 @@ namespace RTSim {
     }
 
     void Resource::endRun() {}
-
-    //     void Resource::setOwner(AbsRTTask* t)
-    //     {
-    //         owner = t;
-    //     }
 
     AbsRTTask *Resource::getOwner() const {
         return _owner;

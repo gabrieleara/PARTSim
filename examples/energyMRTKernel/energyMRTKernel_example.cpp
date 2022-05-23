@@ -14,7 +14,7 @@
 #include "rttask.hpp"
 #include <assert.h>
 #include <rtsim/cpu.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/energyMRTKernel.hpp>
 #include <rtsim/fileImporter.hpp>
 #include <rtsim/instr.hpp>

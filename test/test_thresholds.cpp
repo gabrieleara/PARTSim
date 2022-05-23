@@ -2,7 +2,7 @@
 #include <rtsim/rttask.hpp>
 #include <rtsim/cbserver.hpp>
 #include <rtsim/kernel.hpp>
-#include <rtsim/fpsched.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;

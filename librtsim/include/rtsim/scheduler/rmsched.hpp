@@ -14,7 +14,7 @@
 #ifndef __RMSCHED_HPP__
 #define __RMSCHED_HPP__
 
-#include <rtsim/fpsched.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
 
 namespace RTSim {
     /**

@@ -21,8 +21,8 @@
 
 #include <rtsim/abskernel.hpp>
 #include <rtsim/abstask.hpp>
-#include <rtsim/resmanager.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/resource/resmanager.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/task.hpp>
 
 #define _SERVER_DBG_LEV "server"
@@ -101,6 +101,11 @@ namespace RTSim {
         GEvent<Server> _dispatchEvt;
 
         std::unique_ptr<Scheduler> sched_;
+
+        Scheduler *getScheduler() const override {
+            // Never used for the servers (so far), bur necessary to build it
+            return sched_.get();
+        }
 
         AbsRTTask *currExe_;
 

@@ -14,7 +14,7 @@
 #include <metasim/simul.hpp>
 
 #include <climits>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/task.hpp>
 
 namespace RTSim {

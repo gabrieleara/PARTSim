@@ -1,11 +1,11 @@
 // RTSim
 #include <rtsim/cbserver.hpp>
-#include <rtsim/multisched.hpp>
+#include <rtsim/scheduler/multisched.hpp>
 #include <rtsim/energyMRTKernel.hpp>
 
 // Schedulers
-#include <rtsim/edfsched.hpp>
-#include <rtsim/rrsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
+#include <rtsim/scheduler/rrsched.hpp>
 
 namespace RTSim {
     MultiCoresScheds::MultiCoresScheds(MRTKernel *kernel,

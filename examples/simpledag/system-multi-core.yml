@@ -3,6 +3,7 @@ cpu_islands:
     numcpus: 2
     kernel:
       scheduler: edf
+      task_placement: global
     volts:
       [ 5 ]
     freqs:

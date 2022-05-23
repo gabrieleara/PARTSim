@@ -3,7 +3,7 @@
   real-time tasks scheduled by EDF on a single processor.
 */
 #include <rtsim/kernel.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/rttask.hpp>

@@ -11,7 +11,7 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/kernel.hpp>
 #include <rtsim/rttask.hpp>
 

@@ -26,57 +26,40 @@
 
 #include <rtsim/abskernel.hpp>
 #include <rtsim/abstask.hpp>
-#include <rtsim/resmanager.hpp>
-#include <rtsim/resource.hpp>
+#include <rtsim/resource/resmanager.hpp>
+#include <rtsim/resource/resource.hpp>
 
 namespace RTSim {
 
     using namespace MetaSim;
 
-    ResManager::ResManager(const string &n) : Entity(n), _kernel(0), _res() {}
+    ResManager::ResManager(const string &n) : Entity(n) {}
 
-    ResManager::~ResManager() {
-        std::vector<Resource *>::iterator i = _res.begin();
-        for (; i != _res.end(); i++)
-            delete *i;
-
-        // delete the resource list
-        _res.clear();
-    }
-
-    void ResManager::setKernel(AbsKernel *k, Scheduler *s) {
-        _kernel = k;
-        _sched = s;
-    }
-
-    void ResManager::addResource(const string &name, int n, int n_initial) {
-        Resource *r = new Resource(name, n, n_initial);
-        _res.push_back(r);
+    void ResManager::addResource(const string &name, int nr, int nr_initial) {
+        _resources.insert(
+            {name, std::make_shared<Resource>(name, nr, nr_initial)});
     }
 
     bool ResManager::hasResource(const string &name) const {
-        for (const auto &r : _res) {
-            if (r->getName() == name)
-                return true;
-        }
-
-        return false;
+        return _resources.find(name) != _resources.end();
     }
 
-    bool ResManager::request(AbsRTTask *t, const string &name, int n) {
+    bool ResManager::request(AbsRTTask *t, const std::string &name, int nr) {
         DBGENTER(_RESMAN_DBG_LEV);
+        auto resource = _resources.find(name);
+        if (resource == _resources.end())
+            throw BaseExc("Cannot find requested resouce " + name);
 
-        Resource *r = dynamic_cast<Resource *>(Entity::_find(name));
-        bool ret = request(t, r, n);
-
-        return ret;
+        return request(t, resource->second.get(), nr);
     }
 
-    void ResManager::release(AbsRTTask *t, const string &name, int n) {
+    void ResManager::release(AbsRTTask *t, const std::string &name, int nr) {
         DBGENTER(_RESMAN_DBG_LEV);
+        auto resource = _resources.find(name);
+        if (resource == _resources.end())
+            throw BaseExc("Cannot find requested resouce " + name);
 
-        Resource *r = dynamic_cast<Resource *>(Entity::_find(name));
-        release(t, r, n);
+        release(t, resource->second.get(), nr);
     }
 
 } // namespace RTSim

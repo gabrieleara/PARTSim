@@ -1,5 +1,5 @@
 #include <rtsim/kernel.hpp>
-#include <rtsim/rmsched.hpp>
+#include <rtsim/scheduler/rmsched.hpp>
 //#include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/rttask.hpp>

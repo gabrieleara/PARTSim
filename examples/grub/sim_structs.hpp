@@ -4,8 +4,8 @@
 #include <fstream>
 
 #include <rtsim/kernel.hpp>
-#include <rtsim/edfsched.hpp>
-#include <rtsim/fifosched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
+#include <rtsim/scheduler/fifosched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/rttask.hpp>

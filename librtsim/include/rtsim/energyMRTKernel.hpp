@@ -15,8 +15,8 @@
 #define RTLIB2_0_ENERGYMRTKERNEL_H
 
 #include <rtsim/mrtkernel.hpp>
-#include <rtsim/multisched.hpp>
-#include <rtsim/rrsched.hpp>
+#include <rtsim/scheduler/multisched.hpp>
+#include <rtsim/scheduler/rrsched.hpp>
 #include <rtsim/rttask.hpp>
 #include <rtsim/task.hpp>
 #include <rtsim/utils.hpp>

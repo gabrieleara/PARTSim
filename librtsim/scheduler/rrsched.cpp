@@ -1,6 +1,6 @@
 #include <cassert>
 #include <rtsim/energyMRTKernel.hpp>
-#include <rtsim/rrsched.hpp>
+#include <rtsim/scheduler/rrsched.hpp>
 #include <sstream>
 #include <rtsim/task.hpp>
 

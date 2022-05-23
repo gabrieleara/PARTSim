@@ -14,7 +14,7 @@
 #ifndef __EDFSCHED_HPP__
 #define __EDFSCHED_HPP__
 
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 namespace RTSim {
 

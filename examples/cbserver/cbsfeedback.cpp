@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <rtsim/cbserver.hpp>
 #include <rtsim/kernel.hpp>
-#include <rtsim/rmsched.hpp>
-#include <rtsim/edfsched.hpp>
-#include <rtsim/rrsched.hpp>
+#include <rtsim/scheduler/rmsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
+#include <rtsim/scheduler/rrsched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/rttask.hpp>

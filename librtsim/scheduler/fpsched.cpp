@@ -13,7 +13,7 @@
  ***************************************************************************/
 #include <sstream>
 
-#include <rtsim/fpsched.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
 #include <rtsim/kernel.hpp>
 
 namespace RTSim {

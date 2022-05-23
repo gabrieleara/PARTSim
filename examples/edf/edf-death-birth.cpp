@@ -5,7 +5,7 @@
   maximum possible budget is created, to check whether any deadline miss occurs
 */
 #include <rtsim/kernel.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/json_trace.hpp>

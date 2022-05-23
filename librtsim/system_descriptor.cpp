@@ -24,7 +24,8 @@ namespace RTSim {
     KernelDescriptor createFrom(yaml::Object_ptr ptr) {
         KernelDescriptor kd;
         kd.name = ptr->get(ATTR_NAME)->get();
-        kd.scheduler_type = ptr->get(ATTR_SCHEDULER)->get();
+        kd.scheduler = ptr->get(ATTR_SCHEDULER)->get();
+        kd.placement = ptr->get(ATTR_PLACEMENT)->get();
         return kd;
     }
 

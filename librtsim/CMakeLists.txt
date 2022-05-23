@@ -9,19 +9,32 @@ set(LIBRARY_PROPERTIES              )
 set(LIBRARY_DEPENDENCIES            metasim)
 
 set(LIBRARY_SOURCE_FILES
+    resource/fcfsresmanager.cpp
+    resource/resmanager.cpp
+    resource/resource.cpp
+    # resource/bwi.cpp                # Not ready for use
+    # resource/piresmanager.cpp       # Not ready for use
+
+    # TODO: check schedulers organization
+    scheduler/edfsched.cpp
+    scheduler/fifosched.cpp
+    scheduler/fpsched.cpp
+    scheduler/rmsched.cpp
+    scheduler/rrsched.cpp
+    scheduler/scheduler.cpp
+    # Check this one
+    scheduler/regsched.cpp
+    # Check this one
+    scheduler/multisched.cpp
+
     AVRTask.cpp
-    bwi.cpp
     capacitytimer.cpp
     cbserver.cpp
     cpu.cpp
-    edfsched.cpp
     energyMRTKernel.cpp
     exeinstr.cpp
-    fcfsresmanager.cpp
     feedback.cpp
     feedbacktest.cpp
-    fifosched.cpp
-    fpsched.cpp
     grubserver.cpp
     instr.cpp
     interrupt.cpp
@@ -32,24 +45,16 @@ set(LIBRARY_SOURCE_FILES
     load.cpp
     migrationmanager.cpp
     mrtkernel.cpp
-    multisched.cpp
-    piresman.cpp
     pollingserver.cpp
     powermodel.cpp
     powermodel_params.cpp
     ps_trace.cpp
     reginstr.cpp
-    regsched.cpp
     regtask.cpp
-    resmanager.cpp
-    resource.cpp
-    rmsched.cpp
-    rrsched.cpp
     rttask.cpp
     schedinstr.cpp
     schedpoints.cpp
     schedrta.cpp
-    scheduler.cpp
     server.cpp
     sparepot.cpp
     sporadicserver.cpp

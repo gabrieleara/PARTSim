@@ -1,8 +1,8 @@
 #ifndef __BWI_HPP__
 #define __BWI_HPP__
 
-#include <rtsim/resmanager.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/resource/resmanager.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/server.hpp>
 #include <map>
 #include <string>

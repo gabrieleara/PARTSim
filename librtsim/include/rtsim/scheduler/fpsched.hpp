@@ -14,7 +14,7 @@
 #ifndef __FPSCHED_HPP__
 #define __FPSCHED_HPP__
 
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 #define _FP_SCHED_DBG "fpsched"
 

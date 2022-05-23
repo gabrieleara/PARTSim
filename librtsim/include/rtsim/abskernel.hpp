@@ -19,6 +19,7 @@
 namespace RTSim {
 
     class CPU;
+    class Scheduler;
 
     /**
        \ingroup kernel
@@ -85,6 +86,8 @@ namespace RTSim {
 
         /** ??? */
         virtual bool isContextSwitching() const = 0;
+
+        virtual Scheduler *getScheduler() const = 0;
     };
 
 } // namespace RTSim

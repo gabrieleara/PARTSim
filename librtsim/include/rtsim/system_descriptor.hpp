@@ -15,7 +15,8 @@ namespace RTSim {
     class KernelDescriptor {
     public:
         std::string name;
-        std::string scheduler_type;
+        std::string scheduler;
+        std::string placement;
     };
 
     class CPUMDescriptor {

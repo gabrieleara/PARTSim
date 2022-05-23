@@ -18,11 +18,14 @@
 
 #include <metasim/entity.hpp>
 
-#include <rtsim/resource.hpp>
+#include <rtsim/resource/resource.hpp>
 
 namespace RTSim {
 
     class AbsTask;
+
+    // FIXME: this class is unused and most likely incompatible with the other
+    // implementations!
 
     /**
        \ingroup util

@@ -12,37 +12,34 @@
  *                                                                         *
  ***************************************************************************/
 #include <metasim/factory.hpp>
-#include <metasim/strtoken.hpp>
-
-#include <rtsim/edfsched.hpp>
-#include <rtsim/fifosched.hpp>
-#include <rtsim/fpsched.hpp>
-#include <rtsim/rrsched.hpp>
+#include <rtsim/scheduler/fifosched.hpp>
+#include <rtsim/kernel.hpp>
 
 namespace RTSim {
 
-    const string FIFOName("FIFOSched");
-    const string FPName("FPSched");
-    const string EDFName("EDFSched");
-    const string RRName("RRSched");
+    using std::unique_ptr;
 
-    /**
-        This namespace should never be used by the user. Contains
-        functions to initialize the abstract factory that builds
-        the scheduler.
-    */
-    namespace __sched_stub {
-        static registerInFactory<Scheduler, FPScheduler, string>
-            registerfp(FPName);
+    void FIFOScheduler::addTask(AbsRTTask *task) { // throw(RTSchedExc) {
+        FIFOModel *model = new FIFOModel(task);
 
-        static registerInFactory<Scheduler, EDFScheduler, string>
-            registeredf(EDFName);
+        if (find(task) != NULL)
+            throw RTSchedExc("Element already present");
 
-        static registerInFactory<Scheduler, RRScheduler, string>
-            registerrr(RRName);
+        _tasks[task] = model;
+    }
 
-        static registerInFactory<Scheduler, FIFOScheduler, string>
-            registerfifo(FIFOName);
-    } // namespace __sched_stub
-    void __regsched_init() {}
+    void FIFOScheduler::addTask(AbsRTTask *task, const std::string &p) {
+        if (!dynamic_cast<AbsRTTask *>(task))
+            throw RTSchedExc("Cannot add a AbsRTTask to FIFO");
+        // ignoring parameters
+        addTask(dynamic_cast<AbsRTTask *>(task));
+    }
+
+    unique_ptr<FIFOScheduler>
+        FIFOScheduler::createInstance(const vector<string> &par) {
+        // todo: check the parameters (i.e. to set the default
+        // time quantum)
+        return unique_ptr<FIFOScheduler>(new FIFOScheduler);
+    }
+
 } // namespace RTSim

@@ -59,6 +59,8 @@ namespace RTSim {
         /// copy constructor
         Resource(const Resource &r);
 
+        ~Resource() override = default;
+
         /// lock the resource
         void lock(AbsRTTask *owner, int n = 1);
 

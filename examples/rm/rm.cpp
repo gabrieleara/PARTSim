@@ -3,7 +3,7 @@
  real-time tasks scheduled by RM on a single processor.
  */
 #include <rtsim/kernel.hpp>
-#include <rtsim/fpsched.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/rttask.hpp>

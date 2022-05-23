@@ -21,7 +21,7 @@
 #include <metasim/plist.hpp>
 #include <metasim/simul.hpp>
 
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 #define _RR_SCHED_DBG_LEV "RRSched"
 

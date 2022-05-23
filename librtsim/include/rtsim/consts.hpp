@@ -10,6 +10,7 @@ namespace RTSim {
     static constexpr char ATTR_NUMCPUS[] = "numcpus";
     static constexpr char ATTR_KERNEL[] = "kernel";
     static constexpr char ATTR_SCHEDULER[] = "scheduler";
+    static constexpr char ATTR_PLACEMENT[] = "task_placement";
     static constexpr char ATTR_VOLTS[] = "volts";
     static constexpr char ATTR_FREQS[] = "freqs";
     static constexpr char ATTR_POWER_MODEL[] = "power_model";

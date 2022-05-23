@@ -9,7 +9,7 @@
 #include <string>
 
 #include <rtsim/cpu.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/instr.hpp>
 #include <rtsim/json_trace.hpp>
 #include <rtsim/jtrace.hpp>

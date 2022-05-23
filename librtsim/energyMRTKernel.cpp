@@ -19,7 +19,7 @@
 #include <rtsim/energyMRTKernel.hpp>
 #include <rtsim/exeinstr.hpp>
 #include <rtsim/rttask.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/task.hpp>
 #include <rtsim/utils.hpp>
 

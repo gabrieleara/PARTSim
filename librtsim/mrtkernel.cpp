@@ -14,7 +14,7 @@
 
 #include <rtsim/cbserver.hpp>
 #include <rtsim/mrtkernel.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 
 namespace RTSim {
     // =========================================================================
@@ -135,6 +135,8 @@ namespace RTSim {
         _isContextSwitching[c] = false;
         _beginEvt[c] = new BeginDispatchMultiEvt(*this, *c);
         _endEvt[c] = new EndDispatchMultiEvt(*this, *c);
+
+        c->setKernel(this);
     }
 
     void MRTKernel::addTask(AbsRTTask &t, const string &param) {

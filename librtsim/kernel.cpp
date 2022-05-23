@@ -18,8 +18,8 @@
 #include <rtsim/cpu.hpp>
 #include <rtsim/kernel.hpp>
 #include <rtsim/reginstr.hpp>
-#include <rtsim/resmanager.hpp>
-#include <rtsim/scheduler.hpp>
+#include <rtsim/resource/resmanager.hpp>
+#include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/task.hpp>
 
 namespace RTSim {
@@ -31,10 +31,10 @@ namespace RTSim {
         Entity(name),
         _sched(s),
         _resMng(0),
-        _cpu(),
+        _cpu(nullptr),
         _isContextSwitching(false),
         _contextSwitchDelay(0),
-        internalCpu(true),
+        _internalCPU(false),
         beginDispatchEvt(this),
         endDispatchEvt(this) {
         __reginstr_init();
@@ -54,24 +54,33 @@ namespace RTSim {
            variable specifies if the CPU must be deleted in
            the kernel destructor.
         */
-        if (c != NULL) {
-            _cpu = c;
-            internalCpu = false;
+        if (c == nullptr) {
+            setCPU(new CPU, true);
         } else {
-            // Creates a CPU without power saving:
-            _cpu = new CPU;
+            setCPU(c);
         }
 
         s->setKernel(this);
     }
 
-    RTKernel::~RTKernel() {
-        DBGENTER(_KERNEL_DBG_LEV);
-        DBGPRINT("Destructor of RTKernel");
-        if (internalCpu == true) {
+    void RTKernel::setCPU(CPU *cpu, bool internal) {
+        if (_cpu && _internalCPU) {
             DBGPRINT("Deleting internal CPU in the kernel");
             delete _cpu;
         }
+
+        _cpu = cpu;
+        _internalCPU = internal && cpu != nullptr;
+        
+        if (_cpu)
+            _cpu->setKernel(this);
+    }
+
+    RTKernel::~RTKernel() {
+        DBGENTER(_KERNEL_DBG_LEV);
+        DBGPRINT("Destructor of RTKernel");
+
+        setCPU(nullptr);
     }
 
     void RTKernel::addTask(AbsRTTask &t, const string &params) {
@@ -194,7 +203,7 @@ namespace RTSim {
 
     void RTKernel::setResManager(ResManager *rm) {
         _resMng = rm;
-        _resMng->setKernel(this, _sched);
+        // _resMng->setKernel(this, _sched);
     }
 
     bool RTKernel::requestResource(AbsRTTask *t, const string &r,
@@ -215,7 +224,6 @@ namespace RTSim {
             throw RTKernelExc("Resource Manager not set!");
 
         _resMng->release(t, r, n);
-
         dispatch();
     }
 

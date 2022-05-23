@@ -1,9 +1,9 @@
 cpu_islands:
   - name: single-island
-    numcpus: 1
+    numcpus: 2
     kernel:
       scheduler: edf
-      task_placement: global
+      task_placement: partitioned
     volts:
       [ 5 ]
     freqs:

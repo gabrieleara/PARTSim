@@ -1,5 +1,5 @@
-#include <rtsim/bwi.hpp>
-#include <rtsim/resource.hpp>
+#include <rtsim/resource/bwi.hpp>
+#include <rtsim/resource/resource.hpp>
 
 namespace RTSim {
     BWI::BWI(const string &n) : ResManager(n) {}

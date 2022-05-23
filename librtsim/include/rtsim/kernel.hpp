@@ -103,7 +103,7 @@ namespace RTSim {
             used in the destructor to know if the delete
             should be done.
         */
-        bool internalCpu;
+        bool _internalCPU;
 
         friend class DispatchEvt;
         friend class BeginDispatchEvt;
@@ -133,6 +133,16 @@ namespace RTSim {
            the constructor.
         */
         virtual ~RTKernel();
+
+    private:
+        /// FIXME: DO NOT USE THIS ON A MRTKERNEL!!
+        void setCPU(CPU *cpu, bool internal);
+
+    public:
+        /// FIXME: DO NOT USE THIS ON A MRTKERNEL!!
+        void setCPU(CPU *cpu) {
+            setCPU(cpu, false);
+        }
 
         /**
            This function simply inserts the task in the ready

@@ -10,7 +10,7 @@
 
 #include <rtsim/mrtkernel.hpp>
 #include <rtsim/cpu.hpp>
-#include <rtsim/edfsched.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/json_trace.hpp>

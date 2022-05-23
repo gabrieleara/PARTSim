@@ -23,7 +23,7 @@
  *
  */
 #include <rtsim/kernel.hpp>
-#include <rtsim/rmsched.hpp>
+#include <rtsim/scheduler/rmsched.hpp>
 
 namespace RTSim {
 

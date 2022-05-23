@@ -41,6 +41,7 @@ namespace RTSim {
     using namespace MetaSim;
 
     class CPU;
+    class RTKernel;
 
     // =========================================================================
     // class CPUIsland
@@ -391,8 +392,6 @@ namespace RTSim {
         size_t _current_opp;
 
         size_t _frequency_switches = 0;
-
-        // EnergyMRTKernel * _kernel;
     };
 } // namespace RTSim
 
@@ -510,6 +509,14 @@ namespace RTSim {
         /// Get the associated CPUIsland
         CPUIsland *getIsland() const {
             return _island;
+        }
+
+        RTKernel *getKernel() const {
+            return _kernel;
+        }
+
+        void setKernel(RTKernel *kernel) {
+            _kernel = kernel;
         }
 
         /// Disabled CPUs should NOT be assigned tasks by schedulers.
@@ -996,6 +1003,10 @@ namespace RTSim {
         /// Determines whether power saving is enabled or not
         /// @deprecated
         // bool PowerSaving;
+
+        /// Points to the kernel associated with this CPU (warning: do NOT move
+        /// CPUs around from one kernel to another!)
+        RTKernel *_kernel = nullptr;
 
         /// Island related to this CPU
         ///
