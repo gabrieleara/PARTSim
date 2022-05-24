@@ -1,5 +1,6 @@
 
 #include <algorithm>
+#include <filesystem>
 #include <sstream>
 
 #include <rtsim/consts.hpp>
@@ -17,11 +18,12 @@ namespace RTSim {
 
     // Base template, use one of its full specializations below
     template <class T>
-    static T createFrom(yaml::Object_ptr ptr);
+    static T createFrom(const std::string &dirname, yaml::Object_ptr ptr);
 
     // TODO: more parameters to choose from, including kernel type and so on
     template <>
-    KernelDescriptor createFrom(yaml::Object_ptr ptr) {
+    KernelDescriptor createFrom(const std::string &dirname,
+                                yaml::Object_ptr ptr) {
         KernelDescriptor kd;
         kd.name = ptr->get(ATTR_NAME)->get();
         kd.scheduler = ptr->get(ATTR_SCHEDULER)->get();
@@ -32,16 +34,20 @@ namespace RTSim {
     // FIXME: does not support prefix for file name
 
     template <>
-    CPUMDescriptor createFrom(yaml::Object_ptr ptr) {
+    CPUMDescriptor createFrom(const std::string &dirname,
+                              yaml::Object_ptr ptr) {
         CPUMDescriptor pm;
 
         pm.name = ptr->get(ATTR_NAME)->get();
         pm.type = ptr->get(ATTR_TYPE)->get();
 
         // Load parameters from csv table
-        const std::string fname = ptr->get(ATTR_FILENAME)->get();
+        std::string fname = ptr->get(ATTR_FILENAME)->get();
 
         if (fname.length() > 0) {
+            if (fname[0] != '/')
+                fname = dirname + "/" + fname;
+
             // TODO: from csv file
             csv::CSVDocument doc(fname);
 
@@ -64,13 +70,16 @@ namespace RTSim {
     }
 
     template <>
-    IslandDescriptor createFrom(yaml::Object_ptr ptr) {
+    IslandDescriptor createFrom(const std::string &dirname,
+                                yaml::Object_ptr ptr) {
         IslandDescriptor island;
 
         island.name = ptr->get(ATTR_NAME)->get();
         island.power_model = ptr->get(ATTR_POWER_MODEL)->get();
+        island.speed_model = ptr->get(ATTR_SPEED_MODEL)->get();
         island.numcpus = from_str<size_t>(ptr->get(ATTR_NUMCPUS)->get());
-        island.kernel = createFrom<KernelDescriptor>(ptr->get(ATTR_KERNEL));
+        island.kernel =
+            createFrom<KernelDescriptor>(dirname, ptr->get(ATTR_KERNEL));
 
         for (auto v : *ptr->get(ATTR_VOLTS)) {
             island.volts.push_back(from_str<volt_type>(v->get()));
@@ -88,12 +97,14 @@ namespace RTSim {
     SystemDescriptor::SystemDescriptor(std::string fname) {
         yaml::Object_ptr descriptor_obj = yaml::parse(fname);
 
+        std::string dirname = std::filesystem::path(fname).parent_path();
+
         for (auto i : *descriptor_obj->get(ATTR_CPU_ISLANDS)) {
-            islands.push_back(createFrom<IslandDescriptor>(i));
+            islands.push_back(createFrom<IslandDescriptor>(dirname, i));
         }
 
         for (auto pm : *descriptor_obj->get(ATTR_POWER_MODELS)) {
-            auto pmd = createFrom<CPUMDescriptor>(pm);
+            auto pmd = createFrom<CPUMDescriptor>(dirname, pm);
             power_models.emplace(pmd.name, std::move(pmd));
         }
     }

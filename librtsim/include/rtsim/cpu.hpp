@@ -448,39 +448,45 @@ namespace RTSim {
             _index(0),
             _workload("idle"),
             _island(nullptr) {
-            setIsland(island);
+            // This invocation here is deeply problematic,
+            // invoke this from outside right after creating
+            // the CPU!
+
+            // setIsland(island);
         }
 
-        /// Constructs a new CPU (also default constructor)
-        ///
-        /// V and F must have the same length.
-        ///
-        /// If an empty V/F is supplied, then power
-        /// management is disabled. If no power model is
-        /// supplied [...]
-        ///
-        /// @param name the name of this CPU
-        /// @param V list of voltages, one per OPP (asc order)
-        /// @param F list of frequencies, one per OPP (asc order)
-        /// @param pm pointer the power model uniquely associated to this CPU
-        ///
-        /// @todo: change to list of OPPs directly?
-        ///
-        /// @note this constructor, which does not have an
-        /// associated island, implicitly creates a new
-        /// island with the given parameters. Memory
-        /// management for these structures will be the
-        /// subject of future fixes, for now they stay
-        /// hanging in the heap forever. I know it is bad,
-        /// but for single-run applications it's not much of
-        /// a deal (unless a CPUIsland is then added to the
-        /// CPU, in that case the "zombie" CPUIsland created
-        /// by this method will keep existing forever...).
-        CPU(const std::string &name = "", const std::vector<volt_type> &V = {},
-            const std::vector<freq_type> &F = {}, CPUModel *pm = nullptr) :
-            CPU(name, new CPUIsland(_vector_from_cpu_pointer(this),
-                                    CPUIsland::Type::GENERIC, name, V, F, pm)) {
-        }
+        // /// Constructs a new CPU (also default constructor)
+        // ///
+        // /// V and F must have the same length.
+        // ///
+        // /// If an empty V/F is supplied, then power
+        // /// management is disabled. If no power model is
+        // /// supplied [...]
+        // ///
+        // /// @param name the name of this CPU
+        // /// @param V list of voltages, one per OPP (asc order)
+        // /// @param F list of frequencies, one per OPP (asc order)
+        // /// @param pm pointer the power model uniquely associated to this CPU
+        // ///
+        // /// @todo: change to list of OPPs directly?
+        // ///
+        // /// @note this constructor, which does not have an
+        // /// associated island, implicitly creates a new
+        // /// island with the given parameters. Memory
+        // /// management for these structures will be the
+        // /// subject of future fixes, for now they stay
+        // /// hanging in the heap forever. I know it is bad,
+        // /// but for single-run applications it's not much of
+        // /// a deal (unless a CPUIsland is then added to the
+        // /// CPU, in that case the "zombie" CPUIsland created
+        // /// by this method will keep existing forever...).
+        // CPU(const std::string &name = "", const std::vector<volt_type> &V =
+        // {},
+        //     const std::vector<freq_type> &F = {}, CPUModel *pm = nullptr) :
+        //     CPU(name, new CPUIsland(_vector_from_cpu_pointer(this),
+        //                             CPUIsland::Type::GENERIC, name, V, F,
+        //                             pm)) {
+        // }
 
         DISABLE_COPY(CPU);
         DISABLE_MOVE(CPU);
@@ -1082,6 +1088,7 @@ namespace RTSim {
         // TODO: should a CPU create a new Island each
         // time it is set to nullptr?
         (*res)->setIsland(nullptr);
+        _cpus.erase(res);
         return true;
     }
 
@@ -1217,21 +1224,21 @@ namespace RTSim {
         }
     }
 
-    inline CPU *uniformCPUFactory::createCPU(const std::string &name,
-                                             const std::vector<volt_type> &V,
-                                             const std::vector<freq_type> &F,
-                                             CPUModel *pm) {
-        CPU *c = nullptr;
+    // inline CPU *uniformCPUFactory::createCPU(const std::string &name,
+    //                                          const std::vector<volt_type> &V,
+    //                                          const std::vector<freq_type> &F,
+    //                                          CPUModel *pm) {
+    //     CPU *c = nullptr;
 
-        if (_count >= _names.size()) {
-            c = new CPU(name, V, F, pm);
-        } else {
-            c = new CPU(_names[_count++], V, F, pm);
-        }
+    //     if (_count >= _names.size()) {
+    //         c = new CPU(name, V, F, pm);
+    //     } else {
+    //         c = new CPU(_names[_count++], V, F, pm);
+    //     }
 
-        c->setIndex(_index++);
-        return c;
-    }
+    //     c->setIndex(_index++);
+    //     return c;
+    // }
 
     // =========================================================================
     // class customCPUFactory

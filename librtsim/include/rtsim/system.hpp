@@ -6,10 +6,10 @@
 
 // Static system information
 #include <rtsim/cpu.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/kernel.hpp>
 #include <rtsim/mrtkernel.hpp>
 #include <rtsim/powermodel.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/tracepower.hpp>
 
 // Tasks system information
@@ -27,28 +27,26 @@
 #include <rtsim/yaml.hpp>
 
 namespace RTSim {
+    template <class T>
+    using sptr = std::shared_ptr<T>;
+
+    template <class T>
+    using uptr = std::unique_ptr<T>;
+
     // TODO: all private, immutable and yadda yadda
     // TODO: the system has no notion of islands, should add that!
     class System {
+        // TODO: hide?
     public:
-        using TracePowerConsumption_ptr =
-            std::shared_ptr<TracePowerConsumption>;
-        using Scheduler_ptr = std::shared_ptr<Scheduler>;
-        using RTKernel_ptr = std::shared_ptr<RTKernel>;
-        using CPU_ptr = std::shared_ptr<CPU>;
-        using CPUModel_ptr = std::shared_ptr<CPUModel>;
-
-        // TODO: hide
-    public:
-        std::vector<CPUModel_ptr> cpu_models;
-        std::vector<CPU_ptr> cpus;
-        std::vector<TracePowerConsumption_ptr> ptraces;
-        std::vector<Scheduler_ptr> schedulers;
-        std::vector<RTKernel_ptr> kernels;
+        std::vector<sptr<CPUModel>> cpu_models;
+        std::vector<sptr<CPUIsland>> islands;
+        std::vector<sptr<CPU>> cpus;
+        std::vector<sptr<TracePowerConsumption>> ptraces;
+        std::vector<sptr<Scheduler>> schedulers;
+        std::vector<sptr<RTKernel>> kernels;
 
     public:
         System(const std::string &fname);
-        System(std::string &&fname) : System(fname) {}
     };
 
     // TODO:
@@ -58,50 +56,5 @@ namespace RTSim {
 
         std::vector<Task_ptr> tasks;
     };
-
-    /*
-    struct SystemParameters {
-        struct KernelParameters {
-            std::string name;
-            std::string scheduler;
-        };
-
-        struct IslandParameters {
-            // std::string name;
-            std::string pm_type;
-            size_t numcpus;
-            KernelParameters kernel;
-        };
-
-        std::string pm_descriptor;
-        std::vector<IslandParameters> cpu_islands;
-
-        SystemParameters(yaml::Object_ptr &&description)
-            : SystemParameters(description) {}
-
-        // TODO: exceptions and all when mandatory parameters are missing
-        SystemParameters(yaml::Object_ptr &description) {
-            yaml::Object_ptr islands = description->get("cpu_islands");
-            for (auto &island : *islands) {
-                yaml::Object_ptr kernel = island->get("kernel");
-
-                const KernelParameters kp = {
-                    kernel->get("name")->get(),
-                    kernel->get("scheduler")->get(),
-                };
-
-                const IslandParameters ip = {
-                    island->get("pm_type")->get(),
-                    (size_t)std::stol(island->get("numcpus")->get()),
-                    kp,
-                };
-
-                this->cpu_islands.push_back(ip);
-            }
-
-            this->pm_descriptor = description->get("pm_descriptor")->get();
-        };
-    }; // struct SystemParameters
-    */
 
 } // namespace RTSim

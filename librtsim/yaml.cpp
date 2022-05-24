@@ -276,7 +276,7 @@ void print(yaml::Object_ptr objptr, yaml::size_type indent = 0) {
 }
 
 int main() {
-    string fname = "src/examples/energy_table/odroid_bp.yaml";
+    string fname = "src/examples/energy_table/odroid_bp.yml";
     yaml::Object_ptr document;
 
     try {

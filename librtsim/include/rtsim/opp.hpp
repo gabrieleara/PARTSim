@@ -78,6 +78,12 @@ namespace RTSim {
     static inline bool operator!=(const OPP &lhs, const OPP &rhs) {
         return !(lhs == rhs);
     }
+
+    struct OPPLessSortByFrequencyOnly {
+        bool operator()(const OPP &lhs, const OPP &rhs) const {
+            return operator_less_freq(lhs, rhs);
+        }
+    };
 } // namespace RTSim
 
 #endif // __RTSIM_OPP_H__

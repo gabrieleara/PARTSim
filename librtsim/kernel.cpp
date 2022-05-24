@@ -54,11 +54,14 @@ namespace RTSim {
            variable specifies if the CPU must be deleted in
            the kernel destructor.
         */
-        if (c == nullptr) {
-            setCPU(new CPU, true);
-        } else {
+        if (c)
             setCPU(c);
-        }
+
+        // if (c == nullptr) {
+        //     setCPU(new CPU, true);
+        // } else {
+        //     setCPU(c);
+        // }
 
         s->setKernel(this);
     }
@@ -71,7 +74,7 @@ namespace RTSim {
 
         _cpu = cpu;
         _internalCPU = internal && cpu != nullptr;
-        
+
         if (_cpu)
             _cpu->setKernel(this);
     }

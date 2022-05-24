@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <rtsim/trim.hpp>
+
 // Known not supported CSV features:
 // - quoted stuff
 // - CR/LF and similar (simple line breaks used instead)
@@ -16,7 +18,7 @@
 //      data column)
 // - UTF-8/16/... data stuff
 // - Assumes all columns have distinct names to them
-// - Does not perform trim operations and does not skip white spaces
+// - Performs trim operations on all values
 
 // TODO: noexcept to methods
 // TODO: virtual all over the place
@@ -100,6 +102,8 @@ namespace csv {
             return _header.size();
         }
         inline virtual size_type rows() const {
+            if (_table.size() < 1)
+                return 0;
             return _table.cbegin()->second.size();
         }
 
@@ -176,6 +180,7 @@ namespace csv {
             {
                 istringstream iss(buffer);
                 while (getline(iss, cell, csv_separator)) {
+                    trim(cell);
                     auto res = _table.find(cell);
                     if (res != _table.cend()) {
                         // TODO: error! the key was already in the table!
@@ -191,6 +196,7 @@ namespace csv {
                 int i = 0;
                 istringstream iss(buffer);
                 for (; getline(iss, cell, csv_separator); ++i) {
+                    trim(cell);
                     const string &key = _header.at(i);
                     _table[key].push_back(cell);
                 }
@@ -220,8 +226,8 @@ namespace csv {
 
 /*
 // Usage:
-#include <rtsim/csv.hpp>
 #include <iostream>
+#include <rtsim/csv.hpp>
 
 int main() {
     std::string fname = "prova.csv";

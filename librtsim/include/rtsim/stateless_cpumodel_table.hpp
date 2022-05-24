@@ -44,7 +44,11 @@ namespace RTSim {
     class TableBasedModel {
     protected:
         using mapping = std::pair<OPP, value_type>;
-        using smap = sorted_map<OPP, value_type>;
+
+        using smap =
+            sorted_map<OPP, value_type,
+                       less_pair<OPP, value_type, OPPLessSortByFrequencyOnly>>;
+
         using map_map = std::map<std::string, smap>;
         using map_map_citer = typename map_map::const_iterator;
 
@@ -67,6 +71,8 @@ namespace RTSim {
             auto res = _map.find(workload);
             if (res != _map.cend())
                 return res;
+
+            // TODO: WARN WHEN A WORKLOAD IS NOT FOUND!!!
 
             // If not found, use one of the following fallbacks
             const wclass_type fallbacks[2] = {{"busy"}, {"idle"}};
@@ -132,8 +138,7 @@ namespace RTSim {
             auto next = res;
             auto prev = res - 1;
 
-            using iterator_type =
-                typename sorted_map<OPP, value_type>::const_iterator;
+            using iterator_type = typename smap::const_iterator;
 
             auto to_codomain = to_second<decltype(res), value_type>;
             auto to_domain = to_first<iterator_type>;

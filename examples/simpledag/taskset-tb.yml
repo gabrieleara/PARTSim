@@ -55,7 +55,7 @@ taskset:
     # Must run before all tasks in the dag (including those without precedence
     # constraints), so deadline = 1 (with 0 it will generate a miss!)
     rdl: 1
-    startcpu: 0
+    startcpu: 4
     code:
       # Must lock on DAG to ensure that dag_end ran in previous iteration
       - lock(DAG)
@@ -65,12 +65,12 @@ taskset:
   - name: task_0
     iat: 1000
     runtime: 250
-    startcpu: 0
+    startcpu: 4
     code:
       # Each task locks on one or more precedence contraints (at least they lock
       # against dag_begin)
       - lock(c_task_X_0)
-      - fixed(200,bzip2)
+      - fixed(200,gzip-1)
       # And unlocks one or more tasks (at least they should unlock the dag_end
       # if they do not have any other successor)
       - unlock(c_task_0_1)
@@ -79,26 +79,26 @@ taskset:
   - name: task_2
     iat: 1000
     runtime: 250
-    startcpu: 0
+    startcpu: 4
     code:
       - lock(c_task_0_2)
-      - fixed(200,bzip2)
+      - fixed(200,gzip-1)
       - unlock(c_task_2_X)
 
   - name: task_1
-    startcpu: 0
+    startcpu: 4
     iat: 1000
     runtime: 550
     code:
       - lock(c_task_0_1)
-      - fixed(500,bzip2)
+      - fixed(500,gzip-1)
       - unlock(c_task_1_X)
 
   # Last task to run in a dag, unlocks all tasks with precedence constraints
   - name: dag_end
     iat: 1000
     runtime: 1
-    startcpu: 0
+    startcpu: 4
     code:
       # Must lock on all tasks with no successors
       - lock(c_task_1_X)

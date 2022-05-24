@@ -9,6 +9,7 @@ cpu_islands:
     freqs:
       [ 1000 ]
     power_model: no_scaling
+    speed_model: no_scaling
 power_models:
   - name: no_scaling
     type: balsini_pannocchi

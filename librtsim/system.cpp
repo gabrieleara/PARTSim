@@ -9,103 +9,141 @@
 #include <rtsim/scheduler/rrsched.hpp>
 
 namespace RTSim {
-
-    std::shared_ptr<Scheduler> make_scheduler(const std::string &name) {
+    uptr<Scheduler> make_scheduler(const std::string &name) {
         // TODO: support RR and other scheduler parameters
         if (name == "edf") {
-            return std::make_shared<EDFScheduler>();
-        // } else if (name == "rr") {
-        //     return std::make_shared<RRScheduler>();
+            return std::make_unique<EDFScheduler>();
+            // } else if (name == "rr") {
+            //     return std::make_unique<RRScheduler>();
         } else if (name == "rm") {
-            return std::make_shared<RMScheduler>();
+            return std::make_unique<RMScheduler>();
         } else if (name == "fifo") {
-            return std::make_shared<FIFOScheduler>();
+            return std::make_unique<FIFOScheduler>();
         }
 
         throw BaseExc("Unsupported scheduler class: " + name);
     }
 
+    uptr<CPUModel>
+        make_model(const std::map<std::string, CPUMDescriptor> &models,
+                   const std::vector<OPP> &opps, const std::string &name_power,
+                   const std::string &name_speed) {
+        auto model_power = models.find(name_power);
+        if (model_power == models.cend())
+            throw BaseExc("Could not find model: " + name_power);
+
+        auto model_speed = models.find(name_speed);
+        if (model_speed == models.cend())
+            throw BaseExc("Could not find model: " + name_speed);
+
+        // Last OPP is expected to be the maximum frequency
+        return CPUModel::create(model_power->second, model_speed->second,
+                                opps.back(), opps.back().frequency);
+    }
+
+    uptr<CPUIsland> make_island(const std::string &name,
+                                const std::vector<OPP> &opps, CPUModel *model) {
+        return std::make_unique<CPUIsland>(0, CPUIsland::Type::GENERIC, name,
+                                           opps, model);
+    }
+
+    uptr<CPU> make_cpu(const std::string &name) {
+        return std::make_unique<CPU>(name, nullptr);
+    }
+
+    uptr<RTKernel> make_kernel_global(Scheduler *scheduler,
+                                      const std::string &name) {
+        return std::make_unique<MRTKernel>(scheduler, std::set<CPU *>{}, name);
+    }
+
+    uptr<RTKernel> make_kernel_partitioned(Scheduler *scheduler,
+                                           const std::string &name, CPU *cpu) {
+        return std::make_unique<RTKernel>(scheduler, name, cpu);
+    }
+
     // TODO: lots of exception handling?
     System::System(const string &fname) {
+        // TODO: default values for all attributes
         const SystemDescriptor sys_des{fname};
 
-        // csv::CSVDocument pmtable{params.pm_descriptor};
+        int cnt_cpus = 0;
+        int cnt_islands = 0;
 
-        int cpu_cnt = 0;
-        int island_cnt = -1;
+        // Fill up the islands
+        for (const auto &island_des : sys_des.islands) {
+            sptr<CPUModel> model;
+            sptr<CPUIsland> island;
+            sptr<CPU> cpu;
+            sptr<TracePowerConsumption> ptrace;
+            sptr<Scheduler> scheduler;
+            sptr<RTKernel> kernel;
 
-        for (const auto &island : sys_des.islands) {
-            // Construct the appropriate CPUModel for each island and then
-            // create copies for each CPU
-            ++island_cnt;
-
-            auto cpu_pmodel_des = sys_des.power_models.find(island.power_model);
-            if (cpu_pmodel_des == sys_des.power_models.cend())
-                throw std::exception{};
-
-            auto cpu_smodel_des = sys_des.power_models.find(island.power_model);
-            if (cpu_smodel_des == sys_des.power_models.cend())
-                throw std::exception{};
-
-            // TODO: default OPP and fmax for the island
-            std::shared_ptr<CPUModel> cpu_model_base_ptr = CPUModel::create(
-                cpu_pmodel_des->second, cpu_smodel_des->second);
-
-            const string cpu_base_name = "CPU_" + island.name + "_";
-
-            // Frequencies are already sorted in non-decreasing order
-            const unsigned int fmax = *(island.freqs.end() - 1);
-
-            Scheduler_ptr scheduler;
-            RTKernel_ptr kernel;
-
-            if (island.kernel.placement == "global") {
-                // One single MRTKernel with one single Scheduler
-                scheduler = make_scheduler(island.kernel.scheduler);
-                kernel = std::make_shared<MRTKernel>(scheduler.get(),
-                                                     std::set<CPU *>{},
-                                                     island.name + "-kernel");
-
-                this->schedulers.push_back(scheduler);
-                this->kernels.push_back(kernel);
+            auto opps = OPP::fromVectors(island_des.volts, island_des.freqs);
+            if (opps.size() < 1) {
+                throw BaseExc("The specified island '" + island_des.name +
+                              "' has no OPPs!");
             }
 
-            for (int i = 0; i < island.numcpus; ++i, ++cpu_cnt) {
-                const string cpuname = cpu_base_name + std::to_string(cpu_cnt);
+            // TODO: check that multiple islands do not have the same name
 
-                // Clone the base model to create the CPU model
-                std::shared_ptr<CPUModel> cpu_model =
-                    cpu_model_base_ptr->clone();
-                std::shared_ptr<CPU> cpu = std::make_shared<CPU>(
-                    cpuname, island.volts, island.freqs, cpu_model.get());
+            // CPU Model and Island (could probably share even more CPU Models,
+            // since they are pretty muvch stateless, but oh well)
+            model = make_model(sys_des.power_models, opps,
+                               island_des.power_model, island_des.speed_model);
+            island = make_island(island_des.name, opps, model.get());
 
-                cpu->setOPP(
-                    0); // TODO: let user choose default OPP for each island
-                cpu->setWorkload(
-                    "idle"); // TODO: do islands always start as idle?
+            cpu_models.emplace_back(model);
+            islands.emplace_back(island);
 
-                auto ptrace = std::make_shared<TracePowerConsumption>(
-                    cpu.get(), 1, "power_" + cpuname + ".txt");
+            // TODO: island initial (or fixed) frequency
 
-                if (island.kernel.placement == "partitioned") {
+            const std::string basename_kernel = island_des.name + "-kernel";
+            const std::string basename_cpu = island_des.name + "-";
+
+            // For global scheduling: one single MRTKernel with one
+            // Scheduler
+            if (island_des.kernel.placement == "global") {
+                scheduler = make_scheduler(island_des.kernel.scheduler);
+                kernel = make_kernel_global(scheduler.get(), basename_kernel);
+                this->schedulers.emplace_back(scheduler);
+                this->kernels.emplace_back(kernel);
+            }
+
+            for (int i = 0; i < island_des.numcpus; ++i, ++cnt_cpus) {
+                const std::string cpuname =
+                    basename_cpu + std::to_string(cnt_cpus);
+
+                // TODO: fix CPU constructor
+                cpu = make_cpu(cpuname);
+                cpu->setIsland(island.get());
+                cpu->setWorkload("idle");
+
+                if (island_des.kernel.placement == "partitioned") {
                     // One RTKernel for each CPU, with its own scheduler
-                    scheduler = make_scheduler(island.kernel.scheduler);
-                    kernel = std::make_shared<RTKernel>(
+                    scheduler = make_scheduler(island_des.kernel.scheduler);
+                    kernel = make_kernel_partitioned(
                         scheduler.get(),
-                        island.name + "-kernel" + std::to_string(cpu_cnt),
-                        cpu.get());
-
-                    this->schedulers.push_back(scheduler);
-                    this->kernels.push_back(kernel);
+                        basename_kernel + std::to_string(cnt_cpus), cpu.get());
+                    this->schedulers.emplace_back(scheduler);
+                    this->kernels.emplace_back(kernel);
                 } else {
                     std::dynamic_pointer_cast<MRTKernel>(kernel)->addCPU(
                         cpu.get());
                 }
 
-                this->cpu_models.push_back(cpu_model);
-                this->cpus.push_back(cpu);
-                this->ptraces.push_back(ptrace);
+                // TODO: fix ptrace
+                ptrace = std::make_unique<TracePowerConsumption>(
+                    cpu.get(), 1, "power_" + cpuname + ".txt");
+
+                this->cpus.emplace_back(cpu);
+                this->ptraces.emplace_back(ptrace);
             }
+
+            // TODO: change default frequency for an island, for now they all
+            // start with speed maximized
+            island->setOPP(opps.size() - 1);
+
+            ++cnt_islands;
         }
     }
 

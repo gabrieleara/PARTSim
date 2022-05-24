@@ -71,21 +71,21 @@ namespace RTSim {
         _sched->setKernel(this);
     }
 
-    MRTKernel::MRTKernel(Scheduler *s, std::vector<CPU *> cpus,
-                         const string &name) :
-        MRTKernel(s, std::set<CPU *>(cpus.begin(), cpus.end()), name) {}
+    // MRTKernel::MRTKernel(Scheduler *s, std::vector<CPU *> cpus,
+    //                      const string &name) :
+    //     MRTKernel(s, std::set<CPU *>(cpus.begin(), cpus.end()), name) {}
 
-    MRTKernel::MRTKernel(Scheduler *s, absCPUFactory *factory, int n,
-                         const string &name) :
-        MRTKernel(s, createCPUSet(factory, n)) {}
+    // MRTKernel::MRTKernel(Scheduler *s, absCPUFactory *factory, int n,
+    //                      const string &name) :
+    //     MRTKernel(s, createCPUSet(factory, n)) {}
 
-    // Using std::make_unique, we create a temporary unique_ptr that will
-    // automatically delete the uniformCPUFactory once done
-    MRTKernel::MRTKernel(Scheduler *s, int n, const string &name) :
-        MRTKernel(s, std::make_unique<uniformCPUFactory>().get(), n, name) {}
+    // // Using std::make_unique, we create a temporary unique_ptr that will
+    // // automatically delete the uniformCPUFactory once done
+    // MRTKernel::MRTKernel(Scheduler *s, int n, const string &name) :
+    //     MRTKernel(s, std::make_unique<uniformCPUFactory>().get(), n, name) {}
 
-    MRTKernel::MRTKernel(Scheduler *s, const string &name) :
-        MRTKernel(s, 1, name) {}
+    // MRTKernel::MRTKernel(Scheduler *s, const string &name) :
+    //     MRTKernel(s, 1, name) {}
 
     /// Deletes elements pointed by maps
     template <class IT>

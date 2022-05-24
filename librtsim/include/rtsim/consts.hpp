@@ -14,6 +14,7 @@ namespace RTSim {
     static constexpr char ATTR_VOLTS[] = "volts";
     static constexpr char ATTR_FREQS[] = "freqs";
     static constexpr char ATTR_POWER_MODEL[] = "power_model";
+    static constexpr char ATTR_SPEED_MODEL[] = "speed_model";
     static constexpr char ATTR_POWER_MODELS[] = "power_models";
     static constexpr char ATTR_TYPE[] = "type";
     static constexpr char ATTR_FILENAME[] = "filename";

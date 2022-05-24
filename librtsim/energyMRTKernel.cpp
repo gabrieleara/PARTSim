@@ -42,37 +42,32 @@ namespace RTSim {
     bool EnergyMRTKernel::EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END = 1;
     bool EnergyMRTKernel::EMRTK_CBS_MIGRATE_AFTER_END = 0;
 
-    EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler *> &qs, Scheduler *s,
-                                     Island_BL *big, Island_BL *little,
-                                     const string &name) :
-        MRTKernel(s,
-                  big->getProcessors().size() + little->getProcessors().size(),
-                  name) {
-        setIslandBig(big);
-        setIslandLittle(little);
-
-        // // FIXME: Why did the old implementation set the kernel for each island?
-        // big->setKernel(this);
-        // little->setKernel(this);
-
-        for (CPU_BL *c : getProcessors()) {
-            _m_currExe[c] = NULL;
-            _isContextSwitching[c] = false;
-        }
-
-        _sched->setKernel(this);
-        setTryingTaskOnCPU_BL(false);
-
-        // todo is there a shorter solution to pass directly vector<CPU_BL*> to
-        // EMS?
-        vector<CPU_BL *> cpus = getProcessors();
-        vector<CPU *> v;
-        for (CPU_BL *c : cpus)
-            v.push_back((CPU *) c);
-
-        _queues =
-            new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
-    }
+    // EnergyMRTKernel::EnergyMRTKernel(vector<Scheduler *> &qs, Scheduler *s,
+    //                                  Island_BL *big, Island_BL *little,
+    //                                  const string &name) :
+    //     MRTKernel(s,
+    //               big->getProcessors().size() + little->getProcessors().size(),
+    //               name) {
+    //     setIslandBig(big);
+    //     setIslandLittle(little);
+    //     // // FIXME: Why did the old implementation set the kernel for each island?
+    //     // big->setKernel(this);
+    //     // little->setKernel(this);
+    //     for (CPU_BL *c : getProcessors()) {
+    //         _m_currExe[c] = NULL;
+    //         _isContextSwitching[c] = false;
+    //     }
+    //     _sched->setKernel(this);
+    //     setTryingTaskOnCPU_BL(false);
+    //     // todo is there a shorter solution to pass directly vector<CPU_BL*> to
+    //     // EMS?
+    //     vector<CPU_BL *> cpus = getProcessors();
+    //     vector<CPU *> v;
+    //     for (CPU_BL *c : cpus)
+    //         v.push_back((CPU *) c);
+    //     _queues =
+    //         new EnergyMultiCoresScheds(this, v, qs, "energymultischeduler");
+    // }
 
     EnergyMultiCoresScheds::EnergyMultiCoresScheds(MRTKernel *kernel,
                                                    vector<CPU *> &cpus,

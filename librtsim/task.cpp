@@ -23,6 +23,8 @@
 #include <rtsim/instr.hpp>
 #include <rtsim/task.hpp>
 
+#include <rtsim/utils.hpp>
+
 namespace RTSim {
     using namespace MetaSim;
     using namespace parse_util;
@@ -414,6 +416,16 @@ namespace RTSim {
         deschedEvt.drop();
 
         state = TSK_EXEC;
+
+        // Setting the workload here is innocent enough. Not
+        // necessary to ensure correct behavior of the
+        // simulator, but the TextTraces expect the speed of
+        // the CPU to be updated after this event is
+        // handled.
+        auto cpu = getCPU();
+        if (cpu) {
+            cpu->setWorkload(Utils::getTaskWorkload(this));
+        }
 
         (*actInstr)->schedule();
 

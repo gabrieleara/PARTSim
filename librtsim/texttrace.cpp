@@ -46,9 +46,9 @@ namespace RTSim {
                     std::to_string(dynamic_cast<CPU_BL *>(c)->getFrequency());
 
             fd << tt->getName() << " scheduled on CPU " << c->getName() << " "
-               << c->getSpeed() << frequency_str << " abs WCET "
-               << tt->getWCET() << " its arrival was " << tt->getArrival()
-               << std::endl;
+               << "workload " << c->getWorkload() << " "<< "speed " << c->getSpeed() << " " << frequency_str
+               << " abs WCET " << tt->getWCET() << " its arrival was "
+               << tt->getArrival() << std::endl;
         }
     }
 
