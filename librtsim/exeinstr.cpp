@@ -21,7 +21,6 @@
 #include <metasim/simul.hpp>
 #include <metasim/strtoken.hpp>
 
-#include <rtsim/exeinstr.hpp>
 #include <assert.h>
 #include <rtsim/cpu.hpp>
 #include <rtsim/exeinstr.hpp>
@@ -161,16 +160,18 @@ namespace RTSim {
                    ((double) currentCost - actCycles) / currentSpeed,
                    " to tick ",
                    ceil(((double) currentCost - actCycles) / currentSpeed));
-        Tick tmp = 0;
-        if (((double) currentCost) > actCycles * currentSpeed)
-            tmp =
-                (Tick) ceil(((double) currentCost - actCycles * currentSpeed) /
-                            currentSpeed);
-        assert(tmp >= 0);
-        _endEvt.post(t + tmp);
+
+        // FIXME: I had to invert all of the operation signs... why?
+        Tick remaining = 0;
+        if (double(currentCost) > actCycles) {
+            remaining =
+                Tick(ceil((double(currentCost) - actCycles) * currentSpeed));
+        }
+        assert(remaining >= 0);
+        _endEvt.post(t + remaining);
 
         DBGPRINT("Setting endEvt for " << _father->toString()
-                                       << " at t=" << t + tmp);
+                                       << " at t=" << t + remaining);
         DBGPRINT("End of ExecInstr::schedule() ");
     }
 
@@ -191,8 +192,9 @@ namespace RTSim {
 
             double currentSpeed = p->getSpeed();
 
+            // FIXME: check this out!!! Divide or Multiply???
             actCycles +=
-                ((double) (t - lastTime)) * currentSpeed; // number of cycles
+                ((double) (t - lastTime)) / currentSpeed; // number of cycles
             execdTime += (t - lastTime); // number of time ticks
             lastTime = t;
         }
