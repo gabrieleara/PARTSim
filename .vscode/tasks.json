@@ -20,7 +20,13 @@
             "presentation": {
                 "reveal": "silent"
             },
-            "problemMatcher": "$gcc"
+            "problemMatcher": {
+                "base": "$gcc",
+                "fileLocation": [
+                    "relative",
+                    "${workspaceRoot}/build"
+                ]
+            }
         }
     ]
 }

@@ -10,8 +10,10 @@
             "request": "launch",
             "program": "${workspaceFolder}/build/rtsim/rtsim",
             "args": [
-                "examples/simpledag/system-partitioned.yml",
-                "examples/simpledag/taskset.yml",
+                // "examples/simpledag/system-partitioned.yml",
+                // "examples/simpledag/taskset.yml",
+                "examples/energy_table/odroid_tb.yml",
+                "examples/simpledag/taskset-tb.yml",
                 "10000",
                 "--debug",
                 "-t",
