@@ -32,15 +32,15 @@ namespace RTSim {
 
     void TracePowerConsumption::action() {
         /* It periodically updates the variables: */
-        double currentPowerConsumption = cpu->getPowerMax();
+        double currentPowerConsumption = cpu->getPower();
         totalPowerConsumed += currentPowerConsumption;
         counter++;
-
-        long double TPC = getAveragePowerConsumption();
-        // record("Average Normalized Power Consumption:");
-        // record(TPC);
         record("Current Power Consumption:");
         record(currentPowerConsumption);
+
+        // long double TPC = getAveragePowerConsumption();
+        // record("Average Normalized Power Consumption:");
+        // record(TPC);
     }
 
 } // namespace RTSim
