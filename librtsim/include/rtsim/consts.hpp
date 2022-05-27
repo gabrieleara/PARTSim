@@ -5,41 +5,42 @@ namespace RTSim {
     // =====================================================
     // YAML File Attributes
     // =====================================================
-    static constexpr char ATTR_NAME[] = "name";
-    static constexpr char ATTR_CPU_ISLANDS[] = "cpu_islands";
-    static constexpr char ATTR_NUMCPUS[] = "numcpus";
-    static constexpr char ATTR_KERNEL[] = "kernel";
-    static constexpr char ATTR_SCHEDULER[] = "scheduler";
-    static constexpr char ATTR_PLACEMENT[] = "task_placement";
-    static constexpr char ATTR_VOLTS[] = "volts";
-    static constexpr char ATTR_FREQS[] = "freqs";
-    static constexpr char ATTR_POWER_MODEL[] = "power_model";
-    static constexpr char ATTR_SPEED_MODEL[] = "speed_model";
-    static constexpr char ATTR_POWER_MODELS[] = "power_models";
-    static constexpr char ATTR_TYPE[] = "type";
-    static constexpr char ATTR_FILENAME[] = "filename";
-    static constexpr char ATTR_PARAMS[] = "params";
-    static constexpr char ATTR_WORKLOAD[] = "workload";
-    static constexpr char ATTR_POWER_PARAMS[] = "power_params";
-    static constexpr char ATTR_SPEED_PARAMS[] = "speed_params";
+    static constexpr auto ATTR_NAME = "name";
+    static constexpr auto ATTR_CPU_ISLANDS = "cpu_islands";
+    static constexpr auto ATTR_NUMCPUS = "numcpus";
+    static constexpr auto ATTR_KERNEL = "kernel";
+    static constexpr auto ATTR_SCHEDULER = "scheduler";
+    static constexpr auto ATTR_PLACEMENT = "task_placement";
+    static constexpr auto ATTR_VOLTS = "volts";
+    static constexpr auto ATTR_FREQS = "freqs";
+    static constexpr auto ATTR_BASE_FREQ = "base_freq";
+    static constexpr auto ATTR_POWER_MODEL = "power_model";
+    static constexpr auto ATTR_SPEED_MODEL = "speed_model";
+    static constexpr auto ATTR_POWER_MODELS = "power_models";
+    static constexpr auto ATTR_TYPE = "type";
+    static constexpr auto ATTR_FILENAME = "filename";
+    static constexpr auto ATTR_PARAMS = "params";
+    static constexpr auto ATTR_WORKLOAD = "workload";
+    static constexpr auto ATTR_POWER_PARAMS = "power_params";
+    static constexpr auto ATTR_SPEED_PARAMS = "speed_params";
 
     // =====================================================
     // CSV File Fields
     // =====================================================
-    static constexpr char FIELD_POWER_D[] = "power_d";
-    static constexpr char FIELD_POWER_E[] = "power_e";
-    static constexpr char FIELD_POWER_G[] = "power_g";
-    static constexpr char FIELD_POWER_K[] = "power_k";
-    static constexpr char FIELD_SPEED_A[] = "speed_a";
-    static constexpr char FIELD_SPEED_B[] = "speed_b";
-    static constexpr char FIELD_SPEED_C[] = "speed_c";
-    static constexpr char FIELD_SPEED_D[] = "speed_d";
-    static constexpr char FIELD_FREQ[] = "freq";
-    static constexpr char FIELD_VOLT[] = "voltage";
-    static constexpr char FIELD_POWER[] = "power";
-    static constexpr char FIELD_SPEED[] = "speed";
-    static constexpr char FIELD_MODEL[] = "model";
-    static constexpr char FIELD_WORKLOAD[] = "workload";
+    static constexpr auto FIELD_POWER_D = "power_d";
+    static constexpr auto FIELD_POWER_E = "power_e";
+    static constexpr auto FIELD_POWER_G = "power_g";
+    static constexpr auto FIELD_POWER_K = "power_k";
+    static constexpr auto FIELD_SPEED_A = "speed_a";
+    static constexpr auto FIELD_SPEED_B = "speed_b";
+    static constexpr auto FIELD_SPEED_C = "speed_c";
+    static constexpr auto FIELD_SPEED_D = "speed_d";
+    static constexpr auto FIELD_FREQ = "freq";
+    static constexpr auto FIELD_VOLT = "voltage";
+    static constexpr auto FIELD_POWER = "power";
+    static constexpr auto FIELD_SPEED = "speed";
+    static constexpr auto FIELD_MODEL = "model";
+    static constexpr auto FIELD_WORKLOAD = "workload";
 } // namespace RTSim
 
 #endif // __RTSIM_CONSTS_H__

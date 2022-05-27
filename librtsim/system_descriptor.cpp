@@ -91,6 +91,8 @@ namespace RTSim {
         }
         std::sort(island.freqs.begin(), island.freqs.end());
 
+        island.base_freq = from_str<freq_type>(ptr->get(ATTR_BASE_FREQ)->get());
+
         return island;
     }
 

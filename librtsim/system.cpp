@@ -139,9 +139,17 @@ namespace RTSim {
                 this->ptraces.emplace_back(ptrace);
             }
 
-            // TODO: change default frequency for an island, for now they all
-            // start with speed maximized
-            island->setOPP(opps.size() - 1);
+            size_t base_opp_idx = std::numeric_limits<size_t>::max();
+            // Select the frequency from given the index
+            if (island_des.base_freq > 0) {
+                base_opp_idx = island->getOPPIndexByFrequency(island_des.base_freq);
+            }
+
+            // If nothing is specified, the maximum frequency is used
+            if (base_opp_idx >= opps.size())
+                base_opp_idx = opps.size() - 1;
+
+            island->setOPP(base_opp_idx);
 
             ++cnt_islands;
         }

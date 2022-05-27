@@ -38,6 +38,7 @@ namespace RTSim {
         KernelDescriptor kernel;
         std::vector<volt_type> volts;
         std::vector<freq_type> freqs;
+        freq_type base_freq;
         std::string power_model;
         std::string speed_model;
 

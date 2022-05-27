@@ -79,14 +79,14 @@ taskset:
   - name: task_2
     iat: 1000
     runtime: 250
-    startcpu: 4
+    startcpu: 2
     code:
       - lock(c_task_0_2)
       - fixed(200,gzip-1)
       - unlock(c_task_2_X)
 
   - name: task_1
-    startcpu: 4
+    startcpu: 3
     iat: 1000
     runtime: 550
     code:
@@ -98,7 +98,7 @@ taskset:
   - name: dag_end
     iat: 1000
     runtime: 1
-    startcpu: 4
+    startcpu: 1
     code:
       # Must lock on all tasks with no successors
       - lock(c_task_1_X)

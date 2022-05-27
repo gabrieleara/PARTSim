@@ -101,8 +101,9 @@ TaskSet read_taskset(const std::string &tset_file) {
             task_ptr->insertCode(str_instr);
         }
 
+        // FIXME: should this be HR=false or true?
         auto server_ptr = std::make_shared<RTSim::CBServer>(
-            runtime, iat, rdl, true, "cbserver_" + str_name);
+            runtime, iat, rdl, false, "cbserver_" + str_name);
 
         taskset.emplace_back(task_ptr, server_ptr, startcpu);
     }
