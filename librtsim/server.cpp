@@ -178,6 +178,8 @@ namespace RTSim {
     void Server::onSched(Event *) {
         DBGENTER(_SERVER_DBG_LEV);
 
+        // FIXME: for some reason, sometimes this event is
+        // fired when STATUS == RECHARGING!!
         assert(status == READY);
 
         ready_executing();

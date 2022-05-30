@@ -350,7 +350,14 @@ namespace RTSim {
         // NON-CONST METHODS
 
         // TODO: What is the purpose of these two methods?
-        void newRun() override {}
+        void newRun() override {
+            // FIXME: reset the original OPP of the island,
+            // set before the simulation started for the
+            // first time... somehow!
+
+            updateModels();
+            _frequency_switches = 0;
+        }
         void endRun() override {}
 
         // TODO: to be used only during system initialization
@@ -777,10 +784,10 @@ namespace RTSim {
 
             auto island_idle_power =
                 getValueByOPP(&CPUModel::lookupPower, opp_index, "idle");
-            auto island_active_power =
+            auto cpu_active_power =
                 getValueByOPP(&CPUModel::lookupPower, opp_index, workload);
             auto cpu_idle_power = island_idle_power / watt_type(num_cpus);
-            auto cpu_active_power = island_active_power - island_idle_power;
+            // auto cpu_active_power = island_active_power - island_idle_power;
             return cpu_idle_power + cpu_active_power;
         }
 
@@ -856,6 +863,7 @@ namespace RTSim {
         // NON-CONST METHODS
 
         // TODO: What is the purpose of these two methods?
+        // FIXME: reset counters etc.
         void newRun() override {}
         void endRun() override {}
 

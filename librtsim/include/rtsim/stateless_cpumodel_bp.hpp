@@ -97,14 +97,17 @@ namespace RTSim {
         const freq_type f = opp.frequency * 1000;
         const volt_type v = opp.voltage;
 
-        const auto i = findParams(workload);
+        auto i = findParams(workload);
         if (!foundParams(i)) {
+            // FALLBACK: see also below
+            i = findParams("idle");
+
             // FIXME: if using setVoltage and setFrequency
             // independently, this exception may be
             // erroneously raised when there's no need for
             // these parameters!
             // TODO: some error message!
-            throw std::exception{};
+            // throw std::exception{};
         }
 
         const auto params = getParams(i);
@@ -141,9 +144,10 @@ namespace RTSim {
         const freq_type f = opp.frequency * 1000;
         const volt_type v = opp.voltage;
 
-        const auto i = findParams(workload);
+        auto i = findParams(workload);
         if (!foundParams(i)) {
-            throw std::exception{};
+            i = findParams("idle");
+            // throw std::exception{};
         }
         const auto params = getParams(i);
 
