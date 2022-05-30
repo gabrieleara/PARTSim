@@ -87,6 +87,15 @@ public:
     void erase(const_reference x) {
         Impl::erase(x);
     }
+
+    iterator find(const_reference x){
+        return Impl::find(x);
+    }
+
+    const_iterator find(const_reference x) const {
+        return Impl::find(x);
+    }
+
     // Peppe: does not compile on gcc 3.3.3 on cygwin
     // reference front() { return *begin(); }
     const_reference front() const {
