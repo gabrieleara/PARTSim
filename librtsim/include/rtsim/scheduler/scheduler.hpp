@@ -356,8 +356,12 @@ namespace RTSim {
          * used by some resource manager. */
         TaskModel *find(AbsRTTask *task) const;
 
-        /// @todo change it into ResManager
+        /// @todo change it into ResManager. Gabriele: class friendship is not
+        /// inherited nor transitive in C++, either you list all the classes
+        /// here or you provide an accessor method in the base class that
+        /// subclasses can use.
         friend class PIRManager;
+        friend class PIRM;
     };
 } // namespace RTSim
 
