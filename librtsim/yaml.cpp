@@ -207,7 +207,7 @@ namespace yaml {
                 }
 
                 string attr = trim(content.substr(0, colon_pos));
-                if (attr.length() < 1) { // FIXME: throw exception
+                if (attr.length() < 1) {
                     throw ParseException(
                         "Line " + std::to_string(parsing_line_number) +
                         " contains an unexpected ':' character"

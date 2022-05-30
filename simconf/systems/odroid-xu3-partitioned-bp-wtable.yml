@@ -28,7 +28,7 @@ cpu_islands:
 power_models:
   - name: little
     type: balsini_pannocchi
-    fname: odroid_bp.csv
+    fname: ../models/bp/odroid-xu3.csv
   - name: big
     type: balsini_pannocchi
-    fname: odroid_bp.csv
+    fname: ../models/bp/odroid-xu3.csv

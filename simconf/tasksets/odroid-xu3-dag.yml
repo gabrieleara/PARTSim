@@ -64,7 +64,7 @@ taskset:
 
   - name: task_0
     iat: 1000
-    runtime: 250
+    runtime: 1000
     startcpu: 4
     code:
       # Each task locks on one or more precedence contraints (at least they lock
@@ -78,7 +78,7 @@ taskset:
 
   - name: task_2
     iat: 1000
-    runtime: 250
+    runtime: 1000
     startcpu: 2
     code:
       - lock(c_task_0_2)
@@ -88,7 +88,7 @@ taskset:
   - name: task_1
     startcpu: 3
     iat: 1000
-    runtime: 550
+    runtime: 1000
     code:
       - lock(c_task_0_1)
       - fixed(500,gzip-1)

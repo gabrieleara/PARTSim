@@ -62,9 +62,9 @@ namespace RTSim {
                                                   const wclass_type &workload,
                                                   freq_type) const {
         // FIXME: measurement units!!!
-        OPP opp_copy = opp;
-        opp_copy.frequency *= 1000;
-        opp_copy.voltage *= 1000;
+        // OPP opp_copy = opp;
+        // opp_copy.frequency *= 1000;
+        // opp_copy.voltage *= 1000;
 
         long double (*distance_fn)(const OPP &, const OPP &);
         switch (model_type) {
@@ -79,7 +79,7 @@ namespace RTSim {
         }
 
         using value_type = typename TBApproxCPUModel<model_type>::value_type;
-        return TableBasedModel<value_type>::approx_table_lookup(opp_copy, workload,
+        return TableBasedModel<value_type>::approx_table_lookup(opp, workload,
                                                                 distance_fn);
     }
 

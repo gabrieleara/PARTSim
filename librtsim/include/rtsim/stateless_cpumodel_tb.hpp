@@ -79,11 +79,11 @@ namespace RTSim {
         using value_type = typename TBCPUModel<model_type>::value_type;
 
         // FIXME: measurement units!!!
-        OPP opp_copy = opp;
-        opp_copy.frequency *= 1000;
-        opp_copy.voltage *= 1000;
+        // OPP opp_copy = opp;
+        // opp_copy.frequency = 1000;
+        // opp_copy.voltage *= 1000;
 
-        return TableBasedModel<value_type>::exact_table_lookup(opp_copy, workload);
+        return TableBasedModel<value_type>::exact_table_lookup(opp, workload);
     }
 
 } // namespace RTSim
