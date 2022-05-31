@@ -31,8 +31,6 @@ namespace RTSim {
         return kd;
     }
 
-    // FIXME: does not support prefix for file name
-
     template <>
     CPUMDescriptor createFrom(const std::string &dirname,
                               yaml::Object_ptr ptr) {
@@ -48,7 +46,6 @@ namespace RTSim {
             if (fname[0] != '/')
                 fname = dirname + "/" + fname;
 
-            // TODO: from csv file
             csv::CSVDocument doc(fname);
 
             const size_t num_rows = doc.rows();

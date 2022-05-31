@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include <metasim/baseexc.hpp>
 #include <metasim/memory.hpp>
 
 // Known not supported YAML features:
@@ -14,6 +15,37 @@
 // - objects on one line
 // - objects enclosed in {}
 // - SERIOUSLY: don't stress the capabilities of this implementation
+
+// Source: https://stackoverflow.com/a/47369227/7030275
+template <class T>
+constexpr T &as_mutable(T const &value) noexcept {
+    return const_cast<T &>(value);
+}
+
+template <class T>
+constexpr T *as_mutable(T const *value) noexcept {
+    return const_cast<T *>(value);
+}
+
+template <class T>
+constexpr T *as_mutable(T *value) noexcept {
+    return value;
+}
+
+// template <class T>
+// constexpr std::shared_ptr<T>
+//     as_mutable(const std::shared_ptr<const T> &value) noexcept {
+//     return std::const_pointer_cast<T>(value);
+// }
+
+// template <class T>
+// constexpr std::shared_ptr<T>
+//     as_mutable(const std::shared_ptr<T> &value) noexcept {
+//     return value;
+// }
+
+template <class T>
+void as_mutable(T const &&) = delete;
 
 namespace yaml {
 
@@ -41,6 +73,7 @@ namespace yaml {
 
     class Object;
     using Object_ptr = shared_ptr<Object>;
+    using Object_ptr_const = shared_ptr<const Object>;
 
     // TODO: all sorts of error checking
 
@@ -120,18 +153,41 @@ namespace yaml {
             list.push_back(obj);
         }
 
-        // TODO: const counterparts
         inline virtual string &get() noexcept {
+            return as_mutable(std::as_const(*this).get());
+        }
+
+        inline virtual const string &get() const noexcept {
             return scalar;
-        };
+        }
+
         inline virtual Object_ptr &get(size_type index) {
+            if (index >= list.size())
+                throw MetaSim::BaseExc("YAML out of bounds exception!");
             return list[index];
         }
+
         inline virtual Object_ptr &get(const string &key) {
             if (!has(key))
                 attrs[key] = std::make_shared<Object>();
             return attrs[key];
         }
+
+        // // These two overloads give problems because we'd like to return
+        // // pointers to consts, but we cannot, because vector is oblivious to
+        // // the fact that we stored pointers in it. Same for the map.
+        // inline virtual Object_ptr_const &get(size_type index) const {
+        //     if (index >= list.size())
+        //         throw MetaSim::BaseExc("YAML out of bounds exception!");
+        //     return list[index];
+        // }
+
+        // inline virtual Object_ptr_const &get(const string &key) const {
+        //     if (!has(key))
+        //         throw MetaSim::BaseExc(
+        //             "YAML requested unknown attribute from const!");
+        //     return attrs[key];
+        // }
 
         inline virtual const map_type &get_attrs() const {
             return attrs;

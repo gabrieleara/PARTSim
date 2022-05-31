@@ -352,10 +352,6 @@ namespace RTSim {
         case READY:
         case EXECUTING: {
             // TODO: what should we do now?
-
-            // if (sched_->getFirst() == this) {
-            // }
-
             //       repl_queue.pop_front();
             // capacity_queue.push_back(r);
             // if (repl_queue.size() > 1) check_repl();
@@ -387,9 +383,6 @@ namespace RTSim {
         auto cpu = t->getCPU();
         assert(t != NULL);
         assert(cpu != NULL);
-
-        // TODO: check that the CPU is actually part of a
-        // BigLittle
 
         executing_releasing();
         status = EXECUTING;

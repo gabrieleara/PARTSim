@@ -61,9 +61,9 @@ namespace RTSim {
         return std::make_unique<RTKernel>(scheduler, name, cpu);
     }
 
-    // TODO: lots of exception handling?
+    // TODO: Errors are not presented in a "nice" way to the user, especially
+    // when the user simply forgot to set a required attribute!
     System::System(const string &fname) {
-        // TODO: default values for all attributes
         const SystemDescriptor sys_des{fname};
 
         int cnt_cpus = 0;
@@ -84,18 +84,18 @@ namespace RTSim {
                               "' has no OPPs!");
             }
 
-            // TODO: check that multiple islands do not have the same name
+            // Each Island has its own CPU Model. Models could probably be
+            // instanciated before the islands and then the islands could simply
+            // look them up (for example if multiple islands reference the same
+            // model, for homogeneous multiple-islands systems), since the
+            // Models are now completely stateless. But oh well.
 
-            // CPU Model and Island (could probably share even more CPU Models,
-            // since they are pretty muvch stateless, but oh well)
             model = make_model(sys_des.power_models, opps,
                                island_des.power_model, island_des.speed_model);
             island = make_island(island_des.name, opps, model.get());
 
             cpu_models.emplace_back(model);
             islands.emplace_back(island);
-
-            // TODO: island initial (or fixed) frequency
 
             const std::string basename_kernel = island_des.name + "-kernel";
             const std::string basename_cpu = island_des.name + "-";
@@ -113,7 +113,6 @@ namespace RTSim {
                 const std::string cpuname =
                     basename_cpu + std::to_string(cnt_cpus);
 
-                // TODO: fix CPU constructor
                 cpu = make_cpu(cpuname);
                 cpu->setIsland(island.get());
                 cpu->setWorkload("idle");
@@ -131,7 +130,8 @@ namespace RTSim {
                         cpu.get());
                 }
 
-                // TODO: fix ptrace
+                // TODO: Power tracing output configuration/change
+                // implementation to reduce the number of events?
                 ptrace = std::make_unique<TracePowerConsumption>(
                     cpu.get(), 1, "power_" + cpuname + ".txt");
 

@@ -1,6 +1,8 @@
 #include <sstream>
 
+#include <metasim/baseexc.hpp>
 #include <metasim/memory.hpp>
+
 #include <rtsim/consts.hpp>
 #include <rtsim/powermodel_params.hpp>
 
@@ -71,14 +73,13 @@ namespace RTSim {
 
         bpp.workload = ptr->get(ATTR_WORKLOAD)->get();
 
-        // TODO: Check that the length is right
+        // If not enough parameters are supplied, an exception is thrown
         auto pp = ptr->get(ATTR_POWER_PARAMS);
         FROM_STR(bpp.params.power.d, pp->get(0)->get());
         FROM_STR(bpp.params.power.e, pp->get(1)->get());
         FROM_STR(bpp.params.power.g, pp->get(2)->get());
         FROM_STR(bpp.params.power.k, pp->get(3)->get());
 
-        // TODO: Check that the length is right
         auto sp = ptr->get(ATTR_SPEED_PARAMS);
         FROM_STR(bpp.params.speed.a, sp->get(0)->get());
         FROM_STR(bpp.params.speed.b, sp->get(1)->get());
@@ -167,7 +168,9 @@ namespace RTSim {
         if (k == CPUModelTBApproxParams::key)
             return uniqueFrom<CPUModelTBApproxParams>(doc, rix);
 
-        throw std::exception{}; // TODO:
+        throw MetaSim::BaseExc(
+            "The CPU Model '" + k +
+            "' does not support being instantiated from a CSV document!");
     }
 
     std::unique_ptr<CPUModelParams>
@@ -188,7 +191,9 @@ namespace RTSim {
                 return uniqueFrom<CPUModelTBParams>(ptr);
         */
 
-        throw std::exception{}; // TODO:
+        throw MetaSim::BaseExc("The CPU Model '" + k +
+                               "' does not support being instantiated from "
+                               "inline YAML parameters!");
     }
 
 } // namespace RTSim

@@ -862,9 +862,11 @@ namespace RTSim {
 
         // NON-CONST METHODS
 
-        // TODO: What is the purpose of these two methods?
         // FIXME: reset counters etc.
-        void newRun() override {}
+        void newRun() override {
+            setWorkload("idle");
+        }
+
         void endRun() override {}
 
         /// Set the processor index

@@ -479,9 +479,9 @@ namespace RTSim {
         //         const_cast<const MRTKernel *>(this)->getOldProcessor(t));
         // }
 
-        /// @return a vector containing the pointers to the processors.
-        /// @deprecated will be removed soon
-        std::vector<CPU *> getProcessors() const;
+        // /// @return a vector containing the pointers to the processors.
+        // /// @deprecated will be removed soon
+        // std::vector<CPU *> getProcessors() const;
 
         /// Set the migration delay. This is the overhead to be added to the
         /// ContextSwitchDelay when the task is migrated from one processor to

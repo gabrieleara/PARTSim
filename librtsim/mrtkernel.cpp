@@ -369,17 +369,13 @@ namespace RTSim {
         return ret;
     }
 
-    std::vector<CPU *> MRTKernel::getProcessors() const {
-        std::vector<CPU *> s;
-
-        // typedef map<CPU *, AbsRTTask *>::const_iterator IT;
-        int j = 0;
-
-        // TODO: either pre-allocate or push_back?
-        for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++, j++)
-            s[j] = i->first;
-        return s;
-    }
+    // std::vector<CPU *> MRTKernel::getProcessors() const {
+    //     std::vector<CPU *> s(_m_currExe.size());
+    //     int j = 0;
+    //     for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); i++, j++)
+    //         s[j] = i->first;
+    //     return s;
+    // }
 
     void MRTKernel::newRun() {
         for (auto i = _m_currExe.begin(); i != _m_currExe.end(); i++) {
