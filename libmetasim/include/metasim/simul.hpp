@@ -218,7 +218,7 @@ void libmetasim_is_present();
 
 #define SIMUL Simulation::getInstance()
 
-#ifdef __DEBUG__
+#ifndef NDEBUG
 
 #define DBGENTER(x) DbgObj __dbg_obj__(x, __PRETTY_FUNCTION__)
 
@@ -268,7 +268,7 @@ void __print_set__(T const &x) {
 
 #endif
 
-#ifndef __DEBUG__
+#ifdef NDEBUG
 #define DBGENTER(x)
 #define DBGTAG(x, y)
 #define DBGFORCE(x)

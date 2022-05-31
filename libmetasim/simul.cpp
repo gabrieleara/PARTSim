@@ -79,7 +79,7 @@ namespace MetaSim {
         mytime = temp->getTime(); // stores the current time
 
         DBGPRINT_3("Executing event action at time [", mytime, "]: ");
-#ifdef __DEBUG__
+#ifndef NDEBUG
         temp->print();
         print();
 #endif

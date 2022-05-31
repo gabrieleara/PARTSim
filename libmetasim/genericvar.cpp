@@ -53,7 +53,7 @@ namespace MetaSim {
         while (!f.eof()) {
             f >> n;
             f >> p;
-#ifdef __DEBUG__
+#ifndef NDEBUG
             std::cout << n << "\t" << p << "\n";
 #endif
             if (!f.eof()) {

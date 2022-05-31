@@ -154,7 +154,7 @@ namespace RTSim {
         bool normalizeLoad();
         bool generateLoad();
         void chk(int i) const { // throw(Exc) {
-#ifdef __DEBUG__
+#ifndef NDEBUG
             if (i < 0 || i > _size)
                 throw Exc(Exc::_UNV_IND);
 #endif

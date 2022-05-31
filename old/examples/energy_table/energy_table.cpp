@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
     // unsigned int OPP_big = 0;
     // string workload = "bzip2";
 
-#ifdef __DEBUG__
+#ifndef NDEBUG
     string system_descriptor = "examples/energy_table/odroid_tb.yaml";
 #else
     string system_descriptor = "odroid_tb.yaml";

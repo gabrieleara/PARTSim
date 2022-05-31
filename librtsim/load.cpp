@@ -391,7 +391,7 @@ namespace RTSim {
             if (isOk) {
                 isOk = iatGen->generate();
                 if (isOk) {
-#ifdef __DEBUG__
+#ifndef NDEBUG
                     std::cout << "calling ctGen::generate trial=" << _count << std::endl;
 #endif
                     isOk = ctGen->generate();
