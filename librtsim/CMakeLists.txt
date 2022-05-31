@@ -22,16 +22,23 @@ set(LIBRARY_SOURCE_FILES
     scheduler/rmsched.cpp
     scheduler/rrsched.cpp
     scheduler/scheduler.cpp
-    # Check this one
     scheduler/regsched.cpp
-    # Check this one
-    scheduler/multisched.cpp
+
+    # # These two go together. If you want to compile against EnergyMRTKernel
+    # # (unsupported), look for the following tag and uncomment all the entries:
+    # # "If compiling against EnergyMRTKernel uncomment"
+    #
+    # scheduler/multisched.cpp
+    #
+    # energyMRTKernel.cpp
+
+    # NOTE: lots of stuff is unused/untested but built against the library
+    # anyway!!
 
     AVRTask.cpp
     capacitytimer.cpp
     cbserver.cpp
     cpu.cpp
-    energyMRTKernel.cpp
     exeinstr.cpp
     feedback.cpp
     feedbacktest.cpp

@@ -1,7 +1,7 @@
 #include <cassert>
 #include <sstream>
 
-#include <rtsim/energyMRTKernel.hpp>
+// #include <rtsim/energyMRTKernel.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
 #include <rtsim/task.hpp>
 
@@ -140,11 +140,13 @@ namespace RTSim {
         if (_kernel) {
             DBGPRINT("informing the kernel");
             std::cout << "\tInforming the kernel" << std::endl;
-            if (dynamic_cast<EnergyMRTKernel *>(_kernel))
-                dynamic_cast<EnergyMRTKernel *>(_kernel)->onRound(
-                    model->getTask());
-            else // if you are not using EMRTKernel
-                _kernel->dispatch();
+
+            // // FIXME: If compiling against EnergyMRTKernel uncomment
+            // if (dynamic_cast<EnergyMRTKernel *>(_kernel))
+            //     dynamic_cast<EnergyMRTKernel *>(_kernel)->onRound(
+            //         model->getTask());
+            // else // if you are not using EMRTKernel
+            _kernel->dispatch();
         }
     }
 

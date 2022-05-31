@@ -1,5 +1,5 @@
 #include <rtsim/cbserver.hpp>
-#include <rtsim/energyMRTKernel.hpp>
+// #include <rtsim/energyMRTKernel.hpp>
 namespace RTSim {
 
     CBServer::CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name,
@@ -245,21 +245,23 @@ namespace RTSim {
 
         // DBGPRINT("Status is now XXXYYY ", status_string[status]);
 
-        // The EMRTKernel saves the active utilization on
-        // release in the onExecutingReleasing method.
-        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != nullptr)
-            emrtk->onExecutingReleasing(this);
+        // // FIXME: If compiling against EnergyMRTKernel uncomment
+        // // The EMRTKernel saves the active utilization on
+        // // release in the onExecutingReleasing method.
+        // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        // if (emrtk != nullptr)
+        //     emrtk->onExecutingReleasing(this);
     }
 
     void CBServer::releasing_idle() {
         DBGENTER(_SERVER_DBG_LEV);
         status = IDLE;
 
-        // TODO: why does this call this?
-        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != nullptr)
-            emrtk->onReleasingIdle(this);
+        // // FIXME: If compiling against EnergyMRTKernel uncomment
+        // // TODO: why does this call this?
+        // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        // if (emrtk != nullptr)
+        //     emrtk->onReleasingIdle(this);
     }
 
     void CBServer::executing_recharging() {
@@ -303,9 +305,10 @@ namespace RTSim {
 
         DBGPRINT("The status is now ", status_string[status]);
 
-        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != nullptr)
-            emrtk->onExecutingRecharging(this);
+        // // FIXME: If compiling against EnergyMRTKernel uncomment
+        // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        // if (emrtk != nullptr)
+        //     emrtk->onExecutingRecharging(this);
     }
 
     void CBServer::recharging_ready() {
@@ -365,9 +368,10 @@ namespace RTSim {
         DBGPRINT("Status is now: ", status_string[status]);
         DBGPRINT("Capacity is now: ", cap);
 
-        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != nullptr)
-            emrtk->onReplenishment(this);
+        // // FIXME: If compiling against EnergyMRTKernel uncomment
+        // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        // if (emrtk != nullptr)
+        //     emrtk->onReplenishment(this);
     }
 
     void CBServer::onIdle(Event *e) {
@@ -380,7 +384,7 @@ namespace RTSim {
     // killed with this method
     void CBServer::killInstance(bool onlyOnce) {
         auto t = dynamic_cast<Task *>(sched_->getFirst());
-        auto cpu = dynamic_cast<CPU_BL *>(t->getCPU());
+        auto cpu = t->getCPU();
         assert(t != NULL);
         assert(cpu != NULL);
 
@@ -436,10 +440,11 @@ namespace RTSim {
         if (isEmpty())
             yield();
 
-        auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
-        if (emrtk != nullptr)
-            emrtk->onTaskInServerEnd(t, dynamic_cast<Task *>(t)->getCPU(),
-                                     this);
+        // // FIXME: If compiling against EnergyMRTKernel uncomment
+        // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
+        // if (emrtk != nullptr)
+        //     emrtk->onTaskInServerEnd(t, dynamic_cast<Task *>(t)->getCPU(),
+        //                              this);
     }
 
     void CBServer::onDesched(Event *e) {
