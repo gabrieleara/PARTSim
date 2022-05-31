@@ -128,7 +128,7 @@ namespace RTSim {
 
     void RTKernel::onArrival(AbsRTTask *task) {
         DBGENTER(_KERNEL_DBG_LEV);
-        DBGPRINT_2("Inserting ", taskname(task));
+        DBGPRINT("Inserting ", taskname(task));
 
         _sched->insert(task);
 
@@ -170,7 +170,7 @@ namespace RTSim {
         AbsRTTask *newExe = _sched->getFirst();
 
         if (newExe != NULL)
-            DBGPRINT_2("From sched: ", taskname(newExe));
+            DBGPRINT("From sched: ", taskname(newExe));
 
         if (_currExe != newExe) {
             if (_currExe != NULL) {
@@ -184,7 +184,7 @@ namespace RTSim {
         } else {
             _sched->notify(newExe);
             if (newExe != NULL)
-                DBGPRINT_2("Now Running: ", taskname(newExe));
+                DBGPRINT("Now Running: ", taskname(newExe));
         }
     }
 
@@ -193,7 +193,7 @@ namespace RTSim {
 
         _currExe->schedule();
 
-        DBGPRINT_2("Now Running: ", taskname(_currExe));
+        DBGPRINT("Now Running: ", taskname(_currExe));
 
         _isContextSwitching = false;
         _sched->notify(_currExe);

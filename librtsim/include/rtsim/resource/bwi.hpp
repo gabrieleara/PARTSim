@@ -1,11 +1,12 @@
 #ifndef __BWI_HPP__
 #define __BWI_HPP__
 
+#include <map>
+#include <string>
+
 #include <rtsim/resource/resmanager.hpp>
 #include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/server.hpp>
-#include <map>
-#include <string>
 
 namespace RTSim {
 

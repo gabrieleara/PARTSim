@@ -423,7 +423,8 @@ namespace RTSim {
          */
         inline double getWCET(double capacity) const override {
             double n = double(getWCET()) / capacity;
-            // std::cout << std::endl << "\t\t\ttask::getwcet " << double(getWCET())
+            // std::cout << std::endl << "\t\t\ttask::getwcet " <<
+            // double(getWCET())
             // <<"/"<< capacity<<"="<<n<<endl;
             return n;
         }
@@ -483,7 +484,8 @@ namespace RTSim {
             for this task. To move a task from one kernel to another, call
             setKernel(0) before.
         */
-        void setKernel(AbsKernel *k) override; // throw(KernAlreadySet) override;
+        void
+            setKernel(AbsKernel *k) override; // throw(KernAlreadySet) override;
 
         /**
             Returns the kernel that contains this task. Can return 0

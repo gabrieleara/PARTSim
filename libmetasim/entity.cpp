@@ -41,9 +41,9 @@ namespace MetaSim {
 
         DBGENTER(_ENTITY_DBG_LEV);
 
-        DBGPRINT_2("Entity ID: ", _ID);
-        DBGPRINT_2("Entity type: ", typeid(*this).name());
-        DBGPRINT_2("Entity name:", _name);
+        DBGPRINT("Entity ID: ", _ID);
+        DBGPRINT("Entity type: ", typeid(*this).name());
+        DBGPRINT("Entity name: ", _name);
 
         _index[_name] = this;
     }
@@ -71,7 +71,7 @@ namespace MetaSim {
 
         while (p != _globMap.end()) {
             DBGENTER(_ENTITY_DBG_LEV);
-            DBGPRINT_2("Calling the newRun() of ", p->second->getID());
+            DBGPRINT("Calling the newRun() of ", p->second->getID());
 
             p->second->newRun();
             p++;

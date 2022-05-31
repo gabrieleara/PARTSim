@@ -14,14 +14,14 @@ private:
     size_t n_cpus;
 
     using Matrix = Eigen::Matrix<scalar_type, Eigen::Dynamic, Eigen::Dynamic>;
-    using Vector = Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>
+    using Vector = Eigen::Matrix<scalar_type, Eigen::Dynamic, 1>;
 
     Matrix MatrixA() {
         return Matrix(n_cpus, n_cpus);
     }
 
     Matrix MatrixB() {
-        return Matrix(n_cpus, n_cpus+1);
+        return Matrix(n_cpus, n_cpus + 1);
     }
 
     Vector VectorA() {
@@ -29,7 +29,7 @@ private:
     }
 
     Vector VectorB() {
-        return Vector(n_cpus+1);
+        return Vector(n_cpus + 1);
     }
 };
 

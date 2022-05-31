@@ -392,7 +392,8 @@ namespace RTSim {
                 isOk = iatGen->generate();
                 if (isOk) {
 #ifndef NDEBUG
-                    std::cout << "calling ctGen::generate trial=" << _count << std::endl;
+                    std::cout << "calling ctGen::generate trial=" << _count
+                              << std::endl;
 #endif
                     isOk = ctGen->generate();
                 } else
@@ -438,7 +439,8 @@ namespace RTSim {
     RandomTaskSetFactory::RandomTaskSetFactory(int n, double u, IATGen *g1,
                                                CTGen *g2, DTGen *g3,
                                                double minU,
-                                               bool preciseU) : // throw(Exc) :
+                                               bool preciseU) :
+        // throw(Exc) :
         _count(0),
         _size(n),
         _u(u),
@@ -464,7 +466,8 @@ namespace RTSim {
     RandomTaskSetFactory::RandomTaskSetFactory(int n, double u, IATGen *g1,
                                                CTGen *g2, DTGen *g3,
                                                OffsetGen *g4, double minU,
-                                               bool preciseU) : // throw(Exc) :
+                                               bool preciseU) :
+        // throw(Exc) :
         _count(0),
         _size(n),
         _u(u),
@@ -617,11 +620,11 @@ namespace RTSim {
     void RandomTaskSetFactory::print(int i) {
         std::cout << "task[" << i << "]" << std::endl;
         std::cout << "U   = " << getMinLoad(i) << "/" << getAvgLoad(i) << "/"
-             << getMaxLoad(i) << "/" << getLoad(i) << std::endl;
+                  << getMaxLoad(i) << "/" << getLoad(i) << std::endl;
         std::cout << "C   = " << getMinCT(i) << "/" << getAvgCT(i) << "/"
-             << getMaxCT(i) << std::endl;
+                  << getMaxCT(i) << std::endl;
         std::cout << "IAT = " << getMinIAT(i) << "/" << getAvgIAT(i) << "/"
-             << getMaxIAT(i) << std::endl;
+                  << getMaxIAT(i) << std::endl;
     }
 
     void RandomTaskSetFactory::print() {
@@ -630,11 +633,12 @@ namespace RTSim {
         std::cout << "Task Set" << std::endl;
         for (int i = 0; i < _size; i++) {
             print(i);
-            std::cout << "------------------------------------------------" << std::endl;
+            std::cout << "------------------------------------------------"
+                      << std::endl;
         }
 
         std::cout << "Real U = " << getMinLoad() << "/" << getAvgLoad() << "/"
-             << getMaxLoad() << std::endl;
+                  << getMaxLoad() << std::endl;
         std::cout << "Wanted U = " << getLoad() << std::endl << std::endl;
 
         // dbg.exit();

@@ -7,11 +7,11 @@
 #include <string>
 #include <vector>
 
+#include <metasim/memory.hpp>
 #include <rtsim/class_utils.hpp>
 #include <rtsim/csv.hpp>
 #include <rtsim/powermodel.hpp>
 #include <rtsim/yaml.hpp>
-#include <metasim/memory.hpp>
 // TODO: change slightly the factory.hpp and then use it for these objects
 
 namespace RTSim {

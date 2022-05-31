@@ -1,7 +1,7 @@
 // RTSim
 #include <rtsim/cbserver.hpp>
-#include <rtsim/scheduler/multisched.hpp>
 #include <rtsim/energyMRTKernel.hpp>
+#include <rtsim/scheduler/multisched.hpp>
 
 // Schedulers
 #include <rtsim/scheduler/edfsched.hpp>
@@ -439,9 +439,11 @@ namespace RTSim {
             task = dynamic_cast<EnergyMRTKernel *>(_kernel)->getEnveloper(task);
 
         for (auto &elem : _active_utilizations) {
-            // std::cout << "forgetU_active: " << elem.first->toString() << std::endl;
+            // std::cout << "forgetU_active: " << elem.first->toString() <<
+            // std::endl;
             if (elem.first == task) {
-                // std::cout << "\treleasing_idle for " << elem.first->toString()
+                // std::cout << "\treleasing_idle for " <<
+                // elem.first->toString()
                 //      << " on " << elem.second.cpu->getName()
                 //      << ". Its U_act was " << elem.second.uact << std::endl;
                 cpu = elem.second.cpu;

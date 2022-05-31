@@ -13,12 +13,13 @@
  ***************************************************************************/
 #include <sstream>
 
-#include <rtsim/scheduler/fpsched.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/scheduler/fpsched.hpp>
 
 namespace RTSim {
 
-    void FPScheduler::addTask(AbsRTTask *task, int prio) { // throw(RTSchedExc) {
+    void FPScheduler::addTask(AbsRTTask *task, int prio) {
+        // throw(RTSchedExc) {
         FPModel *model = new FPModel(task, prio);
 
         if (find(task) != NULL)

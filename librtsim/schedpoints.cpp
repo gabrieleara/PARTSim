@@ -73,21 +73,21 @@ namespace RTSim {
 
         if (last_change_time <= SIMUL.getTime()) {
             last_change_time = s->changeBudget(delta_budget + s->getBudget());
-            DBGPRINT_2("in the past, new change time at ", last_change_time);
+            DBGPRINT("in the past, new change time at ", last_change_time);
         } else {
             DBGPRINT("in the future");
             if (delta_budget < 0) {
                 last_change_time =
                     std::max(last_change_time,
                              s->changeBudget(delta_budget + s->getBudget()));
-                DBGPRINT_2("delta_budget < 0, new change time at ",
-                           last_change_time);
+                DBGPRINT("delta_budget < 0, new change time at ",
+                         last_change_time);
             } else if (delta_budget > 0) {
                 ChangeBudgetEvt *e =
                     new ChangeBudgetEvt(this, s, delta_budget + s->getBudget());
                 e->post(last_change_time, true);
-                DBGPRINT_2("delta_budget > 0, new change time at ",
-                           last_change_time);
+                DBGPRINT("delta_budget > 0, new change time at ",
+                         last_change_time);
             }
         }
 
@@ -108,11 +108,11 @@ namespace RTSim {
         schp.clear();
         schp.push_back(D);
 
-        DBGPRINT("Computing scheduling points" << n);
+        DBGPRINT("Computing scheduling points", n);
 
         for (int i = n - 1; i > -1; i--) {
             // for (int i=0;i<n;i++){
-            DBGPRINT("Computing aux for i=" << i);
+            DBGPRINT("Computing aux for i=", i);
             for (int j = 0; j < (int) schp.size(); j++) {
                 Tick p =
                     Tick::floor(floor(double(schp[j]) / double(period[i])) *
@@ -168,11 +168,11 @@ namespace RTSim {
                 curCoef.clear();
                 // the current scheduling point
                 double t = schedP[curPoint];
-                DBGPRINT("Current scheduling point: " << t);
+                DBGPRINT("Current scheduling point: ", t);
                 DBGPRINT("Now computing the coefficient");
                 // compute the coefficients
                 for (int j = 0; j <= curTask - 1; j++) {
-                    DBGPRINT("PASA: j=" << j);
+                    DBGPRINT("PASA: j=", j);
                     curCoef.push_back(ceil((double(t) / double(period[j]))));
                     DBGVAR(ceil((double(t) / double(period[j]))));
                 }

@@ -20,7 +20,6 @@ namespace RTSim {
         /// emplace_back
         OPP(freq_type f = {}, volt_type v = {}) : frequency(f), voltage(v) {}
 
-
         // BAD: DOES NOT WORK IN C++17, at least on my machine
         // template <class VoltsIt, class FreqIt>
         // static std::vector<OPP> fromIters(VoltsIt &&v, VoltsIt &&v_end,

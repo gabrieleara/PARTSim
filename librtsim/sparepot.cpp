@@ -41,7 +41,7 @@ namespace RTSim {
 
         // computes the m_i,j, then calls addServer(s, m)
         // first sort by increasing period (rate monotonic)
-        DBGPRINT("Sorting the vector of size " << server_vector.size());
+        DBGPRINT("Sorting the vector of size ", server_vector.size());
 
         sort(server_vector.begin(), server_vector.end());
 
@@ -65,7 +65,8 @@ namespace RTSim {
                         (double) server_vector[j].wcet;
 
                 if (rtime > (double) server_vector[i].period) {
-                    std::cerr << "Response time greater than period" << std::endl;
+                    std::cerr << "Response time greater than period"
+                              << std::endl;
                     exit(-1);
                 }
                 DBGVAR(rtime);
@@ -80,7 +81,7 @@ namespace RTSim {
         vector<vector<double>> eta;
         for (unsigned int i = 0; i < server_vector.size(); i++) {
             vector<double> myeta_i;
-            DBGPRINT("For task i= " << i);
+            DBGPRINT("For task i= ", i);
             for (unsigned int j = 0; j < i; j++) {
                 double e =
                     ceil(response_time[i] / (double) server_vector[j].period);
@@ -99,7 +100,7 @@ namespace RTSim {
             DBGVAR(i);
             row_t m;
             for (unsigned int j = 0; j < i; j++) {
-                DBGPRINT("eta[" << i << "][" << j << "]: " << eta[i][j]);
+                DBGPRINT("eta[", i, "][", j, "]: ", eta[i][j]);
                 double rate = eta[i][j];
                 DBGVAR(rate);
                 for (unsigned int h = i + 1; h < server_vector.size(); h++) {
@@ -181,12 +182,12 @@ namespace RTSim {
                     delta_budget = delta_budget - x;
                     ret = ret + x;
 
-                    DBGPRINT_4("j=", j, " x = ", x);
-                    DBGPRINT_4("pi[index][j] = ", pi[index][j],
-                               " pi[j][index] = ", pi[j][index]);
-                    DBGPRINT_4("delta[index] = ", delta[index],
-                               " delta[j] = ", delta[j]);
-                    DBGPRINT_2("delta_budget = ", delta_budget);
+                    DBGPRINT("j=", j, " x = ", x);
+                    DBGPRINT("pi[index][j] = ", pi[index][j],
+                             " pi[j][index] = ", pi[j][index]);
+                    DBGPRINT("delta[index] = ", delta[index],
+                             " delta[j] = ", delta[j]);
+                    DBGPRINT("delta_budget = ", delta_budget);
                 }
             }
         } else if (delta_budget < 0) {
@@ -202,15 +203,15 @@ namespace RTSim {
                 delta_budget = delta_budget + x;
                 ret = ret - x;
 
-                DBGPRINT_4("j=", j, " x = ", x);
-                DBGPRINT_4("pi[index][j] = ", pi[index][j],
-                           " pi[j][index] = ", pi[j][index]);
-                DBGPRINT_4("delta[index] = ", delta[index],
-                           " delta[j] = ", delta[j]);
-                DBGPRINT_2("delta_budget = ", delta_budget);
+                DBGPRINT("j=", j, " x = ", x);
+                DBGPRINT("pi[index][j] = ", pi[index][j],
+                         " pi[j][index] = ", pi[j][index]);
+                DBGPRINT("delta[index] = ", delta[index],
+                         " delta[j] = ", delta[j]);
+                DBGPRINT("delta_budget = ", delta_budget);
             }
             if (delta_budget < 0) {
-                DBGPRINT_2("delta_budget is still ", delta_budget);
+                DBGPRINT("delta_budget is still ", delta_budget);
                 DBGVAR(delta[index]);
 
                 pi[index][index] = pi[index][index] + delta_budget;
@@ -219,8 +220,8 @@ namespace RTSim {
 
                 delta[index] = delta[index] - delta_budget;
 
-                DBGPRINT_2("delta[index] = ", delta[index]);
-                DBGPRINT_2("pi[index][index] = ", pi[index][index]);
+                DBGPRINT("delta[index] = ", delta[index]);
+                DBGPRINT("pi[index][index] = ", pi[index][index]);
 
                 ret = ret + delta_budget;
             }
@@ -230,19 +231,19 @@ namespace RTSim {
         if (last_change_time <= SIMUL.getTime()) {
             last_change_time =
                 s->changeBudget(Tick::ceil(ret) + s->getBudget());
-            DBGPRINT_2("in the past, new change time at ", last_change_time);
+            DBGPRINT("in the past, new change time at ", last_change_time);
         } else {
             DBGPRINT("in the future");
             if (ret < 0) {
                 last_change_time =
                     std::max(last_change_time,
                              s->changeBudget(Tick::ceil(ret) + s->getBudget()));
-                DBGPRINT_2("ret < 0, new change time at ", last_change_time);
+                DBGPRINT("ret < 0, new change time at ", last_change_time);
             } else if (ret > 0) {
                 ChangeBudgetEvt *e = new ChangeBudgetEvt(
                     this, s, Tick::ceil(ret) + s->getBudget());
                 e->post(last_change_time, true);
-                DBGPRINT_2("ret > 0, new change time at ", last_change_time);
+                DBGPRINT("ret > 0, new change time at ", last_change_time);
             }
         }
 

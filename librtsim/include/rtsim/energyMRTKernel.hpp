@@ -14,13 +14,13 @@
 #ifndef RTLIB2_0_ENERGYMRTKERNEL_H
 #define RTLIB2_0_ENERGYMRTKERNEL_H
 
+#include <rtsim/cbserver.hpp>
 #include <rtsim/mrtkernel.hpp>
+#include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/multisched.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
-#include <rtsim/rttask.hpp>
 #include <rtsim/task.hpp>
 #include <rtsim/utils.hpp>
-#include <rtsim/cbserver.hpp>
 
 #define _ENERGYMRTKERNEL_DBG_LEV "EnergyMRTKernel"
 

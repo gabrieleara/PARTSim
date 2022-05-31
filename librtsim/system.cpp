@@ -142,7 +142,8 @@ namespace RTSim {
             size_t base_opp_idx = std::numeric_limits<size_t>::max();
             // Select the frequency from given the index
             if (island_des.base_freq > 0) {
-                base_opp_idx = island->getOPPIndexByFrequency(island_des.base_freq);
+                base_opp_idx =
+                    island->getOPPIndexByFrequency(island_des.base_freq);
             }
 
             // If nothing is specified, the maximum frequency is used

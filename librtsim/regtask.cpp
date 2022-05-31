@@ -13,8 +13,8 @@
  ***************************************************************************/
 #include <string>
 
-#include <rtsim/AVRTask.hpp>
 #include <metasim/factory.hpp>
+#include <rtsim/AVRTask.hpp>
 #include <rtsim/reginstr.hpp>
 #include <rtsim/rttask.hpp>
 #include <rtsim/task.hpp>

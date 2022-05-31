@@ -2,9 +2,9 @@
 #include <metasim/memory.hpp>
 
 #include <metasim/factory.hpp>
+#include <metasim/strtoken.hpp>
 #include <rtsim/kernel.hpp>
 #include <rtsim/server.hpp>
-#include <metasim/strtoken.hpp>
 
 namespace RTSim {
     using namespace MetaSim;
@@ -39,7 +39,7 @@ namespace RTSim {
         vector<string> p = parse_util::split_param(parse_util::get_param(s));
         // create the scheduler
 
-        DBGPRINT_2("SCHEDULER: ", s_name);
+        DBGPRINT("SCHEDULER: ", s_name);
         DBGPRINT("PARAMETERS: ");
         for (unsigned int i = 0; i < p.size(); ++i)
             DBGPRINT(p[i]);
@@ -59,7 +59,7 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
         task.setKernel(this);
         tasks.push_back(&task);
-        DBGPRINT_2("Calling sched->addTask, with params = ", params);
+        DBGPRINT("Calling sched->addTask, with params = ", params);
         sched_->addTask(&task, params);
     }
 
@@ -153,7 +153,8 @@ namespace RTSim {
 
     void Server::onBudgetExhausted(Event *e) {
         DBGENTER(_SERVER_DBG_LEV);
-        // std::cout << "t=" << SIMUL.getTime() << " Server::" << __func__ << "() "
+        // std::cout << "t=" << SIMUL.getTime() << " Server::" << __func__ <<
+        // "() "
         //           << std::endl;
 
         assert(status == EXECUTING);
@@ -242,8 +243,8 @@ namespace RTSim {
         AbsRTTask *newExe = sched_->getFirst();
 
         DBGPRINT("Current situation");
-        DBGPRINT_2("newExe: ", taskname(newExe));
-        DBGPRINT_2("currExe_: ", taskname(currExe_));
+        DBGPRINT("newExe: ", taskname(newExe));
+        DBGPRINT("currExe_: ", taskname(currExe_));
 
         if (newExe != currExe_) {
             if (currExe_ != nullptr)
@@ -253,7 +254,7 @@ namespace RTSim {
                 currExe_->schedule();
         }
 
-        DBGPRINT_2("Now Running: ", taskname(newExe));
+        DBGPRINT("Now Running: ", taskname(newExe));
 
         if (currExe_ == nullptr) {
             sched_->notify(nullptr);

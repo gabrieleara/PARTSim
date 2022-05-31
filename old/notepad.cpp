@@ -163,7 +163,7 @@ void EnergyMRTKernel::dispatch() {
         num_newtasks++;
 
     _sched->print();
-    DBGPRINT_2("New tasks: ", num_newtasks);
+    DBGPRINT("New tasks: ", num_newtasks);
     print();
     if (num_newtasks == 0)
         return; // nothing to do

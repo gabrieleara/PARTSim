@@ -132,17 +132,17 @@ namespace RTSim
     speed_type CPU::setSpeed(double newLoad) {
         DBGENTER(_KERNEL_DBG_LEV);
         DBGPRINT("pwr: setting speed in CPU::setSpeed()");
-        DBGPRINT("pwr: New load is " << newLoad);
+        DBGPRINT("pwr: New load is " , newLoad);
         if (PowerSaving)
         {
             DBGPRINT("pwr: PowerSaving=on");
-            DBGPRINT("pwr: currentOPP=" << currentOPP);
+            DBGPRINT("pwr: currentOPP=" , currentOPP);
             for (int i=0; i < (int) OPPs.size(); i++)
                 if (speeds[i] >= newLoad) {
                     if (i != currentOPP)
                         frequencySwitching++;
                     currentOPP = i;
-                    DBGPRINT("pwr: New OPP=" << currentOPP << " New Speed="
+                    DBGPRINT("pwr: New OPP=" , currentOPP , " New Speed="
                                              << speeds[currentOPP]);
 
                     return speeds[i]; // It returns the new speed
@@ -157,7 +157,7 @@ namespace RTSim
     void CPU::setWorkload(const string &workload)
     {
 	if (workload == "idle")
-		DBGPRINT("\t" << getName() << " gets wl idle at t=" << SIMUL.getTime());
+		DBGPRINT("\t" , getName() , " gets wl idle at t=" , SIMUL.getTime());
         _workload = workload;
     }
 
@@ -184,7 +184,7 @@ namespace RTSim
     unsigned long int CPU::getFrequencySwitching()
     {
         DBGENTER(_KERNEL_DBG_LEV);
-        DBGPRINT("frequencySwitching=" << frequencySwitching);
+        DBGPRINT("frequencySwitching=" , frequencySwitching);
 
         return frequencySwitching;
     }

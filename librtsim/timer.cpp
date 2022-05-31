@@ -37,7 +37,7 @@ namespace RTSim {
         lastTrigger = SIMUL.getTime();
         action();
 
-        DBGPRINT("Timer fired at " << lastTrigger);
+        DBGPRINT("Timer fired at ", lastTrigger);
 
         reArm();
     }
@@ -50,7 +50,7 @@ namespace RTSim {
         Tick t = SIMUL.getTime();
         _triggerEvt.post(t + _period);
         DBGENTER(_TIMER_DBG_LEV);
-        DBGPRINT_2("Timer rearmed at ", (t + _period));
+        DBGPRINT("Timer rearmed at ", (t + _period));
     }
 
     void PeriodicTimer::action(){};

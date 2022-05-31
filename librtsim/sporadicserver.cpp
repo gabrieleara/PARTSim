@@ -39,7 +39,7 @@ namespace RTSim {
 
     double SporadicServer::getVirtualTime() {
         DBGENTER(_SERVER_DBG_LEV);
-        DBGPRINT("Status = " << status_string[status]);
+        DBGPRINT("Status = ", status_string[status]);
         if (status == IDLE)
             return double(SIMUL.getTime());
         else
@@ -58,7 +58,7 @@ namespace RTSim {
         vtime.set_value(SIMUL.getTime());
         // prepare a replenishment (partial)
         prepare_replenishment(SIMUL.getTime());
-        DBGPRINT_2("Inserting replenishment at", repl_queue.back().first);
+        DBGPRINT("Inserting replenishment at", repl_queue.back().first);
     }
 
     void SporadicServer::releasing_ready() {
@@ -67,7 +67,7 @@ namespace RTSim {
         // prepare a replenishment (partial)
         prepare_replenishment(SIMUL.getTime());
         _idleEvt.drop();
-        DBGPRINT_2("Inserting replenishment at", repl_queue.back().first);
+        DBGPRINT("Inserting replenishment at", repl_queue.back().first);
     }
 
     void SporadicServer::ready_executing() {
@@ -79,7 +79,7 @@ namespace RTSim {
 
         vtime.start((double) P / double(Q));
 
-        DBGPRINT_2("Last time is: ", last_time);
+        DBGPRINT("Last time is: ", last_time);
 
         _bandExEvt.post(last_time + cap);
     }
@@ -98,7 +98,7 @@ namespace RTSim {
     void SporadicServer::executing_releasing() {
         DBGENTER(_SERVER_DBG_LEV);
 
-        DBGPRINT("Status: " << status_string[status]);
+        DBGPRINT("Status: ", status_string[status]);
 
         if (status == EXECUTING) {
             cap = cap - (SIMUL.getTime() - last_time);
@@ -115,7 +115,7 @@ namespace RTSim {
             _idleEvt.post(Tick::ceil(vtime.get_value()));
             status = RELEASING;
         }
-        DBGPRINT("Status is now " << status_string[status]);
+        DBGPRINT("Status is now ", status_string[status]);
     }
 
     void SporadicServer::releasing_idle() {
@@ -128,13 +128,13 @@ namespace RTSim {
 
         _bandExEvt.drop();
 
-        DBGPRINT_2("Capacity before: ", cap);
-        DBGPRINT_2("Time is: ", SIMUL.getTime());
-        DBGPRINT_2("Last time is: ", last_time);
+        DBGPRINT("Capacity before: ", cap);
+        DBGPRINT("Time is: ", SIMUL.getTime());
+        DBGPRINT("Last time is: ", last_time);
 
         cap = cap - (SIMUL.getTime() - last_time);
 
-        DBGPRINT_2("Capacity is now: ", cap);
+        DBGPRINT("Capacity is now: ", cap);
 
         repl_queue.back().second += SIMUL.getTime() - last_time;
 
@@ -153,7 +153,7 @@ namespace RTSim {
         } else {
             status = RECHARGING;
         }
-        DBGPRINT("The status is now " << status_string[status]);
+        DBGPRINT("The status is now ", status_string[status]);
     }
 
     void SporadicServer::recharging_ready() {
@@ -177,14 +177,14 @@ namespace RTSim {
 
         _replEvt.drop();
 
-        DBGPRINT_2("Status before: ", status);
-        DBGPRINT_2("Capacity before: ", cap);
+        DBGPRINT("Status before: ", status);
+        DBGPRINT("Capacity before: ", cap);
 
         if (status == RECHARGING || status == RELEASING || status == IDLE) {
             cap = cap + repl_queue.front().second;
             repl_queue.pop_front();
-            DBGPRINT_3("There are ", repl_queue.size(),
-                       " elements in the repl_queue");
+            DBGPRINT("There are ", repl_queue.size(),
+                     " elements in the repl_queue");
             check_repl();
 
             if (sched_->getFirst() != NULL) {
@@ -203,8 +203,8 @@ namespace RTSim {
                 check_repl();
         }
 
-        DBGPRINT_2("Status is now: ", status_string[status]);
-        DBGPRINT_2("Capacity is now: ", cap);
+        DBGPRINT("Status is now: ", status_string[status]);
+        DBGPRINT("Capacity is now: ", cap);
     }
 
     void SporadicServer::prepare_replenishment(const Tick &t) {
@@ -220,8 +220,8 @@ namespace RTSim {
         if (_replEvt.isInQueue()) {
             DBGPRINT("replEvt already in queue, returning");
         } else if (repl_queue.size() > 0) {
-            DBGPRINT_4("Posting replenishment of ", repl_queue.front().second,
-                       " at ", repl_queue.front().first);
+            DBGPRINT("Posting replenishment of ", repl_queue.front().second,
+                     " at ", repl_queue.front().first);
             _replEvt.post(repl_queue.front().first);
         }
     }
@@ -231,10 +231,10 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
 
         if (n > Q) {
-            DBGPRINT_4("Capacity Increment: n=", n, " Q=", Q);
+            DBGPRINT("Capacity Increment: n=", n, " Q=", Q);
             cap += n - Q;
             if (status == EXECUTING) {
-                DBGPRINT_3("Server ", getName(), " is executing");
+                DBGPRINT("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
                 repl_queue.back().second += SIMUL.getTime() - last_time;
                 _bandExEvt.drop();
@@ -242,17 +242,17 @@ namespace RTSim {
                 last_time = SIMUL.getTime();
                 _bandExEvt.post(last_time + cap);
                 vtime.start((double) P / double(n));
-                DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
+                DBGPRINT("Reposting bandExEvt at ", last_time + cap);
             }
             Q = n;
             ret = SIMUL.getTime();
         } else if (n == Q) {
-            DBGPRINT_2("No Capacity change: n=Q=", n);
+            DBGPRINT("No Capacity change: n=Q=", n);
             ret = SIMUL.getTime();
         } else if (n > 0) {
-            DBGPRINT_4("Capacity Decrement: n=", n, " Q=", Q);
+            DBGPRINT("Capacity Decrement: n=", n, " Q=", Q);
             if (status == EXECUTING) {
-                DBGPRINT_3("Server ", getName(), " is executing");
+                DBGPRINT("Server ", getName(), " is executing");
                 cap = cap - (SIMUL.getTime() - last_time);
                 repl_queue.back().second += SIMUL.getTime() - last_time;
                 last_time = SIMUL.getTime();
@@ -279,7 +279,7 @@ namespace RTSim {
                 Tick x = std::min(delta, i->second);
                 i->second -= x;
                 delta -= x;
-                DBGPRINT_2("Capacity queue dec, now delta is: ", delta);
+                DBGPRINT("Capacity queue dec, now delta is: ", delta);
                 i++;
             }
 
@@ -290,7 +290,7 @@ namespace RTSim {
                 Tick x = std::min(delta, i->second);
                 i->second -= x;
                 delta -= x;
-                DBGPRINT_2("Repl queue dec, now delta is: ", delta);
+                DBGPRINT("Repl queue dec, now delta is: ", delta);
                 DBGVAR(i->second);
                 last_repl_time = i->first;
                 i++;
@@ -331,7 +331,7 @@ namespace RTSim {
                     //                         dispatch();
                     //                     }
                 } else {
-                    DBGPRINT_2("Reposting bandExEvt at ", last_time + cap);
+                    DBGPRINT("Reposting bandExEvt at ", last_time + cap);
                     _bandExEvt.post(last_time + cap);
                 }
             }

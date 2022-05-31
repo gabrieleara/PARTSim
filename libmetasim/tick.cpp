@@ -48,11 +48,11 @@ namespace MetaSim {
             throw ParseExc("Tick::setDefaultUnit(const string()", unit);
 
         if (unit == "s") {
-            resolution = (impl_t)(num * 1000000000);
+            resolution = (impl_t) (num * 1000000000);
         } else if (unit == "ms") {
-            resolution = (impl_t)(num * 1000000);
+            resolution = (impl_t) (num * 1000000);
         } else if (unit == "us") {
-            resolution = (impl_t)(num * 1000);
+            resolution = (impl_t) (num * 1000);
         } else if (unit == "ns") {
             resolution = (impl_t) num;
         }
@@ -69,15 +69,15 @@ namespace MetaSim {
             throw ParseExc("Cannot understand time unit: ", unit);
 
         if (unit == "") {
-            v = (impl_t)((num * default_unit) / resolution);
+            v = (impl_t) ((num * default_unit) / resolution);
         } else if (unit == "s") {
-            v = (impl_t)((num * 1000000000) / resolution);
+            v = (impl_t) ((num * 1000000000) / resolution);
         } else if (unit == "ms") {
-            v = (impl_t)((num * 1000000) / resolution);
+            v = (impl_t) ((num * 1000000) / resolution);
         } else if (unit == "us") {
-            v = (impl_t)((num * 1000) / resolution);
+            v = (impl_t) ((num * 1000) / resolution);
         } else if (unit == "ns") {
-            v = (impl_t)((num) / resolution);
+            v = (impl_t) ((num) / resolution);
         }
     }
 

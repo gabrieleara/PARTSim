@@ -1,7 +1,8 @@
 #include <cassert>
+#include <sstream>
+
 #include <rtsim/energyMRTKernel.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
-#include <sstream>
 #include <rtsim/task.hpp>
 
 namespace RTSim {
@@ -53,7 +54,7 @@ namespace RTSim {
         _rrEvt(this, &RRScheduler::round),
         _enabled(true) {
         DBGENTER(_RR_SCHED_DBG_LEV);
-        DBGPRINT_2("DEFAULT SLICE = ", defaultSlice);
+        DBGPRINT("DEFAULT SLICE = ", defaultSlice);
     }
 
     void RRScheduler::setRRSlice(AbsRTTask *task, Tick slice) {
@@ -78,18 +79,18 @@ namespace RTSim {
                 throw RRSchedExc("Cannot find task");
             if (model->getRRSlice() > 0) {
                 _rrEvt.post(SIMUL.getTime() + model->getRRSlice());
-                DBGPRINT_2("rrEvt post at time ",
-                           SIMUL.getTime() + model->getRRSlice());
+                DBGPRINT("rrEvt post at time ",
+                         SIMUL.getTime() + model->getRRSlice());
                 std::cout << "\trrEvt post at time "
-                     << SIMUL.getTime() + model->getRRSlice() << " task "
-                     << taskname(task) << std::endl;
+                          << SIMUL.getTime() + model->getRRSlice() << " task "
+                          << taskname(task) << std::endl;
             }
         }
     }
 
     void RRScheduler::round(Event *) {
-        std::cout << __func__ << "() t = " << SIMUL.getTime() << " " << getName()
-             << ":" << std::endl;
+        std::cout << __func__ << "() t = " << SIMUL.getTime() << " "
+                  << getName() << ":" << std::endl;
         if (!isEnabled()) {
             std::cout << "\tdisabled, skip" << std::endl;
             return;
@@ -105,7 +106,7 @@ namespace RTSim {
             _queue.erase(model);
             // todo temp
             std::cout << "\tRound expired for task " << model->toString()
-                 << " => removed" << std::endl;
+                      << " => removed" << std::endl;
             if (model->isActive()) {
                 model->setInsertTime(SIMUL.getTime());
                 _queue.insert(model);
@@ -127,8 +128,9 @@ namespace RTSim {
                     _rrEvt.drop();
                     _rrEvt.post(SIMUL.getTime() + slice);
                     // todo rem
-                    std::cout << "\tround evt set at " << SIMUL.getTime() + slice
-                         << " for task " << first->toString() << std::endl;
+                    std::cout << "\tround evt set at "
+                              << SIMUL.getTime() + slice << " for task "
+                              << first->toString() << std::endl;
                 }
             }
         }
@@ -157,7 +159,7 @@ namespace RTSim {
         _tasks[task] = model;
 
         model->setRRSlice(defaultSlice);
-        DBGPRINT_2("Default slice set: ", defaultSlice);
+        DBGPRINT("Default slice set: ", defaultSlice);
     }
 
     void RRScheduler::addTask(AbsRTTask *task, const std::string &p) {
@@ -176,7 +178,7 @@ namespace RTSim {
 
         int slice = 0;
 
-        DBGPRINT_2("Slice parameter: ", p);
+        DBGPRINT("Slice parameter: ", p);
         if (p == "")
             slice = defaultSlice;
         else {
@@ -184,7 +186,7 @@ namespace RTSim {
             ss >> slice;
         }
 
-        DBGPRINT_2("Slice set to: ", slice);
+        DBGPRINT("Slice set to: ", slice);
 
         model->setRRSlice(slice);
     }

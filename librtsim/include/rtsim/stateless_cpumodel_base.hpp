@@ -17,9 +17,9 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 #include <limits>
 #include <string>
 
-#include <rtsim/class_utils.hpp>
 #include <metasim/cloneable.hpp>
 #include <metasim/memory.hpp>
+#include <rtsim/class_utils.hpp>
 #include <rtsim/opp.hpp>
 
 namespace RTSim {

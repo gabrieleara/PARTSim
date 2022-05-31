@@ -242,8 +242,9 @@ namespace yaml {
 
 /*
 // Example of use
-#include <rtsim/yaml.hpp>
 #include <iostream>
+
+#include <rtsim/yaml.hpp>
 
 using std::string;
 

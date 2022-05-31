@@ -280,15 +280,18 @@ namespace RTSim {
         /// to the kernel itself.
         ///
         /// @sa addCPU
-        MRTKernel(Scheduler *, std::set<CPU *> cpus = {}, const std::string &name = "");
+        MRTKernel(Scheduler *, std::set<CPU *> cpus = {},
+                  const std::string &name = "");
 
         // /// Constructor: needs to know which scheduler the kernel want to use
         // /// and the processors.
         // ///
-        // /// In this case, no CPUs will be generated and the ones given as input
+        // /// In this case, no CPUs will be generated and the ones given as
+        // input
         // /// will be used instead.
         // ///
-        // /// @note DO NOT USE MULTIPLE TIMES THE SAME CPU POINTER, MULTIPLE CPUS
+        // /// @note DO NOT USE MULTIPLE TIMES THE SAME CPU POINTER, MULTIPLE
+        // CPUS
         // /// POINTING TO THE SAME CPU WILL BE MERGED INTO THE SAME ONE
         // ///
         // /// @deprecated use the one with the std::set instead
@@ -299,20 +302,24 @@ namespace RTSim {
         // /// kernel want to use, and how many processor the system is composed
         // /// of.
         // ///
-        // /// It will then use the given factory to generate that many processors.
+        // /// It will then use the given factory to generate that many
+        // processors.
         // ///
-        // /// @note the absCPUFactory given as argument will no longer be owned by
+        // /// @note the absCPUFactory given as argument will no longer be owned
+        // by
         // /// this class and can be reused by others after n CPUs have been
         // /// created in this constructor. The factory will not be destroyed by
         // /// the kernel on delete.
         // MRTKernel(Scheduler *, absCPUFactory *, int n = 1,
         //           const std::string &name = "");
 
-        // /// Constructor: needs to know which scheduler the kernel want to use,
+        // /// Constructor: needs to know which scheduler the kernel want to
+        // use,
         // /// and from how many processor the system is composed.
         // ///
-        // /// Internally, it will use a uniformCPUFactory to generate the n CPUs.
-        // MRTKernel(Scheduler *, int n = 1, const std::string &name = "");
+        // /// Internally, it will use a uniformCPUFactory to generate the n
+        // CPUs. MRTKernel(Scheduler *, int n = 1, const std::string &name =
+        // "");
 
         // /// Constructor: needs to know scheduler and name only.
         // ///

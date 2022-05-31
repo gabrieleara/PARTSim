@@ -88,7 +88,7 @@ public:
         Impl::erase(x);
     }
 
-    iterator find(const_reference x){
+    iterator find(const_reference x) {
         return Impl::find(x);
     }
 

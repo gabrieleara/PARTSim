@@ -213,6 +213,7 @@ namespace MetaSim {
 } // namespace MetaSim
 
 extern "C" {
+// TODO: what is the purpose of this?
 void libmetasim_is_present();
 }
 
@@ -237,16 +238,20 @@ void libmetasim_is_present();
         SIMUL.dbg.disable("__FORCE__");                                        \
     } while (0)
 
-#define DBGPRINT(x) SIMUL.dbg << x << std::endl
-#define DBGPRINT_2(x, y) SIMUL.dbg << x << y << std::endl
-#define DBGPRINT_3(x, y, z) SIMUL.dbg << x << y << z << std::endl
-#define DBGPRINT_4(x, y, z, w) SIMUL.dbg << x << y << z << w << std::endl
-#define DBGPRINT_5(x, y, z, w, r)                                              \
-    SIMUL.dbg << x << y << z << w << r << std::endl
-#define DBGPRINT_6(x, y, z, w, r, s)                                           \
-    SIMUL.dbg << x << y << z << w << r << s << std::endl
+// C++17 way of printing to an stream using a variable number of arguments,
+// using fold expressions.
+//
+// Source: https://en.cppreference.com/w/cpp/language/fold
+template <class... Args>
+void __dbgprintln_variadic(MetaSim::DebugStream &out, Args &&...args) {
+    (out << ... << std::forward<Args>(args)) << std::endl;
+}
 
-#define DBGVAR(x) DBGPRINT_2("  --> " #x " = ", x)
+// NOTE: not using ##__VA_ARGS__ because only valid in GNU C/C++ (C++20 has a
+// fix for this but we target C++17) and we require at least one argument to be
+// printed.
+#define DBGPRINT(...) __dbgprintln_variadic(SIMUL.dbg, __VA_ARGS__)
+#define DBGVAR(x) DBGPRINT("  --> ", #x, " = ", x)
 
 template <class X>
 void __print_elem__(const X &obj) {
@@ -272,12 +277,12 @@ void __print_set__(T const &x) {
 #define DBGENTER(x)
 #define DBGTAG(x, y)
 #define DBGFORCE(x)
-#define DBGPRINT(x)
-#define DBGPRINT_2(x, y)
-#define DBGPRINT_3(x, y, z)
-#define DBGPRINT_4(x, y, z, w)
-#define DBGPRINT_5(x, y, z, w, r)
-#define DBGPRINT_6(x, y, z, w, r, s)
+#define DBGPRINT(...)
+// #define DBGPRINT_2(x, y)
+// #define DBGPRINT_3(x, y, z)
+// #define DBGPRINT_4(x, y, z, w)
+// #define DBGPRINT_5(x, y, z, w, r)
+// #define DBGPRINT_6(x, y, z, w, r, s)
 
 #define DBGVAR(x)
 

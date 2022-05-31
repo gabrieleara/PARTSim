@@ -14,12 +14,12 @@
 #ifndef __SCHEDULER_HPP__
 #define __SCHEDULER_HPP__
 
-#include <rtsim/abstask.hpp>
 #include <metasim/baseexc.hpp>
-#include <rtsim/cpu.hpp>
 #include <metasim/entity.hpp>
 #include <metasim/plist.hpp>
 #include <metasim/simul.hpp>
+#include <rtsim/abstask.hpp>
+#include <rtsim/cpu.hpp>
 
 namespace RTSim {
 

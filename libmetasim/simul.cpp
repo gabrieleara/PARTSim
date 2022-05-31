@@ -78,7 +78,7 @@ namespace MetaSim {
 
         mytime = temp->getTime(); // stores the current time
 
-        DBGPRINT_3("Executing event action at time [", mytime, "]: ");
+        DBGPRINT("Executing event action at time [", mytime, "]: ");
 #ifndef NDEBUG
         temp->print();
         print();
@@ -117,8 +117,8 @@ namespace MetaSim {
                 globTime = sim_step();
             }
         } catch (NoMoreEventsInQueue &e) {
-            std::cerr << "No more events in queue: simulation time = " << globTime
-                 << std::endl;
+            std::cerr << "No more events in queue: simulation time = "
+                      << globTime << std::endl;
         }
 
         return globTime;
@@ -181,8 +181,8 @@ namespace MetaSim {
 
         if (numRuns == 2) {
             std::cout << "Warning: Simulation cannot be "
-                    "initialized with 2 runs"
-                 << std::endl;
+                         "initialized with 2 runs"
+                      << std::endl;
             std::cout << "         Executing 3 runs!" << std::endl;
             numRuns = 3;
         }
@@ -205,8 +205,8 @@ namespace MetaSim {
                     globTime = sim_step();
                 }
             } catch (NoMoreEventsInQueue &e) {
-                std::cerr << "No more events in queue: simulation time =" << globTime
-                     << std::endl;
+                std::cerr << "No more events in queue: simulation time ="
+                          << globTime << std::endl;
             }
 
             endSingleRun();
@@ -230,7 +230,7 @@ namespace MetaSim {
 
     // only for debug
     void Simulation::print() {
-        DBGPRINT_3("Actual time = [", globTime, "]");
+        DBGPRINT("Actual time = [", globTime, "]");
         DBGPRINT("---------- Begin Event Queue ----------");
         Event::printQueue();
         DBGPRINT("---------- End Event Queue ------------");

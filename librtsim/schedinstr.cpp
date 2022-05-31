@@ -11,9 +11,9 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <metasim/simul.hpp>
 #include <rtsim/kernel.hpp>
 #include <rtsim/schedinstr.hpp>
-#include <metasim/simul.hpp>
 #include <rtsim/task.hpp>
 
 namespace RTSim {
@@ -45,7 +45,7 @@ namespace RTSim {
 
     void SchedInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Scheduling SchedInstr named: " << getName());
+        DBGPRINT("Scheduling SchedInstr named: ", getName());
 
         _endEvt.post(SIMUL.getTime());
     }
@@ -58,7 +58,7 @@ namespace RTSim {
     void SchedInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
-        DBGPRINT("Ending SchedInstr named: " << getName());
+        DBGPRINT("Ending SchedInstr named: ", getName());
 
         _father->onInstrEnd();
 
@@ -67,11 +67,11 @@ namespace RTSim {
         if (k == NULL)
             throw BaseExc("Kernel not found!");
 
-        DBGPRINT("Before lowering threshold for task " << _father->getName());
+        DBGPRINT("Before lowering threshold for task ", _father->getName());
         k->disableThreshold();
         k->dispatch();
 
-        DBGPRINT("After lowing threshold for task " << _father->getName());
+        DBGPRINT("After lowing threshold for task ", _father->getName());
 
         _threEvt.process();
     }

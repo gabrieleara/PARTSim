@@ -87,7 +87,8 @@ namespace RTSim {
                      const vector<string> &instr,
                      const vector<double> &Omegaplus,
                      const vector<double> &Omegaminus,
-                     const std::string &name) : // throw(WrongParameterSize) :
+                     const std::string &name) :
+        // throw(WrongParameterSize) :
         Task(NULL, 0, 0, name, 1000),
         AngularPeriod(angPeriod),
         AngularPhase(angPhase),
@@ -159,12 +160,14 @@ namespace RTSim {
         mode = *(BufferedModes.begin());
         BufferedModes.erase(BufferedModes.begin());
 
-        // std::cout << "AVRTask::handleArrival at " << arr << " BEFORE" << std::endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " BEFORE" <<
+        // std::endl;
         instrQueue.clear();
-        // std::cout << "AVRTask::handleArrival at " << arr << " AFTER" << std::endl;
+        // std::cout << "AVRTask::handleArrival at " << arr << " AFTER" <<
+        // std::endl;
 
-        // if (instrQueue.begin() != instrQueue.end()) std::cout << "SOMETHING REALLY
-        // WRONG" << std::endl;
+        // if (instrQueue.begin() != instrQueue.end()) std::cout << "SOMETHING
+        // REALLY WRONG" << std::endl;
 
         vector<RTSim::Instr *> myCurrInstr = myInstr.at(mode);
 

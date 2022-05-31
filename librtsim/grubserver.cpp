@@ -1,6 +1,7 @@
 #include <assert.h>
-#include <rtsim/grubserver.hpp>
 #include <iostream>
+
+#include <rtsim/grubserver.hpp>
 
 namespace RTSim {
     using std::cout;
@@ -101,14 +102,15 @@ namespace RTSim {
             cap.start(-supervisor->getActiveUtilization());
             Tick delta = cap.get_intercept(0);
             if (delta < 0) {
-                std::cout << "Task: " << dynamic_cast<Task *>(tasks[0])->getName()
-                     << std::endl;
+                std::cout << "Task: "
+                          << dynamic_cast<Task *>(tasks[0])->getName()
+                          << std::endl;
                 std::cout << "Time: " << SIMUL.getTime() << std::endl;
                 std::cout << "Status: " << status << " -- intercept: " << delta
-                     << std::endl;
+                          << std::endl;
                 std::cout << "capacity: " << cap.get_value() << std::endl;
                 std::cout << "Supervisor utilization: "
-                     << supervisor->getActiveUtilization() << std::endl;
+                          << supervisor->getActiveUtilization() << std::endl;
                 assert(0);
             }
             _bandExEvt.post(SIMUL.getTime() + cap.get_intercept(0));
@@ -127,11 +129,11 @@ namespace RTSim {
         status = READY;
         cap.set_value(Q);
         d = SIMUL.getTime() + P;
-        DBGPRINT_2("new deadline ", d);
+        DBGPRINT("new deadline ", d);
         setAbsDead(d);
         vtime.set_value(SIMUL.getTime());
         supervisor->set_active(this);
-        DBGPRINT_2("Going to READY at ", SIMUL.getTime());
+        DBGPRINT("Going to READY at ", SIMUL.getTime());
         // std::cout << "IDLE-READY end" << std::endl;
     }
 

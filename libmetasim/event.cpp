@@ -167,7 +167,7 @@ namespace MetaSim {
 
         // the new way of doing statistics. The old way
         // remains valid, but it is deprecated.
-        DBGPRINT_2("Calling the particle probes, size = ", _particles.size());
+        DBGPRINT("Calling the particle probes, size = ", _particles.size());
         for (auto itp = _particles.begin(); itp != _particles.end(); itp++) {
             DBGPRINT("Calling probe");
             (*itp)->probe();
@@ -176,15 +176,15 @@ namespace MetaSim {
 
     // DEBUG!!! Prints events data on the dbg stream.
     void Event::print() {
-        DBGPRINT_6("t=[", _time, "] prio=[", _priority,
-                   "] event=", typeid(*this).name());
+        DBGPRINT("t=[", _time, "] prio=[", _priority,
+                 "] event=", typeid(*this).name());
     }
 
     void Event::addParticle(std::unique_ptr<ParticleInterface> s) {
         DBGENTER(_EVENT_DBG_LEV);
-        DBGPRINT_2("Event name ", typeid(*this).name());
+        DBGPRINT("Event name ", typeid(*this).name());
         _particles.push_back(std::move(s));
-        DBGPRINT_2("size is now: ", _particles.size());
+        DBGPRINT("size is now: ", _particles.size());
     }
 
 } // namespace MetaSim

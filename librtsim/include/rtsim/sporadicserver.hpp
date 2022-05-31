@@ -1,8 +1,8 @@
 #ifndef __SPORADICSERVER_H__
 #define __SPORADICSERVER_H__
 
-#include <rtsim/capacitytimer.hpp>
 #include <list>
+#include <rtsim/capacitytimer.hpp>
 #include <rtsim/server.hpp>
 
 namespace RTSim {

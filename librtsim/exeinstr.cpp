@@ -21,7 +21,6 @@
 #include <metasim/simul.hpp>
 #include <metasim/strtoken.hpp>
 
-#include <rtsim/exeinstr.hpp>
 #include <assert.h>
 #include <rtsim/cpu.hpp>
 #include <rtsim/exeinstr.hpp>
@@ -134,16 +133,16 @@ namespace RTSim {
         executing = true;
 
         if (isBegOfInstr) {
-            DBGPRINT_3("Initializing ExecInstr ", getName(),
-                       " at first schedule.");
-            DBGPRINT_2("Time executed during the prev. instance: ", execdTime);
+            DBGPRINT("Initializing ExecInstr ", getName(),
+                     " at first schedule.");
+            DBGPRINT("Time executed during the prev. instance: ", execdTime);
 
             execdTime = 0;
             actCycles = 0;
             isBegOfInstr = false;
             currentCost = Tick(cost->get());
 
-            DBGPRINT_2("Time to execute for this instance: ", currentCost);
+            DBGPRINT("Time to execute for this instance: ", currentCost);
         }
 
         CPU *p = _father->getCPU();
@@ -153,14 +152,13 @@ namespace RTSim {
 
         double currentSpeed = p->getSpeed();
 
-        DBGPRINT_2("father ", _father->toString());
-        DBGPRINT_2("CPU ", p->getName());
-        DBGPRINT_6(" currentCost ", currentCost, " actCycles ", actCycles,
-                   "Current speed ", currentSpeed);
-        DBGPRINT_4(" result ",
-                   ((double) currentCost - actCycles) / currentSpeed,
-                   " to tick ",
-                   ceil(((double) currentCost - actCycles) / currentSpeed));
+        DBGPRINT("father ", _father->toString());
+        DBGPRINT("CPU ", p->getName());
+        DBGPRINT(" currentCost ", currentCost, " actCycles ", actCycles,
+                 "Current speed ", currentSpeed);
+        DBGPRINT(" result ", ((double) currentCost - actCycles) / currentSpeed,
+                 " to tick ",
+                 ceil(((double) currentCost - actCycles) / currentSpeed));
         Tick tmp = 0;
         if (((double) currentCost) > actCycles * currentSpeed)
             tmp =
@@ -169,8 +167,7 @@ namespace RTSim {
         assert(tmp >= 0);
         _endEvt.post(t + tmp);
 
-        DBGPRINT("Setting endEvt for " << _father->toString()
-                                       << " at t=" << t + tmp);
+        DBGPRINT("Setting endEvt for ", _father->toString(), " at t=", t + tmp);
         DBGPRINT("End of ExecInstr::schedule() ");
     }
 
@@ -178,7 +175,7 @@ namespace RTSim {
         Tick t = SIMUL.getTime();
 
         DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Descheduling ExecInstr named: " << getName());
+        DBGPRINT("Descheduling ExecInstr named: ", getName());
 
         _endEvt.drop();
 
@@ -206,7 +203,7 @@ namespace RTSim {
 
     void ExecInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Ending ExecInstr named: " << getName());
+        DBGPRINT("Ending ExecInstr named: ", getName());
 
         Tick t = SIMUL.getTime();
         execdTime += t - lastTime;

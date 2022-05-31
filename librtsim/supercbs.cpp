@@ -65,21 +65,21 @@ namespace RTSim {
 
         if (last_change_time <= SIMUL.getTime()) {
             last_change_time = s->changeBudget(delta_budget + s->getBudget());
-            DBGPRINT_2("in the past, new change time at ", last_change_time);
+            DBGPRINT("in the past, new change time at ", last_change_time);
         } else {
             DBGPRINT("in the future");
             if (delta_budget < 0) {
                 last_change_time =
                     std::max(last_change_time,
                              s->changeBudget(delta_budget + s->getBudget()));
-                DBGPRINT_2("delta_budget < 0, new change time at ",
-                           last_change_time);
+                DBGPRINT("delta_budget < 0, new change time at ",
+                         last_change_time);
             } else if (delta_budget > 0) {
                 ChangeBudgetEvt *e =
                     new ChangeBudgetEvt(this, s, delta_budget + s->getBudget());
                 e->post(last_change_time, true);
-                DBGPRINT_2("delta_budget > 0, new change time at ",
-                           last_change_time);
+                DBGPRINT("delta_budget > 0, new change time at ",
+                         last_change_time);
             }
         }
 

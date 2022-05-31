@@ -50,7 +50,7 @@ namespace RTSim {
 
     void WaitInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Scheduling WaitInstr named: " << getName());
+        DBGPRINT("Scheduling WaitInstr named: ", getName());
 
         _endEvt.post(SIMUL.getTime());
     }

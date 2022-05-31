@@ -4,16 +4,16 @@ copyright            : (C) 2014 Simoncelli Stefano
 email                : simoncelli.stefano@hotmail.it
 ***************************************************************************/
 
-#include <rtsim/abskernel.hpp>
 #include <algorithm>
-#include <metasim/basestat.hpp>
 #include <cstdlib>
 #include <cstring>
-#include <metasim/factory.hpp>
 #include <functional>
-#include <rtsim/instr.hpp>
+#include <metasim/basestat.hpp>
+#include <metasim/factory.hpp>
 #include <metasim/regvar.hpp>
 #include <metasim/simul.hpp>
+#include <rtsim/abskernel.hpp>
+#include <rtsim/instr.hpp>
 #include <rtsim/task.hpp>
 #include <time.h>
 
@@ -85,7 +85,8 @@ namespace RTSim {
         virtual void activate(int mode, Tick rdl); // throw(ModeOutOfIndex);
 
         // Updates his own Instr matrix with values passed by param
-        void buildInstr(const std::vector<std::string> &param); // throw(ParseExc);
+        void buildInstr(
+            const std::vector<std::string> &param); // throw(ParseExc);
 
         // Updates task parameters
         // Only when the task is not active to be called before activate();

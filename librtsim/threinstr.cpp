@@ -48,7 +48,7 @@ namespace RTSim {
 
     void ThreInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Scheduling ThreInstr named: " << getName());
+        DBGPRINT("Scheduling ThreInstr named: ", getName());
 
         _endEvt.post(SIMUL.getTime());
     }
@@ -61,7 +61,7 @@ namespace RTSim {
     void ThreInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
 
-        DBGPRINT("Ending ThreInstr named: " << getName());
+        DBGPRINT("Ending ThreInstr named: ", getName());
 
         _father->onInstrEnd();
 
@@ -70,12 +70,12 @@ namespace RTSim {
         if (k == NULL)
             throw BaseExc("Kernel not found!");
 
-        DBGPRINT("Before lowing threshold for task " << _father->getName());
+        DBGPRINT("Before lowing threshold for task ", _father->getName());
 
         k->setThreshold(_th);
         k->enableThreshold();
 
-        DBGPRINT("After raising threshold for task " << _father->getName());
+        DBGPRINT("After raising threshold for task ", _father->getName());
 
         _threEvt.process();
     }

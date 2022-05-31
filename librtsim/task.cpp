@@ -129,7 +129,7 @@ namespace RTSim {
 
     void Task::schedule(void) {
         DBGENTER(_TASK_DBG_LEV);
-        DBGPRINT("Scheduling " << getName());
+        DBGPRINT("Scheduling ", getName());
 
         _lastSched = SIMUL.getTime();
         schedEvt.process();
@@ -137,7 +137,7 @@ namespace RTSim {
 
     void Task::deschedule() {
         DBGENTER(_TASK_DBG_LEV);
-        DBGPRINT("Descheduling " << getName());
+        DBGPRINT("Descheduling ", getName());
 
         schedEvt.drop();
         deschedEvt.process();
@@ -321,7 +321,7 @@ namespace RTSim {
 
         int cpu_index = getCPU()->getIndex();
 
-        DBGPRINT("Task " << getName() << " finished on CPU " << cpu_index);
+        DBGPRINT("Task ", getName(), " finished on CPU ", cpu_index);
 
         endEvt.setCPU(cpu_index);
         _kernel->onEnd(this);
@@ -332,9 +332,9 @@ namespace RTSim {
             feedback->notify(getExecTime());
         }
 
-        DBGPRINT_4("chkBuffArrival for task ",
-                   dynamic_cast<Entity *>(this)->getName(), " = ",
-                   chkBuffArrival());
+        DBGPRINT("chkBuffArrival for task ",
+                 dynamic_cast<Entity *>(this)->getName(), " = ",
+                 chkBuffArrival());
 
         if (chkBuffArrival()) {
             fakeArrEvt.process();
@@ -375,7 +375,7 @@ namespace RTSim {
 
         int cpu_index = getCPU()->getIndex();
 
-        DBGPRINT("Task " << getName() << " killed on CPU " << cpu_index);
+        DBGPRINT("Task ", getName(), " killed on CPU ", cpu_index);
 
         endEvt.setCPU(cpu_index);
         _kernel->onEnd(this);
@@ -386,9 +386,9 @@ namespace RTSim {
             feedback->notify(getExecTime());
         }
 
-        DBGPRINT_4("chkBuffArrival for task ",
-                   dynamic_cast<Entity *>(this)->getName(), " = ",
-                   chkBuffArrival());
+        DBGPRINT("chkBuffArrival for task ",
+                 dynamic_cast<Entity *>(this)->getName(), " = ",
+                 chkBuffArrival());
 
         if (chkBuffArrival()) {
             fakeArrEvt.process();
@@ -403,7 +403,7 @@ namespace RTSim {
         DBGENTER(_TASK_DBG_LEV);
         int cpu_index = getCPU()->getIndex();
 
-        DBGPRINT("schedEvt for task " << getName() << " on CPU " << cpu_index);
+        DBGPRINT("schedEvt for task ", getName(), " on CPU ", cpu_index);
 
         if (!isActive()) {
             throw TaskNotActive("OnSched on a non-active task");
@@ -438,8 +438,7 @@ namespace RTSim {
 
         int cpu_index = getOldCPU()->getIndex();
 
-        DBGPRINT("DeschedEvt for task " << getName() << "from CPU"
-                                        << cpu_index);
+        DBGPRINT("DeschedEvt for task ", getName(), "from CPU", cpu_index);
 
         if (!isActive()) {
             throw TaskNotActive("OnDesched on a non-active task");
@@ -448,7 +447,7 @@ namespace RTSim {
             throw TaskNotExecuting("OnDesched() on a non-executing task");
         }
 
-        DBGPRINT_2("CPU: ", getCPU());
+        DBGPRINT("CPU: ", getCPU());
         deschedEvt.setCPU(cpu_index);
         endEvt.drop();
 
@@ -460,7 +459,7 @@ namespace RTSim {
 
     void Task::onInstrEnd() {
         DBGENTER(_TASK_DBG_LEV);
-        DBGPRINT("task : " << getName());
+        DBGPRINT("task : ", getName());
         if (!isActive()) {
             DBGPRINT("not active...");
             throw TaskNotActive("onInstrEnd() on a non-active task");
@@ -491,7 +490,7 @@ namespace RTSim {
 
     void Task::onFakeArrival(Event *e) {
         DBGENTER(_TASK_DBG_LEV);
-        DBGPRINT_2("fakeArrEvt for task", getName());
+        DBGPRINT("fakeArrEvt for task", getName());
 
         handleArrival(getBuffArrival());
 
@@ -535,7 +534,7 @@ namespace RTSim {
             par_list.push_back(string(getName()));
 
             for (j = par_list.begin(); j != par_list.end(); ++j)
-                DBGPRINT_2(" - ", *j);
+                DBGPRINT(" - ", *j);
             DBGPRINT("");
 
             unique_ptr<Instr> curr =
@@ -544,10 +543,10 @@ namespace RTSim {
             if (!curr)
                 throw ParseExc("insertCode", token);
 
-            DBGPRINT("Instr " << curr->getName() << "  created.");
+            DBGPRINT("Instr ", curr->getName(), "  created.");
             // todo
             std::cout << "Task::insertCode. instr created: " << curr->getName()
-                 << std::endl;
+                      << std::endl;
 
             addInstr(std::move(curr));
 
@@ -559,10 +558,10 @@ namespace RTSim {
         unsigned int i;
 
         std::cout << "Task " << getName() << ": instruction list" << std::endl;
-        DBGPRINT("Task " << getName() << ": instruction list");
+        DBGPRINT("Task ", getName(), ": instruction list");
         for (i = 0; i < instrQueue.size(); ++i) {
             std::cout << i << ") " << instrQueue[i]->toString() << std::endl;
-            DBGPRINT(i << ") " << instrQueue[i]->toString());
+            DBGPRINT(i, ") ", instrQueue[i]->toString());
         }
     }
 

@@ -216,7 +216,7 @@ namespace MetaSim {
             default_unit = d;
         }
 
-        /// implementation in tick.pp
+        /// implementation in tick.cpp
         static void set_resolution(const std::string &t);
         // throw(parse_util::ParseExc);
 

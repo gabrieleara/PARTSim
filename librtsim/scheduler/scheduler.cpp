@@ -59,15 +59,15 @@ namespace RTSim {
 
     void TaskModel::raiseThreshold() {
         _savedPriority = getPriority();
-        // std::cout << "New priority: " << getThreshold() << " / old priority: " <<
-        // _savedPriority << std::endl;
+        // std::cout << "New priority: " << getThreshold() << " / old priority:
+        // " << _savedPriority << std::endl;
         changePriority(getThreshold());
     }
 
     void TaskModel::restorePriority() {
         DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
-        // std::cout << "Restoring priority from: " << getPriority() << " to: " <<
-        // _savedPriority << std::endl;
+        // std::cout << "Restoring priority from: " << getPriority() << " to: "
+        // << _savedPriority << std::endl;
         changePriority(_savedPriority);
     }
 
@@ -162,7 +162,8 @@ namespace RTSim {
         return model->getThreshold();
     }
 
-    void Scheduler::setThreshold(AbsRTTask *task, int th) { // throw(RTSchedExc) {
+    void Scheduler::setThreshold(AbsRTTask *task,
+                                 int th) { // throw(RTSchedExc) {
         TaskModel *model = find(task);
 
         if (model == NULL)
@@ -275,7 +276,7 @@ namespace RTSim {
 
         DBGPRINT("Ready queue: ");
         for (; it != _queue.end(); ++it)
-            DBGPRINT_2(taskname((*it)->getTask()), " -> ");
+            DBGPRINT(taskname((*it)->getTask()), " -> ");
     }
 
     string Scheduler::toString() const {

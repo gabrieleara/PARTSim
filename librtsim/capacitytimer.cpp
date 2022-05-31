@@ -1,9 +1,10 @@
-#include <rtsim/capacitytimer.hpp>
 #include <cassert>
 #include <cmath>
 
 #include <iostream>
 #include <sstream>
+
+#include <rtsim/capacitytimer.hpp>
 
 namespace RTSim {
 

@@ -14,11 +14,11 @@ email                : gabriele.ara@santannapisa.it, gabriele.ara@live.it
 #ifndef __POWERMODEL_HPP__
 #define __POWERMODEL_HPP__
 
-#include <rtsim/class_utils.hpp>
 #include <metasim/cloneable.hpp>
+#include <metasim/memory.hpp>
+#include <rtsim/class_utils.hpp>
 #include <rtsim/opp.hpp>
 #include <rtsim/sortedcont.hpp>
-#include <metasim/memory.hpp>
 
 #include <rtsim/powermodel_params.hpp>
 #include <rtsim/stateless_cpumodel_base.hpp>

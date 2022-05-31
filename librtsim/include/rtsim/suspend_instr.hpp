@@ -2,8 +2,8 @@
 #define __SUSPEND_INSTR__
 
 #include <metasim/gevent.hpp>
-#include <rtsim/instr.hpp>
 #include <metasim/randomvar.hpp>
+#include <rtsim/instr.hpp>
 #include <string>
 #include <vector>
 

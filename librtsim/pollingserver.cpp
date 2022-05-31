@@ -38,7 +38,7 @@ namespace RTSim {
         recharging_time = SIMUL.getTime() + P;
         _rechargingEvt.post(recharging_time);
 
-        DBGPRINT_2("Recharging at time ", recharging_time);
+        DBGPRINT("Recharging at time ", recharging_time);
 
         _dlineMissEvt.setPriority(Event::_DEFAULT_PRIORITY + 2);
         _dlineMissEvt.post(recharging_time);

@@ -6,9 +6,9 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include <assert.h>
 
@@ -63,7 +63,7 @@ namespace RTSim {
 
             for (const auto &elem : tasks) {
                 std::cout << elem.first << ")\twcet " << elem.second.first
-                     << " period " << elem.second.second << std::endl;
+                          << " period " << elem.second.second << std::endl;
             }
 
             fd.close();
@@ -73,7 +73,8 @@ namespace RTSim {
         }
 
         static std::vector<PeriodicTask *>
-            getPeriodicTasks(const std::string &filename, const int experiment_no) {
+            getPeriodicTasks(const std::string &filename,
+                             const int experiment_no) {
             std::map<unsigned int, pair<unsigned int, unsigned int>> tasks =
                 importFromFile(filename);
             vector<PeriodicTask *> res;

@@ -12,8 +12,8 @@
  *                                                                         *
  ***************************************************************************/
 #include <metasim/factory.hpp>
-#include <rtsim/scheduler/fifosched.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/scheduler/fifosched.hpp>
 
 namespace RTSim {
 

@@ -17,10 +17,10 @@
 #include <iostream>
 #include <numeric>
 
+#include <functional>
 #include <metasim/baseexc.hpp>
 #include <metasim/basestat.hpp>
 #include <metasim/basetype.hpp>
-#include <functional>
 #include <metasim/simul.hpp>
 
 namespace MetaSim {

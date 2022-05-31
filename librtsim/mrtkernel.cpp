@@ -47,7 +47,6 @@ namespace RTSim {
     // Constructors and Destructor
     // =====================================================
 
-
     static inline std::set<CPU *> createCPUSet(absCPUFactory *factory,
                                                size_t n) {
         std::set<CPU *> cpus;
@@ -58,7 +57,6 @@ namespace RTSim {
 
         return cpus;
     }
-
 
     MRTKernel::MRTKernel(Scheduler *s, std::set<CPU *> cpus,
                          const string &name) :
@@ -192,7 +190,7 @@ namespace RTSim {
 
         if (p == nullptr)
             throw RTKernelExc("Dispatch with NULL parameter");
-        DBGPRINT_2("dispatching on processor ", p);
+        DBGPRINT("dispatching on processor ", p);
 
         // Undo any previous "begin dispatch event" existing on this CPU
         _beginEvt[p]->drop();
@@ -243,7 +241,7 @@ namespace RTSim {
         int i = ncpu;
 
         _sched->print();
-        DBGPRINT_2("New tasks: ", num_newtasks);
+        DBGPRINT("New tasks: ", num_newtasks);
         print();
 
         if (num_newtasks < 1)
@@ -252,7 +250,7 @@ namespace RTSim {
         for (auto f = getNextFreeProc(_m_currExe.begin(), _m_currExe.end());
              num_newtasks > 0; f = getNextFreeProc(f, _m_currExe.end())) {
             if (f != _m_currExe.end()) {
-                DBGPRINT_2("Dispatching on free processor ", f->first);
+                DBGPRINT("Dispatching on free processor ", f->first);
                 dispatch(f->first);
                 --num_newtasks;
                 ++f;
@@ -276,8 +274,8 @@ namespace RTSim {
                     // ones!
                     CPU *c = _m_dispatched[t];
                     if (c != nullptr) {
-                        DBGPRINT_4("Dispatching on processor ", c,
-                                   " which is executing task ", taskname(t));
+                        DBGPRINT("Dispatching on processor ", c,
+                                 " which is executing task ", taskname(t));
                         dispatch(c);
                         --num_newtasks;
                         break;
@@ -314,7 +312,7 @@ namespace RTSim {
             DBGPRINT("Nothing to schedule, finishing");
         }
 
-        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
+        DBGPRINT("Scheduling task ", taskname(st), " on cpu ", p->toString());
 
         if (st)
             _m_dispatched[st] = p;
@@ -335,8 +333,8 @@ namespace RTSim {
 
         _m_currExe[p] = st;
 
-        DBGPRINT_2("CPU: ", p->toString());
-        DBGPRINT_2("Task: ", taskname(st));
+        DBGPRINT("CPU: ", p->toString());
+        DBGPRINT("Task: ", taskname(st));
         printState();
 
         // st could be null (because of an idling processor)
@@ -408,11 +406,11 @@ namespace RTSim {
     void MRTKernel::print() const {
         DBGPRINT("Executing");
         for (auto i = _m_currExe.cbegin(); i != _m_currExe.cend(); ++i)
-            DBGPRINT_4("  [", i->first, "] --> ", taskname(i->second));
+            DBGPRINT("  [", i->first, "] --> ", taskname(i->second));
 
         DBGPRINT("Dispatched");
         for (auto j = _m_dispatched.cbegin(); j != _m_dispatched.cend(); ++j)
-            DBGPRINT_4("  [", taskname(j->first), "] --> ", j->second);
+            DBGPRINT("  [", taskname(j->first), "] --> ", j->second);
     }
 
     void MRTKernel::printState() const {

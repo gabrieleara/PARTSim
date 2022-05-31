@@ -73,7 +73,8 @@ namespace RTSim {
         DBGPRINT("Raising priority");
 
         // TODO: how do we compare priorities for different schedulers?
-        // FIXME: check whether this should be inverted with a '!' on the outside
+        // FIXME: check whether this should be inverted with a '!' on the
+        // outside
         if (TaskModel::TaskModelCmp()(highest, taskModel)) {
             // Remove the running task from the scheduler and re-insert it into
             // the running queue with the new priority

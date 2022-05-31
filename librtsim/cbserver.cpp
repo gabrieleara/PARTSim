@@ -23,7 +23,7 @@ namespace RTSim {
 
     void CBServer::newRun() {
         DBGENTER(_SERVER_DBG_LEV);
-        DBGPRINT_2("HR ", HR);
+        DBGPRINT("HR ", HR);
 
         cap = Q;
         last_time = 0;
@@ -48,7 +48,7 @@ namespace RTSim {
             return 0;
 
         if (n == Q) {
-            DBGPRINT_2("No Capacity change: n=Q=", Q);
+            DBGPRINT("No Capacity change: n=Q=", Q);
             return cur_time;
         }
 
@@ -57,7 +57,7 @@ namespace RTSim {
         cap += n - Q;
 
         if (status == EXECUTING) {
-            DBGPRINT_3("Server ", getName(), " is executing");
+            DBGPRINT("Server ", getName(), " is executing");
 
             // Capacity may have decreased. If 0, a recharging event is fired at
             // the current time. If less than 0, an exception is thrown when
@@ -69,7 +69,7 @@ namespace RTSim {
             if (cap == 0) {
                 DBGPRINT("Server capacity is zero, go to recharging");
             } else {
-                DBGPRINT_2("Reposting bandExEvt at ", cur_time + cap);
+                DBGPRINT("Reposting bandExEvt at ", cur_time + cap);
             }
 
             _bandExEvt.drop();
@@ -83,7 +83,7 @@ namespace RTSim {
 
     double CBServer::getVirtualTime() {
         DBGENTER(_SERVER_DBG_LEV);
-        DBGPRINT("Status = " << status_string[status]);
+        DBGPRINT("Status = ", status_string[status]);
         double vt;
         if (status == IDLE)
             vt = double(SIMUL.getTime());
@@ -181,12 +181,12 @@ namespace RTSim {
             cap = Q;
             // Postpone absolute deadline
             d = SIMUL.getTime() + P;
-            DBGPRINT_2("new deadline ", d);
+            DBGPRINT("new deadline ", d);
             setAbsDead(d);
         }
 
         vtime.set_value(SIMUL.getTime());
-        DBGPRINT_2("Going to active contending ", SIMUL.getTime());
+        DBGPRINT("Going to active contending ", SIMUL.getTime());
     }
 
     // We should compare the actual bandwidth with the assigned Q of this
@@ -213,7 +213,7 @@ namespace RTSim {
         last_time = SIMUL.getTime();
         vtime.start(double(P) / double(Q));
 
-        DBGPRINT_2("Last time is: ", last_time);
+        DBGPRINT("Last time is: ", last_time);
 
         _bandExEvt.post(last_time + cap);
     }
@@ -243,7 +243,7 @@ namespace RTSim {
             status = RELEASING;
         }
 
-        // DBGPRINT("Status is now XXXYYY " << status_string[status]);
+        // DBGPRINT("Status is now XXXYYY ", status_string[status]);
 
         // The EMRTKernel saves the active utilization on
         // release in the onExecutingReleasing method.
@@ -270,10 +270,10 @@ namespace RTSim {
         _bandExEvt.drop();
         vtime.stop();
 
-        DBGPRINT_2("Capacity before: ", cap);
-        DBGPRINT_2("Time is: ", SIMUL.getTime());
-        DBGPRINT_2("Last time is: ", last_time);
-        DBGPRINT_2("HR: ", HR);
+        DBGPRINT("Capacity before: ", cap);
+        DBGPRINT("Time is: ", SIMUL.getTime());
+        DBGPRINT("Last time is: ", last_time);
+        DBGPRINT("HR: ", HR);
 
         if (!HR) {
             // Postpone the absolute deadline and instantly replenish the budget
@@ -281,9 +281,9 @@ namespace RTSim {
             d = d + P;
             setAbsDead(d);
 
-            DBGPRINT_2("Capacity is now: ", cap);
-            // DBGPRINT_2("Capacity queue: ", capacity_queue.size());
-            DBGPRINT_2("new_deadline: ", d);
+            DBGPRINT("Capacity is now: ", cap);
+            // DBGPRINT("Capacity queue: ", capacity_queue.size());
+            DBGPRINT("new_deadline: ", d);
 
             status = READY;
             _replEvt.post(SIMUL.getTime());
@@ -301,7 +301,7 @@ namespace RTSim {
         // moved up
         // vtime.stop();
 
-        DBGPRINT("The status is now " << status_string[status]);
+        DBGPRINT("The status is now ", status_string[status]);
 
         auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         if (emrtk != nullptr)
@@ -322,8 +322,8 @@ namespace RTSim {
 
         _replEvt.drop();
 
-        DBGPRINT_2("Status before: ", status);
-        DBGPRINT_2("Capacity before: ", cap);
+        DBGPRINT("Status before: ", status);
+        DBGPRINT("Capacity before: ", cap);
 
         switch (status) {
         case RECHARGING:
@@ -362,8 +362,8 @@ namespace RTSim {
             assert(false);
         }
 
-        DBGPRINT_2("Status is now: ", status_string[status]);
-        DBGPRINT_2("Capacity is now: ", cap);
+        DBGPRINT("Status is now: ", status_string[status]);
+        DBGPRINT("Capacity is now: ", cap);
 
         auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         if (emrtk != nullptr)

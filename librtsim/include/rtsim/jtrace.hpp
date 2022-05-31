@@ -21,8 +21,8 @@
 #include <metasim/baseexc.hpp>
 #include <metasim/basetype.hpp>
 #include <metasim/event.hpp>
-#include <rtsim/rttask.hpp>
 #include <metasim/trace.hpp>
+#include <rtsim/rttask.hpp>
 
 #include <rtsim/traceevent.hpp>
 

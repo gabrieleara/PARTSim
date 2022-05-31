@@ -240,7 +240,7 @@ namespace MetaSim {
         std::ifstream inFile;
         double v;
 
-        DBGPRINT_2("Reading from ", filename);
+        DBGPRINT("Reading from ", filename);
 
         inFile.open(filename.c_str());
         if (!inFile.is_open()) {
@@ -301,15 +301,15 @@ namespace MetaSim {
 
     unique_ptr<RandomVar> RandomVar::parsevar(const std::string &str) {
         string token = get_token(str);
-        DBGPRINT_2("token = ", token);
+        DBGPRINT("token = ", token);
 
         string p = get_param(str);
-        DBGPRINT_2("parms = ", p);
+        DBGPRINT("parms = ", p);
 
         vector<string> parms = split_param(p);
 
         for (size_t i = 0; i < parms.size(); ++i)
-            DBGPRINT_4("par[", i, "] = ", parms[i]);
+            DBGPRINT("par[", i, "] = ", parms[i]);
 
         unique_ptr<RandomVar> var(FACT(RandomVar).create(token, parms));
 

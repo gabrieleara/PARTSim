@@ -45,7 +45,7 @@ namespace RTSim {
 
     private:
         struct request_t {
-            AbsRTTask * const task;
+            AbsRTTask *const task;
             const int nr;
 
             request_t(AbsRTTask *task, int nr) : task(task), nr(nr) {}

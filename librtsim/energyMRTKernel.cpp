@@ -46,11 +46,12 @@ namespace RTSim {
     //                                  Island_BL *big, Island_BL *little,
     //                                  const string &name) :
     //     MRTKernel(s,
-    //               big->getProcessors().size() + little->getProcessors().size(),
-    //               name) {
+    //               big->getProcessors().size() +
+    //               little->getProcessors().size(), name) {
     //     setIslandBig(big);
     //     setIslandLittle(little);
-    //     // // FIXME: Why did the old implementation set the kernel for each island?
+    //     // // FIXME: Why did the old implementation set the kernel for each
+    //     island?
     //     // big->setKernel(this);
     //     // little->setKernel(this);
     //     for (CPU_BL *c : getProcessors()) {
@@ -59,7 +60,8 @@ namespace RTSim {
     //     }
     //     _sched->setKernel(this);
     //     setTryingTaskOnCPU_BL(false);
-    //     // todo is there a shorter solution to pass directly vector<CPU_BL*> to
+    //     // todo is there a shorter solution to pass directly vector<CPU_BL*>
+    //     to
     //     // EMS?
     //     vector<CPU_BL *> cpus = getProcessors();
     //     vector<CPU *> v;
@@ -140,24 +142,26 @@ namespace RTSim {
 
             utilization +=
                 ceil(th->getRemainingWCET(capacity)) / double(th->getPeriod());
-            std::cout << "\t\t\tUtilization task already in CPU, " << th->toString()
-                 << ", is " << ceil(th->getWCET(capacity)) << "/"
-                 << th->getPeriod() << " = "
-                 << ceil(th->getRemainingWCET(capacity)) /
-                        double(th->getPeriod())
-                 << " - CPU capacity=" << capacity << std::endl
-                 << "\t\t\t\ttask WCET " << ceil(th->getRemainingWCET(capacity))
-                 << " DL " << th->getPeriod() << std::endl;
+            std::cout << "\t\t\tUtilization task already in CPU, "
+                      << th->toString() << ", is "
+                      << ceil(th->getWCET(capacity)) << "/" << th->getPeriod()
+                      << " = "
+                      << ceil(th->getRemainingWCET(capacity)) /
+                             double(th->getPeriod())
+                      << " - CPU capacity=" << capacity << std::endl
+                      << "\t\t\t\ttask WCET "
+                      << ceil(th->getRemainingWCET(capacity)) << " DL "
+                      << th->getPeriod() << std::endl;
         }
 
         double u_active = _queues->getUtilization_active(c);
         std::cout << "\t\t\tU_active on core " << c->getName()
-             << " (for CBS server): " << u_active << std::endl;
+                  << " (for CBS server): " << u_active << std::endl;
         utilization += u_active;
 
         double u_tempMig = getUtilization_temporarilyMigrated(c);
-        std::cout << "\t\t\tU_tempMig on " << c->toString() << " = " << u_tempMig
-             << std::endl;
+        std::cout << "\t\t\tU_tempMig on " << c->toString() << " = "
+                  << u_tempMig << std::endl;
         utilization += u_tempMig;
 
         return utilization;
@@ -178,11 +182,12 @@ namespace RTSim {
             double u_active_c1 = _queues->getUtilization_active(c1);
             utilizationIsland += u_active_c1;
             std::cout << "\t\t\t\tutil active=" << u_active_c1 << " ("
-                 << c1->getName() << ") -> isl util=" << utilizationIsland
-                 << std::endl;
+                      << c1->getName() << ") -> isl util=" << utilizationIsland
+                      << std::endl;
         }
 
-        std::cout << "\t\t\t\tisland utilization=" << utilizationIsland << std::endl;
+        std::cout << "\t\t\t\tisland utilization=" << utilizationIsland
+                  << std::endl;
         return utilizationIsland;
     }
 
@@ -192,40 +197,43 @@ namespace RTSim {
                                                   double &utilization,
                                                   const double capacity) const {
         std::cout << "\t\t\t\t" << __func__ << "(). init util=" << utilization
-             << std::endl;
+                  << std::endl;
         CBServerCallingEMRTKernel *cbs =
             dynamic_cast<CBServerCallingEMRTKernel *>(task);
 
         if (cbs == NULL) {
-            std::cout << "\t\t\t\t\tnot a CBServerCallingEMRTKernel => skip" << std::endl;
+            std::cout << "\t\t\t\t\tnot a CBServerCallingEMRTKernel => skip"
+                      << std::endl;
             return false;
         }
 
         if (cbs->isEmpty()) {
             std::cout << "\t\t\t\t\tServer's empty => skip, you consider "
-                    "Util_actives ("
-                 << cbs->getName() << ")" << std::endl;
+                         "Util_actives ("
+                      << cbs->getName() << ")" << std::endl;
             return true;
         }
 
         // todo rem
-        std::cout << "\t\t\t\t\tserver status: " << cbs->getStatusString() << std::endl;
+        std::cout << "\t\t\t\t\tserver status: " << cbs->getStatusString()
+                  << std::endl;
         // server utilization (its WCET/period) considered only if it's
         // executing or recharging
         if (cbs->getStatus() == ServerStatus::EXECUTING ||
             cbs->getStatus() == ServerStatus::RECHARGING) {
             utilization +=
                 cbs->getRemainingWCET(capacity) / double(cbs->getPeriod());
-            std::cout << "\t\t\t\t\tCBS server is executing. utilization increased "
-                    "to "
-                 << cbs->getRemainingWCET(capacity) << "/"
-                 << double(cbs->getPeriod()) << "=" << utilization
-                 << " capacity=" << capacity << std::endl;
+            std::cout
+                << "\t\t\t\t\tCBS server is executing. utilization increased "
+                   "to "
+                << cbs->getRemainingWCET(capacity) << "/"
+                << double(cbs->getPeriod()) << "=" << utilization
+                << " capacity=" << capacity << std::endl;
             return true;
         }
 
         std::cout << "\t\t\t\t\tCBS server not executing or recharging => skip"
-             << std::endl;
+                  << std::endl;
         return false;
     }
 
@@ -255,7 +263,8 @@ namespace RTSim {
 
         // update budget of servers (enveloping periodic tasks) in the island
         for (auto &elem : _envelopes) {
-            // std::cout << __func__ << "(). elem = " << elem.first->toString() << "
+            // std::cout << __func__ << "(). elem = " << elem.first->toString()
+            // << "
             // -> " << elem.second->toString() << std::endl;
             CPU_BL *c = getProcessor(elem.first);
 
@@ -267,13 +276,13 @@ namespace RTSim {
             string startingWL = c->getWorkload();
             c->setWorkload(Utils::getTaskWorkload(elem.first));
             std::cout << __func__ << "(). cpu of elem is " << c->toString()
-                 << " wl: " << c->getWorkload() << std::endl;
+                      << " wl: " << c->getWorkload() << std::endl;
             if (c->getIsland()->type() == island->type()) {
                 Tick taskWCET = Tick(ceil(elem.first->getWCET(c->getSpeed())));
                 std::cout << __func__ << "(). changing budget to "
-                     << elem.second->toString() << " to " << taskWCET
-                     << ". core: " << c->toString()
-                     << " speed:" << c->getSpeed() << std::endl;
+                          << elem.second->toString() << " to " << taskWCET
+                          << ". core: " << c->toString()
+                          << " speed:" << c->getSpeed() << std::endl;
                 elem.second->changeBudget(taskWCET);
                 // elem.second->changeQ(taskWCET);
             }
@@ -295,7 +304,7 @@ namespace RTSim {
         dispatch(p, t, 3);
         p->setWorkload("bzip2");
         std::cout << "CPU is " << p->toString() << " freq " << p->getFrequency()
-             << " " << t->toString() << std::endl;
+                  << " " << t->toString() << std::endl;
 
         int nTaskIsland = 0;
         // std::cout << "task util " << getIslandUtilization(p->getSpeed(500.0),
@@ -316,30 +325,35 @@ namespace RTSim {
 
     void EnergyMRTKernel::printState(bool alsoQueues,
                                      bool alsoCBSStatus) const {
-        std::cout << "t=" << SIMUL.getTime() << " State of scheduler:" << std::endl
-             << "Running tasks:" << std::endl
-             << "\t";
+        std::cout << "t=" << SIMUL.getTime()
+                  << " State of scheduler:" << std::endl
+                  << "Running tasks:" << std::endl
+                  << "\t";
         for (CPU_BL *c : getProcessors()) {
             AbsRTTask *t = _queues->getRunningTask(c);
             if (dynamic_cast<CBServer *>(t) &&
                 dynamic_cast<CBServer *>(t)->isYielding())
                 t = _queues->getFirstReady(c);
             std::cout << c->getName() << ": " << (t == NULL ? "0" : taskname(t))
-                 << "\t";
+                      << "\t";
         }
 
         if (alsoQueues)
-            std::cout << std::endl << "Queues:" << std::endl << _queues->toString();
+            std::cout << std::endl
+                      << "Queues:" << std::endl
+                      << _queues->toString();
 
         if (alsoCBSStatus) {
-            std::cout << "CBS servers (= periodic tasks) statuses:" << std::endl;
+            std::cout << "CBS servers (= periodic tasks) statuses:"
+                      << std::endl;
             for (const auto &elem : _envelopes) {
                 std::cout << "- " << elem.second->toString();
                 if (elem.second->getStatus() == ServerStatus::RELEASING) {
-                    std::cout << ". util_active="
-                         << std::to_string(
-                                _queues->getUtilization_active(elem.second))
-                         << " expires at t=" << elem.second->getVirtualTime();
+                    std::cout
+                        << ". util_active="
+                        << std::to_string(
+                               _queues->getUtilization_active(elem.second))
+                        << " expires at t=" << elem.second->getVirtualTime();
                 }
                 std::cout << std::endl;
             }
@@ -414,9 +428,9 @@ namespace RTSim {
         assert(p != NULL);
 
         std::cout << std::endl
-             << "time =" << SIMUL.getTime()
-             << " EnergyMRTKernel::onBeginDispatchMulti() for " << taskname(st)
-             << " on " << p->toString() << std::endl;
+                  << "time =" << SIMUL.getTime()
+                  << " EnergyMRTKernel::onBeginDispatchMulti() for "
+                  << taskname(st) << " on " << p->toString() << std::endl;
         if (st != NULL && dt == st) {
             string ss = "Decided to dispatch " + st->toString() +
                         " on its former CPU => skip context switch";
@@ -429,12 +443,12 @@ namespace RTSim {
             _m_currExe[p] = NULL;
             dt->deschedule();
             std::cout << dt->toString() << " descheduled for " << taskname(st)
-                 << std::endl;
+                      << std::endl;
         }
 
-        DBGPRINT_4("Scheduling task ", taskname(st), " on cpu ", p->toString());
-        std::cout << __func__ << " Scheduling task " << taskname(st) << " on cpu "
-             << p->toString() << std::endl;
+        DBGPRINT("Scheduling task ", taskname(st), " on cpu ", p->toString());
+        std::cout << __func__ << " Scheduling task " << taskname(st)
+                  << " on cpu " << p->toString() << std::endl;
 
         //_endEvt[p]->setTask(st);
         _isContextSwitching[p] = true;
@@ -448,8 +462,8 @@ namespace RTSim {
         _queues->onBeginDispatchMultiFinished(p, st, overhead);
 
         std::cout << "\t" << taskname(st)
-             << " end ctx switch set at t=" << SIMUL.getTime() + overhead
-             << " - overhead=" << overhead << std::endl;
+                  << " end ctx switch set at t=" << SIMUL.getTime() + overhead
+                  << " - overhead=" << overhead << std::endl;
     }
 
     /**
@@ -463,9 +477,9 @@ namespace RTSim {
         assert(cpu != NULL);
 
         std::cout << std::endl
-             << "time =" << SIMUL.getTime()
-             << " EnergyMRTKernel::onEndDispatchMulti() for " << taskname(t)
-             << " on " << cpu->toString() << std::endl;
+                  << "time =" << SIMUL.getTime()
+                  << " EnergyMRTKernel::onEndDispatchMulti() for "
+                  << taskname(t) << " on " << cpu->toString() << std::endl;
         _queues->onEndDispatchMultiFinished(cpu, t);
         MRTKernel::onEndDispatchMulti(e);
 
@@ -479,7 +493,7 @@ namespace RTSim {
         unsigned int opp = _queues->getOPP(cpu);
         if (opp > cpu->getOPP()) {
             std::cout << "\t" << t->toString() << " " << cpu->toString()
-                 << " updating opp to " << opp << std::endl;
+                      << " updating opp to " << opp << std::endl;
             cpu->setOPP(opp);
         }
 
@@ -498,12 +512,12 @@ namespace RTSim {
 
         // only on big-little: update the state of the CPUs island
         CPU_BL *p = dynamic_cast<CPU_BL *>(getProcessor(t));
-        DBGPRINT_6(t->toString(), " has just finished on ", p->toString(),
-                   ". Actual time = [", SIMUL.getTime(), "]");
+        DBGPRINT(t->toString(), " has just finished on ", p->toString(),
+                 ". Actual time = [", SIMUL.getTime(), "]");
         std::cout << ".............................." << std::endl;
         std::cout << "\tActual time = [" << SIMUL.getTime()
-             << "]. EMRTK::" << __func__ << "(). " << t->toString()
-             << " has just finished on " << p->toString() << std::endl;
+                  << "]. EMRTK::" << __func__ << "(). " << t->toString()
+                  << " has just finished on " << p->toString() << std::endl;
 
         _sched->extract(t);
         // todo delete std::cout
@@ -512,7 +526,7 @@ namespace RTSim {
             std::cout << "\t(External scheduler is empty)" << std::endl;
         else
             std::cout << "\tState of external scheduler: " << std::endl
-                 << "\t\t" << state << std::endl;
+                      << "\t\t" << state << std::endl;
 
         _m_oldExe[t] = p;
         _m_currExe.erase(p);
@@ -524,21 +538,22 @@ namespace RTSim {
         //     p->setBusy(false);
 
         std::cout << "\tState before migration (migrations after end="
-             << EMRTK_CBS_MIGRATE_AFTER_END
-             << ", Temporarily migrate after end="
-             << EMRTK_TEMPORARILY_MIGRATE_END << ", core is busy=" << p->busy()
-             << "):" << std::endl;
+                  << EMRTK_CBS_MIGRATE_AFTER_END
+                  << ", Temporarily migrate after end="
+                  << EMRTK_TEMPORARILY_MIGRATE_END
+                  << ", core is busy=" << p->busy() << "):" << std::endl;
         printState(true);
 
         if (!p->busy() && EMRTK_CBS_MIGRATE_AFTER_END) {
             std::cout << "\tTrying to migrate into core" << std::endl;
             if (!migrateInto(p) && EMRTK_TEMPORARILY_MIGRATE_END) {
-                std::cout << "\tFailed to migrate into core, trying to temporarily "
-                        "migrate into core"
-                     << std::endl;
+                std::cout
+                    << "\tFailed to migrate into core, trying to temporarily "
+                       "migrate into core"
+                    << std::endl;
                 bool res = migrateTemporarily(p);
                 std::cout << "\tTemporary migration into core "
-                     << (res ? "succeeded" : "failed") << std::endl;
+                          << (res ? "succeeded" : "failed") << std::endl;
             }
         } else { // core has already some ready tasks
             std::cout << "\tcore busy, schedule ready task" << std::endl;
@@ -547,12 +562,13 @@ namespace RTSim {
 
         if (!p->getIsland()->busy()) {
             std::cout << "\t" << p->getIsland()->getName()
-                 << "'s got free => clock down to min speed" << std::endl;
+                      << "'s got free => clock down to min speed" << std::endl;
             p->getIsland()->setOPP(0);
         }
 
         if (_queues->isEmpty(p)) {
-            std::cout << "\t" << p->getName() << " is empty -> wl idle" << std::endl;
+            std::cout << "\t" << p->getName() << " is empty -> wl idle"
+                      << std::endl;
             p->setWorkload("idle");
         }
         std::cout << "\tState after migration:" << std::endl;
@@ -575,24 +591,27 @@ namespace RTSim {
         }
         if (getReadyTasks(endingCPU).size() != 0) {
             std::cout << endingCPU->getName()
-                 << " already has some ready task => skip migration" << std::endl;
+                      << " already has some ready task => skip migration"
+                      << std::endl;
             return false;
         }
         if (getRunningTask(endingCPU) != NULL) {
             assert(EMRTK_CBS_ENVELOPING_PER_TASK_ENABLED &&
                    EMRTK_CBS_ENVELOPING_MIGRATE_AFTER_VTIME_END);
             std::cout << endingCPU->getName()
-                 << " already has a running task => skip migration" << std::endl;
+                      << " already has a running task => skip migration"
+                      << std::endl;
             return false;
         }
-        std::cout << "\t" << __func__ << "() time=" << SIMUL.getTime() << std::endl;
+        std::cout << "\t" << __func__ << "() time=" << SIMUL.getTime()
+                  << std::endl;
 
         MigrationProposal migrationProposal =
             getTaskToMigrateInto(endingCPU, toBeSkipped);
 
         if (migrationProposal.task == NULL)
             std::cout << "\t\tEMRTK::" << __func__ << "(). No migration done"
-                 << std::endl;
+                      << std::endl;
         else {
             migrationProposal.to->setWorkload(
                 Utils::getTaskWorkload(migrationProposal.task));
@@ -646,12 +665,13 @@ namespace RTSim {
                     setTryingTaskOnCPU_BL(false);
                     if (!iDeltaPows.empty() &&
                         !Utils::exists(tt, toBeSkipped)) {
-                        std::cout << "\t\tMigration proposal of " << tt->toString()
-                             << " from " << c->toString() << " to "
-                             << iDeltaPows.at(0).cpu->toString()
-                             << " with frequency "
-                             << endingCPU->getFrequency(iDeltaPows.at(0).opp)
-                             << std::endl;
+                        std::cout
+                            << "\t\tMigration proposal of " << tt->toString()
+                            << " from " << c->toString() << " to "
+                            << iDeltaPows.at(0).cpu->toString()
+                            << " with frequency "
+                            << endingCPU->getFrequency(iDeltaPows.at(0).opp)
+                            << std::endl;
                         migrationProposal.task = tt;
                         migrationProposal.from = c;
                         migrationProposal.to = endingCPU;
@@ -659,9 +679,10 @@ namespace RTSim {
                     }
                 }
             }
-            std::cout << "\t\tNo migration from big island to endingCPU => balance "
-                    "little island load"
-                 << std::endl;
+            std::cout
+                << "\t\tNo migration from big island to endingCPU => balance "
+                   "little island load"
+                << std::endl;
         }
 
     endFun:
@@ -672,8 +693,8 @@ namespace RTSim {
         EnergyMRTKernel::balanceLoad(CPU_BL *endingCPU,
                                      vector<AbsRTTask *> toBeSkipped) {
         std::cout << "\t\tEMRTK::" << __func__
-             << "(). Balancing load of island: " << endingCPU->getName()
-             << std::endl;
+                  << "(). Balancing load of island: " << endingCPU->getName()
+                  << std::endl;
         MigrationProposal migrationProposal = {.task = NULL,
                                                .from = NULL,
                                                .to = NULL};
@@ -688,9 +709,9 @@ namespace RTSim {
                 !Utils::exists(readyTasks.at(0), toBeSkipped)) {
                 AbsRTTask *tt = readyTasks.at(0);
                 std::cout << "\t\tMigration proposal of " << tt->toString()
-                     << " from " << c->toString() << " to "
-                     << endingCPU->toString() << " with same frequency "
-                     << std::endl;
+                          << " from " << c->toString() << " to "
+                          << endingCPU->toString() << " with same frequency "
+                          << std::endl;
                 migrationProposal.task = tt;
                 migrationProposal.from = c;
                 migrationProposal.to = endingCPU;
@@ -703,7 +724,8 @@ namespace RTSim {
 
     void EnergyMRTKernel::onRound(AbsRTTask *finishingTask) {
         std::cout << "t = " << SIMUL.getTime() << " " << __func__
-             << " for finishingTask = " << taskname(finishingTask) << std::endl;
+                  << " for finishingTask = " << taskname(finishingTask)
+                  << std::endl;
         finishingTask->deschedule();
         _queues->onRound(finishingTask, getProcessor(finishingTask));
     }
@@ -739,7 +761,7 @@ namespace RTSim {
         if (chosenCPU->getName().find("LITTLE_3") == string::npos ||
             chosenCPU->getIsland()->type() == IslandType::BIG) {
             std::cout << "chosenCPU in big island or is not little_3 => skip"
-                 << std::endl;
+                      << std::endl;
             return;
         }
 
@@ -750,14 +772,15 @@ namespace RTSim {
         bool fitsInOtherCore = true; // if it only fits on little 3 and in bigs
 
         for (int i = 0; i < iDeltaPows.size(); i++) {
-            std::cout << iDeltaPows[i].cons << " " << iDeltaPows[i].cpu->toString()
-                 << std::endl;
+            std::cout << iDeltaPows[i].cons << " "
+                      << iDeltaPows[i].cpu->toString() << std::endl;
             if (iDeltaPows[i].cpu->getIsland()->type() == IslandType::LITTLE &&
                 iDeltaPows[i].cpu->getName().find("LITTLE_3") == string::npos) {
                 chosenCPU = iDeltaPows[i].cpu;
                 chosenCPU->setOPP(iDeltaPows[i].opp);
                 std::cout << "Changing to " << iDeltaPows[i].cpu->toString()
-                     << " - chosenCPU=" << chosenCPU->toString() << std::endl;
+                          << " - chosenCPU=" << chosenCPU->toString()
+                          << std::endl;
                 fitsInOtherCore = false;
                 break;
             }
@@ -765,8 +788,8 @@ namespace RTSim {
 
         if (fitsInOtherCore) {
             std::cout << "Task only fits on little 3 and in bigs => stay in "
-                    "LITTLE_3, CPU not changed"
-                 << std::endl;
+                         "LITTLE_3, CPU not changed"
+                      << std::endl;
         }
     }
 
@@ -781,11 +804,11 @@ namespace RTSim {
         std::cout << __func__ << ":" << std::endl;
         if ((*chosenCPU)->busy()) {
             std::cout << (*chosenCPU)->toString() << " was chosen but it's busy"
-                 << std::endl;
+                      << std::endl;
             for (int i = 1; i < iDeltaPows.size(); i++) {
                 std::cout << iDeltaPows[i].cons << " VS " << iDeltaPows[0].cons
-                     << " busy? " << iDeltaPows[i].cpu->busy() << " "
-                     << iDeltaPows[i].cpu->toString() << std::endl;
+                          << " busy? " << iDeltaPows[i].cpu->busy() << " "
+                          << iDeltaPows[i].cpu->toString() << std::endl;
                 if (iDeltaPows[i].cons == iDeltaPows[0].cons &&
                     !iDeltaPows[i].cpu->busy()) {
                     *chosenCPU = iDeltaPows[i].cpu;
@@ -811,8 +834,9 @@ namespace RTSim {
         // todo delete after debug
         std::cout << "EMRTK::" << __func__ << "()" << std::endl;
         for (auto elem : iDeltaPows) {
-            std::cout << elem.cons << " " << elem.cpu->toString() << " with new opp "
-                 << elem.cpu->getFrequency(elem.opp) << std::endl;
+            std::cout << elem.cons << " " << elem.cpu->toString()
+                      << " with new opp " << elem.cpu->getFrequency(elem.opp)
+                      << std::endl;
             assert(elem.cpu->getOPPIndex() <= elem.opp);
         }
 
@@ -825,24 +849,26 @@ namespace RTSim {
         balanceLoadEnergy(&chosenCPU, chosenOPP, chosenCPUchanged, iDeltaPows);
 
         std::cout << "Temporarily chosenCPU: " << chosenCPU->toString()
-             << " with freq " << chosenCPU->getFrequency(chosenOPP) << std::endl;
+                  << " with freq " << chosenCPU->getFrequency(chosenOPP)
+                  << std::endl;
         leaveLittle3(t, iDeltaPows, chosenCPU);
 
         dispatch(chosenCPU, t, chosenOPP);
         setTryingTaskOnCPU_BL(true);
-        std::cout << "time = " << SIMUL.getTime() << " - going to schedule task "
-             << t->toString() << " in CPU " << chosenCPU->getName()
-             << " with freq " << chosenCPU->getFrequency(chosenOPP)
-             << " speed=" << chosenCPU->getSpeedByOPP(chosenOPP)
-             << " chosenOPP " << chosenOPP << " - CPU"
-             << (chosenCPUchanged && toBeChanged ? "" : " not") << " changed "
-             << std::endl;
+        std::cout << "time = " << SIMUL.getTime()
+                  << " - going to schedule task " << t->toString() << " in CPU "
+                  << chosenCPU->getName() << " with freq "
+                  << chosenCPU->getFrequency(chosenOPP)
+                  << " speed=" << chosenCPU->getSpeedByOPP(chosenOPP)
+                  << " chosenOPP " << chosenOPP << " - CPU"
+                  << (chosenCPUchanged && toBeChanged ? "" : " not")
+                  << " changed " << std::endl;
         setTryingTaskOnCPU_BL(false);
     }
 
     void EnergyMRTKernel::dispatch(CPU *p, AbsRTTask *t, int opp) {
-        std::cout << "EMRTK::" << __func__ << "(p, t, opp) task:" << t->toString()
-             << std::endl;
+        std::cout << "EMRTK::" << __func__
+                  << "(p, t, opp) task:" << t->toString() << std::endl;
         CPU_BL *pp = dynamic_cast<CPU_BL *>(p);
 
         removeTaskTemporarilyMigrated(pp);
@@ -867,7 +893,7 @@ namespace RTSim {
             num_newtasks++;
 
         _sched->print();
-        DBGPRINT_2("New tasks: ", num_newtasks);
+        DBGPRINT("New tasks: ", num_newtasks);
         print();
         if (num_newtasks == 0)
             return; // nothing to do
@@ -878,8 +904,10 @@ namespace RTSim {
             AbsRTTask *t = dynamic_cast<AbsRTTask *>(_sched->getTaskN(i++));
             if (t == NULL)
                 break;
-            std::cout << "Actual time = [" << SIMUL.getTime() << "]" << std::endl;
-            std::cout << "Dealing with task " << t->toString() << "." << std::endl;
+            std::cout << "Actual time = [" << SIMUL.getTime() << "]"
+                      << std::endl;
+            std::cout << "Dealing with task " << t->toString() << "."
+                      << std::endl;
 
             // for testing
             if (manageForcedDispatch(t) || manageDiscartedTask(t)) {
@@ -891,16 +919,18 @@ namespace RTSim {
                 // dispatch() is called even before onEndMultiDispatch()
                 // finishes and thus tasks seem not to be dispatching (i.e.,
                 // assigned to a processor)
-                std::cout << "\tTask has already been dispatched, but dispatching "
-                        "is not complete => skip (you\'ll still see "
-                        "desched&sched evt, to trace tasks)"
-                     << std::endl;
+                std::cout
+                    << "\tTask has already been dispatched, but dispatching "
+                       "is not complete => skip (you\'ll still see "
+                       "desched&sched evt, to trace tasks)"
+                    << std::endl;
                 continue;
             }
 
             if (getProcessor(t) !=
                 NULL) { // e.g., task ends => migrateInto() => dispatch()
-                std::cout << "\tTask is running on a CPU already => skip" << std::endl;
+                std::cout << "\tTask is running on a CPU already => skip"
+                          << std::endl;
                 continue;
             }
 
@@ -909,8 +939,8 @@ namespace RTSim {
             std::cout << std::endl << "Trying to scale up CPUs" << std::endl;
             vector<struct ConsumptionTable> iDeltaPows;
             std::cout << std::endl
-                 << "\t------------\n\tCurrent situation:\n\t"
-                 << _queues->toString() << "\t------------" << std::endl;
+                      << "\t------------\n\tCurrent situation:\n\t"
+                      << _queues->toString() << "\t------------" << std::endl;
 
             setTryingTaskOnCPU_BL(true);
             for (CPU_BL *c : cpus)
@@ -921,7 +951,7 @@ namespace RTSim {
                 chooseCPU_BL(t, iDeltaPows);
             else
                 std::cout << "Cannot schedule " << t->toString() << " anywhere"
-                     << std::endl;
+                          << std::endl;
 
             _sched->extract(t);
             num_newtasks--;
@@ -948,8 +978,9 @@ namespace RTSim {
         c->setWorkload(Utils::getTaskWorkload(t));
 
         std::cout << "\tTrying to schedule on CPU " << c->toString()
-             << " using freq " << frequency
-             << " - it has already ntasks=" << getReadyTasks(c).size() << std::endl;
+                  << " using freq " << frequency
+                  << " - it has already ntasks=" << getReadyTasks(c).size()
+                  << std::endl;
 
         // for (int ooo = c->getIslandCurOPP(); ooo < c->getOPPs().size();
         // ooo++) {
@@ -986,34 +1017,36 @@ namespace RTSim {
                 utilization = getUtilization(c, newCapacity);
 
                 if (utilization > 1.0) {
-                    std::cout << "\t\t\tCPU utilization is already >= 100% => skip "
-                            "OPP"
-                         << std::endl;
+                    std::cout
+                        << "\t\t\tCPU utilization is already >= 100% => skip "
+                           "OPP"
+                        << std::endl;
                     continue;
                 } else
-                    std::cout << "\t\t\tTotal utilization (running+ready+active-new "
-                            "task) tasks already in CPU "
-                         << c->toString() << " = " << utilization << std::endl;
+                    std::cout
+                        << "\t\t\tTotal utilization (running+ready+active-new "
+                           "task) tasks already in CPU "
+                        << c->toString() << " = " << utilization << std::endl;
 
                 utilization_t = getUtilization(t, newCapacity);
                 std::cout << "\t\t\tUtilization cur/new task "
-                     << t->toString().substr(0, 25) << "... would be "
-                     << utilization_t << " - CPU capacity=" << newCapacity
-                     << std::endl;
+                          << t->toString().substr(0, 25) << "... would be "
+                          << utilization_t << " - CPU capacity=" << newCapacity
+                          << std::endl;
                 std::cout << "\t\t\t\tScaled task WCET "
-                     << t->getRemainingWCET(newCapacity) << " DL "
-                     << t->getPeriod() << std::endl;
+                          << t->getRemainingWCET(newCapacity) << " DL "
+                          << t->getPeriod() << std::endl;
 
                 if (utilization + utilization_t > 1.0) {
                     std::cout << "\t\t\tTotal utilization + cur/new task "
-                            "utilization would be "
-                         << utilization << "+" << utilization_t << "="
-                         << utilization + utilization_t
-                         << " >= 100% => skip OPP" << std::endl;
+                                 "utilization would be "
+                              << utilization << "+" << utilization_t << "="
+                              << utilization + utilization_t
+                              << " >= 100% => skip OPP" << std::endl;
                     continue;
                 }
-                // std::cout << "Final core utilization running+ready+active+new task
-                // = " << utilization + utilization_t << std::endl;
+                // std::cout << "Final core utilization running+ready+active+new
+                // task = " << utilization + utilization_t << std::endl;
 
                 // Ok, task can be placed on CPU c, compute power delta
 
@@ -1023,8 +1056,9 @@ namespace RTSim {
                     getIslandUtilization(newCapacity, island, NULL);
                 oldUtilizationIsland = getIslandUtilization(
                     c->getSpeed(frequency), island, &nTaskIsland);
-                std::cout << "\t\t\tIn the CPU island of " << c->getName() << ", "
-                     << nTaskIsland << " are being scheduled" << std::endl;
+                std::cout << "\t\t\tIn the CPU island of " << c->getName()
+                          << ", " << nTaskIsland << " are being scheduled"
+                          << std::endl;
 
                 iPowWithNewTask = (newUtilizationIsland + utilization_t) *
                                   c->getPower(newFreq);
@@ -1043,7 +1077,8 @@ namespace RTSim {
                 iDeltaPow = iPowWithNewTask - iOldPow;
                 assert(iPowWithNewTask >= 0.0);
                 assert(iOldPow >= 0.0);
-                std::cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow << std::endl;
+                std::cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow
+                          << std::endl;
                 struct ConsumptionTable row = {.cons = iDeltaPow,
                                                .cpu = c,
                                                .opp = ooo};
@@ -1052,9 +1087,10 @@ namespace RTSim {
                 // break; (i.e. skip foreach OPP) xk è ovvio che aumentando la
                 // freq della stessa CPU, t è ammissibile
             } else {
-                std::cout << "\t\t\tHere task wouldn't be admissible (U + U_newTask "
-                        "> 1)"
-                     << std::endl;
+                std::cout
+                    << "\t\t\tHere task wouldn't be admissible (U + U_newTask "
+                       "> 1)"
+                    << std::endl;
             }
         }
 
