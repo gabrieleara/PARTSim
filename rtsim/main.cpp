@@ -62,7 +62,7 @@ TaskSet read_taskset(const std::string &tset_file) {
 
     int i = 0;
 
-    // FIXME: assuming periodic task, ask for task type in YML
+    // TODO: assuming periodic task, ask for task type in YML
     for (const auto &task_spec : *(tset_spec->get("taskset"))) {
         auto str_name = task_spec->get("name")->get();
         auto str_iat = task_spec->get("iat")->get();
@@ -90,8 +90,7 @@ TaskSet read_taskset(const std::string &tset_file) {
         for (const auto &instr : (*code)) {
             auto str_instr = instr->get();
             if (str_instr.length() < 1) {
-                // TODO:
-                throw std::exception{};
+                continue;
             }
 
             if (str_instr[str_instr.length() - 1] != ';') {
