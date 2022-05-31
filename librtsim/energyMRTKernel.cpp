@@ -26,10 +26,6 @@
 namespace RTSim {
     using namespace MetaSim;
 
-    using std::cerr;
-    using std::cout;
-    using std::endl;
-
     bool EnergyMRTKernel::EMRTK_BALANCE_ENABLED =
         1; /* Can't imagine disabling it, but so policy is in the list :) */
     bool EnergyMRTKernel::EMRTK_LEAVE_LITTLE3_ENABLED = 0;

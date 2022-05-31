@@ -1,17 +1,16 @@
 #include "catch.hpp"
-#include <rtsim/rttask.hpp>
 #include <rtsim/cbserver.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/fpsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-TEST_CASE("Thresholds", "[thresholds, test1]")
-{
+TEST_CASE("Thresholds", "[thresholds, test1]") {
     PeriodicTask t1(12, 12, 0, "TaskA");
     t1.insertCode("raise_thres(1);fixed(5);lower_thres(1);");
-    t1.setAbort(false);    
+    t1.setAbort(false);
 
     PeriodicTask t2(20, 20, 2, "TaskB");
     t2.insertCode("fixed(7);");
@@ -19,7 +18,7 @@ TEST_CASE("Thresholds", "[thresholds, test1]")
 
     FPScheduler sched;
     RTKernel kern(&sched);
-    
+
     kern.addTask(t1, "2");
     kern.addTask(t2, "1");
 
@@ -34,15 +33,14 @@ TEST_CASE("Thresholds", "[thresholds, test1]")
     SIMUL.run_to(6);
     REQUIRE(t1.getExecTime() == 5);
     REQUIRE(t2.getExecTime() == 1);
-    
+
     SIMUL.endSingleRun();
 }
 
-TEST_CASE("Thresholds 3 tasks", "[thresholds, test2]")
-{
+TEST_CASE("Thresholds 3 tasks", "[thresholds, test2]") {
     PeriodicTask t1(4, 4, 0, "TaskA");
     t1.insertCode("fixed(1);");
-    t1.setAbort(false);    
+    t1.setAbort(false);
 
     PeriodicTask t2(6, 6, 0, "TaskB");
     t2.insertCode("raise_thres(1); fixed(2); lower_thres(1);");
@@ -54,7 +52,7 @@ TEST_CASE("Thresholds 3 tasks", "[thresholds, test2]")
 
     FPScheduler sched;
     RTKernel kern(&sched);
-    
+
     kern.addTask(t1, "1");
     kern.addTask(t2, "2");
     kern.addTask(t3, "3");
@@ -66,41 +64,41 @@ TEST_CASE("Thresholds 3 tasks", "[thresholds, test2]")
     REQUIRE(sched.getPriority(&t1) == 1);
 
     SIMUL.run_to(1);
-    
+
     REQUIRE(t1.getExecTime() == 1);
     REQUIRE(t2.getExecTime() == 0);
     REQUIRE(t3.getExecTime() == 0);
-        
+
     SIMUL.run_to(3);
     REQUIRE(t1.getExecTime() == 1);
     REQUIRE(t2.getExecTime() == 2);
     REQUIRE(t3.getExecTime() == 0);
-    
+
     SIMUL.run_to(4);
     REQUIRE(t1.getExecTime() == 0);
     REQUIRE(t2.getExecTime() == 2);
     REQUIRE(t3.getExecTime() == 1);
-    
+
     SIMUL.run_to(6);
     REQUIRE(t1.getExecTime() == 0);
     REQUIRE(t2.getExecTime() == 0);
     REQUIRE(t3.getExecTime() == 3);
-    
+
     SIMUL.run_to(7);
     REQUIRE(t1.getExecTime() == 1);
     REQUIRE(t2.getExecTime() == 0);
     REQUIRE(t3.getExecTime() == 0);
-    
+
     SIMUL.run_to(8);
     REQUIRE(t1.getExecTime() == 0);
     REQUIRE(t2.getExecTime() == 1);
     REQUIRE(t3.getExecTime() == 0);
-    
+
     SIMUL.run_to(9);
     REQUIRE(t1.getExecTime() == 0);
     REQUIRE(t2.getExecTime() == 2);
     REQUIRE(t3.getExecTime() == 0);
-    
+
     SIMUL.run_to(10);
     REQUIRE(t1.getExecTime() == 1);
     REQUIRE(t2.getExecTime() == 2);

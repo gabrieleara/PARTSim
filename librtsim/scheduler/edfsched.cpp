@@ -11,13 +11,14 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+#include <iostream>
+
 #include <rtsim/kernel.hpp>
 #include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/edfsched.hpp>
 
 namespace RTSim {
-
-    using std::cout;
 
     EDFModel::EDFModel(AbsRTTask *t) : TaskModel(t), extP(false) {}
 

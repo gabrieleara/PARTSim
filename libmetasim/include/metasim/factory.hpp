@@ -28,7 +28,7 @@
 #ifndef __FACTORY_HPP__
 #define __FACTORY_HPP__
 
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <metasim/memory.hpp>
 #include <string>

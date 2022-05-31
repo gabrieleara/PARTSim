@@ -1,21 +1,19 @@
+#include <rtsim/jtrace.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/pollingserver.hpp>
+#include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/rmsched.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
-#include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
-#include <rtsim/rttask.hpp>
-#include <rtsim/pollingserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-int main()
-{
+int main() {
     try {
-
         JavaTrace jtrace("trace.trc");
         TextTrace ttrace("trace.txt");
-  
+
         // create the scheduler and the kernel
         RMScheduler sched;
         RTKernel kern(&sched);
@@ -28,14 +26,14 @@ int main()
         t12.insertCode("fixed(4);");
         t12.setAbort(false);
 
-        PeriodicTask t2(45, 45, 0, "TaskB"); 
+        PeriodicTask t2(45, 45, 0, "TaskB");
         t2.insertCode("fixed(6);");
         t2.setAbort(false);
 
-        PeriodicTask t3(60, 60, 0, "TaskC"); 
+        PeriodicTask t3(60, 60, 0, "TaskC");
         t3.insertCode("fixed(10);");
         t3.setAbort(false);
-	
+
         jtrace.attachToTask(t11);
         jtrace.attachToTask(t12);
         jtrace.attachToTask(t2);
@@ -46,11 +44,11 @@ int main()
         ttrace.attachToTask(t2);
         ttrace.attachToTask(t3);
 
-        PollingServer serv(4, 10, "server", "FIFOSched");//"RRSched(2);");
+        PollingServer serv(4, 10, "server", "FIFOSched"); //"RRSched(2);");
         serv.addTask(t11);
         serv.addTask(t12);
         kern.addTask(serv, "");
-        
+
         kern.addTask(t2, "");
         kern.addTask(t3, "");
 
@@ -64,5 +62,5 @@ int main()
         std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
         std::cout << e2.what() << std::endl;
-    }        
+    }
 }

@@ -15,7 +15,7 @@
 #define __JTRACE_HPP__
 
 #include <fstream>
-#include <iostream>
+#include <iosfwd>
 #include <string>
 
 #include <metasim/baseexc.hpp>

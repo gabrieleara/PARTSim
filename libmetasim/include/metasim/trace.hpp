@@ -2,7 +2,7 @@
 #define __TRACE_HPP__
 
 #include <fstream>
-#include <iostream>
+#include <iosfwd>
 
 #include <metasim/baseexc.hpp>
 #include <metasim/basetype.hpp>

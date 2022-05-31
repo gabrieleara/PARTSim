@@ -12,16 +12,12 @@
  *                                                                         *
  ***************************************************************************/
 #include <deque>
-
+#include <iostream>
 #include <sstream>
 
 #include <metasim/entity.hpp>
 #include <metasim/simul.hpp>
-
 namespace MetaSim {
-    using std::cerr;
-    using std::cout;
-    using std::endl;
 
     class MsgEvt : public Event {
         string _msg;

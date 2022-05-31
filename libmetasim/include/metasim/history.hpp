@@ -133,7 +133,7 @@ public:
 #endif // __HISTORY_HPP__
 
 #ifdef __TEST__
-#include <iostream>
+#include <iosfwd>
 
 template <class C>
 void print(C &c) {

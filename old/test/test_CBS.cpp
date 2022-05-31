@@ -1,17 +1,16 @@
 #include "catch.hpp"
-#include <rtsim/rttask.hpp>
 #include <rtsim/cbserver.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/edfsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-TEST_CASE("CBS algorithm: period ratio")
-{
+TEST_CASE("CBS algorithm: period ratio") {
     PeriodicTask t1(13, 13, 0, "TaskA");
     t1.insertCode("fixed(5);");
-    t1.setAbort(false);    
+    t1.setAbort(false);
 
     PeriodicTask t2(19, 19, 0, "TaskB");
     t2.insertCode("fixed(7);");
@@ -19,10 +18,10 @@ TEST_CASE("CBS algorithm: period ratio")
 
     EDFScheduler sched;
     RTKernel kern(&sched);
-    
-    CBServer serv1(3, 6, 6, true,  "server1", "FIFOSched");
+
+    CBServer serv1(3, 6, 6, true, "server1", "FIFOSched");
     serv1.addTask(t1);
-    CBServer serv2(4, 9, 9, true,  "server2", "FIFOSched");
+    CBServer serv2(4, 9, 9, true, "server2", "FIFOSched");
     serv2.addTask(t2);
 
     kern.addTask(serv1);
@@ -61,13 +60,11 @@ TEST_CASE("CBS algorithm: period ratio")
     REQUIRE(serv1.getDeadline() == 12);
     REQUIRE(serv2.get_remaining_budget() == 1);
     REQUIRE(serv2.getDeadline() == 18);
-    
+
     SIMUL.endSingleRun();
 }
 
-
-TEST_CASE("CBS algorithm: Original")
-{
+TEST_CASE("CBS algorithm: Original") {
     PeriodicTask t1(8, 8, 0, "TaskA");
     t1.insertCode("fixed(2);");
     t1.setAbort(false);
@@ -78,71 +75,70 @@ TEST_CASE("CBS algorithm: Original")
 
     EDFScheduler sched;
     RTKernel kern(&sched);
-    
-    CBServer serv(5, 15, 15, true,  "server1", "FIFOSched");
+
+    CBServer serv(5, 15, 15, true, "server1", "FIFOSched");
     serv.addTask(t2);
 
     kern.addTask(t1);
     kern.addTask(serv);
 
     SECTION("Original") {
-	serv.set_policy(CBServer::ORIGINAL);
-	SIMUL.initSingleRun();
-	
-	SIMUL.run_to(3);
-	
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 1);
-	REQUIRE(serv.get_remaining_budget() == 4);
+        serv.set_policy(CBServer::ORIGINAL);
+        SIMUL.initSingleRun();
 
-	SIMUL.run_to(5);
-	REQUIRE(t2.getExecTime() == 3);
-	REQUIRE(serv.get_remaining_budget() == 2);
-	REQUIRE(serv.getStatus() == RELEASING);
-	SIMUL.run_to(8);
-	REQUIRE(serv.getStatus() == RELEASING);
-	SIMUL.run_to(9);
-	REQUIRE(serv.getStatus() == IDLE);
-	SIMUL.run_to(10);
-	REQUIRE(serv.getStatus() == EXECUTING);
-	REQUIRE(serv.getDeadline() == 25);
+        SIMUL.run_to(3);
 
-	SIMUL.endSingleRun();
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 1);
+        REQUIRE(serv.get_remaining_budget() == 4);
+
+        SIMUL.run_to(5);
+        REQUIRE(t2.getExecTime() == 3);
+        REQUIRE(serv.get_remaining_budget() == 2);
+        REQUIRE(serv.getStatus() == RELEASING);
+        SIMUL.run_to(8);
+        REQUIRE(serv.getStatus() == RELEASING);
+        SIMUL.run_to(9);
+        REQUIRE(serv.getStatus() == IDLE);
+        SIMUL.run_to(10);
+        REQUIRE(serv.getStatus() == EXECUTING);
+        REQUIRE(serv.getDeadline() == 25);
+
+        SIMUL.endSingleRun();
     }
 
     SECTION("Reuse dline") {
-	serv.set_policy(CBServer::REUSE_DLINE);
-	SIMUL.initSingleRun();
-	
-	SIMUL.run_to(3);
-	
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 1);
-	REQUIRE(serv.get_remaining_budget() == 4);	
+        serv.set_policy(CBServer::REUSE_DLINE);
+        SIMUL.initSingleRun();
 
-	SIMUL.run_to(5);
-	REQUIRE(t2.getExecTime() == 3);
-	REQUIRE(serv.get_remaining_budget() == 2);
-	REQUIRE(serv.getStatus() == RELEASING);
-	SIMUL.run_to(8);
-	REQUIRE(serv.getStatus() == RELEASING);
-	SIMUL.run_to(9);
-	REQUIRE(serv.getStatus() == IDLE);
-	SIMUL.run_to(10);
-	REQUIRE(serv.getStatus() == EXECUTING);
-	REQUIRE(serv.getDeadline() == 15);
-	REQUIRE(serv.get_remaining_budget() == 1);
+        SIMUL.run_to(3);
 
-	SIMUL.run_to(11);
-	REQUIRE(serv.getStatus() == RECHARGING);
-	REQUIRE(serv.getDeadline() == 30);
-	
-	SIMUL.endSingleRun();
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 1);
+        REQUIRE(serv.get_remaining_budget() == 4);
+
+        SIMUL.run_to(5);
+        REQUIRE(t2.getExecTime() == 3);
+        REQUIRE(serv.get_remaining_budget() == 2);
+        REQUIRE(serv.getStatus() == RELEASING);
+        SIMUL.run_to(8);
+        REQUIRE(serv.getStatus() == RELEASING);
+        SIMUL.run_to(9);
+        REQUIRE(serv.getStatus() == IDLE);
+        SIMUL.run_to(10);
+        REQUIRE(serv.getStatus() == EXECUTING);
+        REQUIRE(serv.getDeadline() == 15);
+        REQUIRE(serv.get_remaining_budget() == 1);
+
+        SIMUL.run_to(11);
+        REQUIRE(serv.getStatus() == RECHARGING);
+        REQUIRE(serv.getDeadline() == 30);
+
+        SIMUL.endSingleRun();
     }
 }
 
-TEST_CASE("Task with suspension")
-{
+TEST_CASE("Task with suspension") {
     PeriodicTask t1(8, 8, 0, "TaskA");
     t1.insertCode("fixed(2); suspend(3); fixed(2);");
     t1.setAbort(false);
@@ -153,44 +149,44 @@ TEST_CASE("Task with suspension")
 
     EDFScheduler sched;
     RTKernel kern(&sched);
-    
-    CBServer serv(4, 8, 8, true,  "server1", "FIFOSched");
+
+    CBServer serv(4, 8, 8, true, "server1", "FIFOSched");
     serv.addTask(t1);
 
     kern.addTask(t2);
     kern.addTask(serv);
 
     SECTION("Original") {
-	serv.set_policy(CBServer::ORIGINAL);
-	SIMUL.initSingleRun();
-	
-	SIMUL.run_to(2);
-	
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 0);
+        serv.set_policy(CBServer::ORIGINAL);
+        SIMUL.initSingleRun();
 
-	SIMUL.run_to(5);
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 3);
-	REQUIRE(serv.getDeadline() == 13);
-	
-	SIMUL.endSingleRun();
+        SIMUL.run_to(2);
+
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 0);
+
+        SIMUL.run_to(5);
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 3);
+        REQUIRE(serv.getDeadline() == 13);
+
+        SIMUL.endSingleRun();
     }
     SECTION("Reuse deadline") {
-	serv.set_policy(CBServer::REUSE_DLINE);
-	SIMUL.initSingleRun();
-	
-	SIMUL.run_to(2);
-	
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 0);
+        serv.set_policy(CBServer::REUSE_DLINE);
+        SIMUL.initSingleRun();
 
-	SIMUL.run_to(5);
-	REQUIRE(t1.getExecTime() == 2);
-	REQUIRE(t2.getExecTime() == 3);
-	REQUIRE(serv.getDeadline() == 8);
-	REQUIRE(serv.get_remaining_budget() == 1);
-	
-	SIMUL.endSingleRun();
+        SIMUL.run_to(2);
+
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 0);
+
+        SIMUL.run_to(5);
+        REQUIRE(t1.getExecTime() == 2);
+        REQUIRE(t2.getExecTime() == 3);
+        REQUIRE(serv.getDeadline() == 8);
+        REQUIRE(serv.get_remaining_budget() == 1);
+
+        SIMUL.endSingleRun();
     }
 }

@@ -1,23 +1,23 @@
+#include <cassert>
 #include <cstdlib>
+#include <cstring>
+#include <fstream>
 #include <sstream>
 #include <string>
-#include <fstream>
-#include <cassert>
-#include <cstring>
 #include <unistd.h>
 
+#include <metasim/strtoken.hpp>
+#include <rtsim/feedbackarsim.hpp>
+#include <rtsim/feedbacktest.hpp>
+#include <rtsim/jtrace.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/schedpoints.hpp>
 #include <rtsim/scheduler/rmsched.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
-#include <rtsim/jtrace.hpp>
-#include <rtsim/texttrace.hpp>
-#include <rtsim/rttask.hpp>
 #include <rtsim/sporadicserver.hpp>
-#include <rtsim/feedbacktest.hpp>
-#include <rtsim/schedpoints.hpp>
 #include <rtsim/taskstat.hpp>
-#include <rtsim/feedbackarsim.hpp>
-#include <metasim/strtoken.hpp>
+#include <rtsim/texttrace.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
@@ -27,43 +27,39 @@ public:
     FPScheduler sched;
     RTKernel kern;
     JavaTrace jtrace;
-    
+
     vector<PeriodicTask *> mm;
     vector<SporadicServer *> ss;
     vector<MissPercentage *> miss;
 
     vector<TardinessStat<StatMean> *> tstat;
-    
+
     System();
 
-    void addMultimediaTask(const string &name, Tick b, Tick p, const string &trace, int prio);
+    void addMultimediaTask(const string &name, Tick b, Tick p,
+                           const string &trace, int prio);
 
     void addLoadTask(const string &name, Tick b, Tick p, int prio);
-
 };
 
 System::System() :
     sched(),
     kern(&sched),
     jtrace("trace.trc"),
-    mm(), ss(), miss(), tstat()
-{
-}
+    mm(),
+    ss(),
+    miss(),
+    tstat() {}
 
-void System::addMultimediaTask(const string &name, 
-                               Tick b, Tick p, 
-                               const string &tfile, 
-                               int prio)
-{    
+void System::addMultimediaTask(const string &name, Tick b, Tick p,
+                               const string &tfile, int prio) {
     // creating and inserting task
     PeriodicTask *m1 = new PeriodicTask(p, p, 0, name);
-    m1->insertCode("delay(trace("+tfile+"));");
+    m1->insertCode("delay(trace(" + tfile + "));");
     mm.push_back(m1);
 
     // creating and inserting server
-    SporadicServer *s = new SporadicServer(b, p, 
-                                           "Server_"+name,
-                                           "FIFOSched");
+    SporadicServer *s = new SporadicServer(b, p, "Server_" + name, "FIFOSched");
     s->addTask(*m1);
     ss.push_back(s);
 
@@ -71,7 +67,7 @@ void System::addMultimediaTask(const string &name,
     mystr << prio;
     kern.addTask(*s, mystr.str());
 
-    MissPercentage *mp = new MissPercentage("miss_"+name);
+    MissPercentage *mp = new MissPercentage("miss_" + name);
     mp->attachToTask(m1);
     miss.push_back(mp);
 
@@ -81,58 +77,56 @@ void System::addMultimediaTask(const string &name,
     m1->setTrace(&jtrace);
 }
 
-
-void System::addLoadTask(const string &name, Tick b, Tick p, int prio)
-{
+void System::addLoadTask(const string &name, Tick b, Tick p, int prio) {
     PeriodicTask *m1 = new PeriodicTask(p, p, 0, name);
 
-    stringstream mystr; 
-    mystr << "fixed(" << (int)b << ");";
+    stringstream mystr;
+    mystr << "fixed(" << (int) b << ");";
     std::cout << "Instruction: " << mystr.str() << std::endl;
 
     m1->insertCode(mystr.str());
     mm.push_back(m1);
 
-    SporadicServer *s1 = new SporadicServer (b, p, "Server_" + name, 
-                                             "FIFOSched");
-   
+    SporadicServer *s1 =
+        new SporadicServer(b, p, "Server_" + name, "FIFOSched");
+
     s1->addTask(*m1);
     ss.push_back(s1);
 
-    stringstream mystr2; 
+    stringstream mystr2;
     mystr2 << prio;
 
-    kern.addTask(*s1 , mystr2.str());
+    kern.addTask(*s1, mystr2.str());
     m1->setTrace(&jtrace);
 }
 
-
-vector<string> get_tokens(ifstream &f, int &count)
-{
+vector<string> get_tokens(ifstream &f, int &count) {
     string line;
     vector<string> tokens;
     try {
         do {
             getline(f, line);
             count++;
-            if (f.eof()) return tokens;
+            if (f.eof())
+                return tokens;
             line = parse_util::remove_spaces(line);
-        } while(line[0] == '#' || line.size() < 1); // skip comment and empty lines
-                
+        } while (line[0] == '#' ||
+                 line.size() < 1); // skip comment and empty lines
+
         tokens = parse_util::split(line, ";");
-	//  std::cout << "Line parsed with " << tokens.size() << " tokens" << std::endl;
-        //for (int i=0; i<tokens.size(); i++) std::cout << tokens[i] << "; ";
-        //cout << std::endl;
+        //  std::cout << "Line parsed with " << tokens.size() << " tokens" <<
+        //  std::endl;
+        // for (int i=0; i<tokens.size(); i++) std::cout << tokens[i] << "; ";
+        // cout << std::endl;
     } catch (exception &e) {
         std::cerr << "Error in parsing file: " << std::endl;
-        std::cerr << e.what(); 
+        std::cerr << e.what();
         exit(0);
     }
     return tokens;
 }
 
-void read_tasks(const string &data_file, System &s)
-{
+void read_tasks(const string &data_file, System &s) {
     int count = 0;
     ifstream f(data_file.c_str());
 
@@ -143,11 +137,12 @@ void read_tasks(const string &data_file, System &s)
 
     do {
         vector<string> tokens = get_tokens(f, count);
-        if (tokens.size() == 0) break;
-            
+        if (tokens.size() == 0)
+            break;
+
         if (tokens.size() < 5) {
-            std::cout << "Error, wrong number of tokens at line" 
-                 << count << std::endl;
+            std::cout << "Error, wrong number of tokens at line" << count
+                      << std::endl;
             exit(0);
         }
 
@@ -164,34 +159,34 @@ void read_tasks(const string &data_file, System &s)
             std::cerr << e.what() << std::endl;
             exit(0);
         }
-        
+
         if (tokens[1] == "m") {
             if (tokens.size() == 6) {
-	      //      std::cout << "Creating a multimedia task with " 
-	      //     << avg << ", " << period << ", " << prio << ", " 
-	      //     << tokens[5] << std::endl;
+                //      std::cout << "Creating a multimedia task with "
+                //     << avg << ", " << period << ", " << prio << ", "
+                //     << tokens[5] << std::endl;
 
-                s.addMultimediaTask(tokens[0], Tick(avg), Tick(period), 
+                s.addMultimediaTask(tokens[0], Tick(avg), Tick(period),
                                     tokens[5], int(prio));
             } else {
-                std::cerr << "Wrong number of tokes at line: " << count << std::endl;
+                std::cerr << "Wrong number of tokes at line: " << count
+                          << std::endl;
                 exit(0);
             }
         } else if (tokens[1] == "l") {
-	  // std::cout << "Creating a load task with " 
-	  //     << avg << ", " << period << ", " << prio << std::endl;
+            // std::cout << "Creating a load task with "
+            //     << avg << ", " << period << ", " << prio << std::endl;
 
             s.addLoadTask(tokens[0], Tick(avg), Tick(period), int(prio));
         }
     } while (!f.eof());
 }
 
-void create_feedback(const string &fback_file, Supervisor *super)
-{
+void create_feedback(const string &fback_file, Supervisor *super) {
     string line;
     int count = 0;
     ifstream f(fback_file.c_str());
-    
+
     if (!f.is_open()) {
         std::cerr << "Can't open " << fback_file << std::endl;
         exit(-1);
@@ -199,33 +194,40 @@ void create_feedback(const string &fback_file, Supervisor *super)
 
     try {
         do {
-	  // DBGENTER(_SERVER_DBG_LEV);
+            // DBGENTER(_SERVER_DBG_LEV);
             vector<string> tokens = get_tokens(f, count);
-            if (tokens.size() == 0) break;
+            if (tokens.size() == 0)
+                break;
 
             if (tokens.size() < 2) {
-                std::cout << "Error, wrong number of tokens at line" 
-                     << count << std::endl;
+                std::cout << "Error, wrong number of tokens at line" << count
+                          << std::endl;
                 exit(0);
             }
             string task_name = tokens[0];
             string controller_params = tokens[1];
 
-            PeriodicTask *mytask = dynamic_cast<PeriodicTask *>(Entity::_find(task_name));
+            PeriodicTask *mytask =
+                dynamic_cast<PeriodicTask *>(Entity::_find(task_name));
             if (mytask == 0) {
-                std::cerr << "Error: task " << task_name << " not found" << std::endl;
+                std::cerr << "Error: task " << task_name << " not found"
+                          << std::endl;
                 exit(0);
             }
 
-            Server *server = dynamic_cast<Server *>(Entity::_find("Server_" + task_name));
+            Server *server =
+                dynamic_cast<Server *>(Entity::_find("Server_" + task_name));
             if (server == 0) {
-                std::cerr << "Error: server Server_" << task_name << " not found" << std::endl;
+                std::cerr << "Error: server Server_" << task_name
+                          << " not found" << std::endl;
                 exit(0);
             }
-            FeedbackModuleARSim *ftm1 = new FeedbackModuleARSim(task_name + "_FTM");
-	    //	    DBGPRINT("Setting controller params: " << controller_params);
+            FeedbackModuleARSim *ftm1 =
+                new FeedbackModuleARSim(task_name + "_FTM");
+            //	    DBGPRINT("Setting controller params: " <<
+            //controller_params);
             ftm1->setControllerParams(controller_params);
-            ftm1->setSupervisor(super, server); 
+            ftm1->setSupervisor(super, server);
             ftm1->setTask(mytask);
             mytask->setFeedbackModule(ftm1);
         } while (!f.eof());
@@ -234,20 +236,22 @@ void create_feedback(const string &fback_file, Supervisor *super)
     }
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     System sys;
     FILE *fid_1, *fid_2;
-    int rta, budget, temp, period, i,j;
+    int rta, budget, temp, period, i, j;
     bool schedulable;
-//    SIMUL.dbg.enable(_SERVER_DBG_LEV);
-//    SIMUL.dbg.enable(_ARSIM_DBG_LEV);
+    //    SIMUL.dbg.enable(_SERVER_DBG_LEV);
+    //    SIMUL.dbg.enable(_ARSIM_DBG_LEV);
 
-//     SIMUL.dbg.enable(_TASK_DBG_LEV);
-//     SIMUL.dbg.enable(_KERNEL_DBG_LEV);
+    //     SIMUL.dbg.enable(_TASK_DBG_LEV);
+    //     SIMUL.dbg.enable(_KERNEL_DBG_LEV);
 
     if (argc < 4) {
-        std::cout << "Usage: " << argv[0] << " [sim_time] [file name] <fix|schedp|sparepot> [feedback params]" << std::endl;
+        std::cout
+            << "Usage: " << argv[0]
+            << " [sim_time] [file name] <fix|schedp|sparepot> [feedback params]"
+            << std::endl;
         exit(0);
     }
 
@@ -257,69 +261,71 @@ int main(int argc, char *argv[])
 
     if (strcmp("fix", argv[3]) == 0) {
         std::cout << "Fixed server simulation" << std::endl;
-    }
-    else if (strcmp("schedp", argv[3]) == 0 || 
-             strcmp("sparepot", argv[3]) == 0) {
+    } else if (strcmp("schedp", argv[3]) == 0 ||
+               strcmp("sparepot", argv[3]) == 0) {
         if (argc < 5) {
             std::cerr << "Missing the feedback parameters file" << std::endl;
             exit(-1);
         }
         if (strcmp("schedp", argv[3]) == 0) {
-            std::cout << "SCHED_POINTS" << std::endl; 
+            std::cout << "SCHED_POINTS" << std::endl;
             SchedPoint *super_schedp;
             super_schedp = new SchedPoint("SchedPoint");
 
             std::cout << "Now adding the servers" << std::endl;
-            for (i=0; i<sys.ss.size(); i++) {
-                std::cout << "Adding server "  << i << std::endl;
+            for (i = 0; i < sys.ss.size(); i++) {
+                std::cout << "Adding server " << i << std::endl;
                 super_schedp->addServer(sys.ss[i]);
             }
-            
+
             std::cout << "Building constraints" << std::endl;
             super_schedp->buildconstraints();
 
             std::cout << "Creating feedback" << std::endl;
             create_feedback(argv[4], super_schedp);
-        }
-        else if (strcmp("sparepot", argv[3]) == 0) {
-            std::cout << "SPARE_POT" << std::endl; 
+        } else if (strcmp("sparepot", argv[3]) == 0) {
+            std::cout << "SPARE_POT" << std::endl;
             SparePot *super_sparep;
             super_sparep = new SparePot("SparePot");
-            
-            for (i=0; i<sys.ss.size(); i++) 
+
+            for (i = 0; i < sys.ss.size(); i++)
                 super_sparep->addServer(sys.ss[i]);
-	    /**********************************************************************************************/       
-	    /*Added by Rodrigo. Computes in budget and period the maximum sporacid server for the spare pot*/
-	     
-	    schedulable=true;
-	    budget=0;
-	    period=sys.ss[0]->getPeriod();
-            while (schedulable){
-              budget++; 
-	      for (i=0;i<sys.ss.size();i++){
-		rta=0;
-		temp=sys.ss[i]->getBudget();
-		while (rta!=temp)
-		  {
-		  rta=temp;
-		  temp=0;
-		  for (j=0;j<i;j++){
-		    temp=temp+double(sys.ss[j]->getBudget())*ceil(double(rta)/double(sys.ss[j]->getPeriod()));
-		    }
-		  temp=temp+double(sys.ss[i]->getBudget()) + double(budget)*ceil(double(rta)/double(period));
-		 }
-		  if (temp>sys.ss[i]->getPeriod()){
-		    schedulable=false;
-		    break;
-		  } 
-		}
-	    }
-	      budget--;
-	      super_sparep->compute_matrix(Tick(budget), Tick(period));
-	      std::cout<<"budget "<<budget<<" Period "<<period<<endl;
-	      create_feedback(argv[4], super_sparep);
-        }
-        else {
+            /**********************************************************************************************/
+            /*Added by Rodrigo. Computes in budget and period the maximum
+             * sporacid server for the spare pot*/
+
+            schedulable = true;
+            budget = 0;
+            period = sys.ss[0]->getPeriod();
+            while (schedulable) {
+                budget++;
+                for (i = 0; i < sys.ss.size(); i++) {
+                    rta = 0;
+                    temp = sys.ss[i]->getBudget();
+                    while (rta != temp) {
+                        rta = temp;
+                        temp = 0;
+                        for (j = 0; j < i; j++) {
+                            temp =
+                                temp + double(sys.ss[j]->getBudget()) *
+                                           ceil(double(rta) /
+                                                double(sys.ss[j]->getPeriod()));
+                        }
+                        temp =
+                            temp + double(sys.ss[i]->getBudget()) +
+                            double(budget) * ceil(double(rta) / double(period));
+                    }
+                    if (temp > sys.ss[i]->getPeriod()) {
+                        schedulable = false;
+                        break;
+                    }
+                }
+            }
+            budget--;
+            super_sparep->compute_matrix(Tick(budget), Tick(period));
+            std::cout << "budget " << budget << " Period " << period << endl;
+            create_feedback(argv[4], super_sparep);
+        } else {
             std::cerr << "ERROR: wrong argument" << std::endl;
             exit(-1);
         }
@@ -336,115 +342,114 @@ int main(int argc, char *argv[])
 
     std::cout << "Miss size: " << sys.miss.size() << std::endl;
 
-    for (int i=0; i<sys.miss.size(); i++) {
-        std::cout << "Percentage of dline misses of i= " << i << " : " 
-             << sys.miss[i]->getLastValue()
-	     << " over " << sys.miss[i]->getNumSamples() << std::endl;
+    for (int i = 0; i < sys.miss.size(); i++) {
+        std::cout << "Percentage of dline misses of i= " << i << " : "
+                  << sys.miss[i]->getLastValue() << " over "
+                  << sys.miss[i]->getNumSamples() << std::endl;
     }
 
-    for (int i=0; i<sys.tstat.size(); i++) {
-        std::cout << "Tardiness of i= " << i << " : " 
-             << sys.tstat[i]->getLastValue() << std::endl;
+    for (int i = 0; i < sys.tstat.size(); i++) {
+        std::cout << "Tardiness of i= " << i << " : "
+                  << sys.tstat[i]->getLastValue() << std::endl;
     }
 
-    fid_1=fopen("deadlinesmiss_dist.txt","a");
-    fid_2=fopen("tardiness_dist.txt","a");
-    for (int i=0; i<sys.miss.size(); i++) {
-      fprintf (fid_1,"%f\t%i\t", sys.miss[i]->getLastValue(),sys.miss[i]->getNumSamples());
-        }
-    fprintf(fid_1,"\n");
-    for (int i=0; i<sys.tstat.size(); i++) {
-       fprintf (fid_2,"%f\t", sys.tstat[i]->getLastValue());
-
+    fid_1 = fopen("deadlinesmiss_dist.txt", "a");
+    fid_2 = fopen("tardiness_dist.txt", "a");
+    for (int i = 0; i < sys.miss.size(); i++) {
+        fprintf(fid_1, "%f\t%i\t", sys.miss[i]->getLastValue(),
+                sys.miss[i]->getNumSamples());
     }
-     fprintf(fid_2,"\n");
+    fprintf(fid_1, "\n");
+    for (int i = 0; i < sys.tstat.size(); i++) {
+        fprintf(fid_2, "%f\t", sys.tstat[i]->getLastValue());
+    }
+    fprintf(fid_2, "\n");
     fclose(fid_1);
     fclose(fid_2);
 
+    //     if (argc < 6) {
+    //         std::cout << "Usage: " << argv[0] << " <fix|schedp|sparep> "
+    //              << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" <<
+    //              std::endl;
+    //         exit(0);
+    //     }
 
+    //     try {
+    //         JavaTrace jtrace("trace.trc");
+    //         TextTrace ttrace("trace.txt");
+    //         Tick b1, b2;
+    //         string tracefile1, tracefile2;
 
+    //         b1 = atoi(argv[2]);
+    //         b2 = atoi(argv[3]);
 
-//     if (argc < 6) {
-//         std::cout << "Usage: " << argv[0] << " <fix|schedp|sparep> " 
-//              << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
-//         exit(0);
-//     }
+    //         tracefile1 = string(argv[4]);
+    //         tracefile2 = string(argv[5]);
 
-//     try {
-//         JavaTrace jtrace("trace.trc");
-//         TextTrace ttrace("trace.txt");
-//         Tick b1, b2;
-//         string tracefile1, tracefile2;
+    //         SIMUL.dbg.enable(_EVENT_DBG_LEV);
+    //         System sys(b1, b2, tracefile1, tracefile2);
 
-//         b1 = atoi(argv[2]);
-//         b2 = atoi(argv[3]);
+    // 	sys.mm1.setTrace(&jtrace);
+    //         sys.mm2.setTrace(&jtrace);
+    // 	//        sys.ss1.setTrace(&jtrace);
+    //         //sys.ss2.setTrace(&jtrace);
 
-//         tracefile1 = string(argv[4]);
-//         tracefile2 = string(argv[5]);
+    // //sys.tl.setTrace(&jtrace);
 
-//         SIMUL.dbg.enable(_EVENT_DBG_LEV); 
-//         System sys(b1, b2, tracefile1, tracefile2);
+    //         if (string(argv[1]) == "fix") {
+    //             prepare_sporadic(sys);
+    //         }
+    //         else if (string(argv[1]) == "fback") {
+    //             prepare_feedback(sys);
+    //         }
+    //         else {
+    //             std::cout << "Usage: " << argv[0] << " <fix|fback> "
+    //                  << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>"
+    //                  << std::endl;
+    //             exit(0);
+    //         }
 
-// 	sys.mm1.setTrace(&jtrace);
-//         sys.mm2.setTrace(&jtrace);
-// 	//        sys.ss1.setTrace(&jtrace);
-//         //sys.ss2.setTrace(&jtrace);
-        
-// //sys.tl.setTrace(&jtrace);
+    // 	SchedPoint schpt("SchedPoint");
 
-//         if (string(argv[1]) == "fix") {
-//             prepare_sporadic(sys);
-//         }
-//         else if (string(argv[1]) == "fback") {
-//             prepare_feedback(sys); 
-//         }
-//         else {
-//             std::cout << "Usage: " << argv[0] << " <fix|fback> " 
-//                  << "<budget 1> <budget 2> <tracefile 1> <tracefile 2>" << std::endl;
-//             exit(0);
-//         }
-	
-// 	SchedPoint schpt("SchedPoint");
+    //         schpt.addServer(&sys.ss1);
+    //         schpt.addServer(&sys.ss2);
 
-//         schpt.addServer(&sys.ss1);
-//         schpt.addServer(&sys.ss2);
+    //         schpt.buildconstraints();
 
-//         schpt.buildconstraints();
+    //         FeedbackModuleARSim ftm1("FTM1");
+    //         ftm1.setSupervisor(&schpt,&sys.ss1);
+    //         ftm1.setTask(&sys.mm1);
+    //         sys.mm1.setFeedbackModule(&ftm1);
 
-//         FeedbackModuleARSim ftm1("FTM1");
-//         ftm1.setSupervisor(&schpt,&sys.ss1);
-//         ftm1.setTask(&sys.mm1);
-//         sys.mm1.setFeedbackModule(&ftm1);
+    //         FeedbackModuleARSim ftm2("FTM2");
+    //         ftm2.setSupervisor(&schpt,&sys.ss2);
+    //         ftm2.setTask(&sys.mm2);
+    //         sys.mm2.setFeedbackModule(&ftm2);
 
-//         FeedbackModuleARSim ftm2("FTM2");
-//         ftm2.setSupervisor(&schpt,&sys.ss2);
-//         ftm2.setTask(&sys.mm2);
-//         sys.mm2.setFeedbackModule(&ftm2);
+    //          ftm1.setControllerParams("-s sdb -T 400 -B 0.5");
+    //          ftm2.setControllerParams("-s sdb -T 1000 -B 0.5");
+    // 	 //        ftm1.setControllerParams("-s fs -T 400 -B 0.01");   //
+    // budget=4
+    // 	 //ftm2.setControllerParams("-s fs -T 1000 -B 0.01");  // budget=10
 
-//          ftm1.setControllerParams("-s sdb -T 400 -B 0.5");
-//          ftm2.setControllerParams("-s sdb -T 1000 -B 0.5");
-// 	 //        ftm1.setControllerParams("-s fs -T 400 -B 0.01");   // budget=4
-// 	 //ftm2.setControllerParams("-s fs -T 1000 -B 0.01");  // budget=10
-        
-// 	//ttrace.attachToTask(&sys.ss1);
-// 	//ttrace.attachToTask(&sys.ss2);
+    // 	//ttrace.attachToTask(&sys.ss1);
+    // 	//ttrace.attachToTask(&sys.ss2);
 
+    //         SIMUL.run(3000);
 
-//         SIMUL.run(3000);
+    //         std::cout << "Percentage of deadline misses for task mm1: "
+    //              << sys.miss1.getLastValue() << std::endl;
+    //         std::cout << "Percentage of deadline misses for task mm2: " <<
+    //             sys.miss2.getLastValue() << std::endl;
 
-//         std::cout << "Percentage of deadline misses for task mm1: " 
-//              << sys.miss1.getLastValue() << std::endl;
-//         std::cout << "Percentage of deadline misses for task mm2: " << 
-//             sys.miss2.getLastValue() << std::endl;
+    //         std::cout << "Tardiness for task mm1: "
+    //              << sys.ts1.getLastValue() << std::endl;
+    //         std::cout << "Tardiness for task mm2: " <<
+    //             sys.ts2.getLastValue() << std::endl;
 
-//         std::cout << "Tardiness for task mm1: " 
-//              << sys.ts1.getLastValue() << std::endl;
-//         std::cout << "Tardiness for task mm2: " << 
-//             sys.ts2.getLastValue() << std::endl;
-
-//     } catch (BaseExc &e) {
-//         std::cout << e.what() << std::endl;
-//     } catch (parse_util::ParseExc &e2) {
-//         std::cout << e2.what() << std::endl;
-//     }
+    //     } catch (BaseExc &e) {
+    //         std::cout << e.what() << std::endl;
+    //     } catch (parse_util::ParseExc &e2) {
+    //         std::cout << e2.what() << std::endl;
+    //     }
 }

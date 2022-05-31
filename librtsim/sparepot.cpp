@@ -1,10 +1,11 @@
-#include <algorithm>
 #include <cassert>
+
+#include <algorithm>
+#include <iostream>
+
 #include <rtsim/sparepot.hpp>
 
 namespace RTSim {
-    using std::cerr;
-    using std::endl;
 
     SparePot::SparePot(const string &name) :
         Entity(name),

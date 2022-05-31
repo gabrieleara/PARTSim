@@ -14,7 +14,6 @@
 #include "rttask.hpp"
 #include <assert.h>
 #include <rtsim/cpu.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/energyMRTKernel.hpp>
 #include <rtsim/fileImporter.hpp>
 #include <rtsim/instr.hpp>
@@ -24,6 +23,7 @@
 #include <rtsim/powermodel.hpp>
 #include <rtsim/ps_trace.hpp>
 #include <rtsim/rttask.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/system_descriptor.hpp>
 #include <rtsim/taskstat.hpp>
 #include <rtsim/texttrace.hpp>
@@ -37,8 +37,8 @@ using namespace RTSim;
 #define time() SIMUL.getTime()
 
 static inline CPUMDescriptor
-quick_bp_descriptor(const std::string &wclass_name,
-                    const CPUModelBPParams::SpeedModelParams &sp);
+    quick_bp_descriptor(const std::string &wclass_name,
+                        const CPUModelBPParams::SpeedModelParams &sp);
 static inline void dumpSpeeds(const CPUModelBPParams::SpeedModelParams &params);
 static inline void dumpAllSpeeds();
 bool isInRange(int, int);
@@ -330,7 +330,7 @@ int main(int argc, char *argv[]) {
         } else if (TEST_NO == 7) {
             vector<CPU_BL *> cpus;
             PeriodicTask *task[5]; // to be cleared after each test
-            CPU_BL *cpu_task[5];   // to be cleared after each test
+            CPU_BL *cpu_task[5]; // to be cleared after each test
             vector<CBServerCallingEMRTKernel *> ets;
 
             int wcets[] = {63, 63, 63, 63, 30};
@@ -1364,7 +1364,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
             REQUIRE(k->getUtilization_active(cpus_big[0]) >
                     0.75); // shall be 0.8
-            REQUIRE((double)ets[0]->getIdleEvent() >= 185);
+            REQUIRE((double) ets[0]->getIdleEvent() >= 185);
             REQUIRE(ets[0]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(151);
@@ -1452,7 +1452,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
             REQUIRE(k->getUtilization_active(cpus_big[0]) >
                     0.85); // shall be 0.9
-            REQUIRE((double)ets[0]->getIdleEvent() > 165);
+            REQUIRE((double) ets[0]->getIdleEvent() > 165);
             REQUIRE(ets[0]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(151);
@@ -1688,7 +1688,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
             REQUIRE(k->getUtilization_active(cpus_big[1]) >
                     0.6); // shall be 0.63
-            REQUIRE((double)ets[2]->getIdleEvent() >= 20);
+            REQUIRE((double) ets[2]->getIdleEvent() >= 20);
             REQUIRE(ets[2]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(26); // end vtime, migration task ready core 0 to 1
@@ -1891,7 +1891,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
             REQUIRE(k->getUtilization_active(cpus_big[1]) >
                     0.6); // shall be 0.63
-            REQUIRE((double)ets[2]->getIdleEvent() >= 20);
+            REQUIRE((double) ets[2]->getIdleEvent() >= 20);
             REQUIRE(ets[2]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(16); // because of temporary migrations, task 49 is
@@ -1989,7 +1989,7 @@ int main(int argc, char *argv[]) {
                       << std::endl;
             REQUIRE(k->getUtilization_active(cpus_big[1]) >
                     0.4); // shall be 0.41
-            REQUIRE((double)ets[2]->getIdleEvent() >= 20);
+            REQUIRE((double) ets[2]->getIdleEvent() >= 20);
             REQUIRE(ets[2]->getStatus() == ServerStatus::RELEASING);
 
             SIMUL.run_to(26); // end vtime, migration of t36 to BIG1
@@ -2032,8 +2032,8 @@ int main(int argc, char *argv[]) {
 }
 
 CPUMDescriptor
-quick_bp_descriptor(const std::string &wclass_name,
-                    const CPUModelBPParams::SpeedModelParams &sp) {
+    quick_bp_descriptor(const std::string &wclass_name,
+                        const CPUModelBPParams::SpeedModelParams &sp) {
     std::unique_ptr<CPUModelBPParams> bpp;
     bpp = std::make_unique<CPUModelBPParams>();
     bpp->workload = wclass_name;
@@ -2090,7 +2090,7 @@ bool isInRangeMinMax(double eval, const double min, const double max) {
 void getCores(vector<CPU_BL *> &cpus_little, vector<CPU_BL *> &cpus_big,
               Island_BL **island_bl_little, Island_BL **island_bl_big) {
     unsigned int OPP_little = 0; // Index of OPP in LITTLE cores
-    unsigned int OPP_big = 0;    // Index of OPP in big cores
+    unsigned int OPP_big = 0; // Index of OPP in big cores
 
     vector<volt_type> V_little = {
         0.92,   0.919643, 0.919357, 0.918924, 0.95625, 0.9925, 1.02993,

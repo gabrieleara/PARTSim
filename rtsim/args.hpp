@@ -11,9 +11,10 @@
 #ifndef RTSIM_ARGS_H_
 #define RTSIM_ARGS_H_
 
-#include <cmdarg.hpp>
 #include <iostream>
 #include <sstream>
+
+#include <cmdarg.hpp>
 
 static inline bool string_endswith(const std::string &s,
                                    const std::string &end) {

@@ -276,7 +276,7 @@ namespace RTSim {
 
 /*
 // Usage Example
-#include <iostream>
+#include <iosfwd>
 
 int main() {
     RTSim::sorted_map<int, int> map;

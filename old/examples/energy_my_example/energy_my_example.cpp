@@ -5,32 +5,31 @@
 */
 
 #include <cstring>
-#include <string>
 #include <fstream>
+#include <string>
 
-#include <rtsim/mrtkernel.hpp>
 #include <rtsim/cpu.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
-#include <rtsim/jtrace.hpp>
-#include <rtsim/texttrace.hpp>
-#include <rtsim/json_trace.hpp>
-#include <rtsim/tracepower.hpp>
-#include <rtsim/rttask.hpp>
 #include <rtsim/instr.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/mrtkernel.hpp>
 #include <rtsim/powermodel.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/system_descriptor.hpp>
+#include <rtsim/texttrace.hpp>
+#include <rtsim/tracepower.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
 /* ./energy [OPP little] [OPP big] [workload] */
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     unsigned int OPP_little = 0;
     unsigned int OPP_big = 0;
     string workload = "bzip2";
-    std::vector<CPU*> cpus;
+    std::vector<CPU *> cpus;
 
     if (argc == 4) {
         OPP_little = stoi(argv[1]);
@@ -46,7 +45,7 @@ int main(int argc, char *argv[])
         SIMUL.dbg.setStream("debug.txt");
 
         TextTrace ttrace("trace.txt");
-        //JSONTrace jtrace("trace.json");
+        // JSONTrace jtrace("trace.json");
 
         vector<TracePowerConsumption *> ptrace;
         vector<EDFScheduler *> schedulers;
@@ -70,7 +69,8 @@ int main(int argc, char *argv[])
         if (OPP_little >= V_little.size() || OPP_big >= V_big.size())
             exit(-1);
 
-        unsigned long int max_frequency = max(F_little[F_little.size() - 1], F_big[F_big.size() - 1]);
+        unsigned long int max_frequency =
+            max(F_little[F_little.size() - 1], F_big[F_big.size() - 1]);
 
         /* ---------------------- Creating CPU Models ----------------------- */
 
@@ -169,8 +169,7 @@ int main(int argc, char *argv[])
 
         /* ------------------- Instantiating actual CPUs -------------------- */
 
-        for (unsigned int i = 0; i < 4; ++i)
-        {
+        for (unsigned int i = 0; i < 4; ++i) {
             /* Create 4 LITTLE CPUs */
             string cpu_name = "LITTLE_" + to_string(i);
             std::cout << "Creating CPU: " << cpu_name << std::endl;
@@ -187,7 +186,8 @@ int main(int argc, char *argv[])
             c->setOPP(OPP_little);
             c->setWorkload("idle");
             // pm->setFrequencyMax(max_frequency);
-            TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+            TracePowerConsumption *power_trace =
+                new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
 
             cpus.push_back(c);
@@ -217,7 +217,8 @@ int main(int argc, char *argv[])
             c->setOPP(OPP_big);
             c->setWorkload("idle");
             // pm->setFrequencyMax(max_frequency);
-            TracePowerConsumption *power_trace = new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
+            TracePowerConsumption *power_trace =
+                new TracePowerConsumption(c, 1, "power_" + cpu_name + ".txt");
             ptrace.push_back(power_trace);
 
             cpus.push_back(c);
@@ -251,7 +252,7 @@ int main(int argc, char *argv[])
         t->insertCode("fixed(100," + workload + ");");
         kernels[0]->addTask(*t, "");
         ttrace.attachToTask(*t);
-        //jtrace.attachToTask(*t);
+        // jtrace.attachToTask(*t);
 
         task_name = "Task_LITTLE_1";
         std::cout << "Creating task: " << task_name << std::endl;
@@ -289,18 +290,19 @@ int main(int argc, char *argv[])
             unsigned int old_opp;
             auto opp_size = cpu_type == "big" ? F_big.size() : F_little.size();
 
-            for (string wl : {"bzip2", "hash", "encrypt", "decrypt", "cachekiller"}) {
+            for (string wl :
+                 {"bzip2", "hash", "encrypt", "decrypt", "cachekiller"}) {
                 cpus[cpu]->setWorkload(wl);
 
                 string filename = "exec_" + wl + "_" + cpu_type + ".txt";
                 ofstream computing_file(filename);
 
                 old_opp = cpus[cpu]->getOPP();
-                for (unsigned int opp=0; opp<opp_size; ++opp) {
+                for (unsigned int opp = 0; opp < opp_size; ++opp) {
                     cpus[cpu]->setOPP(opp);
                     computing_file << cpus[cpu]->getFrequency() * 1000 << " "
                                    << cpus[cpu]->getSpeed() * min_C[wl]
-                                      << std::endl;
+                                   << std::endl;
                 }
                 cpus[cpu]->setWorkload("idle");
                 cpus[cpu]->setOPP(old_opp);

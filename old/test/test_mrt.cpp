@@ -1,15 +1,14 @@
 #include "catch.hpp"
-#include <rtsim/metasim.hpp>
-#include <rtsim/rttask.hpp>
-#include <rtsim/mrtkernel.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/cbserver.hpp>
+#include <rtsim/metasim.hpp>
+#include <rtsim/mrtkernel.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-TEST_CASE("multicore")
-{
+TEST_CASE("multicore") {
     EDFScheduler sched;
     MRTKernel kern(&sched, 2);
 
@@ -26,7 +25,7 @@ TEST_CASE("multicore")
     kern.addTask(t1);
     kern.addTask(t2);
     kern.addTask(t3);
-    
+
     SIMUL.initSingleRun();
 
     SIMUL.run_to(4);
@@ -50,8 +49,7 @@ TEST_CASE("multicore")
     SIMUL.endSingleRun();
 }
 
-TEST_CASE("multicore with cbs")
-{
+TEST_CASE("multicore with cbs") {
     EDFScheduler sched;
     MRTKernel kern(&sched, 2);
 
@@ -65,14 +63,14 @@ TEST_CASE("multicore with cbs")
     t3.insertCode("fixed(4);");
     t3.setAbort(false);
 
-    CBServer serv1(4, 10, 10, true,  "server1", "FIFOSched");
-    CBServer serv2(5, 15, 15, true,  "server2", "FIFOSched");
-    CBServer serv3(2, 12, 12, true,  "server3", "FIFOSched");
+    CBServer serv1(4, 10, 10, true, "server1", "FIFOSched");
+    CBServer serv2(5, 15, 15, true, "server2", "FIFOSched");
+    CBServer serv3(2, 12, 12, true, "server3", "FIFOSched");
 
     serv1.addTask(t1);
     serv2.addTask(t2);
     serv3.addTask(t3);
-    
+
     kern.addTask(serv1);
     kern.addTask(serv2);
     kern.addTask(serv3);
@@ -167,5 +165,5 @@ TEST_CASE("multicore with cbs")
     REQUIRE(serv3.get_remaining_budget() == 2);
     REQUIRE(serv3.getDeadline() == 36);
 
-   SIMUL.endSingleRun();
+    SIMUL.endSingleRun();
 }

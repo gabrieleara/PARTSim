@@ -17,12 +17,13 @@
  * $Log$
  */
 #include <cstdlib>
+
+#include <iostream>
+
 #include <rtsim/task.hpp>
 #include <rtsim/taskevt.hpp>
 
 namespace RTSim {
-    using std::cout;
-    using std::endl;
 
     void ArrEvt::doit() {
         _task->onArrival(this);

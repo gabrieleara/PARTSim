@@ -2,21 +2,19 @@
   In this example, a simple system is simulated, consisting of two
   real-time tasks scheduled by EDF on a single processor.
 */
-#include <rtsim/kernel.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
-#include <rtsim/jtrace.hpp>
-#include <rtsim/texttrace.hpp>
-#include <rtsim/json_trace.hpp>
-#include <rtsim/rttask.hpp>
 #include <rtsim/instr.hpp>
+#include <rtsim/json_trace.hpp>
+#include <rtsim/jtrace.hpp>
+#include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
+#include <rtsim/texttrace.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-int main()
-{
+int main() {
     try {
-
         SIMUL.dbg.enable("All");
         SIMUL.dbg.setStream("debug.txt");
         // set the trace file. This can be visualized by the

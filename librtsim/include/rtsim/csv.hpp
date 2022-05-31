@@ -226,7 +226,7 @@ namespace csv {
 
 /*
 // Usage:
-#include <iostream>
+#include <iosfwd>
 #include <rtsim/csv.hpp>
 
 int main() {

@@ -31,6 +31,8 @@
  */
 #include <cmath>
 
+#include <iostream>
+
 #include <metasim/genericvar.hpp>
 #include <metasim/strtoken.hpp>
 

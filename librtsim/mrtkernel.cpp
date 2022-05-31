@@ -12,6 +12,8 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <iostream>
+
 #include <rtsim/cbserver.hpp>
 #include <rtsim/mrtkernel.hpp>
 #include <rtsim/scheduler/scheduler.hpp>

@@ -13,7 +13,6 @@ using namespace RTSim;
 /// @param iDeltaPows vector of results containing [...]
 void EnergyMRTKernel::tryTaskOnCPU_BL(
     AbsRTTask *t, CPU_BL *c vector<struct ConsumptionTable> &iDeltaPows) {
-
     auto task_wl = Utils::getTaskWorkload(t);
 
     // Do not dispatch tasks to disabled CPUs
@@ -27,7 +26,7 @@ void EnergyMRTKernel::tryTaskOnCPU_BL(
     c->setWorkload(Utils::getTaskWorkload(t));
 
     // Trying to schedule on CPU c using its current frequency
-    
+
     // NOTE: (a copy of) the full queue of tasks in the ready queue of the given
     // CPU can be obtained with: getReadyTasks(c)
 
@@ -53,8 +52,8 @@ void EnergyMRTKernel::tryTaskOnCPU_BL(
 
         c->setOPP(ooo);
         newCapacity = c->getSpeed(newFreq);
-        printf("\t\tUsing frequency %d instead of %d (cap. %f)\n", (int)newFreq,
-               (int)frequency, newCapacity);
+        printf("\t\tUsing frequency %d instead of %d (cap. %f)\n",
+               (int) newFreq, (int) frequency, newCapacity);
 
         // check whether task is admissible with the new frequency and where
         if (_sched->isAdmissible(c, getReadyTasks(c), t)) {
@@ -79,31 +78,36 @@ void EnergyMRTKernel::tryTaskOnCPU_BL(
             utilization = getUtilization(c, newCapacity);
 
             if (utilization > 1.0) {
-                std::cout << "\t\t\tCPU utilization is already >= 100% => skip OPP"
-                     << std::endl;
+                std::cout
+                    << "\t\t\tCPU utilization is already >= 100% => skip OPP"
+                    << std::endl;
                 continue;
             } else
-                std::cout << "\t\t\tTotal utilization (running+ready+active-new "
-                        "task) tasks already in CPU "
-                     << c->toString() << " = " << utilization << std::endl;
+                std::cout
+                    << "\t\t\tTotal utilization (running+ready+active-new "
+                       "task) tasks already in CPU "
+                    << c->toString() << " = " << utilization << std::endl;
 
             utilization_t = getUtilization(t, newCapacity);
             std::cout << "\t\t\tUtilization cur/new task "
-                 << t->toString().substr(0, 25) << "... would be "
-                 << utilization_t << " - CPU capacity=" << newCapacity << std::endl;
+                      << t->toString().substr(0, 25) << "... would be "
+                      << utilization_t << " - CPU capacity=" << newCapacity
+                      << std::endl;
             std::cout << "\t\t\t\tScaled task WCET "
-                 << t->getRemainingWCET(newCapacity) << " DL " << t->getPeriod()
-                 << std::endl;
+                      << t->getRemainingWCET(newCapacity) << " DL "
+                      << t->getPeriod() << std::endl;
 
             if (utilization + utilization_t > 1.0) {
-                std::cout << "\t\t\tTotal utilization + cur/new task utilization "
-                        "would be "
-                     << utilization << "+" << utilization_t << "="
-                     << utilization + utilization_t << " >= 100% => skip OPP"
-                     << std::endl;
+                std::cout
+                    << "\t\t\tTotal utilization + cur/new task utilization "
+                       "would be "
+                    << utilization << "+" << utilization_t << "="
+                    << utilization + utilization_t << " >= 100% => skip OPP"
+                    << std::endl;
                 continue;
             }
-            // std::cout << "Final core utilization running+ready+active+new task = "
+            // std::cout << "Final core utilization running+ready+active+new
+            // task = "
             // << utilization + utilization_t << std::endl;
 
             // Ok, task can be placed on CPU c, compute power delta
@@ -115,7 +119,7 @@ void EnergyMRTKernel::tryTaskOnCPU_BL(
             oldUtilizationIsland = getIslandUtilization(c->getSpeed(frequency),
                                                         island, &nTaskIsland);
             std::cout << "\t\t\tIn the CPU island of " << c->getName() << ", "
-                 << nTaskIsland << " are being scheduled" << std::endl;
+                      << nTaskIsland << " are being scheduled" << std::endl;
 
             iPowWithNewTask = (newUtilizationIsland + utilization_t) *
                               c->getPowerConsumption(newFreq);
@@ -134,16 +138,19 @@ void EnergyMRTKernel::tryTaskOnCPU_BL(
             iDeltaPow = iPowWithNewTask - iOldPow;
             assert(iPowWithNewTask >= 0.0);
             assert(iOldPow >= 0.0);
-            std::cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow << std::endl;
-            struct ConsumptionTable row = {
-                .cons = iDeltaPow, .cpu = c, .opp = ooo};
+            std::cout << "\t\t\tiDeltaPow = new-old = " << iDeltaPow
+                      << std::endl;
+            struct ConsumptionTable row = {.cons = iDeltaPow,
+                                           .cpu = c,
+                                           .opp = ooo};
             iDeltaPows.push_back(row);
 
             // break; (i.e. skip foreach OPP) xk è ovvio che aumentando la freq
             // della stessa CPU, t è ammissibile
         } else {
-            std::cout << "\t\t\tHere task wouldn't be admissible (U + U_newTask > 1)"
-                 << std::endl;
+            std::cout
+                << "\t\t\tHere task wouldn't be admissible (U + U_newTask > 1)"
+                << std::endl;
         }
     }
 
@@ -187,16 +194,18 @@ void EnergyMRTKernel::dispatch() {
             // dispatch() is called even before onEndMultiDispatch() finishes
             // and thus tasks seem not to be dispatching (i.e., assigned to a
             // processor)
-            std::cout << "\tTask has already been dispatched, but dispatching is "
-                    "not complete => skip (you\'ll still see desched&sched "
-                    "evt, to trace tasks)"
-                 << std::endl;
+            std::cout
+                << "\tTask has already been dispatched, but dispatching is "
+                   "not complete => skip (you\'ll still see desched&sched "
+                   "evt, to trace tasks)"
+                << std::endl;
             continue;
         }
 
         if (getProcessor(t) !=
             NULL) { // e.g., task ends => migrateInto() => dispatch()
-            std::cout << "\tTask is running on a CPU already => skip" << std::endl;
+            std::cout << "\tTask is running on a CPU already => skip"
+                      << std::endl;
             continue;
         }
 
@@ -205,8 +214,8 @@ void EnergyMRTKernel::dispatch() {
         std::cout << std::endl << "Trying to scale up CPUs" << std::endl;
         vector<struct ConsumptionTable> iDeltaPows;
         std::cout << std::endl
-             << "\t------------\n\tCurrent situation:\n\t"
-             << _queues->toString() << "\t------------" << std::endl;
+                  << "\t------------\n\tCurrent situation:\n\t"
+                  << _queues->toString() << "\t------------" << std::endl;
 
         setTryingTaskOnCPU_BL(true);
         for (CPU_BL *c : cpus)
@@ -216,7 +225,8 @@ void EnergyMRTKernel::dispatch() {
         if (!iDeltaPows.empty())
             chooseCPU_BL(t, iDeltaPows);
         else
-            std::cout << "Cannot schedule " << t->toString() << " anywhere" << std::endl;
+            std::cout << "Cannot schedule " << t->toString() << " anywhere"
+                      << std::endl;
 
         _sched->extract(t);
         num_newtasks--;

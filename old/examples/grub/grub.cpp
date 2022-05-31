@@ -1,40 +1,38 @@
+#include <rtsim/grubserver.hpp>
+#include <rtsim/jtrace.hpp>
 #include <rtsim/kernel.hpp>
+#include <rtsim/rttask.hpp>
 #include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/scheduler/fifosched.hpp>
-#include <rtsim/jtrace.hpp>
 #include <rtsim/texttrace.hpp>
-#include <rtsim/rttask.hpp>
-#include <rtsim/grubserver.hpp>
 
 using namespace MetaSim;
 using namespace RTSim;
 
-int main()
-{
+int main() {
     try {
         JavaTrace jtrace("trace.trc");
         TextTrace ttrace("trace.txt");
-  
+
         // create the scheduler and the kernel
         EDFScheduler sched;
         RTKernel kern(&sched);
-      
-        PeriodicTask t2(8, 4 , 0, "TaskA"); 
+
+        PeriodicTask t2(8, 4, 0, "TaskA");
         t2.insertCode("fixed(2);");
         t2.setAbort(false);
 
-        PeriodicTask t3(6, 6, 0, "TaskB"); 
+        PeriodicTask t3(6, 6, 0, "TaskB");
         t3.insertCode("fixed(4);");
         t3.setAbort(false);
 
         ttrace.attachToTask(t2);
         ttrace.attachToTask(t3);
 
-
         Grub serv1(2, 4, "HIGH", "FIFOSched");
         serv1.addTask(t2);
-        kern.addTask(serv1, "");	
-	
+        kern.addTask(serv1, "");
+
         Grub serv2(3, 6, "LOW", "FIFOSched");
         serv2.addTask(t3);
         kern.addTask(serv2, "");
@@ -55,6 +53,5 @@ int main()
         std::cout << e.what() << std::endl;
     } catch (parse_util::ParseExc &e2) {
         std::cout << e2.what() << std::endl;
-
-    }        
+    }
 }

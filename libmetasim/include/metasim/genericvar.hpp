@@ -49,7 +49,7 @@
 #ifndef __GENERICVAR_HPP__
 #define __GENERICVAR_HPP__
 
-#include <iostream>
+#include <iosfwd>
 #include <map>
 
 #include <metasim/randomvar.hpp>

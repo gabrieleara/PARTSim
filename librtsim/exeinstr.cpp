@@ -11,9 +11,12 @@
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+#include <cassert>
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
+
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -21,7 +24,6 @@
 #include <metasim/simul.hpp>
 #include <metasim/strtoken.hpp>
 
-#include <assert.h>
 #include <rtsim/cpu.hpp>
 #include <rtsim/exeinstr.hpp>
 #include <rtsim/task.hpp>
@@ -31,8 +33,6 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace parse_util;
 
-    using std::cout;
-    using std::endl;
     using std::unique_ptr;
     using std::vector;
 

@@ -3,7 +3,6 @@
 namespace RTSim {
 
     using namespace MetaSim;
-    using std::endl;
 
     JSONTrace::JSONTrace(const string &name) {
         fd.open(name.c_str());

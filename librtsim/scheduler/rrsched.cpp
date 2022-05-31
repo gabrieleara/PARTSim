@@ -1,4 +1,5 @@
 #include <cassert>
+#include <iostream>
 #include <sstream>
 
 // #include <rtsim/energyMRTKernel.hpp>
@@ -7,10 +8,6 @@
 
 namespace RTSim {
     using namespace MetaSim;
-
-    using std::cerr;
-    using std::cout;
-    using std::endl;
 
     bool RRScheduler::RRModel::isRoundExpired() const {
         Task *t = dynamic_cast<Task *>(_rtTask);

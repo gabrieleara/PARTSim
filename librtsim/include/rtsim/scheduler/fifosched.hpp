@@ -14,6 +14,8 @@
 #ifndef __FIFOSCHED_HPP__
 #define __FIFOSCHED_HPP__
 
+#include <iostream>
+
 #include <rtsim/scheduler/scheduler.hpp>
 
 namespace RTSim {

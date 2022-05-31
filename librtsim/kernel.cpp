@@ -12,6 +12,7 @@
  *                                                                         *
  ***************************************************************************/
 #include <algorithm>
+#include <iostream>
 
 #include <metasim/simul.hpp>
 
@@ -23,9 +24,6 @@
 #include <rtsim/task.hpp>
 
 namespace RTSim {
-
-    using std::cout;
-    using std::endl;
 
     RTKernel::RTKernel(Scheduler *s, const std::string &name, CPU *c) :
         Entity(name),

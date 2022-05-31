@@ -29,8 +29,6 @@ namespace RTSim {
     using namespace MetaSim;
     using namespace parse_util;
 
-    using std::cout;
-    using std::endl;
     using std::unique_ptr;
     using std::vector;
 

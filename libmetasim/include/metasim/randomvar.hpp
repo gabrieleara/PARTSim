@@ -15,7 +15,7 @@
 #define __RANDOMVAR_HPP__
 
 #include <fstream>
-#include <iostream>
+#include <iosfwd>
 #include <metasim/memory.hpp>
 #include <string>
 #include <vector>

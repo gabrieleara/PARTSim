@@ -5,7 +5,7 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
-#include <iostream>
+#include <iosfwd>
 #include <map>
 #include <string>
 #include <vector>

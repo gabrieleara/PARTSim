@@ -2,7 +2,7 @@
 #define __EVENT_HPP__
 
 #include <deque>
-#include <iostream>
+#include <iosfwd>
 #include <limits>
 #include <metasim/memory.hpp>
 #include <typeinfo>

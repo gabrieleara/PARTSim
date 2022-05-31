@@ -16,7 +16,7 @@
 
 #include <cmath>
 #include <cstdint>
-#include <iostream>
+#include <iosfwd>
 #include <limits.h>
 #include <string>
 

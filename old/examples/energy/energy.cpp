@@ -9,13 +9,13 @@
 #include <string>
 
 #include <rtsim/cpu.hpp>
-#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/instr.hpp>
 #include <rtsim/json_trace.hpp>
 #include <rtsim/jtrace.hpp>
 #include <rtsim/mrtkernel.hpp>
 #include <rtsim/powermodel.hpp>
 #include <rtsim/rttask.hpp>
+#include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/system_descriptor.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/tracepower.hpp>
@@ -282,7 +282,8 @@ int main(int argc, char *argv[]) {
                 for (unsigned int opp = 0; opp < opp_size; ++opp) {
                     cpus[cpu]->setOPP(opp);
                     computing_file << cpus[cpu]->getFrequency() * 1000 << " "
-                                   << cpus[cpu]->getSpeed() * min_C[wl] << std::endl;
+                                   << cpus[cpu]->getSpeed() * min_C[wl]
+                                   << std::endl;
                 }
                 cpus[cpu]->setWorkload("idle");
                 cpus[cpu]->setOPP(old_opp);

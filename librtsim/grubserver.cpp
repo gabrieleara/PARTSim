@@ -4,9 +4,6 @@
 #include <rtsim/grubserver.hpp>
 
 namespace RTSim {
-    using std::cout;
-    using std::endl;
-
     GrubSupervisor::GrubSupervisor(const std::string &name) :
         Entity(name),
         servers(),
