@@ -236,14 +236,16 @@ namespace RTSim {
             _bandExEvt.drop();
         }
 
-        if (vtime.get_value() <= double(SIMUL.getTime()))
+        // XXX: likely this is the culprit for the bug?
+        if (vtime.get_value() <= double(SIMUL.getTime())) {
             status = IDLE;
-        else {
+            DBGPRINT("CARRAMBAAAAAAAAAAAAAAAA!");
+        } else {
             _idleEvt.post(Tick(vtime.get_value()));
             status = RELEASING;
         }
 
-        // DBGPRINT("Status is now XXXYYY ", status_string[status]);
+        DBGPRINT("Status is now ", status_string[status]);
 
         // // FIXME: If compiling against EnergyMRTKernel uncomment
         // // The EMRTKernel saves the active utilization on
