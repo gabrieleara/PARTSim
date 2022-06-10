@@ -48,7 +48,5 @@ _deps
 *.app
 
 # Byproducts of the simulator
-debug.txt
-trace.txt
-trace.json
-power_*.txt
+/*.txt
+/*.json

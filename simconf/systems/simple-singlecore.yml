@@ -8,6 +8,7 @@ cpu_islands:
       [ 5 ]
     freqs:
       [ 1000 ]
+    base_freq: 1000
     power_model: no_scaling
     speed_model: no_scaling
 power_models:

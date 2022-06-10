@@ -6,6 +6,8 @@ The name derives from the fact that this is a fork of RTSim, originally designed
 
 ## Quick Guide
 
+> For an ever quicker start guide, refer to [this one][quickstart].
+
 The simulator can be easily built using [CMake] after downloading its mandatory dependencies. It is preferrable to clone the project with `git`, since `git` is also used to manage its mandatory dependencies. Python 3 is also necessary if you want to use the supplied builder script, but you can build it without using only standard CMake commands if you want.
 
 If you only care about building the simulator, you can create a *shallow clone* of the project and build it in a few easy steps:
@@ -94,3 +96,4 @@ Example:
 [eigen3]: https://eigen.tuxfamily.org/index.php?title=Main_Page
 [cmakeopts]: https://github.com/gabrieleara/cmakeopts
 [cmdarg]: https://github.com/gabrieleara/cmdarg
+[quickstart]: QUICKSTART.md
