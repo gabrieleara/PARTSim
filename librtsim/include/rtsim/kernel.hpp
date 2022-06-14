@@ -276,7 +276,7 @@ namespace RTSim {
 
         AbsRTTask *getCurrExe() const;
 
-        virtual Scheduler *getScheduler() const {
+        Scheduler *getScheduler() const override {
             return _sched;
         }
 

@@ -30,7 +30,7 @@ namespace yaml {
         return str.substr(strBegin, strRange);
     }
 
-    inline std::istream &Parser::getline(bool should_read, std::string &line) {
+    std::istream &Parser::getline(bool should_read, std::string &line) {
         if (!should_read)
             return is;
 

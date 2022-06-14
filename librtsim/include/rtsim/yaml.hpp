@@ -304,19 +304,14 @@ namespace yaml {
 
     class Parser {
     public:
-        friend Object_ptr parse(const string &fname) {
-            std::ifstream ifs{fname};
-
-            if (!ifs)
-                throw ParseException("File " + fname + " could not be opened.");
-
-            return Parser(ifs).get();
-        }
+        // Indicate that the friend function is indeed a friend
+        friend Object_ptr parse(const string &fname);
 
     protected:
         Parser(std::istream &is) : is(is) {
             _root = parse();
         }
+        virtual ~Parser() = default;
         Object_ptr get() noexcept {
             return _root;
         }
@@ -338,6 +333,16 @@ namespace yaml {
         string unfinished_line;
         Object_ptr _root = nullptr;
     };
+
+    // Define friend function
+    Object_ptr parse(const string &fname) {
+        std::ifstream ifs{fname};
+
+        if (!ifs)
+            throw ParseException("File " + fname + " could not be opened.");
+
+        return Parser(ifs).get();
+    }
 
 } // namespace yaml
 

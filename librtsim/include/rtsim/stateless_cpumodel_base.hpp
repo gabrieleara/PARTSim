@@ -99,7 +99,7 @@ namespace RTSim {
         // =================================================
     public:
         /// @todo Add a proper description/construction mechanism for subclasses
-        StatelessCPUModel(const CPUMDescriptor &desc = {}) {}
+        StatelessCPUModel(const CPUMDescriptor &desc) {}
 
         DEFAULT_COPIABLE(StatelessCPUModel);
 

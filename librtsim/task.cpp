@@ -633,7 +633,7 @@ namespace RTSim {
     string Task::toString() const {
         std::stringstream ss;
         ss << getName() << " arr " << getArrival() << " DL " << getDeadline()
-           << " WCET " + getWCET();
+           << " WCET " << getWCET();
         return ss.str();
     }
 

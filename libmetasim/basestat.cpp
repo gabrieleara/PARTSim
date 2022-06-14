@@ -67,8 +67,12 @@ namespace MetaSim {
         _totalNumOfExp = n;
         _endOfSim = false;
         _initFlag = true;
-        for_each(_statList.begin(), _statList.end(),
-                 std::mem_fn(&BaseStat::init));
+
+        for (auto & stat : _statList) {
+            stat->init();
+        }
+        // for_each(_statList.begin(), _statList.end(),
+        //          std::mem_fn<>(&BaseStat::init));
     }
 
     void BaseStat::init() {
