@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 #include <metasim/baseexc.hpp>
 #include <metasim/memory.hpp>
