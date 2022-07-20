@@ -43,10 +43,14 @@ namespace RTSim {
         std::string fname = ptr->get(ATTR_FILENAME)->get();
 
         if (fname.length() > 0) {
-            if (fname[0] != '/')
-                fname = dirname + "/" + fname;
+            auto fpath = std::filesystem::path(fname);
+            if (fpath.is_relative()) {
+                // Append to absolute path to get the actual path in a
+                // multi-platform way
+                fpath = std::filesystem::absolute(dirname) / fpath;
+            }
 
-            csv::CSVDocument doc(fname);
+            csv::CSVDocument doc(fpath);
 
             const size_t num_rows = doc.rows();
 
@@ -96,7 +100,10 @@ namespace RTSim {
     SystemDescriptor::SystemDescriptor(std::string fname) {
         yaml::Object_ptr descriptor_obj = yaml::parse(fname);
 
-        std::string dirname = std::filesystem::path(fname).parent_path();
+        // Get the absolute path for the supplied filename and its absolute
+        // directory path
+        auto apath = std::filesystem::absolute(std::filesystem::path(fname));
+        std::string dirname = apath.parent_path();
 
         for (auto i : *descriptor_obj->get(ATTR_CPU_ISLANDS)) {
             islands.push_back(createFrom<IslandDescriptor>(dirname, i));
