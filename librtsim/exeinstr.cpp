@@ -155,7 +155,7 @@ namespace RTSim {
         DBGPRINT("father ", _father->toString());
         DBGPRINT("CPU ", p->getName());
         DBGPRINT(" currentCost ", currentCost, " actCycles ", actCycles,
-                 "Current speed ", currentSpeed);
+                 " currentSpeed ", currentSpeed);
         DBGPRINT(" result ", ((double) currentCost - actCycles) / currentSpeed,
                  " to tick ",
                  ceil(((double) currentCost - actCycles) / currentSpeed));
