@@ -436,7 +436,7 @@ namespace RTSim {
 
         int cpu_index = getOldCPU()->getIndex();
 
-        DBGPRINT("DeschedEvt for task ", getName(), "from CPU", cpu_index);
+        DBGPRINT("DeschedEvt for task ", getName(), " from CPU", cpu_index);
 
         if (!isActive()) {
             throw TaskNotActive("OnDesched on a non-active task");
