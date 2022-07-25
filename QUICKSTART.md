@@ -136,7 +136,7 @@ Following is a list of accepted instructions:
 
 #### Resources
 
-Each resource has a `name` and an `initial-state` (either `locked` or
+Each resource has a `name` and an `initial_state` (either `locked` or
 `unlocked`). Multi-instance resources do work in the simulator, but there is no
 support to create one from a YML file yet.
 
@@ -216,17 +216,17 @@ taskset:
 resources:
   # List each resource here
   - name: DAG
-    initial-state: unlocked
+    initial_state: unlocked
   - name: c_task_X_0
-    initial-state: locked
+    initial_state: locked
   - name: c_task_0_1
-    initial-state: locked
+    initial_state: locked
   - name: c_task_0_2
-    initial-state: locked
+    initial_state: locked
   - name: c_task_1_X
-    initial-state: locked
+    initial_state: locked
   - name: c_task_2_X
-    initial-state: locked
+    initial_state: locked
 ```
 
 

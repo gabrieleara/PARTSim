@@ -449,6 +449,9 @@ namespace RTSim {
         deschedEvt.setCPU(cpu_index);
         endEvt.drop();
 
+        // BUG: execdTime accumulates too much when a task is descheduled and
+        // then re-scheduled and an instruction ends
+
         (*actInstr)->deschedule();
         execdTime += (*actInstr)->getExecTime();
 

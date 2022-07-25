@@ -109,14 +109,14 @@ taskset:
 # Following is the list of resources and their supposed initial state
 resources:
   - name: DAG
-    initial-state: unlocked
+    initial_state: unlocked
   - name: c_task_X_0
-    initial-state: locked
+    initial_state: locked
   - name: c_task_0_1
-    initial-state: locked
+    initial_state: locked
   - name: c_task_0_2
-    initial-state: locked
+    initial_state: locked
   - name: c_task_1_X
-    initial-state: locked
+    initial_state: locked
   - name: c_task_2_X
-    initial-state: locked
+    initial_state: locked

@@ -118,7 +118,7 @@ std::unique_ptr<RTSim::ResManager>
 
     for (const auto &res_spec : *(tset_spec->get("resources"))) {
         auto str_name = res_spec->get("name")->get();
-        auto str_initial_state = res_spec->get("initial-state")->get();
+        auto str_initial_state = res_spec->get("initial_state")->get();
 
         // TODO: more general specification in YML for any kind of resource
         int n_initial = str_initial_state == "locked" ? 0 : 1;
