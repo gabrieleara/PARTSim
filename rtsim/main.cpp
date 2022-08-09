@@ -16,6 +16,8 @@
 #include <rtsim/system.hpp>
 #include <rtsim/texttrace.hpp>
 #include <rtsim/waitinstr.hpp>
+#include <rtsim/exeinstr.hpp>
+#include <rtsim/task.hpp>
 
 using Task_ptr = std::shared_ptr<RTSim::Task>;
 using Server_ptr = std::shared_ptr<RTSim::Server>;
@@ -166,6 +168,15 @@ struct Tracer {
             ttrace->attachToTask(task);
         if (jtrace)
             jtrace->attachToTask(task);
+        RTSim::Task* t = dynamic_cast<RTSim::Task*>(&task);
+        const std::vector<std::unique_ptr<RTSim::Instr>>& instrs = t->getInstrQueue();
+        for (auto i = instrs.begin(); i != instrs.end(); ++i) {
+            RTSim::ExecInstr *ei = dynamic_cast<RTSim::ExecInstr*>(i->get());
+            if (ei != 0) {
+                if (ttrace)
+                  ei->setTrace(*ttrace.get());
+            }
+        }
     }
 };
 
