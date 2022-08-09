@@ -76,6 +76,14 @@ namespace RTSim {
            << std::endl;
     }
 
+    void TextTrace::probe(EndInstrEvt &e) {
+        Instr *ii = e.getInstruction();
+        Task *tt = ii->getTask();
+        fd << "[Time:" << SIMUL.getTime() << "]\t";
+        fd << ii->toString() << " ended for Task " << tt->getName()
+           << std::endl;
+    }
+
     void TextTrace::attachToTask(AbsRTTask &t) {
         /*new Particle<ArrEvt, TextTrace>(&t->arrEvt, this);
         new Particle<EndEvt, TextTrace>(&t->endEvt, this);

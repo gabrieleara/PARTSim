@@ -26,6 +26,7 @@
 
 #include <rtsim/rttask.hpp>
 #include <rtsim/taskevt.hpp>
+#include <rtsim/instr.hpp>
 
 namespace RTSim {
 
@@ -52,6 +53,8 @@ namespace RTSim {
         void probe(DeadEvt &e);
 
         void probe(KillEvt &e);
+
+        void probe(EndInstrEvt &e);
 
         void attachToTask(AbsRTTask &t);
     };
