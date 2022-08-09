@@ -97,8 +97,7 @@ namespace RTSim {
 
         string toString() const override {
             std::stringstream ss;
-            ss << "ExecInstr wl: " << workload << " wcet: " << getWCET()
-               << std::endl;
+            ss << "ExecInstr(" << getWCET() << ", " << workload << ")";
             return ss.str();
         }
 
