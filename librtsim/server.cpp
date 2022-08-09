@@ -107,12 +107,14 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::dispatch() {
         DBGENTER(_SERVER_DBG_LEV);
         _dispatchEvt.drop();
         _dispatchEvt.post(SIMUL.getTime());
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     CPU *Server::getProcessor(const AbsRTTask *) const {
@@ -139,6 +141,7 @@ namespace RTSim {
         } else if (status == RECHARGING || status == RELEASING) {
             DBGPRINT("Server is RECHARGING or READY, waiting");
         }
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onEnd(AbsRTTask *t) {
@@ -149,6 +152,7 @@ namespace RTSim {
         currExe_ = nullptr;
         sched_->notify(nullptr); // round robin case
         dispatch();
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onBudgetExhausted(Event *e) {
@@ -174,6 +178,7 @@ namespace RTSim {
 
         if (status == READY)
             kernel->onArrival(this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onSched(Event *) {
@@ -188,6 +193,7 @@ namespace RTSim {
 
         ready_executing();
         dispatch();
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onDesched(Event *) {
@@ -202,6 +208,7 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onDlineMiss(Event *) {}
@@ -219,6 +226,7 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::newRun() {
@@ -236,6 +244,7 @@ namespace RTSim {
         _deschedEvt.drop();
         _dispatchEvt.drop();
         currExe_ = nullptr;
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::endRun() {}
@@ -265,6 +274,7 @@ namespace RTSim {
             kernel->suspend(this);
             kernel->dispatch();
         }
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
 } // namespace RTSim

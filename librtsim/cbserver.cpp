@@ -33,6 +33,7 @@ namespace RTSim {
         if (vtime.get_status() == CapacityTimer::RUNNING)
             vtime.stop();
         vtime.set_value(0);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::endRun() {}
@@ -73,11 +74,13 @@ namespace RTSim {
             }
 
             _bandExEvt.drop();
+            DBGPRINT("_bandExEvt.post ", cur_time + cap);
             _bandExEvt.post(cur_time + cap);
             vtime.stop();
             vtime.start(double(P) / double(Q));
         }
 
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
         return cur_time;
     }
 
@@ -187,6 +190,7 @@ namespace RTSim {
 
         vtime.set_value(SIMUL.getTime());
         DBGPRINT("Going to active contending ", SIMUL.getTime());
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), ": Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     // We should compare the actual bandwidth with the assigned Q of this
@@ -204,6 +208,7 @@ namespace RTSim {
         _idleEvt.drop();
 
         DBGPRINT("FROM NON CONTENDING TO CONTENDING");
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), ": Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::ready_executing() {
@@ -215,7 +220,9 @@ namespace RTSim {
 
         DBGPRINT("Last time is: ", last_time);
 
+        DBGPRINT("_bandExEvt.post ", last_time + cap);
         _bandExEvt.post(last_time + cap);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::executing_ready() {
@@ -225,6 +232,7 @@ namespace RTSim {
         cap = cap - (SIMUL.getTime() - last_time);
         vtime.stop();
         _bandExEvt.drop();
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::executing_releasing() {
@@ -241,6 +249,7 @@ namespace RTSim {
             status = IDLE;
             DBGPRINT("CARRAMBAAAAAAAAAAAAAAAA!");
         } else {
+            DBGPRINT("_idleEvt.post ", vtime.get_value());
             _idleEvt.post(Tick(vtime.get_value()));
             status = RELEASING;
         }
@@ -253,6 +262,7 @@ namespace RTSim {
         // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         // if (emrtk != nullptr)
         //     emrtk->onExecutingReleasing(this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::releasing_idle() {
@@ -264,6 +274,7 @@ namespace RTSim {
         // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         // if (emrtk != nullptr)
         //     emrtk->onReleasingIdle(this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::executing_recharging() {
@@ -290,11 +301,15 @@ namespace RTSim {
             DBGPRINT("new_deadline: ", d);
 
             status = READY;
+            DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
+            DBGPRINT("_replEvt.post1 ", SIMUL.getTime());
             _replEvt.post(SIMUL.getTime());
         } else {
             // Set the next replenishment event to the current absolute deadline
             // and then postpone the deadline
             cap = 0;
+            DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
+            DBGPRINT("_replEvt.post2 ", d);
             _replEvt.post(d);
             d = d + P;
             setAbsDead(d);
@@ -311,15 +326,18 @@ namespace RTSim {
         // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         // if (emrtk != nullptr)
         //     emrtk->onExecutingRecharging(this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::recharging_ready() {
         DBGENTER(_SERVER_DBG_LEV);
         status = READY;
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::recharging_idle() {
         assert(false);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::onReplenishment(Event *e) {
@@ -342,6 +360,7 @@ namespace RTSim {
             } else if (status != IDLE) {
                 if (double(SIMUL.getTime()) < vtime.get_value()) {
                     status = RELEASING;
+                    DBGPRINT("_idleEvt.post ", vtime.get_value());
                     _idleEvt.post(Tick::ceil(vtime.get_value()));
                 } else {
                     status = IDLE;
@@ -370,11 +389,13 @@ namespace RTSim {
         // auto emrtk = dynamic_cast<EnergyMRTKernel *>(kernel);
         // if (emrtk != nullptr)
         //     emrtk->onReplenishment(this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::onIdle(Event *e) {
         DBGENTER(_SERVER_DBG_LEV);
         releasing_idle();
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     // TODO: check if this method is good and that no other
@@ -404,6 +425,7 @@ namespace RTSim {
 
         status = RELEASING;
         _dispatchEvt.drop();
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     double CBServer::getWCET(double capacity) const {
@@ -427,6 +449,7 @@ namespace RTSim {
     void CBServer::onArrival(AbsRTTask *t) {
         _yielding = false;
         Server::onArrival(t);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::onEnd(AbsRTTask *t) {
@@ -440,6 +463,7 @@ namespace RTSim {
         // if (emrtk != nullptr)
         //     emrtk->onTaskInServerEnd(t, dynamic_cast<Task *>(t)->getCPU(),
         //                              this);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
     void CBServer::onDesched(Event *e) {
@@ -447,6 +471,7 @@ namespace RTSim {
             yield();
         else // could happend with non-periodic tasks
             Server::onDesched(e);
+        DBGPRINT("[t=", SIMUL.getTime(), "] CBServer ", getName(), " in ", __func__, "(): Q=", Q, ", P=", P, ", d=", d, ", cap=", cap, ", last_time=", last_time, ", HR=", HR, ", vtime=", vtime.get_value(), ", _killed=", _killed, ", _yielding=", _yielding, ", status=", status_string[status]);
     }
 
 } // namespace RTSim
