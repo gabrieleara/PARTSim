@@ -102,7 +102,7 @@ TaskSet read_taskset(const std::string &tset_file) {
 
         // Use Hard CBS
         auto server_ptr = std::make_shared<RTSim::CBServer>(
-            runtime, iat, rdl, true, "cbserver_" + str_name);
+            runtime, rdl, rdl, true, "cbserver_" + str_name);
 
         taskset.emplace_back(task_ptr, server_ptr, startcpu);
     }
