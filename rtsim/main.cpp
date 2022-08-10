@@ -69,8 +69,10 @@ TaskSet read_taskset(const std::string &tset_file) {
         auto str_name = task_spec->get("name")->get();
         auto str_iat = task_spec->get("iat")->get();
         auto str_startcpu = task_spec->get("startcpu")->get();
-        auto str_runtime = task_spec->get("runtime")->get();
-        auto str_rdl = task_spec->get("rdl")->get();
+        auto str_deadline = task_spec->get("deadline")->get();
+        auto str_cbs_runtime = task_spec->get("cbs_runtime")->get();
+        auto str_cbs_period = task_spec->get("cbs_period")->get();
+        auto str_cbs_deadline = task_spec->get("cbs_deadline")->get();
         auto str_ph = task_spec->get("ph")->get();
         auto str_qs = task_spec->get("qs")->get();
         auto code = task_spec->get("code");
@@ -80,14 +82,16 @@ TaskSet read_taskset(const std::string &tset_file) {
         int startcpu = str_startcpu.length() ? std::stoi(str_startcpu) : 0;
 
         auto iat = str_iat.length() ? Tick(std::stol(str_iat)) : Tick(0);
-        auto runtime =
-            str_runtime.length() ? Tick(std::stol(str_runtime)) : Tick(0);
-        auto rdl = str_rdl.length() ? Tick(std::stol(str_rdl)) : iat;
+        auto deadline = str_deadline.length() ? Tick(std::stol(str_deadline)) : iat;
+        auto cbs_runtime =
+            str_cbs_runtime.length() ? Tick(std::stol(str_cbs_runtime)) : Tick(0);
+        auto cbs_period = str_cbs_period.length() ? Tick(std::stol(str_cbs_period)) : iat;
+        auto cbs_deadline = str_cbs_deadline.length() ? Tick(std::stol(str_cbs_deadline)) : cbs_period;
         auto ph = str_ph.length() ? Tick(std::stol(str_ph)) : Tick(0);
         auto qs = str_qs.length() ? std::stol(str_qs) : 100L;
 
         auto task_ptr =
-            std::make_shared<RTSim::PeriodicTask>(iat, rdl, ph, str_name, qs);
+            std::make_shared<RTSim::PeriodicTask>(iat, deadline, ph, str_name, qs);
 
         for (const auto &instr : (*code)) {
             auto str_instr = instr->get();
@@ -104,7 +108,7 @@ TaskSet read_taskset(const std::string &tset_file) {
 
         // Use Hard CBS
         auto server_ptr = std::make_shared<RTSim::CBServer>(
-            runtime, rdl, rdl, true, "cbserver_" + str_name);
+            cbs_runtime, cbs_period, cbs_deadline, true, "cbserver_" + str_name);
 
         taskset.emplace_back(task_ptr, server_ptr, startcpu);
     }

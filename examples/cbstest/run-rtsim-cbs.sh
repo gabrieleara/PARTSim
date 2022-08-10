@@ -31,15 +31,17 @@ cat > /tmp/sw.yml <<EOF
 taskset:
   - name: task_0_0
     iat: 100
-    runtime: 10
-    rdl: 20
+    deadline: 100
+    cbs_runtime: 10
+    cbs_period: 20
     startcpu: 0
     code:
       - fixed(15,bzip2)
   - name: task_0_1
     iat: 100
-    runtime: 10
-    rdl: 20
+    deadline: 100
+    cbs_runtime: 10
+    cbs_period: 20
     startcpu: 0
     code:
       - fixed(15,bzip2)

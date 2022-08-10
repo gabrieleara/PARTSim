@@ -31,25 +31,23 @@ cat > /tmp/sw.yml <<EOF
 taskset:
   - name: task_0_0
     iat: 100
-    runtime: 10
-    rdl: 20
+    deadline: 100
+    cbs_runtime: 10
+    cbs_period: 20
     startcpu: 0
     code:
-      - lock(L_DAG_0)
       - fixed(15,bzip2)
       - unlock(L_0_0_1)
   - name: task_0_1
     iat: 100
-    runtime: 10
-    rdl: 20
+    deadline: 100
+    cbs_runtime: 10
+    cbs_period: 20
     startcpu: 0
     code:
       - lock(L_0_0_1)
       - fixed(15,bzip2)
-      - unlock(L_DAG_0)
 resources:
-  - name: L_DAG_0
-    initial_state: unlocked
   - name: L_0_0_1
     initial_state: locked
 EOF
