@@ -92,8 +92,8 @@ namespace RTSim {
 
         if (!_waiting) {
             // normal condition, when we enter the wait instruction
-            if (rtkernel->requestResource(task, _res, _numberOfRes)) {
-              DBGPRINT("Resource acquired, task ", task->toString(), ", _father ", _father->toString());
+            if (_father->getKernel()->requestResource(_father, _res, _numberOfRes)) {
+                DBGPRINT("Resource acquired, task ", task->toString(), ", _father ", _father->toString());
                 _father->onInstrEnd();
             } else {
               DBGPRINT("Resource locked, task ", task->toString(), ", _father ", _father->toString());
@@ -145,7 +145,7 @@ namespace RTSim {
         if (!found)
             throw BaseExc("SignalInstr: Kernel not found!");
 
-        rtkernel->releaseResource(task, _res, _numberOfRes);
+        _father->getKernel()->releaseResource(_father, _res, _numberOfRes);
 
         _father->onInstrEnd();
     }

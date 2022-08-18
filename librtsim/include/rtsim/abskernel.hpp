@@ -15,6 +15,7 @@
 #define __ABSKERNEL_HPP__
 
 #include <rtsim/abstask.hpp>
+#include <rtsim/resource/resmanager.hpp>
 
 namespace RTSim {
 
@@ -88,6 +89,25 @@ namespace RTSim {
         virtual bool isContextSwitching() const = 0;
 
         virtual Scheduler *getScheduler() const = 0;
+
+        virtual ResManager *getResManager() const { return 0; };
+
+        /**
+           Forwards the request of resource r from task t to
+           the resource manager. If the resource manager has
+           not been set, a RTKernelExc exception is raised.
+        */
+        virtual bool requestResource(AbsRTTask *t, const string &r,
+                                     int n = 1);
+
+        /**
+           Forwards the release of the resource r by task t to
+           the resource manager. If the resource manager has
+           not been set, a RTKernelExc is raised.
+        */
+        virtual void releaseResource(AbsRTTask *t, const string &r,
+                                     int n = 1);
+
     };
 
 } // namespace RTSim

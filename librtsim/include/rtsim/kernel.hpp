@@ -213,21 +213,9 @@ namespace RTSim {
         */
         void setResManager(ResManager *rm);
 
-        /**
-           Forwards the request of resource r from task t to
-           the resource manager. If the resource manager has
-           not been set, a RTKernelExc exception is raised.
-        */
-        virtual bool requestResource(AbsRTTask *t, const string &r,
-                                     int n = 1); // throw(RTKernelExc);
-
-        /**
-           Forwards the release of the resource r by task t to
-           the resource manager. If the resource manager has
-           not been set, a RTKernelExc is raised.
-        */
-        virtual void releaseResource(AbsRTTask *t, const string &r,
-                                     int n = 1); // throw(RTKernelExc);
+        ResManager *getResManager() const {
+            return _resMng;
+        }
 
         /**
            Forwards the request of preemption threshold raising for

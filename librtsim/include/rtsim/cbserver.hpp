@@ -241,6 +241,10 @@ namespace RTSim {
             return getWCET(capacity);
         }
 
+        ResManager *getResManager() const {
+            return kernel->getResManager();
+        }
+
     protected:
         /// Arrival event of task of server
         void onArrival(AbsRTTask *t) override;

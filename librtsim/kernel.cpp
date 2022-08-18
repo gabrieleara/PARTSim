@@ -207,24 +207,24 @@ namespace RTSim {
         // _resMng->setKernel(this, _sched);
     }
 
-    bool RTKernel::requestResource(AbsRTTask *t, const string &r,
-                                   int n) { // throw(RTKernelExc) {
+    bool AbsKernel::requestResource(AbsRTTask *t, const string &r, int n) {
         DBGENTER(_KERNEL_DBG_LEV);
 
-        if (_resMng == 0)
-            throw RTKernelExc("Resource Manager not set!");
-        bool ret = _resMng->request(t, r, n);
+        ResManager *resMng = getResManager();
+        if (resMng == 0)
+            throw BaseExc("Resource Manager not set!");
+        bool ret = resMng->request(t, r, n);
         if (!ret)
             dispatch();
         return ret;
     }
 
-    void RTKernel::releaseResource(AbsRTTask *t, const string &r,
-                                   int n) { // throw(RTKernelExc) {
-        if (_resMng == 0)
-            throw RTKernelExc("Resource Manager not set!");
+    void AbsKernel::releaseResource(AbsRTTask *t, const string &r, int n) {
+        ResManager *resMng = getResManager();
+        if (resMng == 0)
+            throw BaseExc("Resource Manager not set!");
 
-        _resMng->release(t, r, n);
+        resMng->release(t, r, n);
         dispatch();
     }
 
