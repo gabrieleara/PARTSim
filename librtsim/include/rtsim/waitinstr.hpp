@@ -16,44 +16,6 @@ namespace RTSim {
     using namespace MetaSim;
 
     class Task;
-    class WaitInstr;
-    class SignalInstr;
-
-    /**
-       \ingroup instr
-
-       event for wait instr
-    */
-    class WaitEvt : public TaskEvt {
-    protected:
-        WaitInstr *wi;
-
-    public:
-        WaitEvt(Task *t, WaitInstr *in) :
-            TaskEvt(t, _DEFAULT_PRIORITY - 3),
-            wi(in) {}
-        WaitInstr *getInstr() {
-            return wi;
-        }
-        void doit() override {}
-    };
-
-    /**
-       \ingroup instr
-
-       event for signal instr
-    */
-    class SignalEvt : public TaskEvt {
-    protected:
-        SignalInstr *si;
-
-    public:
-        SignalEvt(Task *t, SignalInstr *in) : TaskEvt(t), si(in) {}
-        void doit() override {}
-        SignalInstr *getInstr() {
-            return si;
-        }
-    };
 
     /**
         \ingroup instr
@@ -65,9 +27,8 @@ namespace RTSim {
 
     class WaitInstr : public Instr {
         string _res;
-        EndInstrEvt _endEvt;
-        WaitEvt _waitEvt;
         int _numberOfRes;
+        bool _waiting;
 
         WaitInstr(const WaitInstr &wi);
 
@@ -112,15 +73,15 @@ namespace RTSim {
         }
         void reset() override {}
 
-        template <class TraceClass>
-        void setTrace(TraceClass &trace_object) {
-            attach_stat(trace_object, _endEvt);
-            attach_stat(trace_object, _waitEvt);
-        }
+        // template <class TraceClass>
+        // void setTrace(TraceClass &trace_object) {
+        //     attach_stat(trace_object, _endEvt);
+        //     attach_stat(trace_object, _waitEvt);
+        // }
 
-        void onEnd() override;
-        void newRun() override{};
-        void endRun() override;
+        //void onEnd() override;
+        void newRun() override {  _waiting = false;  }
+        void endRun() override {  }
 
         /** Function inherited from clss Instr.It refreshes the state
          *  of the executing instruction when a change of the CPU speed occurs.
@@ -142,8 +103,6 @@ namespace RTSim {
 
     class SignalInstr : public Instr {
         string _res;
-        EndInstrEvt _endEvt;
-        SignalEvt _signalEvt;
 
         int _numberOfRes;
 
@@ -185,11 +144,11 @@ namespace RTSim {
         void reset() override {}
         // virtual void setTrace(Trace *);
 
-        template <class TraceClass>
-        void setTrace(TraceClass &trace_object) {
-            attach_stat(trace_object, _endEvt);
-            attach_stat(trace_object, _signalEvt);
-        }
+        // template <class TraceClass>
+        // void setTrace(TraceClass &trace_object) {
+        //     attach_stat(trace_object, _endEvt);
+        //     attach_stat(trace_object, _signalEvt);
+        // }
 
         string getResource() const {
             return _res;
@@ -197,9 +156,10 @@ namespace RTSim {
         int getNumOfResources() const {
             return _numberOfRes;
         }
-        void onEnd() override;
-        void newRun() override{};
-        void endRun() override;
+
+        //void onEnd() override;
+        void newRun() override {  }
+        void endRun() override {  }
 
         /** Function inherited from clss Instr.It refreshes the state
          *  of the executing instruction when a change of the CPU speed occurs.

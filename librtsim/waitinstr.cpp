@@ -25,15 +25,13 @@ namespace RTSim {
     WaitInstr::WaitInstr(Task *f, const string &r, int nr, const string &n) :
         Instr(f, n),
         _res(r),
-        _endEvt(this),
-        _waitEvt(f, this),
+        _waiting(false),
         _numberOfRes(nr) {}
 
     WaitInstr::WaitInstr(const WaitInstr &other) :
         Instr(other),
         _res(other.getResource()),
-        _endEvt(this),
-        _waitEvt(other.getTask(), this),
+        _waiting(other._waiting),
         _numberOfRes(other.getNumOfResources()) {}
 
     unique_ptr<WaitInstr> WaitInstr::createInstance(vector<string> &par) {
@@ -42,28 +40,6 @@ namespace RTSim {
 
         return ptr;
     }
-
-    void WaitInstr::endRun() {
-        _endEvt.drop();
-        _waitEvt.drop();
-    }
-
-    void WaitInstr::schedule() {
-        DBGENTER(_INSTR_DBG_LEV);
-        DBGPRINT("Scheduling WaitInstr named: ", getName());
-
-        _endEvt.post(SIMUL.getTime());
-    }
-
-    void WaitInstr::deschedule() {
-        _endEvt.drop();
-    }
-
-    // void WaitInstr::setTrace(Trace *t)
-    // {
-    //     _endEvt.addTrace(t);
-    //     _waitEvt.addTrace(t);
-    // }
 
     /// Since tasks can be nested and parent tasks usually implement both the
     /// AbsRTTask and the AbsRTKernel interfaces (see Servers), we need to climb
@@ -104,10 +80,9 @@ namespace RTSim {
         return task != nullptr;
     }
 
-    void WaitInstr::onEnd() {
+    void WaitInstr::schedule() {
         DBGENTER(_INSTR_DBG_LEV);
-
-        _father->onInstrEnd();
+        DBGPRINT("Scheduling WaitInstr named: ", getName(), " within ", _father->toString());
 
         AbsRTTask *task = _father;
         RTKernel *rtkernel;
@@ -115,24 +90,44 @@ namespace RTSim {
         if (!found)
             throw BaseExc("WaitInstr: Kernel not found!");
 
-        rtkernel->requestResource(task, _res, _numberOfRes);
-
-        _waitEvt.process();
+        if (!_waiting) {
+            // normal condition, when we enter the wait instruction
+            if (rtkernel->requestResource(task, _res, _numberOfRes)) {
+              DBGPRINT("Resource acquired, task ", task->toString(), ", _father ", _father->toString());
+                _father->onInstrEnd();
+            } else {
+              DBGPRINT("Resource locked, task ", task->toString(), ", _father ", _father->toString());
+                /* the res manager already suspends the task, but let's mark we're waiting,
+                 * so the next time we're schedule()ed, we move forward */
+                _waiting = true;
+            }
+        } else {
+            // schedule()ed again after blocking
+            DBGPRINT("Woken-up after block with Resource acquired, task ", task->toString(), ", _father ", _father->toString());
+            _waiting = false;
+            _father->onInstrEnd();
+        }
     }
+
+    void WaitInstr::deschedule() {
+        DBGPRINT("Descheduling WaitInstr named: ", getName(), " within ", _father->toString());
+    }
+
+    // void WaitInstr::setTrace(Trace *t)
+    // {
+    //     _endEvt.addTrace(t);
+    //     _waitEvt.addTrace(t);
+    // }
 
     SignalInstr::SignalInstr(Task *f, const string &r, int nr,
                              const string &n) :
         Instr(f, n),
         _res(r),
-        _endEvt(this),
-        _signalEvt(f, this),
         _numberOfRes(nr) {}
 
     SignalInstr::SignalInstr(const SignalInstr &other) :
         Instr(other),
         _res(other.getResource()),
-        _endEvt(this),
-        _signalEvt(other.getTask(), this),
         _numberOfRes(other.getNumOfResources()) {}
 
     unique_ptr<SignalInstr> SignalInstr::createInstance(vector<string> &par) {
@@ -141,31 +136,8 @@ namespace RTSim {
         return ptr;
     }
 
-    void SignalInstr::endRun() {
-        _endEvt.drop();
-        _signalEvt.drop();
-    }
-
     void SignalInstr::schedule() {
-        _endEvt.post(SIMUL.getTime());
-    }
-
-    void SignalInstr::deschedule() {
-        _endEvt.drop();
-    }
-
-    // void SignalInstr::setTrace(Trace *t)
-    // {
-    //     _endEvt.addTrace(t);
-    //     _signalEvt.addTrace(t);
-    // }
-
-    void SignalInstr::onEnd() {
         DBGENTER(_INSTR_DBG_LEV);
-
-        _endEvt.drop();
-        _signalEvt.process();
-        _father->onInstrEnd();
 
         AbsRTTask *task = _father;
         RTKernel *rtkernel;
@@ -174,6 +146,17 @@ namespace RTSim {
             throw BaseExc("SignalInstr: Kernel not found!");
 
         rtkernel->releaseResource(task, _res, _numberOfRes);
+
+        _father->onInstrEnd();
     }
+
+    void SignalInstr::deschedule() {
+    }
+
+    // void SignalInstr::setTrace(Trace *t)
+    // {
+    //     _endEvt.addTrace(t);
+    //     _signalEvt.addTrace(t);
+    // }
 
 } // namespace RTSim

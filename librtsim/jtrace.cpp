@@ -141,30 +141,30 @@ namespace RTSim {
                 a->write(_os);
             else
                 data.push_back(a);
-        } else if (dynamic_cast<WaitEvt *>(e) != NULL) {
-            DBGPRINT("WaitEvt");
-            WaitEvt *we = dynamic_cast<WaitEvt *>(e);
-            // WaitInstr* instr = dynamic_cast<WaitInstr*>(we->getInstr());
-            WaitInstr *instr = we->getInstr();
-            string res = instr->getResource();
-            TraceWaitEvent *a =
-                new TraceWaitEvent(we->getLastTime(), task->getID(), res);
-            if (toFile)
-                a->write(_os);
-            else
-                data.push_back(a);
-        } else if (dynamic_cast<SignalEvt *>(e) != NULL) {
-            DBGPRINT("SignalEvt");
-            SignalEvt *se = dynamic_cast<SignalEvt *>(e);
-            // SignalInstr* instr = dynamic_cast<SignalInstr*>(se->getInstr());
-            SignalInstr *instr = se->getInstr();
-            string res = instr->getResource();
-            TraceSignalEvent *a =
-                new TraceSignalEvent(se->getLastTime(), task->getID(), res);
-            if (toFile)
-                a->write(_os);
-            else
-                data.push_back(a);
+        // } else if (dynamic_cast<WaitEvt *>(e) != NULL) {
+        //     DBGPRINT("WaitEvt");
+        //     WaitEvt *we = dynamic_cast<WaitEvt *>(e);
+        //     // WaitInstr* instr = dynamic_cast<WaitInstr*>(we->getInstr());
+        //     WaitInstr *instr = we->getInstr();
+        //     string res = instr->getResource();
+        //     TraceWaitEvent *a =
+        //         new TraceWaitEvent(we->getLastTime(), task->getID(), res);
+        //     if (toFile)
+        //         a->write(_os);
+        //     else
+        //         data.push_back(a);
+        // } else if (dynamic_cast<SignalEvt *>(e) != NULL) {
+        //     DBGPRINT("SignalEvt");
+        //     SignalEvt *se = dynamic_cast<SignalEvt *>(e);
+        //     // SignalInstr* instr = dynamic_cast<SignalInstr*>(se->getInstr());
+        //     SignalInstr *instr = se->getInstr();
+        //     string res = instr->getResource();
+        //     TraceSignalEvent *a =
+        //         new TraceSignalEvent(se->getLastTime(), task->getID(), res);
+        //     if (toFile)
+        //         a->write(_os);
+        //     else
+        //         data.push_back(a);
         } else if (dynamic_cast<SchedEvt *>(e) != NULL) {
             DBGPRINT("SchedEvt");
             SchedEvt *tse = dynamic_cast<SchedEvt *>(e);
