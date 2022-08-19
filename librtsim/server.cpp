@@ -96,6 +96,23 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
 
         sched_->insert(task);
+
+        if (status == EXECUTING) {
+            //
+        } else if (status == IDLE) {
+            idle_ready();
+            kernel->activate(this);
+        } else if (status == RELEASING) {
+            releasing_ready();
+            kernel->activate(this);
+        } else if (status == RECHARGING || status == READY) {
+            DBGPRINT("Server is RECHARGING or READY, activated task will wait...");
+        } else {
+          assert(false);
+        }
+
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        dispatch();
     }
 
     void Server::suspend(AbsRTTask *task) {
@@ -107,7 +124,9 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
+
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        dispatch();
     }
 
     void Server::dispatch() {
@@ -130,11 +149,11 @@ namespace RTSim {
 
         sched_->insert(t);
 
-        if (status == IDLE) {
+        if (status == EXECUTING) {
+            //
+        } else if (status == IDLE) {
             idle_ready();
             kernel->onArrival(this);
-        } else if (status == EXECUTING) {
-            dispatch();
         } else if (status == RELEASING) {
             releasing_ready();
             kernel->onArrival(this);
@@ -142,6 +161,7 @@ namespace RTSim {
             DBGPRINT("Server is RECHARGING or READY, arrived task will wait...");
         }
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        dispatch();
     }
 
     void Server::onEnd(AbsRTTask *t) {
@@ -151,8 +171,8 @@ namespace RTSim {
         sched_->extract(t);
         currExe_ = nullptr;
         sched_->notify(nullptr); // round robin case
-        dispatch();
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        dispatch();
     }
 
     void Server::onBudgetExhausted(Event *e) {
@@ -193,7 +213,6 @@ namespace RTSim {
 
         ready_executing();
         dispatch();
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
 
     void Server::onDesched(Event *) {
