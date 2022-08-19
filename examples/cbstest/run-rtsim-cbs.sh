@@ -47,4 +47,4 @@ taskset:
       - fixed(15,bzip2)
 EOF
 
-rtsim -d -t cbs-lock_trace.txt /tmp/hw.yml /tmp/sw.yml 200
+rtsim -d -t cbs_trace.txt /tmp/hw.yml /tmp/sw.yml 200
