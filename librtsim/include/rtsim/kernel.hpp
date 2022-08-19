@@ -196,15 +196,6 @@ namespace RTSim {
         void onEnd(AbsRTTask *) override;
 
         /**
-           Calls the refresh method of the scheduler to
-           re-order the ready queue, and dispatch() to update
-           the CPUs assignment to the tasks.
-
-           @see dispatch, RTSim::Scheduler
-        */
-        virtual void refresh();
-
-        /**
            Set the resource manager to be used for handling
            shared resource between tasks. The default is no
            resource manager, which means that an exception

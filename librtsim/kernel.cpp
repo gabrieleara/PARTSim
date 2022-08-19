@@ -197,11 +197,6 @@ namespace RTSim {
         _sched->notify(_currExe);
     }
 
-    void RTKernel::refresh() {
-        DBGENTER(_KERNEL_DBG_LEV);
-        dispatch();
-    }
-
     void RTKernel::setResManager(ResManager *rm) {
         _resMng = rm;
         // _resMng->setKernel(this, _sched);
