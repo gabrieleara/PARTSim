@@ -131,12 +131,11 @@ namespace RTSim {
         _sched->insert(task);
 
         if (!_isContextSwitching) {
-            DBGPRINT("onArrival, calling dispatch");
+            DBGPRINT("onArrival, calling dispatch() while NOT contextSwitching");
             dispatch();
         } else {
-            std::cout << "onArrival, posting enddispatchevt" << std::endl;
-            beginDispatchEvt.drop();
-            beginDispatchEvt.post(endDispatchEvt.getTime());
+            DBGPRINT("onArrival, calling dispatch() even if we're contextSwitching");
+            dispatch();
         }
     }
 
