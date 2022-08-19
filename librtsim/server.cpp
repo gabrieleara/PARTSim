@@ -138,8 +138,8 @@ namespace RTSim {
         } else if (status == RELEASING) {
             releasing_ready();
             kernel->onArrival(this);
-        } else if (status == RECHARGING || status == RELEASING) {
-            DBGPRINT("Server is RECHARGING or READY, waiting");
+        } else if (status == RECHARGING || status == READY) {
+            DBGPRINT("Server is RECHARGING or READY, arrived task will wait...");
         }
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
     }
