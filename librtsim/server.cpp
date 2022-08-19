@@ -111,7 +111,7 @@ namespace RTSim {
           assert(false);
         }
 
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
         dispatch();
     }
 
@@ -125,7 +125,7 @@ namespace RTSim {
             sched_->notify(nullptr);
         }
 
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
         dispatch();
     }
 
@@ -133,7 +133,7 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
         _dispatchEvt.drop();
         _dispatchEvt.post(SIMUL.getTime());
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
     CPU *Server::getProcessor(const AbsRTTask *) const {
@@ -160,7 +160,7 @@ namespace RTSim {
         } else if (status == RECHARGING || status == READY) {
             DBGPRINT("Server is RECHARGING or READY, arrived task will wait...");
         }
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
         dispatch();
     }
 
@@ -171,7 +171,7 @@ namespace RTSim {
         sched_->extract(t);
         currExe_ = nullptr;
         sched_->notify(nullptr); // round robin case
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
         dispatch();
     }
 
@@ -198,7 +198,7 @@ namespace RTSim {
 
         if (status == READY)
             kernel->onArrival(this);
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
     void Server::onSched(Event *) {
@@ -227,7 +227,7 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
     void Server::onDlineMiss(Event *) {}
@@ -245,7 +245,7 @@ namespace RTSim {
             currExe_ = nullptr;
             sched_->notify(nullptr);
         }
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
     void Server::newRun() {
@@ -263,7 +263,7 @@ namespace RTSim {
         _deschedEvt.drop();
         _dispatchEvt.drop();
         currExe_ = nullptr;
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
     void Server::endRun() {}
@@ -293,7 +293,7 @@ namespace RTSim {
             kernel->suspend(this);
             kernel->dispatch();
         }
-        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): _killed=", status_string[status]);
+        DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
     }
 
 } // namespace RTSim
