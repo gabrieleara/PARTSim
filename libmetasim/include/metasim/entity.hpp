@@ -58,7 +58,7 @@ namespace MetaSim {
     class Entity {
     public:
         virtual string toString() const {
-            return "Default Entity::toString() for " + getName();
+            return getName();
         };
 
     private:

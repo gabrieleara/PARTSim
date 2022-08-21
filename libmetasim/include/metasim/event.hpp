@@ -137,6 +137,8 @@ namespace MetaSim {
 
         int _std_priority;
 
+        std::string _name;
+
         /// We hide operator= to avoid improper use.
         Event &operator=(Event &);
 
@@ -170,6 +172,7 @@ namespace MetaSim {
             @param p Event priority
         */
         Event(int p = _DEFAULT_PRIORITY);
+        Event(const std::string & name, int p = _DEFAULT_PRIORITY);
 
         /// Destructor.
         virtual ~Event();
@@ -343,7 +346,7 @@ namespace MetaSim {
         }
 
         virtual std::string toString() const {
-            return ">Please override Event::toString<";
+            return _name;
         }
     };
 

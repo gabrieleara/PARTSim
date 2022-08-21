@@ -29,11 +29,11 @@ public:
             server->addTask(*task);
     }
 
-    RTSim::AbsRTTask &getTaskForKernel() {
+    RTSim::Server &getServer() {
         return *server;
     }
 
-    RTSim::AbsRTTask &getTaskForTracer() {
+    RTSim::AbsRTTask &getTask() {
         return *task;
     }
 
@@ -207,11 +207,15 @@ int main(int argc, char *argv[]) {
     }
 
     TaskSet taskset = read_taskset(opts["taskset"]);
-    for (auto &[task, cpu] : taskset) {
-        sys.cpus[cpu]->getKernel()->addTask(task.getTaskForKernel());
+    for (auto &[tasksrv, cpu] : taskset) {
+        sys.cpus[cpu]->getKernel()->addTask(tasksrv.getServer());
 
         for (auto &tracer : tracers) {
-            tracer.attachToTask(task.getTaskForTracer());
+            tracer.attachToTask(tasksrv.getTask());
+            if (tracer.ttrace)
+                tasksrv.getServer().setTrace(*tracer.ttrace.get());
+            if (tracer.jtrace)
+                tasksrv.getServer().setTrace(*tracer.jtrace.get());
         }
     }
 

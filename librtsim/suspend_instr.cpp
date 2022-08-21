@@ -10,14 +10,14 @@ namespace RTSim {
 
     SuspendInstr::SuspendInstr(Task *f, Tick d) :
         Instr(f),
-        suspEvt(this, &SuspendInstr::onSuspend),
-        resumeEvt(this, &SuspendInstr::onEnd),
+        suspEvt("suspending", this, &SuspendInstr::onSuspend),
+        resumeEvt("resuming", this, &SuspendInstr::onEnd),
         delay(d) {}
 
     SuspendInstr::SuspendInstr(const SuspendInstr &other) :
         Instr(other),
-        suspEvt(this, &SuspendInstr::onSuspend),
-        resumeEvt(this, &SuspendInstr::onEnd),
+        suspEvt("suspending", this, &SuspendInstr::onSuspend),
+        resumeEvt("resuming", this, &SuspendInstr::onEnd),
         delay(other.getDelay()) {}
 
     SuspendInstr *SuspendInstr::createInstance(vector<string> &par) {

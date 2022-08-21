@@ -16,9 +16,9 @@ namespace RTSim {
         recharging_time(0),
         repl_queue(),
         capacity_queue(),
-        _replEvt(this, &SporadicServer::onReplenishment,
+        _replEvt("replenishing", this, &SporadicServer::onReplenishment,
                  Event::_DEFAULT_PRIORITY - 1),
-        _idleEvt(this, &SporadicServer::onIdle),
+        _idleEvt("going idle", this, &SporadicServer::onIdle),
         vtime() {
         DBGENTER(_SERVER_DBG_LEV);
         DBGPRINT(s);

@@ -42,7 +42,7 @@ namespace RTSim {
         burst_lenght(burstlenght),
         count(0),
         max_act(0),
-        triggerEvt(this, &Interrupt::onTrigger) {
+        triggerEvt("triggering", this, &Interrupt::onTrigger) {
         if (burst_lenght == NULL)
             burst_lenght = new DeltaVar(1);
         // register_handler(triggerEvt, this, &Interrupt::onTrigger);

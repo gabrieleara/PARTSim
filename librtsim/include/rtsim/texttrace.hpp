@@ -57,6 +57,12 @@ namespace RTSim {
         void probe(EndInstrEvt &e);
 
         void attachToTask(AbsRTTask &t);
+
+        template <class X>
+        void probe(MetaSim::GEvent<X> &e) {
+            fd << "[Time:" << SIMUL.getTime() << "]\t";
+            fd << e.toString() << std::endl;;
+        }
     };
 
     class VirtualTrace {

@@ -53,6 +53,11 @@ namespace RTSim {
         void probe(KillEvt &e);
 
         void attachToTask(AbsRTTask &t);
+
+        template <class X>
+        void probe(GEvent<X> &e) {
+            fd << "{ event: " << e.toString() << " }";
+        }
     };
 } // namespace RTSim
 

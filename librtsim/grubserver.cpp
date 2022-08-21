@@ -69,7 +69,7 @@ namespace RTSim {
         cap(),
         vtime(),
         supervisor(0),
-        _idleEvt(this, &Grub::onIdle) {
+        _idleEvt("going idle", this, &Grub::onIdle) {
         // register_handler(_idleEvt, this, &Grub::onIdle);
     }
 

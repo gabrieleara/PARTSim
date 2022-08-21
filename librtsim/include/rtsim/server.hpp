@@ -394,6 +394,16 @@ namespace RTSim {
         AbsRTTask *getCurrentTask() const {
             return currExe_;
         }
+
+        template <class Trace>
+        void setTrace(Trace &tr) {
+            attach_stat(tr, _bandExEvt);
+            attach_stat(tr, _dlineMissEvt);
+            attach_stat(tr, _rechargingEvt);
+            attach_stat(tr, _schedEvt);
+            attach_stat(tr, _deschedEvt);
+            attach_stat(tr, _dispatchEvt);
+        }
     };
 } // namespace RTSim
 

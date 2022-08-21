@@ -31,7 +31,8 @@ namespace MetaSim {
     /**
      * Constructor for Event.
      */
-    Event::Event(int p) :
+  Event::Event(const std::string &name, int p) :
+        _name(name),
         _order(0),
         _isInQueue(false),
         _particles(),
@@ -40,6 +41,8 @@ namespace MetaSim {
         _priority(p),
         _std_priority(p),
         _disposable(false) {}
+
+    Event::Event(int p) : Event(typeid(*this).name(), p) {  }
 
     Event::~Event() {
         drop();
@@ -54,6 +57,7 @@ namespace MetaSim {
         _lastTime(MAXTICK),
         _priority(e._priority),
         _std_priority(e._std_priority),
+        _name(e._name),
         _disposable(e._disposable) {
         for (auto &p : e._particles)
             p->clone_to(*this);
@@ -177,7 +181,7 @@ namespace MetaSim {
     // DEBUG!!! Prints events data on the dbg stream.
     void Event::print() {
         DBGPRINT("t=[", _time, "] prio=[", _priority,
-                 "] event=", typeid(*this).name());
+                 "] event=", _name);
     }
 
     void Event::addParticle(std::unique_ptr<ParticleInterface> s) {

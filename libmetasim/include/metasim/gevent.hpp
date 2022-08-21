@@ -67,9 +67,15 @@ namespace MetaSim {
         Pmemfun _fun;
 
     public:
+        GEvent(const std::string & name, X *obj, typename GEvent<X>::Pmemfun fun,
+               int p = Event::_DEFAULT_PRIORITY) :
+            Event(name, p),
+            _obj(obj),
+            _fun(fun) {}
+
         GEvent(X *obj, typename GEvent<X>::Pmemfun fun,
                int p = Event::_DEFAULT_PRIORITY) :
-            Event(p),
+            Event(typeid(*this).name(), p),
             _obj(obj),
             _fun(fun) {}
 
@@ -99,6 +105,10 @@ namespace MetaSim {
         void doit() override {
             if ((_obj != NULL) && (_fun != NULL))
                 (_obj->*_fun)(this);
+        }
+
+        std::string toString() const override {
+            return Event::toString() + " " + _obj->Entity::toString();
         }
     };
 

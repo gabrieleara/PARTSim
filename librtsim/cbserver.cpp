@@ -11,10 +11,10 @@ namespace RTSim {
         cap(0),
         last_time(0),
         HR(HR),
-        _replEvt(this, &CBServer::onReplenishment,
+        _replEvt("replenishing", this, &CBServer::onReplenishment,
                  Event::_DEFAULT_PRIORITY - 1),
         // For idle, standard version of RTSim uses _DEFAULT_PRIORITY
-        _idleEvt(this, &CBServer::onIdle, Event::_DEFAULT_PRIORITY - 1),
+        _idleEvt("going idle", this, &CBServer::onIdle, Event::_DEFAULT_PRIORITY - 1),
         vtime(),
         idle_policy(ORIGINAL) {
         DBGENTER(_SERVER_DBG_LEV);
