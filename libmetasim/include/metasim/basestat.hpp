@@ -254,12 +254,10 @@ namespace MetaSim {
 
         /// automatically called at the end of the run,
         /// collects all stats.
-        /// @todo why is this static? is this correct?
         static void endRun();
 
         /// automatically called at the beginning of the run,
         /// prepare the int values
-        /// @todo why is this static? is this correct?
         static void newRun();
 
         /// automatically called at the end of the sim,
