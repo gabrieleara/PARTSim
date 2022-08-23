@@ -29,8 +29,9 @@ namespace RTSim {
     TaskModel::TaskModel(AbsRTTask *t) :
         _rtTask(t),
         active(false),
-        _insertTime(0),
-        _threshold(INT_MAX) {}
+        _insertTime(0)
+        // , _threshold(INT_MAX)
+        {}
 
     TaskModel::~TaskModel() {}
 
@@ -59,19 +60,21 @@ namespace RTSim {
         return active;
     }
 
-    void TaskModel::raiseThreshold() {
-        _savedPriority = getPriority();
-        // std::cout << "New priority: " << getThreshold() << " / old priority:
-        // " << _savedPriority << std::endl;
-        changePriority(getThreshold());
-    }
+    // NOTE: deprecated
+    // void TaskModel::raiseThreshold() {
+    //     _savedPriority = getPriority();
+    //     // std::cout << "New priority: " << getThreshold() << " / old priority:
+    //     // " << _savedPriority << std::endl;
+    //     changePriority(getThreshold());
+    // }
 
-    void TaskModel::restorePriority() {
-        DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
-        // std::cout << "Restoring priority from: " << getPriority() << " to: "
-        // << _savedPriority << std::endl;
-        changePriority(_savedPriority);
-    }
+    // NOTE: deprecated
+    // void TaskModel::restorePriority() {
+    //     DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
+    //     // std::cout << "Restoring priority from: " << getPriority() << " to: "
+    //     // << _savedPriority << std::endl;
+    //     changePriority(_savedPriority);
+    // }
 
     /*-----------------------------------------------------------------*/
 
@@ -155,56 +158,48 @@ namespace RTSim {
         return model->getPriority();
     }
 
-    int Scheduler::getThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
-        TaskModel *model = find(task);
+    // NOTE: deprecated
+    // int Scheduler::getThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
+    //     TaskModel *model = find(task);
+    //     if (model == NULL)
+    //         throw RTSchedExc("AbsRTTask not found");
+    //     return model->getThreshold();
+    // }
 
-        if (model == NULL)
-            throw RTSchedExc("AbsRTTask not found");
+    // NOTE: deprecated
+    // void Scheduler::setThreshold(AbsRTTask *task,
+    //                              int th) { // throw(RTSchedExc) {
+    //     TaskModel *model = find(task);
+    //     if (model == NULL)
+    //         throw RTSchedExc("AbsRTTask not found");
+    //     model->setThreshold(th);
+    // }
 
-        return model->getThreshold();
-    }
+    // NOTE: deprecated
+    // void Scheduler::enableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
+    //     DBGENTER(_SCHED_DBG_LEVEL);
+    //     TaskModel *model = find(task);
+    //     if (model == NULL)
+    //         throw RTSchedExc("AbsRTTask not found");
+    //     // the check for the executing task is in the kernel
+    //     model->raiseThreshold();
+    // }
 
-    void Scheduler::setThreshold(AbsRTTask *task,
-                                 int th) { // throw(RTSchedExc) {
-        TaskModel *model = find(task);
-
-        if (model == NULL)
-            throw RTSchedExc("AbsRTTask not found");
-
-        model->setThreshold(th);
-    }
-
-    void Scheduler::enableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
-        DBGENTER(_SCHED_DBG_LEVEL);
-
-        TaskModel *model = find(task);
-
-        if (model == NULL)
-            throw RTSchedExc("AbsRTTask not found");
-
-        // the check for the executing task is in the kernel
-        model->raiseThreshold();
-    }
-
-    void Scheduler::disableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
-        DBGENTER(_SCHED_DBG_LEVEL);
-
-        TaskModel *model = find(task);
-
-        if (model == NULL)
-            throw RTSchedExc("AbsRTTask not found");
-
-        // std::cout << "disableThreshold called" << std::endl;
-
-        if (model->isActive()) {
-            extract(task);
-            model->restorePriority();
-            insert(task);
-            _kernel->dispatch();
-
-        } else
-            model->restorePriority();
-    }
+    // NOTE: deprecated
+    // void Scheduler::disableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
+    //     DBGENTER(_SCHED_DBG_LEVEL);
+    //     TaskModel *model = find(task);
+    //     if (model == NULL)
+    //         throw RTSchedExc("AbsRTTask not found");
+    //     // std::cout << "disableThreshold called" << std::endl;
+    //     if (model->isActive()) {
+    //         extract(task);
+    //         model->restorePriority();
+    //         insert(task);
+    //         _kernel->dispatch();
+    //     } else
+    //         model->restorePriority();
+    // }
 
     void Scheduler::discardTasks(bool f) {
         DBGENTER(_SCHED_DBG_LEVEL);

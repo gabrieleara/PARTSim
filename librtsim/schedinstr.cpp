@@ -68,7 +68,7 @@ namespace RTSim {
             throw BaseExc("Kernel not found!");
 
         DBGPRINT("Before lowering threshold for task ", _father->getName());
-        k->disableThreshold();
+        // k->disableThreshold();
         k->dispatch();
 
         DBGPRINT("After lowing threshold for task ", _father->getName());

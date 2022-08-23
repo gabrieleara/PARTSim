@@ -58,8 +58,7 @@ namespace RTSim {
         @author Francesco Prosperi
         @see Instr
     */
-
-    class ThreInstr : public Instr {
+    class [[deprecated]] ThreInstr : public Instr {
         EndInstrEvt _endEvt;
         ThreEvt _threEvt;
         int _th;

@@ -222,23 +222,20 @@ namespace RTSim {
         dispatch();
     }
 
-    void RTKernel::setThreshold(const int th) {
-        DBGENTER(_KERNEL_DBG_LEV);
+    // void RTKernel::setThreshold(const int th) {
+    //     DBGENTER(_KERNEL_DBG_LEV);
+    //     _sched->setThreshold(_currExe, th);
+    // }
 
-        _sched->setThreshold(_currExe, th);
-    }
+    // void RTKernel::enableThreshold() {
+    //     DBGENTER(_KERNEL_DBG_LEV);
+    //     _sched->enableThreshold(_currExe);
+    // }
 
-    void RTKernel::enableThreshold() {
-        DBGENTER(_KERNEL_DBG_LEV);
-
-        _sched->enableThreshold(_currExe);
-    }
-
-    void RTKernel::disableThreshold() {
-        DBGENTER(_KERNEL_DBG_LEV);
-
-        _sched->disableThreshold(_currExe);
-    }
+    // void RTKernel::disableThreshold() {
+    //     DBGENTER(_KERNEL_DBG_LEV);
+    //     _sched->disableThreshold(_currExe);
+    // }
 
     void RTKernel::printState() const {}
 

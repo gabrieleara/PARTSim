@@ -72,7 +72,17 @@ set(LIBRARY_SOURCE_FILES
     task.cpp
     taskevt.cpp
     texttrace.cpp
-    threinstr.cpp
+
+    # # NOTE: setting a preemption threshold is deprecated;
+    # # mainly, the reason is it was not used anymore, so it
+    # # remains largely untested with recent code changes.
+    # # Code is still there if you want to check it out.
+    # # Uncomment this line to add it to the compilation and
+    # # then look all the commented [[deprecated]] functions that mention a
+    # # threshold until it compiles again.
+    # 
+    # threinstr.cpp
+
     timer.cpp
     traceevent.cpp
     tracepower.cpp

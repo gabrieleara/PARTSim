@@ -212,11 +212,9 @@ namespace RTSim {
            Forwards the request of preemption threshold raising for
            the executing task to the scheduler.
         */
-        virtual void setThreshold(int th);
-
-        virtual void enableThreshold();
-
-        virtual void disableThreshold();
+        // [[deprecated]] virtual void setThreshold(int th);
+        // [[deprecated]] virtual void enableThreshold();
+        // [[deprecated]] virtual void disableThreshold();
 
         /**
            The kernel needs a list of the tasks that are part

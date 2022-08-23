@@ -59,8 +59,8 @@ namespace RTSim {
         static registerInFactory<Instr, SignalInstr, Instr::BASE_KEY_TYPE>
             registerSignal2(SignalName2);
 
-        static registerInFactory<Instr, ThreInstr, Instr::BASE_KEY_TYPE>
-            registerThre(ThreName);
+        // static registerInFactory<Instr, ThreInstr, Instr::BASE_KEY_TYPE>
+        //     registerThre(ThreName);
 
         static registerInFactory<Instr, SchedInstr, Instr::BASE_KEY_TYPE>
             registerSchedule(ScheduleName);
