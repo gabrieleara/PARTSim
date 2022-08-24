@@ -147,51 +147,29 @@ namespace RTSim {
         }
     }
 
-    void RRScheduler::addTask(AbsRTTask *task) { // throw(RRSchedExc) {
+    void RRScheduler::addTask(AbsRTTask *task, int slice) {
         DBGENTER(_RR_SCHED_DBG_LEV);
-
-        RRModel *model = new RRModel(task);
-
-        if (find(task) != NULL)
-            throw RRSchedExc("Element already present");
-
-        _tasks[task] = model;
-
-        model->setRRSlice(defaultSlice);
-        DBGPRINT("Default slice set: ", defaultSlice);
+        auto model = new RRModel(task);
+        enqueueModel(model);
+        if (slice < 1) {
+            slice = defaultSlice;
+            DBGPRINT("Default slice set: ", defaultSlice);
+        }
+        DBGPRINT("Slice set to: ", slice);
+        model->setRRSlice(slice);
     }
 
     void RRScheduler::addTask(AbsRTTask *task, const std::string &p) {
         DBGENTER(_RR_SCHED_DBG_LEV);
-        AbsRTTask *mytask = dynamic_cast<AbsRTTask *>(task);
+        int slice = defaultSlice;
 
-        if (mytask == 0)
-            throw RRSchedExc("Cannot add a AbsRTTask to RR");
-
-        RRModel *model = new RRModel(mytask);
-
-        if (find(task) != NULL)
-            throw RRSchedExc("Element already present");
-
-        _tasks[task] = model;
-
-        int slice = 0;
-
-        DBGPRINT("Slice parameter: ", p);
-        if (p == "")
-            slice = defaultSlice;
-        else {
-            std::stringstream ss(p);
-            ss >> slice;
+        std::stringstream ss(p);
+        ss >> slice;
+        if (!ss) {
+            DBGPRINT("Default slice set: ", defaultSlice);
         }
 
-        DBGPRINT("Slice set to: ", slice);
-
-        model->setRRSlice(slice);
-    }
-
-    string RRScheduler::toString() const {
-        return Scheduler::toString();
+        addTask(task, slice);
     }
 
     RRScheduler *RRScheduler::createInstance(vector<string> &par) {

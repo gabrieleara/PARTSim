@@ -20,19 +20,13 @@ namespace RTSim {
     using std::unique_ptr;
 
     void FIFOScheduler::addTask(AbsRTTask *task) { // throw(RTSchedExc) {
-        FIFOModel *model = new FIFOModel(task);
-
-        if (find(task) != NULL)
-            throw RTSchedExc("Element already present");
-
-        _tasks[task] = model;
+        enqueueModel(new FIFOModel(task));
     }
 
     void FIFOScheduler::addTask(AbsRTTask *task, const std::string &p) {
-        if (!dynamic_cast<AbsRTTask *>(task))
-            throw RTSchedExc("Cannot add a AbsRTTask to FIFO");
-        // ignoring parameters
-        addTask(dynamic_cast<AbsRTTask *>(task));
+        // XXX: See EDFScheduler::addTask
+        // Ignoring Parameters
+        addTask(task);
     }
 
     unique_ptr<FIFOScheduler>

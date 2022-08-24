@@ -21,6 +21,8 @@
 #include <rtsim/abstask.hpp>
 #include <rtsim/cpu.hpp>
 
+#include <rtsim/map_single_it.hpp>
+
 namespace RTSim {
 
     using namespace MetaSim;
@@ -61,14 +63,10 @@ namespace RTSim {
         TaskModel(AbsRTTask *t);
         virtual ~TaskModel();
 
-        virtual string toString() const {
-            return _rtTask->toString();
-        }
-
-        /// Returns a pointer to the task
-        AbsRTTask *getTask() {
-            return _rtTask;
-        }
+    public:
+        // ==============================
+        //      Pure Virtual Methods
+        // ==============================
 
         /// Returns the priority of the task. It depends on the scheduler
         virtual Tick getPriority() const = 0;
@@ -76,13 +74,32 @@ namespace RTSim {
         /// Returns the task's preemption level. It depends on the scheduler
         // virtual Tick getPreemptionLevel() const = 0;
 
+        /// Changes the task's priority. It depends on the scheduler
+        virtual void changePriority(Tick p) = 0;
+
+    public:
+        // ==============================
+        //     Other Virtual Methods
+        // ==============================
+
+        virtual string toString() const {
+            return _rtTask->toString();
+        }
+
+    public:
+        // ==============================
+        //      Non Virtual Methods
+        // ==============================
+
+        /// Returns a pointer to the task
+        AbsRTTask *getTask() {
+            return _rtTask;
+        }
+
         /// Returns the task number
         int getTaskNumber() {
             return _rtTask->getTaskNumber();
         }
-
-        /// changes the task's priority
-        virtual void changePriority(Tick p) = 0;
 
         // [[deprecated]] int getThreshold()  {
         //     return _threshold;
@@ -196,10 +213,10 @@ namespace RTSim {
         */
         virtual ~Scheduler();
 
-        /**
-           Sets the kernel for this scheduler.
-        */
-        virtual void setKernel(AbsKernel *k);
+    public:
+        // ==============================
+        //      Pure Virtual Methods
+        // ==============================
 
         /**
            Add a task with the proper scheduling parameters
@@ -211,85 +228,10 @@ namespace RTSim {
         */
         virtual void removeTask(AbsRTTask *task) = 0;
 
-        /**
-         * Insert a task in the queue.
-         */
-        virtual void insert(AbsRTTask *); // throw(RTSchedExc, BaseExc);
-
-        /**
-         * Have you inserted the task t in the scheduler yet?
-         * I.e., has the scheduler had a first contact with the task,
-         * so that it can manipulate it without inserting/adding it
-         * (or should you insert/add the task)?
-         */
-        bool isFound(AbsRTTask *t);
-
-        /**
-         * Is the scheduler in the queue of tasks to be dispatched to a CPU?
-         * I.e., is the scheduler taking care of the task?
-         */
-        bool isInQueue(AbsRTTask *t);
-
-        /**
-         *  extract a task from the queue.
-         */
-        virtual void extract(AbsRTTask *); // throw(RTSchedExc, BaseExc);
-
-        /** returns the priority of the task */
-        int getPriority(AbsRTTask *task) const; // throw(RTSchedExc);
-
-        /** raises the threshold of the task */
-        // [[deprecated]] void enableThreshold(AbsRTTask *t); // throw(RTSchedExc);
-        
-        /** lowers the threshold of the task */
-        // [[deprecated]] void disableThreshold(AbsRTTask *t); // throw(RTSchedExc);
-
-        /**
-         * Sets the preemption threshold of task t. Throws an
-         * exception if the task does not exist.
-         *
-         * Note that the preemption threshold is currently a constant
-         * (integer) value. Different schedulers needs to interpret
-         * this value differently. For example, in EDF this would be a
-         * relative deadline, in FixedPriority it is just a priority,
-         * in RRSched it makes no sense at all. This makes the
-         * interface not really robust.
-         */
-        // [[deprecated]] void setThreshold(AbsRTTask *t, int th); // throw(RTSchedExc);
-
-        /**
-         * Returns the preemption threshold of task t. Throws an
-         * exception if the task does not exist or if the scheduler
-         * does not support preemption thresholds
-         */
-        // [[deprecated]] int getThreshold(AbsRTTask *t) ; // throw(RTSchedExc);
-
-        /**
-         *  returns the first task in the queue, or NULL if
-         *  the queue is empty.
-         */
-        virtual AbsRTTask *getFirst();
-
-        /**
-         *  returns the (n+1)-th (0==first) task in the queue
-         *  or NULL if the queue has less than n+1 elements.
-         */
-        virtual AbsRTTask *getTaskN(unsigned int);
-
-        /// Returns all tasks in the scheduler
-        virtual vector<AbsRTTask *> getTasks() const {
-            vector<AbsRTTask *> tt;
-            for (auto &elem : _tasks)
-                tt.push_back(elem.first);
-            return tt;
-        }
-
-        /**
-         * Returns the number of elements in queue.
-         */
-        virtual int getSize() {
-            return _queue.size();
-        }
+    public:
+        // ==============================
+        //     Other Virtual Methods
+        // ==============================
 
         /**
            Notify the scheduler that the task has been
@@ -309,6 +251,133 @@ namespace RTSim {
             return true;
         }
 
+    public:
+        // ==============================
+        //       Overridden Methods
+        // ==============================
+
+        void newRun() override;
+        void endRun() override;
+        string toString() const override;
+
+    public:
+        // ==============================
+        //      Non Virtual Methods
+        // ==============================
+
+        /**
+           Sets the kernel for this scheduler.
+        */
+        void setKernel(AbsKernel *k);
+
+        /**
+         * Insert a task in the queue.
+         */
+        void insert(AbsRTTask *); // throw(RTSchedExc, BaseExc);
+
+        /**
+         * Have you inserted the task t in the scheduler yet?
+         * I.e., has the scheduler had a first contact with the task,
+         * so that it can manipulate it without inserting/adding it
+         * (or should you insert/add the task)?
+         */
+        bool isFound(AbsRTTask *t);
+
+        /**
+         * Is the scheduler in the queue of tasks to be dispatched to a CPU?
+         * I.e., is the scheduler taking care of the task?
+         */
+        bool isInQueue(AbsRTTask *t);
+
+        /**
+         *  extract a task from the queue.
+         */
+        void extract(AbsRTTask *); // throw(RTSchedExc, BaseExc);
+
+        /** returns the priority of the task */
+        int getPriority(AbsRTTask *task) const; // throw(RTSchedExc);
+
+        /** raises the threshold of the task */
+        // [[deprecated]] void enableThreshold(AbsRTTask *t);
+        // throw(RTSchedExc);
+
+        /** lowers the threshold of the task */
+        // [[deprecated]] void disableThreshold(AbsRTTask *t);
+        // throw(RTSchedExc);
+
+        /**
+         * Sets the preemption threshold of task t. Throws an
+         * exception if the task does not exist.
+         *
+         * Note that the preemption threshold is currently a constant
+         * (integer) value. Different schedulers needs to interpret
+         * this value differently. For example, in EDF this would be a
+         * relative deadline, in FixedPriority it is just a priority,
+         * in RRSched it makes no sense at all. This makes the
+         * interface not really robust.
+         */
+        // [[deprecated]] void setThreshold(AbsRTTask *t, int th);
+        // throw(RTSchedExc);
+
+        /**
+         * Returns the preemption threshold of task t. Throws an
+         * exception if the task does not exist or if the scheduler
+         * does not support preemption thresholds
+         */
+        // [[deprecated]] int getThreshold(AbsRTTask *t) ;
+        // throw(RTSchedExc);
+
+        /**
+         *  returns the first task in the queue, or NULL if
+         *  the queue is empty.
+         */
+        AbsRTTask *getFirst();
+
+        /**
+         *  returns the (n+1)-th (0==first) task in the queue
+         *  or NULL if the queue has less than n+1 elements.
+         */
+        AbsRTTask *getTaskN(unsigned int);
+
+        using MapType = std::map<AbsRTTask *, TaskModel *>;
+        using TaskIt = MapSingleIt<MapType::const_iterator, true>;
+        struct TaskList {
+            TaskIt _begin;
+            TaskIt _end;
+            MapType::size_type _size;
+
+            TaskList(const TaskIt &begin, const TaskIt &end,
+                     MapType::size_type size) :
+                _begin(begin),
+                _end(end),
+                _size(size) {}
+
+            TaskIt begin() {
+                return _begin;
+            }
+
+            TaskIt end() {
+                return _end;
+            }
+
+            MapType::size_type size() {
+                return _size;
+            }
+        };
+
+        /// Returns all tasks in the scheduler
+        TaskList getTasks() const {
+            return TaskList(TaskIt(_tasks.cbegin()), TaskIt(_tasks.cend()),
+                            _tasks.size());
+        }
+
+        /**
+         * Returns the number of elements in queue.
+         */
+        int getSize() {
+            return _queue.size();
+        }
+
         /// Tells if scheduler has any task in queue
         bool isEmpty() const {
             return _tasks.empty();
@@ -319,12 +388,7 @@ namespace RTSim {
          *
          * @param f if true, the tasks are deleted.
          */
-        virtual void discardTasks(bool f);
-
-        void newRun() override;
-        void endRun() override;
-        virtual void print();
-        string toString() const override;
+        void discardTasks(bool f);
 
     protected:
         /// pointer to the kernel
@@ -347,7 +411,7 @@ namespace RTSim {
            enqueues a model and adds the corresponding task to
            the kernel.
         */
-        virtual void enqueueModel(TaskModel *model);
+        void enqueueModel(TaskModel *model);
 
         /**
          * This function returns a TaskModel from a task. It is

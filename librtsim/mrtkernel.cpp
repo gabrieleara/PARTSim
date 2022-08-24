@@ -242,7 +242,7 @@ namespace RTSim {
         // never be used.
         int i = ncpu;
 
-        _sched->print();
+        DBGPRINT(_sched->toString());
         DBGPRINT("New tasks: ", num_newtasks);
         print();
 

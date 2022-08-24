@@ -126,13 +126,11 @@ namespace RTSim {
         */
         void round(Event *);
 
-        void addTask(AbsRTTask *t); // throw(RRSchedExc);
+        void addTask(AbsRTTask *t, int slice = 0); // throw(RRSchedExc);
 
         void addTask(AbsRTTask *t, const string &p) override;
 
         void removeTask(AbsRTTask *t) override {}
-
-        string toString() const override;
 
         static RRScheduler *createInstance(vector<string> &par);
     };

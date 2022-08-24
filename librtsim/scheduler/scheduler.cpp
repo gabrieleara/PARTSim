@@ -30,22 +30,21 @@ namespace RTSim {
         _rtTask(t),
         active(false),
         _insertTime(0)
-        // , _threshold(INT_MAX)
-        {}
+    // , _threshold(INT_MAX)
+    {}
 
     TaskModel::~TaskModel() {}
 
     bool TaskModel::TaskModelCmp::operator()(TaskModel *a, TaskModel *b) const {
-        if (a->getPriority() < b->getPriority())
-            return true;
-        else if (a->getPriority() == b->getPriority()) {
-            if (a->getInsertTime() < b->getInsertTime())
-                return true;
-            else if (a->getInsertTime() == b->getInsertTime())
-                if (a->getTaskNumber() < b->getTaskNumber())
-                    return true;
-        }
-        return false;
+        // Order by priority, then inserion time, and finally task number using
+        // tuple's partial ordering instead of writing our own (less error
+        // prone)
+        auto a_tuple = std::tuple(a->getPriority(), a->getInsertTime(),
+                                  a->getTaskNumber());
+        auto b_tuple = std::tuple(b->getPriority(), b->getInsertTime(),
+                                  b->getTaskNumber());
+
+        return a_tuple < b_tuple;
     }
 
     void TaskModel::setActive() {
@@ -63,7 +62,8 @@ namespace RTSim {
     // NOTE: deprecated
     // void TaskModel::raiseThreshold() {
     //     _savedPriority = getPriority();
-    //     // std::cout << "New priority: " << getThreshold() << " / old priority:
+    //     // std::cout << "New priority: " << getThreshold() << " / old
+    //     priority:
     //     // " << _savedPriority << std::endl;
     //     changePriority(getThreshold());
     // }
@@ -71,7 +71,8 @@ namespace RTSim {
     // NOTE: deprecated
     // void TaskModel::restorePriority() {
     //     DBGTAG(_SCHED_DBG_LEVEL, "Restoring Priority");
-    //     // std::cout << "Restoring priority from: " << getPriority() << " to: "
+    //     // std::cout << "Restoring priority from: " << getPriority() << " to:
+    //     "
     //     // << _savedPriority << std::endl;
     //     changePriority(_savedPriority);
     // }
@@ -89,18 +90,15 @@ namespace RTSim {
 
     void Scheduler::enqueueModel(TaskModel *model) {
         AbsRTTask *task = model->getTask();
-
-        if (find(task) != NULL)
+        if (find(task) != nullptr)
             throw RTSchedExc("Element already present");
-
         _tasks[task] = model;
     }
 
     TaskModel *Scheduler::find(AbsRTTask *task) const {
         auto mi = _tasks.find(task);
-
         if (mi == _tasks.end())
-            return NULL;
+            return nullptr;
         else
             return (*mi).second;
 
@@ -124,8 +122,7 @@ namespace RTSim {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);
-
-        if (model == NULL) {
+        if (model == nullptr) {
             std::cerr << "Scheduler::insert Task model not found" << std::endl;
             std::cerr << "For task " << taskname(task) << std::endl;
             std::cerr << "Scheduler " << getName() << std::endl;
@@ -142,7 +139,7 @@ namespace RTSim {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         TaskModel *model = find(task);
-        if (model == NULL) // raise an exception
+        if (model == nullptr) // raise an exception
             throw RTSchedExc("AbsRTTask not found");
 
         _queue.erase(model);
@@ -151,8 +148,7 @@ namespace RTSim {
 
     int Scheduler::getPriority(AbsRTTask *task) const { // throw(RTSchedExc) {
         TaskModel *model = find(task);
-
-        if (model == NULL)
+        if (model == nullptr)
             throw RTSchedExc("AbsRTTask not found");
 
         return model->getPriority();
@@ -161,7 +157,7 @@ namespace RTSim {
     // NOTE: deprecated
     // int Scheduler::getThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
     //     TaskModel *model = find(task);
-    //     if (model == NULL)
+    //     if (model == nullptr)
     //         throw RTSchedExc("AbsRTTask not found");
     //     return model->getThreshold();
     // }
@@ -170,7 +166,7 @@ namespace RTSim {
     // void Scheduler::setThreshold(AbsRTTask *task,
     //                              int th) { // throw(RTSchedExc) {
     //     TaskModel *model = find(task);
-    //     if (model == NULL)
+    //     if (model == nullptr)
     //         throw RTSchedExc("AbsRTTask not found");
     //     model->setThreshold(th);
     // }
@@ -179,17 +175,18 @@ namespace RTSim {
     // void Scheduler::enableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
     //     DBGENTER(_SCHED_DBG_LEVEL);
     //     TaskModel *model = find(task);
-    //     if (model == NULL)
+    //     if (model == nullptr)
     //         throw RTSchedExc("AbsRTTask not found");
     //     // the check for the executing task is in the kernel
     //     model->raiseThreshold();
     // }
 
     // NOTE: deprecated
-    // void Scheduler::disableThreshold(AbsRTTask *task) { // throw(RTSchedExc) {
+    // void Scheduler::disableThreshold(AbsRTTask *task) { // throw(RTSchedExc)
+    // {
     //     DBGENTER(_SCHED_DBG_LEVEL);
     //     TaskModel *model = find(task);
-    //     if (model == NULL)
+    //     if (model == nullptr)
     //         throw RTSchedExc("AbsRTTask not found");
     //     // std::cout << "disableThreshold called" << std::endl;
     //     if (model->isActive()) {
@@ -204,19 +201,18 @@ namespace RTSim {
     void Scheduler::discardTasks(bool f) {
         DBGENTER(_SCHED_DBG_LEVEL);
 
-        typedef map<AbsRTTask *, TaskModel *>::iterator IT;
-
         _queue.clear();
 
-        IT i = _tasks.begin();
-
         if (f) {
-            while (i != _tasks.end()) {
-                delete ((*i).second);
-                i++;
+            // Free all task models
+            for (auto [task, model] : _tasks) {
+                delete model;
             }
         }
 
+        // XXX: Why do we always clear the set of tasks, but we may not free the
+        // models? Are we leaking memory? Is anyone actually calling this
+        // function?
         _tasks.clear();
     }
 
@@ -224,31 +220,28 @@ namespace RTSim {
         DBGENTER(_SCHED_DBG_LEVEL);
 
         if (_queue.size() <= n) {
-            return NULL;
+            return nullptr;
         }
 
-        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
-            _queue.begin();
-        for (unsigned int i = 0; i < n; i++)
-            it++;
-
+        // Jump to nth element in queue
+        auto it = _queue.begin();
+        std::advance(it, n);
         return (*it)->getTask();
     }
 
     bool Scheduler::isFound(AbsRTTask *t) {
         TaskModel *model = find(t);
-        return model != NULL;
+        return model != nullptr;
     }
 
     bool Scheduler::isInQueue(AbsRTTask *t) {
-        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
-            _queue.begin();
-        for (unsigned int i = 0; i < _queue.size(); i++) {
-            if ((*it) != NULL && (*it)->getTask() == t)
-                return true;
-            it++;
-        }
-        return false;
+        auto task_is_t = [t](TaskModel *model) {
+            return model->getTask() == t;
+        };
+
+        // If not found, returns the end of the queue
+        auto found = std::find_if(_queue.begin(), _queue.end(), task_is_t);
+        return found != _queue.end();
     }
 
     void Scheduler::notify(AbsRTTask *task) {
@@ -259,34 +252,30 @@ namespace RTSim {
     void Scheduler::newRun() {
         _queue.clear();
 
-        typedef map<AbsRTTask *, TaskModel *>::iterator IT;
-
-        for (IT i = _tasks.begin(); i != _tasks.end(); ++i)
-            i->second->setInactive();
+        for (auto [task, model] : _tasks) {
+            model->setInactive();
+        }
     }
 
     void Scheduler::endRun() {}
 
-    void Scheduler::print() {
-        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
-            _queue.begin();
-
-        DBGPRINT("Ready queue: ");
-        for (; it != _queue.end(); ++it)
-            DBGPRINT(taskname((*it)->getTask()), " -> ");
+    template <typename Iter, typename EndIter>
+    bool is_last(Iter iter, const EndIter &endIter) {
+        return (iter != endIter) && (std::next(iter) == endIter);
     }
 
-    string Scheduler::toString() const {
-        string s;
-        priority_list<TaskModel *, TaskModel::TaskModelCmp>::iterator it =
-            _queue.begin();
-        for (unsigned int i = 0; i < _queue.size(); i++) {
-            if ((*it) != NULL && (*it)->getTask() != NULL)
-                s += taskname((*it)->getTask()) + "\t";
-            it++;
+    std::string Scheduler::toString() const {
+        std::ostringstream oss;
+
+        oss << "Ready queue: ";
+        for (auto it = _queue.begin(); it != _queue.end(); ++it) {
+            oss << taskname((*it)->getTask());
+            if (!is_last(it, _queue.end())) {
+                oss << " -> ";
+            }
         }
 
-        return s;
+        return oss.str();
     }
 
     AbsRTTask *Scheduler::getFirst() {

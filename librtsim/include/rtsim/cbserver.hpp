@@ -16,6 +16,8 @@
 // TODO: what is this?
 #include <rtsim/capacitytimer.hpp>
 
+#include <rtsim/matching_it.hpp>
+
 namespace RTSim {
     using namespace MetaSim;
 
@@ -112,17 +114,15 @@ namespace RTSim {
         void addTask(AbsRTTask &task, const std::string &params = "") override;
 
         /// Returns all tasks currently in the associated scheduler
-        std::vector<AbsRTTask *> getAllTasks() const;
+        Scheduler::TaskList getAllTasks() const;
 
         /// @return all tasks active in the server
         ///
         /// @todo Agostino said that sched_ may be returning some tasks that are
         /// not active due to problems with std::vector::erase. Check.
-        ///
-        /// @todo use std::copy_if with a std::back_inserter (or by
-        /// pre-allocating and then resizing the vector) and a proper function
-        /// that determines which tasks go into the output vector
-        std::vector<AbsRTTask *> getTasks() const;
+        using TaskList = MatchingIt<Scheduler::TaskIt, Scheduler::TaskIt,
+                                    bool (*)(const AbsRTTask *)>;
+        TaskList getTasks() const;
 
         /// @return true if the server does not hold any task (or all
         /// non-periodic tasks are in the past)

@@ -43,11 +43,16 @@ namespace RTSim {
     }
 
     void EDFScheduler::addTask(AbsRTTask *task, const std::string &p) {
-        if (!dynamic_cast<AbsRTTask *>(task))
-            throw RTSchedExc(
-                "Cannot add a AbsRTTask to EDF (should be AbsTask instead");
-        // ignoring parameters
-        addTask(dynamic_cast<AbsRTTask *>(task));
+        // // XXX: why is this checking whether an AbsRTTask is indeed an AbsRTTask?
+        // // I suppose there was once upon a time when addTask accepted AbsTasks, but then the error message is written in the other way around!
+        // if (!dynamic_cast<AbsRTTask *>(task))
+        //     throw RTSchedExc(
+        //         "Cannot add a AbsRTTask to EDF (should be AbsTask instead");
+        // // ignoring parameters
+        // addTask(dynamic_cast<AbsRTTask *>(task));
+
+        // Ignoring parameters, all info encoded in the task itself
+        addTask(task);
     }
 
     void EDFScheduler::removeTask(AbsRTTask *task) {}

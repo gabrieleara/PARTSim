@@ -46,9 +46,8 @@ namespace RTSim {
     class EDFScheduler : public Scheduler {
     public:
         /**
-         *  Creates an EDFModel, passing the task!! It throws
-         *  a * RTSchedExc exception if the task is already
-         *  present in this * scheduler.
+         *  Creates an EDFModel, passing the task!! It throws a RTSchedExc
+         *  exception if the task is already present in this scheduler.
          */
         void addTask(AbsRTTask *task); // throw(RTSchedExc);
 

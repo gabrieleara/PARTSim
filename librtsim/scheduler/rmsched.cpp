@@ -32,12 +32,7 @@ namespace RTSim {
     }
 
     void RMScheduler::addTask(AbsRTTask *task, const std::string &p) {
-        AbsRTTask *t = dynamic_cast<AbsRTTask *>(task);
-
-        if (t != 0)
-            enqueueModel(new RMModel(t));
-        else
-            throw RTSchedExc("Cannot add a AbsRTTask to RM");
+        addTask(task);
     }
 
 } // namespace RTSim

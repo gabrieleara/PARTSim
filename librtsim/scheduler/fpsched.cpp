@@ -19,13 +19,7 @@
 namespace RTSim {
 
     void FPScheduler::addTask(AbsRTTask *task, int prio) {
-        // throw(RTSchedExc) {
-        FPModel *model = new FPModel(task, prio);
-
-        if (find(task) != NULL)
-            throw RTSchedExc("Element already present");
-
-        _tasks[task] = model;
+        enqueueModel(new FPModel(task, prio));
     }
 
     FPScheduler *FPScheduler::createInstance(vector<string> &par) {
@@ -36,13 +30,9 @@ namespace RTSim {
 
     void FPScheduler::addTask(AbsRTTask *task, const std::string &p) {
         DBGENTER(_FP_SCHED_DBG_LEV);
-
         int prio;
-
         std::stringstream str(p);
-
         str >> prio;
-
         addTask(task, prio);
     }
 

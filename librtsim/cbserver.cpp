@@ -102,44 +102,43 @@ namespace RTSim {
         _yielding = false;
     }
 
-    std::vector<AbsRTTask *> CBServer::getAllTasks() const {
+    Scheduler::TaskList CBServer::getAllTasks() const {
         return sched_->getTasks();
     }
 
-    std::vector<AbsRTTask *> CBServer::getTasks() const {
-        std::vector<AbsRTTask *> res;
-        std::vector<AbsRTTask *> tasks = getAllTasks();
+    bool taskIsActive(const AbsRTTask* task) {
+        auto tt = dynamic_cast<const Task *>(task);
+        auto ntt = dynamic_cast<const NonPeriodicTask *>(tt);
 
-        for (int i = 0; i < tasks.size(); ++i) {
-            Task *tt = dynamic_cast<Task *>(tasks[i]);
-            NonPeriodicTask *ntt = dynamic_cast<NonPeriodicTask *>(tt);
+        // If the task ends now, skip
+        if (tt->endEvt.getTime() == SIMUL.getTime())
+            return false;
 
-            // If the task ends now, skip
-            if (tt->endEvt.getTime() == SIMUL.getTime())
-                continue;
+        // If the task is not active and its actication time is in the
+        // past, skip
+        if (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive())
+            return false;
 
-            // If the task is not active and its actication time is in the
-            // past, skip
-            if (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive()) {
-                continue;
-            }
+        // NOTE: non-periodic tasks can be created even without using
+        // the NonPeriodicTask class, right? By manually setting the
+        // Task parameters, I think? Check.
 
-            // NOTE: non-periodic tasks can be created even without using
-            // the NonPeriodicTask class, right? By manually setting the
-            // Task parameters, I think? Check.
+        // For non-periodic tasks, inactive or past tasks are ignored.
+        if (ntt != nullptr) {
+            if (!tt->isActive())
+                return false;
 
-            // For non-periodic tasks, inactive or past tasks are ignored.
-            if (ntt != nullptr) {
-                if (!tt->isActive())
-                    continue;
-
-                if (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime())
-                    continue;
-            }
-
-            res.push_back(tt);
+            if (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime())
+                return false;
         }
-        return res;
+
+        // If none of those fire, the task is currently active
+        return true;
+    }
+
+    CBServer::TaskList CBServer::getTasks() const {
+        auto tasks = getAllTasks();
+        return TaskList(tasks.begin(), tasks.end(), taskIsActive);
     }
 
     bool CBServer::isEmpty() const {
