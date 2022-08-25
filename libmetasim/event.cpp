@@ -19,6 +19,9 @@
 #include <metasim/event.hpp>
 #include <metasim/simul.hpp>
 
+// Used to demangle compiler class names
+// #include <metasim/demangle.hpp>
+
 namespace MetaSim {
     /** ------------------------------------------------------------
      * Initialize static members of class Event
@@ -31,7 +34,7 @@ namespace MetaSim {
     /**
      * Constructor for Event.
      */
-  Event::Event(const std::string &name, int p) :
+    Event::Event(const std::string &name, int p) :
         _name(name),
         _order(0),
         _isInQueue(false),
@@ -42,7 +45,8 @@ namespace MetaSim {
         _std_priority(p),
         _disposable(false) {}
 
-    Event::Event(int p) : Event(typeid(*this).name(), p) {  }
+    // Event::Event(int p) : Event(demangle_compiler_name(typeid(*this).name()),
+    // p) {}
 
     Event::~Event() {
         drop();
@@ -89,14 +93,16 @@ namespace MetaSim {
         if (_isInQueue) {
             std::stringstream str;
             str << "Time: " << SIMUL.getTime() << " -- Event"
-                << typeid(*this).name() << " already posted";
+                << toString() // demangle_compiler_name(typeid(*this).name())
+                << " already posted";
             throw Exc(str.str());
         }
 
         if (myTime < SIMUL.getTime()) {
             std::stringstream str;
             str << "Time: " << SIMUL.getTime() << " -- Posting event"
-                << typeid(*this).name() << " in the past at time: " << myTime;
+                << toString() // demangle_compiler_name(typeid(*this).name())
+                << " in the past at time: " << myTime;
             throw Exc(str.str());
         }
 
@@ -110,7 +116,7 @@ namespace MetaSim {
         if (!p.second) {
             std::stringstream str;
             str << "Time: " << SIMUL.getTime() << " -- Posting event"
-                << typeid(*this).name()
+                << toString() // demangle_compiler_name(typeid(*this).name())
                 << " Already in queue!, at time = " << myTime;
             throw Exc(str.str());
         }
@@ -180,13 +186,15 @@ namespace MetaSim {
 
     // DEBUG!!! Prints events data on the dbg stream.
     void Event::print() {
-        DBGPRINT("t=[", _time, "] prio=[", _priority,
-                 "] event=", _name);
+        DBGPRINT("t=[", _time, "] prio=[", _priority, "] event_type=", _name,
+                 " event=", toString());
     }
 
     void Event::addParticle(std::unique_ptr<ParticleInterface> s) {
         DBGENTER(_EVENT_DBG_LEV);
-        DBGPRINT("Event name ", typeid(*this).name());
+        DBGPRINT("Event name ",
+                 toString() // demangle_compiler_name(typeid(*this).name())
+        );
         _particles.push_back(std::move(s));
         DBGPRINT("size is now: ", _particles.size());
     }

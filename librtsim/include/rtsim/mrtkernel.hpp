@@ -42,7 +42,7 @@ namespace RTSim {
         /// Creates a new multi event dispatcher linked to
         /// the given MRTKernel and CPU
         DispatchMultiEvt(MRTKernel &k, CPU &c, int prio) :
-            Event(Event::_DEFAULT_PRIORITY + 10),
+            Event("MultiKernelDispatch", Event::_DEFAULT_PRIORITY + 10),
             _kernel(k),
             _cpu(c),
             _task(0) {}

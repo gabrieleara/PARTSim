@@ -115,9 +115,8 @@ namespace MetaSim {
         /**
             Base constructor.
 
-            @param n A (possibly unique) name for the entity:
-            by default the entity name is set equal to the
-            typeid() + the entity ID. */
+            @param n A (possibly unique) name for the entity
+        */
         Entity(const std::string &n);
 
         /// Destructor

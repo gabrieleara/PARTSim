@@ -25,7 +25,7 @@ namespace MetaSim {
     public:
         MsgEvt(const string &msg,
                int p = MetaSim::Event::_DEFAULT_PRIORITY + 10) :
-            Event(p),
+            Event("GenericMessage", p),
             _msg(msg) {}
         void doit() override {
             DBGPRINT(_msg);

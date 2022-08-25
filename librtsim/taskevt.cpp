@@ -25,6 +25,10 @@
 
 namespace RTSim {
 
+    string TaskEvt::toString() const {
+        return "'" + Event::toString() + " for task " + _task->getName() + "'";
+    }
+
     void ArrEvt::doit() {
         _task->onArrival(this);
     }

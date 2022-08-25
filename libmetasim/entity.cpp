@@ -17,6 +17,9 @@
 #include <metasim/entity.hpp>
 #include <metasim/simul.hpp>
 
+// Used to demangle compiler class names
+#include <metasim/demangle.hpp>
+
 namespace MetaSim {
 
     using std::map;
@@ -29,7 +32,7 @@ namespace MetaSim {
         if (_name == "") {
             std::stringstream ss;
             ss << _IDcount + 1;
-            _name = string(typeid(*this).name()) + ss.str();
+            _name = string(demangle_compiler_name(typeid(*this).name())) + ss.str();
         }
 
         if (_index.find(_name) != _index.end())
@@ -42,7 +45,7 @@ namespace MetaSim {
         DBGENTER(_ENTITY_DBG_LEV);
 
         DBGPRINT("Entity ID: ", _ID);
-        DBGPRINT("Entity type: ", typeid(*this).name());
+        DBGPRINT("Entity type: ", demangle_compiler_name(typeid(*this).name()));
         DBGPRINT("Entity name: ", _name);
 
         _index[_name] = this;

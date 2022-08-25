@@ -258,4 +258,8 @@ namespace RTSim {
 
         return tmp_ts;
     }
+
+    std::string KernelEvt::toString() const {
+        return "'" + Event::toString() + " for " + _kernel->getName() + "'";
+    }
 } // namespace RTSim

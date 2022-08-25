@@ -119,7 +119,7 @@ namespace RTSim {
 
         public:
             ChangeBudgetEvt(SparePot *s1, SporadicServer *s2, Tick b) :
-                Event(EndEvt::_END_EVT_PRIORITY + 4),
+                Event("SparePotChangeBudget", EndEvt::_END_EVT_PRIORITY + 4),
                 sp(s1),
                 ss(s2),
                 budget(b) {}

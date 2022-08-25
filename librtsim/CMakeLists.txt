@@ -59,7 +59,7 @@ set(LIBRARY_SOURCE_FILES
     reginstr.cpp
     regtask.cpp
     rttask.cpp
-    schedinstr.cpp
+    # schedinstr.cpp
     schedpoints.cpp
     schedrta.cpp
     server.cpp

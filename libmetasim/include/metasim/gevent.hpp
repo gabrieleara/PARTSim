@@ -25,6 +25,9 @@
 
 #include <metasim/event.hpp>
 
+// Used to demangle compiler class names
+// #include <metasim/demangle.hpp>
+
 namespace MetaSim {
     /**
        \ingroup metasim_ee
@@ -73,11 +76,11 @@ namespace MetaSim {
             _obj(obj),
             _fun(fun) {}
 
-        GEvent(X *obj, typename GEvent<X>::Pmemfun fun,
-               int p = Event::_DEFAULT_PRIORITY) :
-            Event(typeid(*this).name(), p),
-            _obj(obj),
-            _fun(fun) {}
+        // GEvent(X *obj, typename GEvent<X>::Pmemfun fun,
+        //        int p = Event::_DEFAULT_PRIORITY) :
+        //     Event(demangle_compiler_name(typeid(*this).name()), p),
+        //     _obj(obj),
+        //     _fun(fun) {}
 
         /**
            A copy constructor. Useful when creating many events of the
@@ -108,7 +111,7 @@ namespace MetaSim {
         }
 
         std::string toString() const override {
-            return Event::toString() + " " + _obj->Entity::toString();
+            return "'" + Event::toString() + " for " + _obj->Entity::toString() + "'";
         }
     };
 

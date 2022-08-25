@@ -20,7 +20,7 @@ namespace RTSim {
 
     Timer::Timer(const std::string &n, int p) :
         Entity(n),
-        _triggerEvt(this, &Timer::onTrigger, p) {}
+        _triggerEvt("TimerTrigger", this, &Timer::onTrigger, p) {}
 
     void Timer::newRun() {
         onTrigger(NULL);

@@ -77,7 +77,7 @@ namespace RTSim {
 
         public:
             ChangeBudgetEvt(SchedPoint *s1, Server *s2, double b) :
-                Event(),
+                Event("SchedPointChangeBudget"),
                 sp(s1),
                 ss(s2),
                 budget(b) {}

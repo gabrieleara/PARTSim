@@ -175,7 +175,7 @@ namespace RTSim {
 
     public:
         EndInstrEvt(Instr *in) :
-            MetaSim::Event(Event::_DEFAULT_PRIORITY - 3),
+            MetaSim::Event("InstructionEnd", Event::_DEFAULT_PRIORITY - 3),
             _instr(in) {}
         void doit() override;
         Instr *getInstruction() const;

@@ -171,7 +171,7 @@ namespace MetaSim {
 
             @param p Event priority
         */
-        Event(int p = _DEFAULT_PRIORITY);
+        // Event(int p = _DEFAULT_PRIORITY);
         Event(const std::string & name, int p = _DEFAULT_PRIORITY);
 
         /// Destructor.

@@ -15,9 +15,9 @@
 
 #include <rtsim/exeinstr.hpp>
 #include <rtsim/reginstr.hpp>
-#include <rtsim/schedinstr.hpp>
+// #include <rtsim/schedinstr.hpp>
 #include <rtsim/suspend_instr.hpp>
-#include <rtsim/threinstr.hpp>
+// #include <rtsim/threinstr.hpp>
 #include <rtsim/waitinstr.hpp>
 
 namespace RTSim {
@@ -62,8 +62,8 @@ namespace RTSim {
         // static registerInFactory<Instr, ThreInstr, Instr::BASE_KEY_TYPE>
         //     registerThre(ThreName);
 
-        static registerInFactory<Instr, SchedInstr, Instr::BASE_KEY_TYPE>
-            registerSchedule(ScheduleName);
+        // static registerInFactory<Instr, SchedInstr, Instr::BASE_KEY_TYPE>
+        //     registerSchedule(ScheduleName);
 
         static registerInFactory<Instr, SuspendInstr, Instr::BASE_KEY_TYPE>
             registerSuspend(SuspendName);

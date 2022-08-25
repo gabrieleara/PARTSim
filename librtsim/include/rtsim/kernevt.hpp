@@ -14,8 +14,8 @@ namespace RTSim {
         RTKernel *_kernel;
 
     public:
-        KernelEvt(RTKernel *k, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10) :
-            MetaSim::Event(p) {
+        KernelEvt(const std::string &name, RTKernel *k, int p = MetaSim::Event::_DEFAULT_PRIORITY + 10) :
+            MetaSim::Event(name, p) {
             _kernel = k;
         }
         void setKernel(RTKernel *k) {
@@ -24,23 +24,25 @@ namespace RTSim {
         RTKernel *getKernel() {
             return _kernel;
         };
+
+        std::string toString() const override;
     };
 
     class DispatchEvt : public KernelEvt {
     public:
-        DispatchEvt(RTKernel *k) : KernelEvt(k) {}
+        DispatchEvt(RTKernel *k) : KernelEvt("KernelDispatching", k) {}
         void doit() override;
     };
 
     class BeginDispatchEvt : public KernelEvt {
     public:
-        BeginDispatchEvt(RTKernel *k) : KernelEvt(k) {}
+        BeginDispatchEvt(RTKernel *k) : KernelEvt("KernelBeginDispatching", k) {}
         void doit() override;
     };
 
     class EndDispatchEvt : public KernelEvt {
     public:
-        EndDispatchEvt(RTKernel *k) : KernelEvt(k) {}
+        EndDispatchEvt(RTKernel *k) : KernelEvt("KernelEndDispatching", k) {}
         void doit() override;
     };
 

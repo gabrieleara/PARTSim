@@ -58,7 +58,7 @@ namespace RTSim {
 
         public:
             ChangeBudgetEvt(SuperCBS *s1, Server *s2, double b) :
-                Event(),
+                Event("SuperCBSChangeBudget"),
                 sp(s1),
                 ss(s2),
                 budget(b) {}

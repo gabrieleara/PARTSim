@@ -35,8 +35,8 @@ namespace RTSim {
         int _cpu;
 
     public:
-        TaskEvt(Task *t, int p = _DEFAULT_PRIORITY) :
-            MetaSim::Event(p),
+        TaskEvt(const std::string &name, Task *t, int p = _DEFAULT_PRIORITY) :
+            MetaSim::Event(name, p),
             _cpu(-1) {
             _task = t;
         }
@@ -53,20 +53,15 @@ namespace RTSim {
         void setCPU(int cpu) {
             _cpu = cpu;
         }
-        string toString() const override {
-            return " at " + std::to_string(double(getTime())) + "\n";
-        }
+        string toString() const override;
     };
 
     /// arrival event for a task
     /// \ingroup task
     class ArrEvt : public TaskEvt {
     public:
-        ArrEvt(Task *t) : TaskEvt(t) {}
+        ArrEvt(Task *t) : TaskEvt("TaskArrival", t) {}
         void doit() override;
-        string toString() const override {
-            return "arrEvt " + TaskEvt::toString();
-        }
     };
 
     /// end of instance event
@@ -74,7 +69,7 @@ namespace RTSim {
     class EndEvt : public TaskEvt {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
-        EndEvt(Task *t) : TaskEvt(t, _END_EVT_PRIORITY) {}
+        EndEvt(Task *t) : TaskEvt("TaskEnd", t, _END_EVT_PRIORITY) {}
         void doit() override;
     };
 
@@ -83,7 +78,7 @@ namespace RTSim {
     class KillEvt : public TaskEvt {
     public:
         static const int _END_EVT_PRIORITY = _DEFAULT_PRIORITY - 2;
-        KillEvt(Task *t) : TaskEvt(t, _END_EVT_PRIORITY) {}
+        KillEvt(Task *t) : TaskEvt("TaskKill", t, _END_EVT_PRIORITY) {}
         void doit() override;
     };
 
@@ -91,7 +86,7 @@ namespace RTSim {
     /// \ingroup task
     class SchedEvt : public TaskEvt {
     public:
-        SchedEvt(Task *t) : TaskEvt(t) {}
+        SchedEvt(Task *t) : TaskEvt("TaskScheduled", t) {}
         void doit() override;
     };
 
@@ -100,7 +95,7 @@ namespace RTSim {
     /// \ingroup task
     class DeschedEvt : public TaskEvt {
     public:
-        DeschedEvt(Task *t) : TaskEvt(t) {}
+        DeschedEvt(Task *t) : TaskEvt("TaskDescheduled", t) {}
         void doit() override;
     };
 
@@ -108,7 +103,7 @@ namespace RTSim {
     /// \ingroup task
     class FakeArrEvt : public TaskEvt {
     public:
-        FakeArrEvt(Task *t) : TaskEvt(t) {
+        FakeArrEvt(Task *t) : TaskEvt("TaskFakeArrival", t) {
             setPriority(_DEFAULT_PRIORITY - 1);
         }
         void doit() override;
@@ -124,7 +119,7 @@ namespace RTSim {
         Tick _dline;
 
     public:
-        DlineSetEvt(Task *t) : TaskEvt(t) {}
+        DlineSetEvt(Task *t) : TaskEvt("TaskDeadlineSet", t) {}
         void doit() override {}
         void setDline(Tick d) {
             _dline = d;
@@ -143,7 +138,7 @@ namespace RTSim {
         static const int _DEAD_EVT_PRIORITY = EndEvt::_END_EVT_PRIORITY + 3;
 
         DeadEvt(Task *t, bool abort, bool kill) :
-            TaskEvt(t, _DEAD_EVT_PRIORITY),
+            TaskEvt("TaskDead", t, _DEAD_EVT_PRIORITY),
             _abort(abort),
             _kill(kill) {}
 
