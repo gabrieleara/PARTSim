@@ -35,7 +35,7 @@ set(LIBRARY_SOURCE_FILES
     # NOTE: lots of stuff is unused/untested but built against the library
     # anyway!!
 
-    AVRTask.cpp
+    # AVRTask.cpp
     capacitytimer.cpp
     cbserver.cpp
     cpu.cpp
@@ -90,10 +90,102 @@ set(LIBRARY_SOURCE_FILES
     yaml.cpp
 )
 
+# set(LIBRARY_PRECOMPILED_HEADER_FILES
+#     # <rtsim/AVRTask.hpp>
+#     <rtsim/absresmanager.hpp>
+#     <rtsim/abstask.hpp>
+#     <rtsim/capacitytimer.hpp>
+#     <rtsim/class_utils.hpp>
+#     <rtsim/consts.hpp>
+#     <rtsim/cpu.hpp>
+#     <rtsim/csv.hpp>
+#     # <rtsim/energyMRTKernel.hpp>
+#     <rtsim/exeinstr.hpp>
+#     <rtsim/feedback.hpp>
+#     <rtsim/feedbacktest.hpp>
+#     # <rtsim/fileImporter.hpp>
+#     <rtsim/grubserver.hpp>
+#     <rtsim/instr.hpp>
+#     <rtsim/interpolate.hpp>
+#     <rtsim/interrupt.hpp>
+#     <rtsim/jtrace.hpp>
+#     <rtsim/kernevt.hpp>
+#     <rtsim/load.hpp>
+#     <rtsim/migrationmanager.hpp>
+#     <rtsim/mrtkernel.hpp>
+#     <rtsim/opp.hpp>
+#     <rtsim/pollingserver.hpp>
+#     <rtsim/powermodel.hpp>
+#     <rtsim/powermodel_params.hpp>
+#     <rtsim/ps_trace.hpp>
+#     <rtsim/reginstr.hpp>
+#     <rtsim/resource/bwi.hpp>
+#     <rtsim/resource/fcfsresmanager.hpp>
+#     <rtsim/resource/piresmanager.hpp>
+#     <rtsim/resource/resmanager.hpp>
+#     <rtsim/resource/resource.hpp>
+#     <rtsim/rttask.hpp>
+#     <rtsim/schedinstr.hpp>
+#     <rtsim/schedpoints.hpp>
+#     <rtsim/schedrta.hpp>
+#     <rtsim/scheduler/edfsched.hpp>
+#     <rtsim/scheduler/fifosched.hpp>
+#     <rtsim/scheduler/multisched.hpp>
+#     <rtsim/scheduler/rmsched.hpp>
+#     <rtsim/scheduler/scheduler.hpp>
+#     <rtsim/scheduler/fpsched.hpp>
+#     <rtsim/scheduler/rrsched.hpp>
+#     <rtsim/sortedcont.hpp>
+#     <rtsim/sparepot.hpp>
+#     <rtsim/sporadicserver.hpp>
+#     <rtsim/stateless_cpumodel_base.hpp>
+#     # <rtsim/stateless_cpumodel_bp.hpp>
+#     # <rtsim/stateless_cpumodel_minimal.hpp>
+#     <rtsim/stateless_cpumodel_param.hpp>
+#     <rtsim/stateless_cpumodel_table.hpp>
+#     <rtsim/stateless_cpumodel_tb.hpp>
+#     <rtsim/stateless_cpumodel_tbapprox.hpp>
+#     <rtsim/supercbs.hpp>
+#     <rtsim/supervisor.hpp>
+#     <rtsim/suspend_instr.hpp>
+#     <rtsim/system.hpp>
+#     <rtsim/system_descriptor.hpp>
+#     <rtsim/task.hpp>
+#     <rtsim/taskevt.hpp>
+#     <rtsim/taskexc.hpp>
+#     # <rtsim/taskstat.hpp>
+#     <rtsim/timer.hpp>
+#     <rtsim/traceevent.hpp>
+#     <rtsim/tracepower.hpp>
+#     <rtsim/trim.hpp>
+#     <rtsim/utils.hpp>
+#     <rtsim/yaml.hpp>
+#     <rtsim/abskernel.hpp>
+#     <rtsim/cbserver.hpp>
+#     <rtsim/json_trace.hpp>
+#     <rtsim/server.hpp>
+#     <rtsim/texttrace.hpp>
+#     <rtsim/waitinstr.hpp>
+#     <rtsim/kernel.hpp>
+#     <rtsim/threinstr.hpp>
+#     <rtsim/map_single_it.hpp>
+#     <rtsim/matching_it.hpp>
+#     )
+
 option(RTLIB_THERMAL "Enables the thermal modeling subsystem" OFF)
 if (RTLIB_THERMAL EQUAL ON)
+    # Append Eigen to dependences
     find_package (Eigen3 3.3 REQUIRED NO_MODULE)
-    set(LIBRARY_DEPENDENCIES ${LIBRARY_DEPENDENCIES} Eigen3::Eigen)
+    set(LIBRARY_DEPENDENCIES
+        ${LIBRARY_DEPENDENCIES}
+        Eigen3::Eigen
+        )
+
+    # Append header to precompiled headers
+    set(LIBRARY_PRECOMPILED_HEADER_FILES
+        ${LIBRARY_HEADER_FILES}
+        <rtsim/thermalmodel.hpp>
+        )
 endif()
 
 include(${PROJECT_SOURCE_DIR}/cmakeopts/library.cmake)

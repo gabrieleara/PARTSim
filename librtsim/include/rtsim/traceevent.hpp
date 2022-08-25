@@ -30,6 +30,7 @@ namespace RTSim {
 
     using std::ifstream;
     using std::ofstream;
+    using std::string;
 
     class Desc {
     public:

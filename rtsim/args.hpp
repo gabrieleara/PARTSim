@@ -7,7 +7,7 @@
  * Copyright (c) 2022 Gabriele Ara
  */
 
-#pragma once
+// #pragma once
 #ifndef RTSIM_ARGS_H_
 #define RTSIM_ARGS_H_
 

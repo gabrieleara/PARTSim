@@ -1,5 +1,9 @@
 // TODO: organize includes
 
+// #pragma once
+#ifndef LIBRTSIM_SYSTEM_HPP
+#define LIBRTSIM_SYSTEM_HPP
+
 // STL
 #include <metasim/memory.hpp>
 #include <vector>
@@ -58,3 +62,5 @@ namespace RTSim {
     };
 
 } // namespace RTSim
+
+#endif // LIBRTSIM_SYSTEM_HPP

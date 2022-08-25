@@ -1,4 +1,4 @@
-#pragma once
+// #pragma once
 #ifndef RTSIM_TRIM_HPP_
 #define RTSIM_TRIM_HPP_
 
