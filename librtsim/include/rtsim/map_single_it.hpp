@@ -11,6 +11,7 @@ namespace RTSim {
         static constexpr bool return_first = ReturnFirst;
 
     public:
+        MapSingleIt() : _it() {}
         MapSingleIt(const iterator &it) : _it(it) {}
 
         auto operator*() {

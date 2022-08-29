@@ -18,4 +18,9 @@ add_subdirectory(libmetasim)
 add_subdirectory(librtsim)
 add_subdirectory(rtsim)
 
-# TODO: testing
+# Set to ON to build and later run automated testing
+if(BUILD_TESTING)
+    enable_testing()
+    include(cmakeopts/misc/test.cmake)
+    add_subdirectory(test)
+endif()

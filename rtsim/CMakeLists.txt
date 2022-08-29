@@ -17,7 +17,7 @@ find_path(LIBCMDARG_INCLUDE "cmdarg.hpp")
 # If dependency library is installed and headers are also present
 if ((NOT ${LIBCMDARG}) OR (NOT ${LIBCMDARG_INCLUDE}))
     # Get the sources
-    message("Library libcmdarg not installed, downloading sources...")
+    # message("Library libcmdarg not installed, downloading sources...")
 
     # Use git submodules to download sources
     execute_process(COMMAND git submodule update --init --recursive -- cmdarg

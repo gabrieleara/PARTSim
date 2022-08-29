@@ -6,6 +6,8 @@
                 "${workspaceFolder}/libmetasim/include/**",
                 "${workspaceFolder}/librtsim/include/**",
                 "${workspaceFolder}/rtsim/cmdarg/include/public/**",
+                "${workspaceFolder}/build/_deps/googletest-src/googletest/include/**",
+                "${workspaceFolder}/build/_deps/googletest-src/googlemock/include/**",
             ],
             "defines": [],
             "compilerPath": "/usr/bin/clang",
