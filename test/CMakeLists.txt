@@ -3,6 +3,7 @@ enable_testing()
 add_executable(
   test_librtsim
   scheduler/fifo.cpp
+  scheduler/rm.cpp
 )
 
 target_link_libraries(

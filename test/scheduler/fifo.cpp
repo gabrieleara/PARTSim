@@ -18,7 +18,7 @@ using RTSim::Mocks::KernelMock;
 
 TEST(FifoScheduler, BasicTest) {
     // Hide all output from the simulator
-    testing::internal::CaptureStdout();
+    // testing::internal::CaptureStdout();
 
     auto &simulation = Simulation::getInstance();
     auto kernel = KernelMock();
@@ -54,7 +54,6 @@ TEST(FifoScheduler, BasicTest) {
     //
     // * inserted before at the same time but before 2, 2 will take precedence
     // because it has a lower task id
-
 
     // Inserting tasks into the queue
 
