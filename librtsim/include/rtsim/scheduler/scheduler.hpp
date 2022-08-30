@@ -21,7 +21,7 @@
 #include <rtsim/abstask.hpp>
 #include <rtsim/cpu.hpp>
 
-#include <rtsim/map_single_it.hpp>
+#include <rtsim/view_it.hpp>
 
 namespace RTSim {
 
@@ -339,36 +339,44 @@ namespace RTSim {
          */
         AbsRTTask *getTaskN(unsigned int);
 
-        using MapType = std::map<AbsRTTask *, TaskModel *>;
-        using TaskIt = MapSingleIt<MapType::const_iterator, true>;
-        struct TaskList {
-            TaskIt _begin;
-            TaskIt _end;
-            MapType::size_type _size;
+        static AbsRTTask *getTaskFromModel(TaskModel *model) {
+            return model->getTask();
+        }
 
-            TaskList(const TaskIt &begin, const TaskIt &end,
-                     MapType::size_type size) :
+        template <class BeginIt, class EndIt>
+        struct TaskList {
+            BeginIt _begin;
+            EndIt _end;
+            size_t _size;
+
+            TaskList(const BeginIt &begin, const EndIt &end, size_t size) :
                 _begin(begin),
                 _end(end),
                 _size(size) {}
 
-            TaskIt begin() {
+            BeginIt begin() const {
                 return _begin;
             }
 
-            TaskIt end() {
+            EndIt end() const {
                 return _end;
             }
 
-            MapType::size_type size() {
+            size_t size() const {
                 return _size;
             }
         };
 
-        /// Returns all tasks in the scheduler
-        TaskList getTasks() const {
-            return TaskList(TaskIt(_tasks.cbegin()), TaskIt(_tasks.cend()),
-                            _tasks.size());
+        using TaskIt = ViewIt<
+            priority_list<TaskModel *, TaskModel::TaskModelCmp>::const_iterator,
+            decltype(getTaskFromModel)>;
+
+        using TheTaskList = TaskList<TaskIt, TaskIt>;
+
+        /// Returns all tasks enqueued in the scheduler
+        TheTaskList getTasks() const {
+            return {ViewIt(_queue.cbegin(), getTaskFromModel),
+                    ViewIt(_queue.cend(), getTaskFromModel), _queue.size()};
         }
 
         /**

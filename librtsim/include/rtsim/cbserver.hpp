@@ -114,7 +114,7 @@ namespace RTSim {
         void addTask(AbsRTTask &task, const std::string &params = "") override;
 
         /// Returns all tasks currently in the associated scheduler
-        Scheduler::TaskList getAllTasks() const;
+        Scheduler::TheTaskList getAllTasks() const;
 
         /// @return all tasks active in the server
         ///

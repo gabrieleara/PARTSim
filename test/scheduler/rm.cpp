@@ -18,7 +18,7 @@ using RTSim::Task;
 
 using RTSim::Mocks::KernelMock;
 
-TEST(RMScheduler, BasicTest) {
+TEST(Scheduler, RM) {
     auto &simulation = Simulation::getInstance();
     auto kernel = KernelMock();
 

@@ -18,6 +18,7 @@ set(LIBRARY_SOURCE_FILES
     # TODO: check schedulers organization
     scheduler/edfsched.cpp
     scheduler/fifosched.cpp
+    scheduler/truefifo.cpp
     scheduler/fpsched.cpp
     scheduler/rmsched.cpp
     scheduler/rrsched.cpp

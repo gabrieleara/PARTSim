@@ -102,11 +102,11 @@ namespace RTSim {
         _yielding = false;
     }
 
-    Scheduler::TaskList CBServer::getAllTasks() const {
+    Scheduler::TheTaskList CBServer::getAllTasks() const {
         return sched_->getTasks();
     }
 
-    bool taskIsActive(const AbsRTTask* task) {
+    bool taskIsActive(const AbsRTTask *task) {
         auto tt = dynamic_cast<const Task *>(task);
         auto ntt = dynamic_cast<const NonPeriodicTask *>(tt);
 
@@ -114,7 +114,7 @@ namespace RTSim {
         if (tt->endEvt.getTime() == SIMUL.getTime())
             return false;
 
-        // If the task is not active and its actication time is in the
+        // If the task is not active and its activation time is in the
         // past, skip
         if (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive())
             return false;

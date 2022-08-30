@@ -4,26 +4,26 @@
 
 #include <metasim/simul.hpp>
 
-#include <rtsim/scheduler/fifosched.hpp>
+#include <rtsim/scheduler/truefifo.hpp>
 #include <rtsim/task.hpp>
 
 #include "../mocks/kernel.hpp"
 
 using MetaSim::Simulation;
-using RTSim::FIFOScheduler;
 using RTSim::Scheduler;
 using RTSim::Task;
+using RTSim::TrueFIFOScheduler;
 
 using RTSim::Mocks::KernelMock;
 
-TEST(Scheduler, FIFO) {
+TEST(Scheduler, TrueFIFO) {
     // Hide all output from the simulator
     // testing::internal::CaptureStdout();
 
     auto &simulation = Simulation::getInstance();
     auto kernel = KernelMock();
 
-    std::unique_ptr<Scheduler> sched = std::make_unique<FIFOScheduler>();
+    std::unique_ptr<Scheduler> sched = std::make_unique<TrueFIFOScheduler>();
 
     auto tasks = std::vector<std::unique_ptr<Task>>();
 
@@ -45,12 +45,12 @@ TEST(Scheduler, FIFO) {
 
     // Timing of the tasks used to test the fifo queue (in expected order):
     //
-    // | Task  | Activation Time | Insertion Time |
-    // | :---: | :-------------: | :------------: |
-    // |   0   |        0        |       5        |
-    // |   1   |       10        |       11       |
-    // |   2   |       10        |       12       |
-    // |   3   |       10        |       12*      |
+    // | Task  | Insertion Time |
+    // | :---: | :------------: |
+    // |   0   |       5        |
+    // |   1   |       11       |
+    // |   2   |       12       |
+    // |   3   |       12*      |
     //
     // * inserted before at the same time but before 2, 2 will take precedence
     // because it has a lower task id
@@ -96,4 +96,43 @@ TEST(Scheduler, FIFO) {
 
     // Also, the scheduler queue must be the right size!
     ASSERT_EQ(stask_it, stasks.end()) << "Too many tasks in schedule!";
+
+    // Ok, now let's try to remove and reinsert a task at a later time
+    sched->extract(tasks[0].get());
+    sched->extract(tasks[2].get());
+
+    // These two must be at the end of the queue!
+    simulation.run_to(20);
+    sched->insert(tasks[2].get());
+    simulation.run_to(21);
+    sched->insert(tasks[0].get());
+
+    auto task_3rd = dynamic_cast<Task *>(sched->getTaskN(2));
+    auto task_4th = dynamic_cast<Task *>(sched->getTaskN(3));
+
+    // Last two must be 2 and 0, in that order
+    EXPECT_EQ(task_3rd, tasks[2].get())
+        << "After reinsertion, task 2 is out of place!";
+    EXPECT_EQ(task_4th, tasks[0].get())
+        << "After reinsertion, task 0 is out of place!";
+
+    sched->extract(tasks[2].get());
+    sched->insert(tasks[2].get());
+    task_4th = dynamic_cast<Task *>(sched->getTaskN(3));
+    EXPECT_EQ(task_4th, tasks[2].get())
+        << "After 2nd reinsertion, task 2 is out of place!";
+
+    stasks = sched->getTasks();
+    stask_it = stasks.begin();
+    EXPECT_EQ((dynamic_cast<Task *>(*(stask_it++))), tasks[1].get())
+        << "Wrong final ordering in iterator (" << 1 << ")!";
+
+    EXPECT_EQ((dynamic_cast<Task *>(*(stask_it++))), tasks[3].get())
+        << "Wrong final ordering in iterator (" << 3 << ")!";
+
+    EXPECT_EQ((dynamic_cast<Task *>(*(stask_it++))), tasks[0].get())
+        << "Wrong final ordering in iterator (" << 0 << ")!";
+
+    EXPECT_EQ((dynamic_cast<Task *>(*(stask_it++))), tasks[2].get())
+        << "Wrong final ordering in iterator (" << 2 << ")!";
 }

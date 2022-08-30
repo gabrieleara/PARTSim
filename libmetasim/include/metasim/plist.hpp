@@ -67,6 +67,12 @@ public:
     const_iterator end() const {
         return Impl::end();
     }
+    const_iterator cbegin() const {
+        return Impl::cbegin();
+    }
+    const_iterator cend() const {
+        return Impl::cend();
+    }
     reverse_iterator rbegin() const {
         return Impl::rbegin();
     }
