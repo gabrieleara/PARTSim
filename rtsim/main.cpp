@@ -90,8 +90,8 @@ TaskSet read_taskset(const std::string &tset_file) {
         auto ph = str_ph.length() ? Tick(std::stol(str_ph)) : Tick(0);
         auto qs = str_qs.length() ? std::stol(str_qs) : 100L;
 
-        auto task_ptr =
-            std::make_shared<RTSim::PeriodicTask>(iat, deadline, ph, str_name, qs);
+        auto task_ptr = std::make_shared<RTSim::PeriodicTask>(iat, deadline, ph,
+                                                              str_name, qs);
 
         for (const auto &instr : (*code)) {
             auto str_instr = instr->get();
@@ -176,13 +176,14 @@ struct Tracer {
             ttrace->attachToTask(task);
         if (jtrace)
             jtrace->attachToTask(task);
-        RTSim::Task* t = dynamic_cast<RTSim::Task*>(&task);
-        const std::vector<std::unique_ptr<RTSim::Instr>>& instrs = t->getInstrQueue();
+        RTSim::Task *t = dynamic_cast<RTSim::Task *>(&task);
+        const std::vector<std::unique_ptr<RTSim::Instr>> &instrs =
+            t->getInstrQueue();
         for (auto i = instrs.begin(); i != instrs.end(); ++i) {
-            RTSim::ExecInstr *ei = dynamic_cast<RTSim::ExecInstr*>(i->get());
+            RTSim::ExecInstr *ei = dynamic_cast<RTSim::ExecInstr *>(i->get());
             if (ei != 0) {
                 if (ttrace)
-                  ei->setTrace(*ttrace.get());
+                    ei->setTrace(*ttrace.get());
             }
         }
     }
