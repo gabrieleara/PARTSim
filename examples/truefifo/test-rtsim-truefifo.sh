@@ -3,7 +3,8 @@
 (
     set -e
 
-    rtsim=/workspaces/PARTSim/build/rtsim/rtsim
+    PROJ_HOME_PATH=$(realpath "$(git rev-parse --show-toplevel)")
+    rtsim="$PROJ_HOME_PATH/build/rtsim/rtsim"
 
 cat > /tmp/hw.yml <<EOF
 cpu_islands:
@@ -58,6 +59,8 @@ resources:
   - name: queue
     initial_state: locked
 EOF
+
+$rtsim -d -t trace.txt /tmp/hw.yml /tmp/sw.yml 200 >/dev/null
 
 cat trace.txt | grep 'task1 ended' | head -1 | grep '\[Time:20\]' || (echo "Fail"; exit 1)
 cat trace.txt | grep 'task2 ended' | head -1 | grep '\[Time:30\]' || (echo "Fail"; exit 1)
