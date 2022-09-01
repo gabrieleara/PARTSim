@@ -44,3 +44,14 @@ taskset:
 EOF
 
 rtsim -d -t trace.txt /tmp/hw.yml /tmp/sw.yml 200
+
+cat trace.txt | grep 'task_0_0 ended' | head -1 | grep '\[Time:10\]' || (echo "Fail"; exit 1)
+cat trace.txt | grep 'task_0_0 ended' | head -2 | tail -1 | grep '\[Time:50\]' || (echo "Fail"; exit 1)
+cat trace.txt | grep 'task_0_0 ended' | head -3 | tail -1 | grep '\[Time:90\]' || (echo "Fail"; exit 1)
+cat trace.txt | grep 'task_0_0 ended' | head -4 | tail -1 | grep '\[Time:130\]' || (echo "Fail"; exit 1)
+
+# 5th instance of task_0_0 and 2nd of task_0_1 have the same deadline of 200
+cat trace.txt | grep 'task_0_0 ended' | head -5 | tail -1 | grep '\[Time:1[78]0\]' || (echo "Fail"; exit 1)
+
+cat trace.txt | grep 'task_0_1 ended' | head -1 | grep '\[Time:80\]' || (echo "Fail"; exit 1)
+cat trace.txt | grep 'task_0_1 ended' | head -2 | tail -1 | grep '\[Time:1[78]0\]' || (echo "Fail"; exit 1)
