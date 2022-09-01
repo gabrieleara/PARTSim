@@ -109,7 +109,7 @@ cat trace.txt | grep 'task0 ended' | head -1 | grep '\[Time:4\]' || failure
 cat trace.txt | grep 'task1_gpu ended' | head -1 | grep '\[Time:6\]' || failure
 cat trace.txt | grep 'task1 ended' | head -1 | grep '\[Time:7\]' || failure
 
-cat trace.txt | grep 'task0 missed' | head -2 | tail -1 | grep '\[Time:8\]' || failure
+cat trace.txt | grep 'task0 missed' | head -1 | grep '\[Time:8\]' || failure
 cat trace.txt | grep 'task0_gpu ended' | head -2 | tail -1 | grep '\[Time:8\]' || failure
 cat trace.txt | grep 'task0 ended' | head -2 | tail -1 | grep '\[Time:9\]' || failure
 
