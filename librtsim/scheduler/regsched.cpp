@@ -17,14 +17,23 @@
 #include <rtsim/scheduler/edfsched.hpp>
 #include <rtsim/scheduler/fifosched.hpp>
 #include <rtsim/scheduler/fpsched.hpp>
+#include <rtsim/scheduler/rmsched.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
+#include <rtsim/scheduler/truefifo.hpp>
 
 namespace RTSim {
+    static const std::string name_EDF = "edf";
+    static const std::string name_FIFO = "fifo";
+    static const std::string name_FP = "fp";
+    static const std::string name_RM = "rm";
+    static const std::string name_RR = "rr";
+    static const std::string name_TrueFIFO = "truefifo";
 
-    const string FIFOName("FIFOSched");
-    const string FPName("FPSched");
-    const string EDFName("EDFSched");
-    const string RRName("RRSched");
+// This magic macro relies on the fact that the scheduler classes follow a
+// convention
+#define registerInSchedFactory(schedclass)                                     \
+    static registerInFactory<Scheduler, schedclass##Scheduler, std::string>    \
+        register_##schedclass(name_##schedclass)
 
     /**
         This namespace should never be used by the user. Contains
@@ -32,17 +41,14 @@ namespace RTSim {
         the scheduler.
     */
     namespace __sched_stub {
-        static registerInFactory<Scheduler, FPScheduler, string>
-            registerfp(FPName);
 
-        static registerInFactory<Scheduler, EDFScheduler, string>
-            registeredf(EDFName);
+        registerInSchedFactory(EDF);
+        registerInSchedFactory(FIFO);
+        registerInSchedFactory(FP);
+        registerInSchedFactory(RM);
+        registerInSchedFactory(RR);
+        registerInSchedFactory(TrueFIFO);
 
-        static registerInFactory<Scheduler, RRScheduler, string>
-            registerrr(RRName);
-
-        static registerInFactory<Scheduler, FIFOScheduler, string>
-            registerfifo(FIFOName);
     } // namespace __sched_stub
     void __regsched_init() {}
 } // namespace RTSim

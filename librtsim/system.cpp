@@ -8,20 +8,18 @@
 #include <rtsim/scheduler/rmsched.hpp>
 #include <rtsim/scheduler/rrsched.hpp>
 
+#include <metasim/factory.hpp>
+
 namespace RTSim {
     uptr<Scheduler> make_scheduler(const std::string &name) {
-        // TODO: support RR and other scheduler parameters
-        if (name == "edf") {
-            return std::make_unique<EDFScheduler>();
-            // } else if (name == "rr") {
-            //     return std::make_unique<RRScheduler>();
-        } else if (name == "rm") {
-            return std::make_unique<RMScheduler>();
-        } else if (name == "fifo") {
-            return std::make_unique<FIFOScheduler>();
+        // TODO: support scheduler parameters
+        auto params = std::vector<std::string>{};
+        auto scheduler_ptr =
+            genericFactory<Scheduler>::instance().create(name, params);
+        if (!scheduler_ptr) {
+            throw BaseExc("Unsupported scheduler class: " + name);
         }
-
-        throw BaseExc("Unsupported scheduler class: " + name);
+        return scheduler_ptr;
     }
 
     uptr<CPUModel>
