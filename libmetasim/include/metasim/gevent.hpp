@@ -111,7 +111,7 @@ namespace MetaSim {
         }
 
         std::string toString() const override {
-            return "'" + Event::toString() + " for " + _obj->Entity::toString() + "'";
+            return Event::toString() + " for " + _obj->Entity::toString();
         }
     };
 
