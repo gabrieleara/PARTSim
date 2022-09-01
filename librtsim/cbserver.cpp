@@ -102,45 +102,6 @@ namespace RTSim {
         _yielding = false;
     }
 
-    Scheduler::TheTaskList CBServer::getAllTasks() const {
-        return sched_->getTasks();
-    }
-
-    bool taskIsActive(const AbsRTTask *task) {
-        auto tt = dynamic_cast<const Task *>(task);
-        auto ntt = dynamic_cast<const NonPeriodicTask *>(tt);
-
-        // If the task ends now, skip
-        if (tt->endEvt.getTime() == SIMUL.getTime())
-            return false;
-
-        // If the task is not active and its activation time is in the
-        // past, skip
-        if (tt->arrEvt.getTime() > SIMUL.getTime() && !tt->isActive())
-            return false;
-
-        // NOTE: non-periodic tasks can be created even without using
-        // the NonPeriodicTask class, right? By manually setting the
-        // Task parameters, I think? Check.
-
-        // For non-periodic tasks, inactive or past tasks are ignored.
-        if (ntt != nullptr) {
-            if (!tt->isActive())
-                return false;
-
-            if (tt->arrEvt.getTime() + tt->getDeadline() <= SIMUL.getTime())
-                return false;
-        }
-
-        // If none of those fire, the task is currently active
-        return true;
-    }
-
-    CBServer::TaskList CBServer::getTasks() const {
-        auto tasks = getAllTasks();
-        return TaskList(tasks.begin(), tasks.end(), taskIsActive);
-    }
-
     bool CBServer::isEmpty() const {
         return getTasks().size() == 0;
     }

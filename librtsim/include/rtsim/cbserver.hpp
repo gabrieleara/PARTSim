@@ -16,8 +16,6 @@
 // TODO: what is this?
 #include <rtsim/capacitytimer.hpp>
 
-#include <rtsim/matching_it.hpp>
-
 namespace RTSim {
     using namespace MetaSim;
 
@@ -112,17 +110,6 @@ namespace RTSim {
         /// @todo should we check something here? Since we change the yielding
         /// status
         void addTask(AbsRTTask &task, const std::string &params = "") override;
-
-        /// Returns all tasks currently in the associated scheduler
-        Scheduler::TheTaskList getAllTasks() const;
-
-        /// @return all tasks active in the server
-        ///
-        /// @todo Agostino said that sched_ may be returning some tasks that are
-        /// not active due to problems with std::vector::erase. Check.
-        using TaskList = MatchingIt<Scheduler::TaskIt, Scheduler::TaskIt,
-                                    bool (*)(const AbsRTTask *)>;
-        TaskList getTasks() const;
 
         /// @return true if the server does not hold any task (or all
         /// non-periodic tasks are in the past)

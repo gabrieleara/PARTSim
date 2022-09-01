@@ -25,6 +25,8 @@
 #include <rtsim/scheduler/scheduler.hpp>
 #include <rtsim/task.hpp>
 
+#include <rtsim/matching_it.hpp>
+
 #define _SERVER_DBG_LEV "server"
 
 namespace RTSim {
@@ -198,6 +200,17 @@ namespace RTSim {
            @see Scheduler
         */
         virtual void addTask(AbsRTTask &task, const std::string &params = "");
+
+        /// Returns all tasks currently in the associated scheduler
+        Scheduler::TheTaskList getAllTasks() const;
+
+        /// @return all tasks active in the server
+        ///
+        /// @todo Agostino said that sched_ may be returning some tasks that are
+        /// not active due to problems with std::vector::erase. Check.
+        using TaskList = MatchingIt<Scheduler::TaskIt, Scheduler::TaskIt,
+                                    bool (*)(const AbsRTTask *)>;
+        TaskList getTasks() const;
 
         /**
              Inherited from AbsRTTask. This function is called
