@@ -29,8 +29,8 @@ public:
             server->addTask(*task);
     }
 
-    RTSim::Server &getServer() {
-        return *server;
+    Server_ptr getServer() {
+        return server;
     }
 
     RTSim::AbsRTTask &getTask() {
@@ -70,9 +70,9 @@ TaskSet read_taskset(const std::string &tset_file) {
         auto str_iat = task_spec->get("iat")->get();
         auto str_startcpu = task_spec->get("startcpu")->get();
         auto str_deadline = task_spec->get("deadline")->get();
-        auto str_cbs_runtime = task_spec->get("cbs_runtime")->get();
-        auto str_cbs_period = task_spec->get("cbs_period")->get();
-        auto str_cbs_deadline = task_spec->get("cbs_deadline")->get();
+        auto str_cbs_runtime = task_spec->has("cbs_runtime") ? task_spec->get("cbs_runtime")->get() : "0";
+        auto str_cbs_period = task_spec->has("cbs_period") ? task_spec->get("cbs_period")->get() : "0";
+        auto str_cbs_deadline = task_spec->has("cbs_deadline") ? task_spec->get("cbs_deadline")->get() : "0";
         auto str_ph = task_spec->get("ph")->get();
         auto str_qs = task_spec->get("qs")->get();
         auto code = task_spec->get("code");
@@ -106,11 +106,15 @@ TaskSet read_taskset(const std::string &tset_file) {
             task_ptr->insertCode(str_instr);
         }
 
-        // Use Hard CBS
-        auto server_ptr = std::make_shared<RTSim::CBServer>(
-            cbs_runtime, cbs_period, cbs_deadline, true, "cbserver_" + str_name);
+        if (cbs_period > 0) {
+            // Use Hard CBS
+            auto server_ptr = std::make_shared<RTSim::CBServer>(
+                cbs_runtime, cbs_period, cbs_deadline, true, "cbserver_" + str_name);
 
-        taskset.emplace_back(task_ptr, server_ptr, startcpu);
+            taskset.emplace_back(task_ptr, server_ptr, startcpu);
+        } else {
+          taskset.emplace_back(task_ptr, Server_ptr(), startcpu);
+        }
     }
 
     return taskset;
@@ -208,14 +212,19 @@ int main(int argc, char *argv[]) {
 
     TaskSet taskset = read_taskset(opts["taskset"]);
     for (auto &[tasksrv, cpu] : taskset) {
-        sys.cpus[cpu]->getKernel()->addTask(tasksrv.getServer());
-
-        for (auto &tracer : tracers) {
-            tracer.attachToTask(tasksrv.getTask());
-            if (tracer.ttrace)
-                tasksrv.getServer().setTrace(*tracer.ttrace.get());
-            if (tracer.jtrace)
-                tasksrv.getServer().setTrace(*tracer.jtrace.get());
+        if (tasksrv.getServer()) {
+            sys.cpus[cpu]->getKernel()->addTask(*tasksrv.getServer());
+            for (auto &tracer : tracers) {
+                tracer.attachToTask(tasksrv.getTask());
+                if (tracer.ttrace)
+                    tasksrv.getServer()->setTrace(*tracer.ttrace.get());
+                if (tracer.jtrace)
+                    tasksrv.getServer()->setTrace(*tracer.jtrace.get());
+            }
+        } else {
+            sys.cpus[cpu]->getKernel()->addTask(tasksrv.getTask());
+            for (auto &tracer : tracers)
+                tracer.attachToTask(tasksrv.getTask());
         }
     }
 
