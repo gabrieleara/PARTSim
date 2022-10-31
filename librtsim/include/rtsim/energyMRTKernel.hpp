@@ -476,7 +476,7 @@ namespace RTSim {
             if (serv == NULL) { // periodic task
                 serv = new CBServerCallingEMRTKernel(
                     Tick(t->getWCET(1.0)), t->getDeadline(), t->getDeadline(),
-                    "hard", "CBS(" + t->toString() + ")", "FIFOSched");
+                    "hard", "CBS(" + t->toString() + ")", "fifo");
                 serv->addTask(*t);
 
                 addTask(*serv, param);

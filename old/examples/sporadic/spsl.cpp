@@ -34,7 +34,7 @@ int main() {
 
         std::cout << "Task created" << std::endl;
 
-        SporadicServer serv(6, 50, "server", "FIFOSched");
+        SporadicServer serv(6, 50, "server", "fifo");
 
         std::cout << "Server created" << std::endl;
 

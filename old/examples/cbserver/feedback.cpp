@@ -36,8 +36,8 @@ System::System(Tick b1, Tick b2, const string &trace1, const string &trace2) :
 
     mm1(40000, 40000, 0, "MM1"),
     mm2(100000, 100000, 0, "MM2"),
-    ss1(b1, 40000, 40000, false, "SS1", "FIFOSched"),
-    ss2(b2, 100000, 100000, false, "SS2", "FIFOSched"),
+    ss1(b1, 40000, 40000, false, "SS1", "fifo"),
+    ss2(b2, 100000, 100000, false, "SS2", "fifo"),
     miss1("miss1"),
     miss2("miss2") {
     mm1.insertCode("delay(trace(" + trace1 + "));");

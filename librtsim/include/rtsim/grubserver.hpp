@@ -73,7 +73,7 @@ namespace RTSim {
 
     public:
         Grub(Tick q, Tick p, const std::string &name,
-             const std::string &sched = "FIFOSched");
+             const std::string &sched = "fifo");
         ~Grub();
 
         Tick getBudget() const override;

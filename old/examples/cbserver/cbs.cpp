@@ -46,7 +46,7 @@ int main() {
         ttrace.attachToTask(t3);
 
         CBServer serv(4, 15, 15, "hard", "server1",
-                      "FIFOSched"); //"RRSched(2);");
+                      "fifo"); //"RRSched(2);");
         serv.addTask(t11);
         serv.addTask(t12);
         kern.addTask(serv, "");

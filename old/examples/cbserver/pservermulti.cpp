@@ -44,7 +44,7 @@ int main() {
         ttrace.attachToTask(t2);
         ttrace.attachToTask(t3);
 
-        PollingServer serv(4, 10, "server", "FIFOSched"); //"RRSched(2);");
+        PollingServer serv(4, 10, "server", "fifo"); //"RRSched(2);");
         serv.addTask(t11);
         serv.addTask(t12);
         kern.addTask(serv, "");

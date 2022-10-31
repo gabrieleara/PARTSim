@@ -63,9 +63,9 @@ TEST_CASE("multicore with cbs") {
     t3.insertCode("fixed(4);");
     t3.setAbort(false);
 
-    CBServer serv1(4, 10, 10, true, "server1", "FIFOSched");
-    CBServer serv2(5, 15, 15, true, "server2", "FIFOSched");
-    CBServer serv3(2, 12, 12, true, "server3", "FIFOSched");
+    CBServer serv1(4, 10, 10, true, "server1", "fifo");
+    CBServer serv2(5, 15, 15, true, "server2", "fifo");
+    CBServer serv3(2, 12, 12, true, "server3", "fifo");
 
     serv1.addTask(t1);
     serv2.addTask(t2);

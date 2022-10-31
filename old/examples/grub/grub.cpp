@@ -29,11 +29,11 @@ int main() {
         ttrace.attachToTask(t2);
         ttrace.attachToTask(t3);
 
-        Grub serv1(2, 4, "HIGH", "FIFOSched");
+        Grub serv1(2, 4, "HIGH", "fifo");
         serv1.addTask(t2);
         kern.addTask(serv1, "");
 
-        Grub serv2(3, 6, "LOW", "FIFOSched");
+        Grub serv2(3, 6, "LOW", "fifo");
         serv2.addTask(t3);
         kern.addTask(serv2, "");
 

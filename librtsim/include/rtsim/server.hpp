@@ -153,7 +153,7 @@ namespace RTSim {
             @param name server name
             @param s scheduler (for hierarchical scheduling servers)
         */
-        Server(const string &name, const string &s = "FIFOSched");
+        Server(const string &name, const string &s = "fifo");
 
         /**
            Destructor

@@ -59,7 +59,7 @@ void System::addMultimediaTask(const string &name, Tick b, Tick p,
     mm.push_back(m1);
 
     // creating and inserting server
-    SporadicServer *s = new SporadicServer(b, p, "Server_" + name, "FIFOSched");
+    SporadicServer *s = new SporadicServer(b, p, "Server_" + name, "fifo");
     s->addTask(*m1);
     ss.push_back(s);
 
@@ -88,7 +88,7 @@ void System::addLoadTask(const string &name, Tick b, Tick p, int prio) {
     mm.push_back(m1);
 
     SporadicServer *s1 =
-        new SporadicServer(b, p, "Server_" + name, "FIFOSched");
+        new SporadicServer(b, p, "Server_" + name, "fifo");
 
     s1->addTask(*m1);
     ss.push_back(s1);

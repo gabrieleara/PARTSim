@@ -881,7 +881,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(
-                4, 15, 15, "hard", "server1", "FIFOSched");
+                4, 15, 15, "hard", "server1", "fifo");
             serv->setKernel(kern);
             serv->addTask(*t2);
             tasks.push_back(serv);
@@ -937,7 +937,7 @@ int main(int argc, char *argv[]) {
             ttrace.attachToTask(*t2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(
-                2, 10, 10, "hard", "server1", "FIFOSched");
+                2, 10, 10, "hard", "server1", "fifo");
             serv->addTask(*t2);
             tasks.push_back(serv);
             CBServerCallingEMRTKernel *et = kern->addTaskAndEnvelope(serv, "");
@@ -1032,7 +1032,7 @@ int main(int argc, char *argv[]) {
             pstrace.attachToTask(*t2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(
-                2, 10, 10, "hard", "server1", "FIFOSched");
+                2, 10, 10, "hard", "server1", "fifo");
             serv->addTask(*t2);
             tasks.push_back(serv);
             CBServerCallingEMRTKernel *et_serv =
@@ -1153,7 +1153,7 @@ int main(int argc, char *argv[]) {
             pstrace.attachToTask(*tos2);
 
             CBServerCallingEMRTKernel *serv = new CBServerCallingEMRTKernel(
-                2, 10, 10, "hard", "server1", "FIFOSched");
+                2, 10, 10, "hard", "server1", "fifo");
             serv->addTask(*tos);
             serv->addTask(*tos2);
             tasks.push_back(serv);

@@ -64,7 +64,7 @@ void System::addMultimediaTask(const string &name, Tick b, Tick p,
     mm.push_back(m1);
 
     // creating and inserting server
-    CBServer *s = new CBServer(b, p, p, true, "Server_" + name, "FIFOSched");
+    CBServer *s = new CBServer(b, p, p, true, "Server_" + name, "fifo");
     s->addTask(*m1);
     ss.push_back(s);
 
@@ -92,7 +92,7 @@ void System::addLoadTask(const string &name, Tick b, Tick p, int prio) {
     m1->insertCode(mystr.str());
     mm.push_back(m1);
 
-    CBServer *s1 = new CBServer(b, p, p, true, "Server_" + name, "FIFOSched");
+    CBServer *s1 = new CBServer(b, p, p, true, "Server_" + name, "fifo");
 
     s1->addTask(*m1);
     ss.push_back(s1);

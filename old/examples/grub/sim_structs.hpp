@@ -93,7 +93,7 @@ public:
     void create_high_server(Task &task) {
         Grub *s =
             new Grub(task.getWCET(), Tick(double(task.getMinIAT()) * hl_ratio),
-                     "", "FIFOSched");
+                     "", "fifo");
         cout << "Created a server with period : "
              << Tick(double(task.getMinIAT()) * hl_ratio) << std::endl;
         add_to_sim(s, task);
@@ -104,7 +104,7 @@ public:
         if (ratio > 1)
             ratio = 1;
         Grub *s = new Grub(Tick(double(task.getWCET()) * ratio),
-                           task.getMinIAT(), "", "FIFOSched");
+                           task.getMinIAT(), "", "fifo");
         cout << "Created a LOW server with budget : "
              << Tick(double(task.getWCET()) * ratio) << std::endl;
         add_to_sim(s, task);
@@ -113,7 +113,7 @@ public:
     void create_single_server(Task &task, Tick period) {
         if (LowServer == 0) {
             Tick cap = Tick(double(period) * (upper_limit - HighUtil));
-            LowServer = new Grub(cap, period, "", "EDFSched");
+            LowServer = new Grub(cap, period, "", "edf");
             bool flag = super.addGrub(LowServer);
             std::cout << "Single Grub added: " << flag << std::endl;
             kern.addTask(*LowServer, "");

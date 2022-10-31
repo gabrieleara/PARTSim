@@ -19,9 +19,9 @@ TEST_CASE("CBS algorithm: period ratio") {
     EDFScheduler sched;
     RTKernel kern(&sched);
 
-    CBServer serv1(3, 6, 6, true, "server1", "FIFOSched");
+    CBServer serv1(3, 6, 6, true, "server1", "fifo");
     serv1.addTask(t1);
-    CBServer serv2(4, 9, 9, true, "server2", "FIFOSched");
+    CBServer serv2(4, 9, 9, true, "server2", "fifo");
     serv2.addTask(t2);
 
     kern.addTask(serv1);
@@ -76,7 +76,7 @@ TEST_CASE("CBS algorithm: Original") {
     EDFScheduler sched;
     RTKernel kern(&sched);
 
-    CBServer serv(5, 15, 15, true, "server1", "FIFOSched");
+    CBServer serv(5, 15, 15, true, "server1", "fifo");
     serv.addTask(t2);
 
     kern.addTask(t1);
@@ -150,7 +150,7 @@ TEST_CASE("Task with suspension") {
     EDFScheduler sched;
     RTKernel kern(&sched);
 
-    CBServer serv(4, 8, 8, true, "server1", "FIFOSched");
+    CBServer serv(4, 8, 8, true, "server1", "fifo");
     serv.addTask(t1);
 
     kern.addTask(t2);

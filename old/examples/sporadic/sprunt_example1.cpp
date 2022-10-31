@@ -46,7 +46,7 @@ int main() {
         ttrace.attachToTask(a1);
         ttrace.attachToTask(a2);
 
-        SporadicServer serv(5, 20, "server", "FIFOSched"); //"RRSched(2);");
+        SporadicServer serv(5, 20, "server", "fifo"); //"RRSched(2);");
         serv.addTask(a1);
         serv.addTask(a2);
 

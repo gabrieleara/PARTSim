@@ -41,7 +41,7 @@ namespace RTSim {
         /// @param name the name of this server
         /// @param sched the name of the scheduler used
         CBServer(Tick q, Tick p, Tick d, bool HR, const std::string &name,
-                 const std::string &sched = "FIFOSched");
+                 const std::string &sched = "fifo");
 
         DEFAULT_VIRTUAL_DES(CBServer);
 

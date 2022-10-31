@@ -160,7 +160,7 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::updateTitle() {
-    QString t = "PlotSched";
+    QString t = "plot";
     if (filename.length() > 0) {
         t.append(" - ");
         t.append(filename);

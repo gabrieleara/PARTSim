@@ -128,10 +128,10 @@ namespace RTSim {
                         cpu.get());
                 }
 
-                // TODO: Power tracing output configuration/change
-                // implementation to reduce the number of events?
-                ptrace = std::make_unique<TracePowerConsumption>(
-                    cpu.get(), 1, "power_" + cpuname + ".txt");
+                // // TODO: Power tracing output configuration/change
+                // // implementation to reduce the number of events?
+                // ptrace = std::make_unique<TracePowerConsumption>(
+                //     cpu.get(), 1, "power_" + cpuname + ".txt");
 
                 this->cpus.emplace_back(cpu);
                 this->ptraces.emplace_back(ptrace);

@@ -27,7 +27,7 @@ namespace RTSim {
 
     public:
         PollingServer(Tick q, Tick p, const std::string &name,
-                      const std::string &sched = "FIFOSched");
+                      const std::string &sched = "fifo");
 
         void newRun() override;
         void endRun() override;
