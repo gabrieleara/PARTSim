@@ -31,6 +31,20 @@
 #include <rtsim/task.hpp>
 
 namespace RTSim {
+    RTKernel *findNonServerKernel(AbsKernel *kernel) {
+        RTKernel *rtkernel = dynamic_cast<RTKernel *>(kernel);
+
+        // Climb the Server ladder up until we get a real RTKernel (or
+        // MRTKernel)
+        while (rtkernel == nullptr) {
+            AbsRTTask *task = dynamic_cast<AbsRTTask *>(kernel);
+            assert(task != nullptr);
+            kernel = task->getKernel();
+            rtkernel = dynamic_cast<RTKernel *>(kernel);
+        }
+
+        return rtkernel;
+    }
 
     FCFSResManager::FCFSResManager(const string &n) : ResManager(n) {}
 
@@ -78,11 +92,26 @@ namespace RTSim {
                 AbsKernel *kernel = task->getKernel();
                 kernel->activate(task);
 
-                // NOTE: the kernel may be the same of the caller, in that case
-                // dispatch will be called more than once even if only one call
-                // would be sufficient. But if the kernels differ this call is
-                // absolutely necessary to notify the other kernel that its
-                // situation changed.
+                // If the two tasks belong to the same kernel, exiting this
+                // function will call dispatch for us. However, they could also
+                // belong to different kernels (e.g., partitioned scenario). For
+                // this reason, we need to call dispatch also on the OTHER
+                // kernel, to notify it that a new task has been activated (the
+                // activate itself doesn't do it in RT or MRTKernels). Calling
+                // dispatch twice does no more damage than calling once, so we
+                // can do it freely.
+                //
+                // For tasks enclosed in Servers, the activate will invoke
+                // dispatch within the server (ONLY IF THE SERVER IS RUNNING,
+                // otherwise the task is enqueued but nothing happens), but it
+                // will NOT invoke dispatch on the (M)RTKernel in which they
+                // belong. For this reason, we look up for the (M)RTKernel
+                // associated to the Server (if any) and invoke dispatch on THAT
+                // kernel.
+                //
+                // NEVER invoke dispatch on a server directly. Not in the
+                // current implementation, at least.
+                kernel = findNonServerKernel(kernel);
                 kernel->dispatch();
             }
 

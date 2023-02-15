@@ -138,7 +138,7 @@ namespace RTSim {
         sched_->insert(task);
 
         if (status == EXECUTING) {
-            //
+            dispatch();
         } else if (status == IDLE) {
             idle_ready();
             kernel->activate(this);
@@ -148,16 +148,17 @@ namespace RTSim {
         } else if (status == RECHARGING || status == READY) {
             DBGPRINT("Server is RECHARGING or READY, activated task will wait...");
         } else {
-          assert(false);
+            assert(false);
         }
 
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
-        dispatch();
     }
 
     void Server::suspend(AbsRTTask *task) {
         DBGENTER(_SERVER_DBG_LEV);
         sched_->extract(task);
+
+        assert(status == EXECUTING);
 
         if (getProcessor(task) != nullptr) {
             task->deschedule();
@@ -190,7 +191,7 @@ namespace RTSim {
         sched_->insert(t);
 
         if (status == EXECUTING) {
-            //
+            dispatch();
         } else if (status == IDLE) {
             idle_ready();
             kernel->onArrival(this);
@@ -201,7 +202,6 @@ namespace RTSim {
             DBGPRINT("Server is RECHARGING or READY, arrived task will wait...");
         }
         DBGPRINT("[t=", SIMUL.getTime(), "] Server ", getName(), " in ", __func__, "(): status=", status_string[status]);
-        dispatch();
     }
 
     void Server::onEnd(AbsRTTask *t) {
@@ -310,6 +310,8 @@ namespace RTSim {
 
     void Server::onDispatch(Event *e) {
         DBGENTER(_SERVER_DBG_LEV);
+
+        assert(status == EXECUTING);
 
         AbsRTTask *newExe = sched_->getFirst();
 
