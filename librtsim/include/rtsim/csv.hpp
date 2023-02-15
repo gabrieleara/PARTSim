@@ -149,7 +149,8 @@ namespace csv {
         inline virtual const column_type &getcolumn(string colname) const {
             auto res = _table.find(colname);
             if (res == _table.cend())
-                throw std::exception{}; // FIXME
+                throw std::runtime_error(
+                    "CSVDocument: Attempting to read non-existent column");
             return res->second;
         }
 
@@ -159,6 +160,11 @@ namespace csv {
         }
         inline virtual void readFile(const string &path) {
             ifstream ifs{path};
+            if (ifs.fail()) {
+                throw std::runtime_error{"Attempting to read non-existent file: " +
+                                     path};
+            }
+
             // ifs.exceptions(ifstream::failbit | ifstream::badbit);
             // ifs.open(path); // , std::ios::binary
             readStream(ifs);
