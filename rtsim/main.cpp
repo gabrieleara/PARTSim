@@ -255,7 +255,8 @@ int main(int argc, char *argv[]) {
     auto opts = parse_arguments(argc, argv);
 
     MetaSim::Simulation &simulation = MetaSim::Simulation::getInstance();
-
+    simulation.dbg.enable(_TASK_DBG_LEV);
+    
     if (opts["debug"] == "true") {
         simulation.dbg.enable("All");
         simulation.dbg.setStream(opts["debug-out"]);

@@ -103,14 +103,15 @@ namespace MetaSim {
     /*-----------------------------------------------------*/
 
     double UniformVar::get() {
-        if (generatedValue == 0.0) {
-            double tmp;
-            tmp = _gen->sample();
-            tmp = tmp * (_max - _min) / _gen->getModule() + _min;
-
-            generatedValue = tmp;
-        }
-        return generatedValue;
+        // @todo (glipari) What is that ???? 
+        //if (generatedValue == 0.0) {
+        double tmp;
+        tmp = _gen->sample();
+        tmp = tmp * (_max - _min) / _gen->getModule() + _min;
+        
+        //generatedValue = tmp;
+        //}
+        return tmp; //generatedValue;
     };
 
     unique_ptr<UniformVar> UniformVar::createInstance(vector<string> &par) {
@@ -121,6 +122,7 @@ namespace MetaSim {
 
         a = atof(par[0].c_str());
         b = atof(par[1].c_str());
+        DBGPRINT("Created a UniformVar with params [", a, ", ", b, "]");
         return unique_ptr<UniformVar>(new UniformVar(a, b));
     }
 

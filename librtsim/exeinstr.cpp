@@ -72,10 +72,18 @@ namespace RTSim {
     Instr *ExecInstr::createInstance(const vector<string> &par) {
         Instr *temp = 0;
 
+        DBGENTER(_INSTR_DBG_LEV);
+        
         Task *task = dynamic_cast<Task *>(Entity::_find(par[par.size() - 1]));
+        assert(task);
+
+        DBGPRINT("parameters: ");
+        for (auto x : par) DBGPRINT(x);
+        
         // if (isdigit((par[0].c_str())[0])) {
         if (isdigit(par[0][0])) {
             temp = new FixedInstr(task, atoi(par[0].c_str()));
+            DBGPRINT("Created a fixed instr with execution time", par[0]);
         } else {
             string token = get_token(par[0]);
             string p = get_param(par[0]);
@@ -83,6 +91,8 @@ namespace RTSim {
 
             unique_ptr<RandomVar> var(FACT(RandomVar).create(token, parms));
 
+            DBGPRINT("created a randomvar ", token);
+            
             if (var.get() == 0)
                 throw ParseExc("ExecInstr", par[0]);
 

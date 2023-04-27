@@ -84,7 +84,7 @@ namespace RTSim {
         /** This is the constructor of the ExecInstr
             @param f is a pointer to the task containing the pseudo instruction
             @param c is a random variable containing the duration of the
-           instruction
+            instruction
             @param n is the instruction name
         */
         ExecInstr(Task *f, std::unique_ptr<RandomVar> c,
@@ -149,7 +149,7 @@ namespace RTSim {
                    const std::string &n = "");
 
         static std::unique_ptr<Instr>
-            createInstance(const std::vector<std::string> &par);
+           createInstance(const std::vector<std::string> &par);
     };
 
 } // namespace RTSim

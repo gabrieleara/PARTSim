@@ -534,6 +534,7 @@ namespace RTSim {
 
             par_list.push_back(string(getName()));
 
+            DBGPRINT("token: ", token); 
             for (j = par_list.begin(); j != par_list.end(); ++j)
                 DBGPRINT(" - ", *j);
             DBGPRINT("");
@@ -544,10 +545,10 @@ namespace RTSim {
             if (!curr)
                 throw ParseExc("insertCode", token);
 
-            DBGPRINT("Instr ", curr->getName(), "  created.");
+            DBGPRINT("Instr ", curr->toString(), "  created.");
             // todo
-            std::cout << "Task::insertCode. instr created: " << curr->getName()
-                      << std::endl;
+            //std::cout << "Task::insertCode. instr created: " << curr->getName()
+            //          << std::endl;
 
             addInstr(std::move(curr));
 
