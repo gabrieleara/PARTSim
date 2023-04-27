@@ -23,7 +23,7 @@ taskset:
     cbs_deadline: 48
     startcpu: 0
     code:
-      - fixed(13)
+      - delay(uniform(2,14))
 
   - name: T3
     iat: 54
