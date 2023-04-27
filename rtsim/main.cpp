@@ -22,6 +22,7 @@
 
 using Task_ptr = std::shared_ptr<RTSim::Task>;
 using Server_ptr = std::shared_ptr<RTSim::Server>;
+using UManager_ptr = std::shared_ptr<RTSim::UtilizationManager>;
 
 class ServerTask {
 public:
@@ -37,7 +38,7 @@ public:
     RTSim::AbsRTTask &getTask() {
         return *task;
     }
-
+    
 private:
     Task_ptr task;
     Server_ptr server;
@@ -162,6 +163,10 @@ TaskSet read_taskset(const std::string &tset_file) {
                 cbs_runtime, cbs_period, "grub_" + str_name);
             taskset.emplace_back(task_ptr, server_ptr, startcpu);
         } else if (str_server_type == "") {
+            if (global_server_type == "grub") {
+                std::cerr << "All tasks must be handled by a GRUB server" << std::endl;
+                exit(EXIT_FAILURE);
+            }
             taskset.emplace_back(task_ptr, Server_ptr(), startcpu);
         }
         
@@ -268,10 +273,22 @@ int main(int argc, char *argv[]) {
         kernel->setResManager(resmanager.get());
     }
 
+    std::vector<UManager_ptr> umanagers;
+    
+    // Create the UtilizationManagers, one per CPU
+    for (auto &cpu : sys.cpus) 
+        umanagers.push_back(std::make_shared<RTSim::UtilizationManager>(std::string("umgr_") + cpu->getName()));
+
     TaskSet taskset = read_taskset(opts["taskset"]);
     for (auto &[tasksrv, cpu] : taskset) {
         if (tasksrv.getServer()) {
             sys.cpus[cpu]->getKernel()->addTask(*tasksrv.getServer());
+
+            // if it's a grub, add the server to the UtilizationManager
+            // @todo (glipari) tpo be generalized to any server later on
+            if (dynamic_cast<RTSim::Grub *>(tasksrv.getServer().get())) 
+                umanagers[cpu]->addServer(tasksrv.getServer().get());
+            
             for (auto &tracer : tracers) {
                 tracer.attachToTask(tasksrv.getTask());
                 if (tracer.ttrace)

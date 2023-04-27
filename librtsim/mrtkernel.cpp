@@ -45,26 +45,25 @@ namespace RTSim {
     // class MRTKernel
     // =========================================================================
 
+    // @TODO (glipari) x review : commented because not used anywhere
+    // static inline std::set<CPU *> createCPUSet(absCPUFactory *factory,
+    //                                            size_t n) {
+    //     std::set<CPU *> cpus;
+
+    //     for (size_t i = 0; i < n; i++) {
+    //         cpus.insert(factory->createCPU());
+    //     }
+
+    //     return cpus;
+    // }
+
     // =====================================================
     // Constructors and Destructor
     // =====================================================
-
-    static inline std::set<CPU *> createCPUSet(absCPUFactory *factory,
-                                               size_t n) {
-        std::set<CPU *> cpus;
-
-        for (size_t i = 0; i < n; i++) {
-            cpus.insert(factory->createCPU());
-        }
-
-        return cpus;
-    }
-
     MRTKernel::MRTKernel(Scheduler *s, std::set<CPU *> cpus,
                          const string &name) :
         RTKernel(s, name),
         _migrationDelay(0) {
-        // internalConstructor(cpus);
         for (auto c : cpus) {
             addCPU(c);
         }
@@ -144,9 +143,10 @@ namespace RTSim {
         _m_oldExe[&t] = nullptr;
         _m_dispatched[&t] = nullptr;
 
-        CBServer *cbs = dynamic_cast<CBServer *>(&t);
+        /* CBServer *cbs = dynamic_cast<CBServer *>(&t);
         if (cbs != nullptr)
             _servers.push_back(cbs);
+        */
     }
 
     void MRTKernel::onArrival(AbsRTTask *task) {

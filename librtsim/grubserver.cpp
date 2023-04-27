@@ -4,16 +4,18 @@
 #include <rtsim/grubserver.hpp>
 
 namespace RTSim {
-    GrubSupervisor::GrubSupervisor(const std::string &name) :
+    UtilizationManager::UtilizationManager(const std::string &name) :
         Entity(name),
         servers(),
         total_u(0),
         residual_capacity(0),
         active_u(0) {}
 
-    GrubSupervisor::~GrubSupervisor() {}
+    UtilizationManager::~UtilizationManager() {}
 
-    bool GrubSupervisor::addGrub(Grub *g) {
+    bool UtilizationManager::addServer(Server *s) {
+        Grub *g = dynamic_cast<Grub *>(s);
+        assert(g);
         if ((total_u + g->getUtil()) > 1)
             return false;
         servers.push_back(g);
@@ -22,7 +24,46 @@ namespace RTSim {
         return true;
     }
 
-    void GrubSupervisor::set_active(Grub *g) {
+    bool UtilizationManager::removeServer(Server *s) {
+        Grub *g = dynamic_cast<Grub *>(s);
+        assert(g);
+        auto it = std::find(servers.begin(), servers.end(), g);
+        if (it == servers.end()) return false;
+        
+        // @todo (glipari) to be discussed: can we remove a Grub that
+        // is executing ?  in general the answer is yes, for example
+        // during migration from one processor to another
+        // one. However, the decrease of the active_u and total_u are
+        // not immediate, we must wait for the zero-lag instant before
+        // we can modify active_u and total_u.
+        //
+        // Two choices :
+        // 
+        // 1) we do this here: then we need to implement a
+        //    sort of zero-lag timer again;
+        // 2) we do this in Grub, as it is already
+        //    implemented there.
+        // 
+        // The second choice is less general ... in fact, we force the
+        // server to delay the migration until the zero lag, which may
+        // be restrictive
+        // 
+        // The first choice implies moving a lot of grub-related
+        // information inside the UtilisationManager (the lag itself
+        // is specific to grub) and this will not work with e.g. CBS.
+        //
+        // A third option is to pass a second parameter, the zero-lag
+        // time, and this manager will set a timer to expire on that
+        // instant and remove the server from the list of servers. 
+
+        // TO BE COMPLETED
+        return false;
+    }
+
+    void UtilizationManager::set_active(Server *s) {
+        Grub *g = dynamic_cast<Grub *>(s);
+        assert(g);
+        
         for (auto sp = servers.begin(); sp != servers.end(); ++sp)
             (*sp)->updateBudget();
 
@@ -32,7 +73,10 @@ namespace RTSim {
             (*sp)->startAccounting();
     }
 
-    void GrubSupervisor::set_idle(Grub *g) {
+    void UtilizationManager::set_idle(Server *s) {
+        Grub *g = dynamic_cast<Grub *>(s);
+        assert(s);
+        
         for (auto sp = servers.begin(); sp != servers.end(); ++sp)
             (*sp)->updateBudget();
 
@@ -42,19 +86,18 @@ namespace RTSim {
             (*sp)->startAccounting();
     }
 
-    Tick GrubSupervisor::get_capacity() {
+    Tick UtilizationManager::get_capacity() {
         Tick c = residual_capacity;
         residual_capacity = 0;
         return c;
     }
 
-    void GrubSupervisor::newRun() {
+    void UtilizationManager::newRun() {
         active_u = 0;
         residual_capacity = 0;
-        // std::cout << "NEW RUN" << std::endl;
     }
 
-    void GrubSupervisor::endRun() {}
+    void UtilizationManager::endRun() {}
 
     /*----------------------------------------------------*/
 
@@ -70,7 +113,6 @@ namespace RTSim {
         vtime(),
         supervisor(0),
         _idleEvt("going idle", this, &Grub::onIdle) {
-        // register_handler(_idleEvt, this, &Grub::onIdle);
     }
 
     Grub::~Grub() {}
@@ -99,14 +141,14 @@ namespace RTSim {
             cap.start(-supervisor->getActiveUtilization());
             Tick delta = cap.get_intercept(0);
             if (delta < 0) {
-                std::cout << "Task: "
+                std::cerr << "Task: "
                           << dynamic_cast<Task *>(tasks[0])->getName()
                           << std::endl;
-                std::cout << "Time: " << SIMUL.getTime() << std::endl;
-                std::cout << "Status: " << status << " -- intercept: " << delta
+                std::cerr << "Time: " << SIMUL.getTime() << std::endl;
+                std::cerr << "Status: " << status << " -- intercept: " << delta
                           << std::endl;
-                std::cout << "capacity: " << cap.get_value() << std::endl;
-                std::cout << "Supervisor utilization: "
+                std::cerr << "capacity: " << cap.get_value() << std::endl;
+                std::cerr << "Supervisor utilization: "
                           << supervisor->getActiveUtilization() << std::endl;
                 assert(0);
             }
@@ -131,7 +173,6 @@ namespace RTSim {
         vtime.set_value(SIMUL.getTime());
         supervisor->set_active(this);
         DBGPRINT("Going to READY at ", SIMUL.getTime());
-        // std::cout << "IDLE-READY end" << std::endl;
     }
 
     void Grub::releasing_ready() {
@@ -145,7 +186,6 @@ namespace RTSim {
         DBGENTER(_SERVER_DBG_LEV);
         status = EXECUTING;
         Tick extra = supervisor->get_capacity();
-        // std::cout << "Extra: " << extra << std::endl;
         cap.set_value(cap.get_value() + double(extra));
         startAccounting();
     }
@@ -209,7 +249,7 @@ namespace RTSim {
         return 0;
     }
 
-    void Grub::set_supervisor(GrubSupervisor *s) {
+    void Grub::set_supervisor(UtilizationManager *s) {
         supervisor = s;
     }
 

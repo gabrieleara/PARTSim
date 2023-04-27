@@ -23,7 +23,9 @@
 
 namespace RTSim {
     class MRTKernel;
-    class CBServer;
+
+    // @todo (glipari) x review : removed the list of servers
+    // class CBServer;
 
     // =========================================================================
     // class DispatchMultiEvt
@@ -243,7 +245,8 @@ namespace RTSim {
         ///
         /// @note: are these ever used internally? Or are these just parked
         /// here?
-        std::vector<CBServer *> _servers;
+        /// @todo (glipari) x review : removed the list of servers, nobody uses them apparently
+        //std::vector<CBServer *> _servers;
 
         // =================================================
         // Constructors and Destructor
@@ -457,9 +460,10 @@ namespace RTSim {
 
         /// @return used CBS servers
         /// @todo constness?
-        std::vector<CBServer *> getServers() const {
-            return _servers;
-        }
+        /// @todo (glipari) x review : removed the list of servers
+        //std::vector<CBServer *> getServers() const {
+        //    return _servers;
+        //}
 
         /// @return a pointer to the CPU on which t is running (nullptr if t is
         /// not running on any CPU)

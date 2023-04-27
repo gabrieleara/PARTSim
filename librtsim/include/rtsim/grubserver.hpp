@@ -30,19 +30,23 @@ namespace RTSim {
     };
 
     /** This supervisor stores the status of all registered servers,
-    so to be able to compute U^act */
-    class GrubSupervisor : public Entity {
+        so to be able to compute U^act
+
+        @todo (glipari) there should be one grub supervisor per CPU
+    */
+    class UtilizationManager : public Entity {
         std::vector<Grub *> servers;
         double total_u;
         Tick residual_capacity;
         double active_u;
 
     public:
-        GrubSupervisor(const std::string &name = "");
-        ~GrubSupervisor();
-        bool addGrub(Grub *g);
-        void set_active(Grub *g);
-        void set_idle(Grub *g);
+        UtilizationManager(const std::string &name = "");
+        ~UtilizationManager();
+        bool addServer(Server *g);
+        bool removeServer(Server *g);
+        void set_active(Server *g);
+        void set_idle(Server *g);
         void set_capacity(Tick cap) {
             residual_capacity = cap;
         }
@@ -64,9 +68,9 @@ namespace RTSim {
 
         CapacityTimer cap;
         CapacityTimer vtime;
-        GrubSupervisor *supervisor;
-        friend class GrubSupervisor;
-        void set_supervisor(GrubSupervisor *s);
+        UtilizationManager *supervisor;
+        friend class UtilizationManager;
+        void set_supervisor(UtilizationManager *s);
 
         GEvent<Grub> _idleEvt;
         friend class GEvent<Grub>;

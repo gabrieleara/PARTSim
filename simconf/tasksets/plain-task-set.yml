@@ -1,0 +1,38 @@
+# A simple task set consisting of 3 tasks
+# with fixed execution times
+
+taskset:
+  - name: T1
+    iat: 32
+    deadline: 32
+    server_type: grub
+    cbs_runtime: 8
+    cbs_period: 32
+    cbs_deadline: 32
+    rdl: 32
+    startcpu: 0
+    code:
+      - fixed(7)
+
+  - name: T2
+    iat: 48
+    deadline: 48
+    rdl: 48
+    server_type: grub
+    cbs_runtime: 12
+    cbs_deadline: 48
+    startcpu: 0
+    code:
+      - fixed(13)
+
+  - name: T3
+    iat: 54
+    deadline: 54
+    rdl: 54
+    server_type: grub
+    cbs_runtime: 12
+    cbs_deadline: 54
+    startcpu: 0
+    code:
+      - fixed(10)
+      
