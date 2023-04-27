@@ -92,9 +92,15 @@ namespace RTSim {
         void newRun() override;
         void endRun() override;
 
-        // todo correct?
+        // @todo (glipari) very strange function, is it correct ?
         double getWCET(double capacity) const override {
             return Q;
+        }
+
+        /// @todo (glipari) I just copied this function from the CBS,
+        /// I do not know/remember what it is supposed to do ...
+        double getRemainingWCET(double capacity) const override {
+            return getWCET(capacity);
         }
 
     protected:

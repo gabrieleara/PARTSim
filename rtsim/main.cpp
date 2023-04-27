@@ -18,6 +18,7 @@
 #include <rtsim/waitinstr.hpp>
 #include <rtsim/exeinstr.hpp>
 #include <rtsim/task.hpp>
+#include <rtsim/grubserver.hpp>
 
 using Task_ptr = std::shared_ptr<RTSim::Task>;
 using Server_ptr = std::shared_ptr<RTSim::Server>;
@@ -64,15 +65,39 @@ TaskSet read_taskset(const std::string &tset_file) {
 
     int i = 0;
 
+    // Check that we do not mix different types of servers in the same task set
+    std::string global_server_type = ""; 
+    
     // TODO: assuming periodic task, ask for task type in YML
     for (const auto &task_spec : *(tset_spec->get("taskset"))) {
         auto str_name = task_spec->get("name")->get();
         auto str_iat = task_spec->get("iat")->get();
         auto str_startcpu = task_spec->get("startcpu")->get();
         auto str_deadline = task_spec->get("deadline")->get();
-        auto str_cbs_runtime = task_spec->has("cbs_runtime") ? task_spec->get("cbs_runtime")->get() : "0";
-        auto str_cbs_period = task_spec->has("cbs_period") ? task_spec->get("cbs_period")->get() : "0";
-        auto str_cbs_deadline = task_spec->has("cbs_deadline") ? task_spec->get("cbs_deadline")->get() : "0";
+
+        // by default, no server is used
+        std::string str_server_type = "";
+        std::string str_cbs_runtime = "0";
+        std::string str_cbs_period = "0";
+        std::string str_cbs_deadline = "0";
+
+        // (glipari) Now you can have CBS or grub. In principles,
+        // other kind of servers are possible.  Notice that I changed
+        // the semantic : now it is mandatory to specify a server_type
+        // if we want to use a server
+        if (task_spec->has("server_type")) {
+            str_server_type = task_spec->get("server_type")->get();
+            str_cbs_runtime = task_spec->get("cbs_runtime")->get();
+            str_cbs_period = task_spec->get("cbs_period")->get();
+            str_cbs_deadline = task_spec->get("cbs_deadline")->get();
+        }
+        // else { // by default, I assume cbs
+        //     str_server_type = "cbs";
+        //     str_cbs_runtime = task_spec->has("cbs_runtime") ? task_spec->get("cbs_runtime")->get() : "0";
+        //     str_cbs_period = task_spec->has("cbs_period") ? task_spec->get("cbs_period")->get() : "0";
+        //     str_cbs_deadline = task_spec->has("cbs_deadline") ? task_spec->get("cbs_deadline")->get() : "0";
+        // }
+
         auto str_ph = task_spec->get("ph")->get();
         auto str_qs = task_spec->get("qs")->get();
         auto code = task_spec->get("code");
@@ -106,17 +131,49 @@ TaskSet read_taskset(const std::string &tset_file) {
             task_ptr->insertCode(str_instr);
         }
 
-        if (cbs_period > 0) {
+        if (str_server_type != "" and
+            (cbs_period == 0 or cbs_deadline == 0 or cbs_runtime == 0)) {
+            std::cerr << "Error : unvalid CBS parameters, period="
+                      << cbs_period << ", deadline="
+                      << cbs_deadline << ", runtime="
+                      << cbs_runtime << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        if (str_server_type == "cbs") {
+            if (global_server_type != "" and global_server_type != "cbs") {
+                std::cerr << "Cannot mix different types of server on the same task set" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            global_server_type = str_server_type;
             // Use Hard CBS
             auto server_ptr = std::make_shared<RTSim::CBServer>(
                 cbs_runtime, cbs_period, cbs_deadline, true, "cbserver_" + str_name);
-
+            
             taskset.emplace_back(task_ptr, server_ptr, startcpu);
-        } else {
-          taskset.emplace_back(task_ptr, Server_ptr(), startcpu);
+        } else if (str_server_type == "grub") {
+            if (global_server_type != "" and global_server_type != "grub") {
+                std::cerr << "Cannot mix different types of servers on the same task set" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            global_server_type = str_server_type;
+            
+            auto server_ptr = std::make_shared<RTSim::Grub>(
+                cbs_runtime, cbs_period, "grub_" + str_name);
+            taskset.emplace_back(task_ptr, server_ptr, startcpu);
+        } else if (str_server_type == "") {
+            taskset.emplace_back(task_ptr, Server_ptr(), startcpu);
         }
-    }
+        
+        // if (cbs_period > 0) {
+        //     auto server_ptr = std::make_shared<RTSim::CBServer>(
+        //         cbs_runtime, cbs_period, cbs_deadline, true, "cbserver_" + str_name);
 
+        //     taskset.emplace_back(task_ptr, server_ptr, startcpu);
+        // } else {
+        //   taskset.emplace_back(task_ptr, Server_ptr(), startcpu);
+        // }
+    }
     return taskset;
 }
 
