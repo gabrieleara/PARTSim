@@ -56,7 +56,14 @@ namespace RTSim {
 
         template <class X>
         void probe(GEvent<X> &e) {
-            fd << "{ event: " << e.toString() << " }";
+            if (!first_event)
+                fd << "," << std::endl;
+            else first_event = false;
+            
+            fd << "{";
+            fd << "\"time\" : \"" << SIMUL.getTime() << "\", ";
+            fd << "\"event_type\" : \"" << e.toString() << "\"";
+            fd << "}";
         }
     };
 } // namespace RTSim

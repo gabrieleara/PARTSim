@@ -92,12 +92,12 @@ TaskSet read_taskset(const std::string &tset_file) {
             str_cbs_period = task_spec->get("cbs_period")->get();
             str_cbs_deadline = task_spec->get("cbs_deadline")->get();
         }
-        // else { // by default, I assume cbs
-        //     str_server_type = "cbs";
-        //     str_cbs_runtime = task_spec->has("cbs_runtime") ? task_spec->get("cbs_runtime")->get() : "0";
-        //     str_cbs_period = task_spec->has("cbs_period") ? task_spec->get("cbs_period")->get() : "0";
-        //     str_cbs_deadline = task_spec->has("cbs_deadline") ? task_spec->get("cbs_deadline")->get() : "0";
-        // }
+        else { // by default, I assume cbs
+             str_server_type = "cbs";
+             str_cbs_runtime = task_spec->has("cbs_runtime") ? task_spec->get("cbs_runtime")->get() : "0";
+             str_cbs_period = task_spec->has("cbs_period") ? task_spec->get("cbs_period")->get() : "0";
+             str_cbs_deadline = task_spec->has("cbs_deadline") ? task_spec->get("cbs_deadline")->get() : "0";
+        }
 
         auto str_ph = task_spec->get("ph")->get();
         auto str_qs = task_spec->get("qs")->get();
@@ -134,7 +134,7 @@ TaskSet read_taskset(const std::string &tset_file) {
 
         if (str_server_type != "" and
             (cbs_period == 0 or cbs_deadline == 0 or cbs_runtime == 0)) {
-            std::cerr << "Error : unvalid CBS parameters, period="
+            std::cerr << "Error : unvalid server parameters, period="
                       << cbs_period << ", deadline="
                       << cbs_deadline << ", runtime="
                       << cbs_runtime << std::endl;
@@ -159,8 +159,7 @@ TaskSet read_taskset(const std::string &tset_file) {
             }
             global_server_type = str_server_type;
             
-            auto server_ptr = std::make_shared<RTSim::Grub>(
-                cbs_runtime, cbs_period, "grub_" + str_name);
+            auto server_ptr = std::make_shared<RTSim::Grub>(cbs_runtime, cbs_period, "grub_" + str_name);
             taskset.emplace_back(task_ptr, server_ptr, startcpu);
         } else if (str_server_type == "") {
             if (global_server_type == "grub") {
@@ -286,7 +285,7 @@ int main(int argc, char *argv[]) {
             sys.cpus[cpu]->getKernel()->addTask(*tasksrv.getServer());
 
             // if it's a grub, add the server to the UtilizationManager
-            // @todo (glipari) tpo be generalized to any server later on
+            // @todo (glipari) to be generalized to any server later on
             if (dynamic_cast<RTSim::Grub *>(tasksrv.getServer().get())) 
                 umanagers[cpu]->addServer(tasksrv.getServer().get());
             

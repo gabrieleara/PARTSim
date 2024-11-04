@@ -46,7 +46,7 @@ namespace RTSim {
         // 
         // The second choice is less general ... in fact, we force the
         // server to delay the migration until the zero lag, which may
-        // be restrictive
+        // be restrictive.
         // 
         // The first choice implies moving a lot of grub-related
         // information inside the UtilisationManager (the lag itself
